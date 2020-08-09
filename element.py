@@ -26,7 +26,7 @@ class elementStatus:
 #
 # element - Un élément (ie une case) du Sudoku
 #
-class element:
+class element(object):
 
     # Données membres
     #
@@ -53,7 +53,7 @@ class element:
                 # Effacement de la valeur
                 self.status_ = elementStatus.EMPTY
 
-    def getValue(self):
+    def value(self):
         return self.value_ if self.status_ & elementStatus.SET else None
 
     # Status de l'élément

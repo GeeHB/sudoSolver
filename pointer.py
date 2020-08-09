@@ -17,11 +17,6 @@
 
 import math
 
-# Index min & max
-#
-INDEX_MIN = 0
-INDEX_MAX = 80
-
 # La recherche est terminée (ie, lle pointeur pointe sur la fin de la liste)
 class reachedEndOfList(Exception):
     pass
@@ -31,52 +26,127 @@ class reachedEndOfList(Exception):
 #
 #   Cet objet effectue les différentes opérations de convertions linéaire <=> matriciel <=> indicaire
 #
-class pointer:
+class pointer(object):
+
+    # Constantes publiques
+    #
+    INDEX_MIN = 0
+    INDEX_MAX = 80
+
+    ROW_COUNT = 9
+    LINE_COUNT = 9
 
     # Données membres
     #
     index_      =   INDEX_MIN       # Index de la "case"
-    row_ = None                     # Position dans la matrice
-    line_ = None
-    squareID_ = None                # Indice du "petit" rectangle
+    row_ = 0                        # Position dans la matrice
+    line_ = 0
+    squareID_ = 0                    # Indice du "petit" rectangle
 
     # Construction
     def __init__(self, index = None):
         pass
 
+    # Accès
+    #
+
     # Index du pointeur
     def index(self):
         return self.index_
     
+    # Position
+    def row(self):
+        return self.row_
+    def line(self):
+        return self.line_
+    def squareID(self):
+        return self.squareID_
+
     #
     # Changement d'index
     #
 
+    # +=
+    def __iadd__(self, inc):
+        # Incrément
+        self.index_ += inc
+
+        # Atteint et dépassé la fin de la liste ?
+        if self.index_ > self.INDEX_MAX:
+            raise reachedEndOfList
+
+        # Calculs ...
+        self._whereAmI()
+
+    # -=
+    def __isub__(self, dec):
+        # Décrément
+        self.index_ -= dec
+
+        # On reste dans la liste
+        if self.index_ < self.INDEX_MIN:
+            raise IndexError
+
+        # Calculs ...
+        self._whereAmI()
+
+    # Calcul des coordonnées
+    def _whereAmI(self):
+        # Mes coordonnées
+        self.line_ = math.floor(self.index_ / 9)
+        self.row_ = self.index_ - 9 * self.line_
+
+        # Indice du "petit" carré dans lequel je suis me trouve
+        self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
+
+    """
     # Positionnement direct
     def setIndex(self, newIndex):
         if not newIndex == self.index_:
             # Une erreur ?
-            if newIndex < INDEX_MIN:
+            if newIndex < self.INDEX_MIN:
                 raise IndexError
             
             # Sorti de la liste ?
-            if newIndex > INDEX_MAX:
+            if newIndex > self.INDEX_MAX:
                 raise reachedEndOfList
 
             self.index_ = newIndex
 
-            # Mes coordonnées
-            self.line_ = math.floor(self.index_ / 9)
-            self.row_ = self.index_ - 9 * self.line_
-
-            # Indice du carré dans lequel je suis situé
-            self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
-
-    # +=
-    def __iadd__(self, inc):
-        self.setIndex(self.index_ + inc)
+            # Mise à jour de ma position
+            self._whereAmI()
     
-    # -=
-    def __isub__(self, dec):
-        self.setIndex(self.index_ + dec)
+    # Incrémentation de l'indice
+    #
+    def _inc(self):
+        # Incrément
+        self.index_ += 1
+
+        # Terminé ?
+        if self.index_ > self.INDEX_MAX:
+            raise reachedEndOfList
+
+        # Calculs ...
+        #
+
+        # Une ligne en +
+        if 0 == self.index_ % self.ROW_COUNT :
+            self.line_ += 1
+            self.row_ = 0
+        else:
+            # La colonne avance ...
+            self.row_ += 1
+
+    # Décrémentation de l'indice
+    #
+    def _dec(self):
+        # Une ligne en moins
+        self.index_ -= 1
+
+        # On reste dans la liste
+        if self.index_ < self.INDEX_MIN:
+            raise IndexError
+
+        # Calculs ...
+    """
 # EOF
