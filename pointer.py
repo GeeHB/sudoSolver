@@ -36,16 +36,32 @@ class pointer(object):
     ROW_COUNT = 9
     LINE_COUNT = 9
 
+    VALUE_MIN = 1
+    VALUE_MAX = 9
+
     # Données membres
     #
     index_      =   INDEX_MIN       # Index de la "case"
+    
     row_ = 0                        # Position dans la matrice
     line_ = 0
+    
     squareID_ = 0                    # Indice du "petit" rectangle
 
+    gameMode_ = False               # En mode "jeu"
+
     # Construction
-    def __init__(self, index = None):
-        pass
+    #
+    def __init__(self, other = None, index = None, gameMode = True):
+        # Copie des paramètres
+        #
+        if not None == other:
+            # Construction par ceopie
+            self.index_ = other.index_
+            self.gameMode_ = other.gameMode_
+        else:
+            self.index_ = 0 if None == index else index
+            self.gameMode_ = gameMode 
 
     # Accès
     #
@@ -67,18 +83,25 @@ class pointer(object):
     #
 
     # +=
+    #
     def __iadd__(self, inc):
         # Incrément
         self.index_ += inc
 
         # Atteint et dépassé la fin de la liste ?
         if self.index_ > self.INDEX_MAX:
-            raise reachedEndOfList
+            if True == self.gameMode_ :
+                raise reachedEndOfList
+            else:
+                if self.index_ > (1+self.INDEX_MAX):
+                    raise IndexError
 
         # Calculs ...
         self._whereAmI()
+        return self
 
     # -=
+    #
     def __isub__(self, dec):
         # Décrément
         self.index_ -= dec
@@ -89,8 +112,10 @@ class pointer(object):
 
         # Calculs ...
         self._whereAmI()
+        return self
 
     # Calcul des coordonnées
+    #
     def _whereAmI(self):
         # Mes coordonnées
         self.line_ = math.floor(self.index_ / 9)

@@ -16,7 +16,7 @@
 #
 # elementStatus - Statuts pour un élément
 #
-class elementStatus:
+class elementStatus(object):
 
     EMPTY = 0           # La case est vide
     SET = 1
@@ -55,6 +55,12 @@ class element(object):
 
     def value(self):
         return self.value_ if self.status_ & elementStatus.SET else None
+
+    # L'élément est (à nouveau) vide
+    # retourne l'ancienne valeur
+    def  empty(self):
+        self.status_ = elementStatus.EMPTY
+        return self.value_
 
     # Status de l'élément
     #
