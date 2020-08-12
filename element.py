@@ -31,7 +31,7 @@ class element(object):
     # Données membres
     #
     value_ = None                   # Valeur de la cellule
-    status_ = elementStatus.EMPTY   # Par défaut vide
+    status_ = elementStatus.EMPTY   # Etat/statut de la case (par défaut vide)
 
     # Construction
     def __init__(self, value = None):
@@ -42,13 +42,21 @@ class element(object):
 
     # Gestion de la valeur
     #
-    def setValue(self, value = None):
+    #   Paramètres :
+    #           value : valeur numérique de la case (aucune vérification n'est effectuée)
+    #           originbal : la valeur est-elle originale ? Une valeur originale se sera pas modifiée
+    #
+    def setValue(self, value = None, original = False):
         # La valeur doit-être modifiable
         if not self.status_ and elementStatus.ORIGINAL:
             # Mise à jour de la valeur
             if not value == None:
                 self.value_ = value
                 self.status_ = elementStatus.SET    # J'ai une valeur
+
+                if True == original:
+                    self.status_ |= elementStatus.ORIGINAL
+
             else:
                 # Effacement de la valeur
                 self.status_ = elementStatus.EMPTY
@@ -68,6 +76,6 @@ class element(object):
         return self.status_ == elementStatus.EMPTY
     
     def isOriginal(self):
-        return self.status_ and elementStatus.ORIGINAL
+        return ((self.status_ & elementStatus.ORIGINAL) == elementStatus.ORIGINAL)
 
 # EOF

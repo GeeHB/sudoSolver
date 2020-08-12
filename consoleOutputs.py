@@ -28,7 +28,10 @@ class consoleOutputs(outputs):
         myIndex = 0
         myLine = 0
 
+        print("")
+
         # Affichage ligne par ligne
+        #
         for _ in range(pointer.LINE_COUNT):
             line = ""
             myCol = 0

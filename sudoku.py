@@ -42,74 +42,36 @@ class sudokuError(Exception):
 #
 #   sudoku : Résolution du sudoku
 #
+#       Les "cases" sont enregistrées dans une liste, ligne après ligne.
+#       l'objet "pointer" permet de passer d'une position linéaire au tuple (x, y, "petite" grille) 
+#
 class sudoku(object):
 
     # Données membres
     #
-    elements_ = []          # Espace de jeu
+    elements_ = []          # Les "cases" de la grille
 
     # Index des premiers éléments des "petits" carrés (rien ne sert de les calculer !!!)
     squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
 
     # Construction
     #
-    def __init__(self, fileName = None):
+    def __init__(self):
         # Création de la liste vide
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
-        if not None == fileName :
-            # Lecture du fichier source
-            self._fromFile(fileName)
-        else:
-            for i in range(9):
-                self.elements_[10*i].setValue(i + 1)
-
-        # Test
-        outputs= consoleOutputs()
+    
+    # Affichage de la grille
+    #
+    def showGrid(self):
+        outputs = consoleOutputs()
         outputs.draw(self.elements_)
-
-    # Résolution de la grille de Sudoku
-    #
-    def resolve(self):
-
-        candidate = 0
-        position = pointer(gameMode = True)             # Un pointeur avec limite
-        position = self._findFirstEmptyPos(position)
-
-        # A chaque itération, on considère ques la grille est "pleine"
-        # jusqu'au pointeur courant
-        # la valeur "candidate" va être tentée à l'emplacement courant du pointeur
-        while True :
-
-            candidate +=1
-
-            if candidate > pointer.VALUE_MAX:
-                # Aucune valeur n'a été trouvée pour cet emplacement
-                # il faut donc reculer jusqu'à la précédente valeur "posée"
-                position = self._previousPos(position)
-
-                # On repart de la valeur (que l'on incrémentera au prochain passage)
-                candidate = self.elements_[position.index()].empty()
-            else :
-                if True == self._checkValue(position, candidate):
-                    # La valeur est bonne !!!
-                    self.elements_[position.index()].setValue(candidate)   # Je pose la valeur
-                    
-                    # On avance jusqu'à la position vide suivante
-                    position = self._findFirstEmptyPos(position)
-                    
-                    # On tente toujours avec la plus petite valeur possible
-                    candidate = 0 
-
-    #
-    # Méthodes internes
-    #
 
     # Lecture d'un fichier d'archive
     #
-    def _fromFile(self, fileName):
-        if None == fileName:
+    def loadFromFile(self, fileName):
+        if None == fileName or 0 == len(fileName):
             # ???
             return sudokuError("Pas de om de fichier")
     
@@ -176,6 +138,58 @@ class sudoku(object):
         # Chargement terminé
         return True
 
+    # Résolution de la grille
+    #
+    def resolve(self):
+        try:
+            self._resolve()
+        except reachedEndOfList:
+            # Terminé avec succès
+            return True
+        
+        # ???
+        return False
+
+    #
+    # Méthodes internes
+    #
+
+    # Méthode interne pour la résolution de la grille de Sudoku
+    #
+    def _resolve(self):
+
+        candidate = 0
+        position = pointer(gameMode = True)             # Un pointeur avec limite
+        position = self._findFirstEmptyPos(position)
+
+        # A chaque itération, on considère que la grille est "pleine"
+        # jusqu'au pointeur courant - "position"
+        # la valeur "candidate" va être tentée à l'emplacement courant du pointeur
+        while True :
+
+            candidate +=1
+
+            if candidate > pointer.VALUE_MAX:
+                # Aucune valeur n'a été trouvée pour cet emplacement
+                # il faut donc reculer jusqu'à la précédente valeur "posée"
+                position = self._previousPos(position)
+
+                # On repart de la valeur (que l'on incrémentera au prochain passage)
+                candidate = self.elements_[position.index()].empty()
+            else :
+                # On essaye de positionner la valeur "candidate" à la "position"
+                #
+                if True == self._checkValue(position, candidate):
+                    # La valeur est acceptée (pour l'instant) !!!
+                    self.elements_[position.index()].setValue(candidate)   # Je pose la valeur
+                    
+                    # On avance jusqu'à la position vide suivante
+                    position = self._findFirstEmptyPos(position)
+                    
+                    # On tente toujours avec la plus petite valeur possible
+                    candidate = 0 
+
+
     # Peut-on mettre cette valeur à la position courante ?
     #
     def _checkValue(self, position, value):
@@ -233,20 +247,20 @@ class sudoku(object):
         # Terminé
         return newPos
 
-    # Retour au précédent emplacement
+    # Retour à la position précédente (dernière modification) 
     #
     #   Retourne un pointeur sur l'emplacement
     #   une exeception IndexError est levée lorsque
-    #   l'on sort de la liste
+    #   l'on sort de la liste (ie. la grille est surement impossible)
     # 
     def _previousPos(self, current):
         newPos = pointer(current)
 
         # Je supprime cet élément
-        #self.elements_[newPos.index()].empty()
+        self.elements_[newPos.index()].empty()
         newPos -= 1
 
-        # On recule tant que la case est "originale"
+        # On recule tant que la case est "originale" (ie. tant qu'elle en peut être modifiée)
         while self.elements_[newPos.index()].isOriginal():
             newPos -= 1
         
@@ -256,13 +270,17 @@ class sudoku(object):
 # Juste pour les tests
 #
 try:
-    essai = sudoku("d:\\nextcloud\\dev\\python\\sudosolver\\grid1.txt")
+    essai = sudoku()
+    essai.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid1.txt")
+    essai.resolve()
+    essai.showGrid()
 except sudokuError as e:
     # Une erreur "Sudoku" => affichage du message
     print(e)
 except IndexError:
+    # Généré lors du parse du fichier ...
     print("Trop de lignes dans le fichier")
-#except:
-#    print("Erreur inconnue")
+except:
+    print("Erreur inconnue")
 
 # EOF

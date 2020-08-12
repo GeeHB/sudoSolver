@@ -43,7 +43,7 @@ class pointer(object):
     #
     index_      =   INDEX_MIN       # Index de la "case"
     
-    row_ = 0                        # Position dans la matrice
+    row_ = 0                        # Position dans la "matrice"
     line_ = 0
     
     squareID_ = 0                    # Indice du "petit" rectangle
@@ -114,7 +114,7 @@ class pointer(object):
         self._whereAmI()
         return self
 
-    # Calcul des coordonnées
+    # Changement de coordonnées
     #
     def _whereAmI(self):
         # Mes coordonnées
@@ -124,54 +124,4 @@ class pointer(object):
         # Indice du "petit" carré dans lequel je suis me trouve
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
 
-    """
-    # Positionnement direct
-    def setIndex(self, newIndex):
-        if not newIndex == self.index_:
-            # Une erreur ?
-            if newIndex < self.INDEX_MIN:
-                raise IndexError
-            
-            # Sorti de la liste ?
-            if newIndex > self.INDEX_MAX:
-                raise reachedEndOfList
-
-            self.index_ = newIndex
-
-            # Mise à jour de ma position
-            self._whereAmI()
-    
-    # Incrémentation de l'indice
-    #
-    def _inc(self):
-        # Incrément
-        self.index_ += 1
-
-        # Terminé ?
-        if self.index_ > self.INDEX_MAX:
-            raise reachedEndOfList
-
-        # Calculs ...
-        #
-
-        # Une ligne en +
-        if 0 == self.index_ % self.ROW_COUNT :
-            self.line_ += 1
-            self.row_ = 0
-        else:
-            # La colonne avance ...
-            self.row_ += 1
-
-    # Décrémentation de l'indice
-    #
-    def _dec(self):
-        # Une ligne en moins
-        self.index_ -= 1
-
-        # On reste dans la liste
-        if self.index_ < self.INDEX_MIN:
-            raise IndexError
-
-        # Calculs ...
-    """
 # EOF
