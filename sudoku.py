@@ -73,7 +73,7 @@ class sudoku(object):
     def loadFromFile(self, fileName):
         if None == fileName or 0 == len(fileName):
             # ???
-            return sudokuError("Pas de om de fichier")
+            raise sudokuError("Pas de nom de fichier")
     
         try:
             file = open(fileName)
@@ -96,7 +96,7 @@ class sudoku(object):
 
             # Format incorrect pour la ligne
             if not pointer.ROW_COUNT == len(values):
-                raise sudokuError("Format invalide pour la ligne n° " + str(pt.line()+1))
+                raise sudokuError("Format invalide pour la ligne n° " + str(pt.line()+1)+ " - " + str(len(values)) + " valeurs")
 
             # Analyse et ajout des valeurs
             #
@@ -106,26 +106,28 @@ class sudoku(object):
 
                     # Dans [1,9] ?
                     nVal = int(val)
-                    if nVal <= 0 or nVal >= pointer.LINE_COUNT:
+                    if nVal < 0 or nVal > pointer.LINE_COUNT:
                         raise sudokuError("Erreur : la valeur en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") n'est pas dans le bon intervalle : " + val)
 
                     # Tentative d'ajout de la valeur "originale"
                     #
 
-                    # Vérification de la ligne
-                    if False == self._checkLine(pt, nVal):
-                        raise sudokuError("Erreur de ligne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                    # La valeur 0 correspond à une case vide
+                    if nVal > 0:
+                        # Vérification de la ligne
+                        if False == self._checkLine(pt, nVal):
+                            raise sudokuError("Erreur de ligne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                    # Vérification de la colonne
-                    if False == self._checkRow(pt, nVal):
-                        raise sudokuError("Erreur de colonne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                        # Vérification de la colonne
+                        if False == self._checkRow(pt, nVal):
+                            raise sudokuError("Erreur de colonne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                    # Vérification du carré
-                    if False == self._checkSquare(pt, nVal):
-                        raise sudokuError("Erreur de carré : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
-                    
-                    # Je peux l'ajouter !
-                    self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
+                        # Vérification du carré
+                        if False == self._checkSquare(pt, nVal):
+                            raise sudokuError("Erreur de carré : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                        
+                        # Je peux l'ajouter !
+                        self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
                 else:
                     if (len(val)):
                         raise sudokuError("Erreur : la valeur en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") n'est pas numérique : " + val)
@@ -133,10 +135,8 @@ class sudoku(object):
                 # Valeur suivante
                 pt += 1
 
-        file.close()
-        
         # Chargement terminé
-        return True
+        file.close()
 
     # Résolution de la grille
     #
@@ -174,7 +174,7 @@ class sudoku(object):
                 # il faut donc reculer jusqu'à la précédente valeur "posée"
                 position = self._previousPos(position)
 
-                # On repart de la valeur (que l'on incrémentera au prochain passage)
+                # On repart de la valeur utilisée précédement (que l'on incrémentera au prochain passage)
                 candidate = self.elements_[position.index()].empty()
             else :
                 # On essaye de positionner la valeur "candidate" à la "position"
@@ -266,21 +266,5 @@ class sudoku(object):
         
         # Terminé
         return newPos
-
-# Juste pour les tests
-#
-try:
-    essai = sudoku()
-    essai.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid1.txt")
-    essai.resolve()
-    essai.showGrid()
-except sudokuError as e:
-    # Une erreur "Sudoku" => affichage du message
-    print(e)
-except IndexError:
-    # Généré lors du parse du fichier ...
-    print("Trop de lignes dans le fichier")
-except:
-    print("Erreur inconnue")
 
 # EOF
