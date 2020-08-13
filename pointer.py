@@ -16,10 +16,7 @@
 #
 
 import math
-
-# La recherche est terminée (ie, lle pointeur pointe sur la fin de la liste)
-class reachedEndOfList(Exception):
-    pass
+from ownExceptions import reachedEndOfList
 
 #
 # pointer - Pointeur sur une case du Sudoku

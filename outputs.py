@@ -21,8 +21,11 @@ from pointer import pointer
 class outputs(object):
 
     # Données membres
-    currentPointer_ = None          # Pointeur sur la position courante dans la matrice
+    drawDetails_ = False             # Affichage des étape lors de la résolaution 
     
+    def setDetails(self, drawAll = False):
+        self.drawDetails_ = drawAll
+
     # Affichage de toute la matrice
     def draw(self, elements):
        pass
@@ -30,6 +33,10 @@ class outputs(object):
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     def update(self, elements, limit):
         # Par défaut pas de mise à jour ...
+        pass
+
+    # Fin des affichages
+    def close(self):
         pass
 
  # EOF

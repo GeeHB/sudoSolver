@@ -13,17 +13,22 @@
 #   Date        :   8 aout 2020
 #
 
-from sudoku import sudoku,sudokuError
+from sudoku import sudoku
+from ownExceptions import sudokuError
 
-# Juste pour les tests
+# Gestion de la grille
 #
 try:
-    essai = sudoku()
-    #essai.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
-    essai.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
-    essai.resolve()
+    solver = sudoku()
+    #solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
     
-    essai.showGrid()
+    # Grille d'origine
+    solver.showGrid()    
+    
+    # C'est parti
+    solver.resolve()
+
 except sudokuError as e:
     # Une erreur "Sudoku" => affichage du message
     print(e)
@@ -32,5 +37,8 @@ except IndexError:
     print("Trop de lignes dans le fichier")
 except:
     print("Erreur inconnue")
+finally:
+    # Fin des affichages
+    solver.close()
 
 # EOF

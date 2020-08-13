@@ -4,9 +4,8 @@
 #
 #   Auteur      :   JHB
 #
-#   Description :   Définition des objets :
+#   Description :   Définition de l'objet :
 #                       - sudoku : "LE" jeu et solver de sudoku
-#                       - sudokuError : Exception
 #
 #   Remarque    :  
 #
@@ -16,11 +15,12 @@
 #
 
 from element import element, elementStatus
-from pointer import pointer, reachedEndOfList
+from pointer import pointer
+from ownExceptions import reachedEndOfList, sudokuError
 
-# Affichages
-from outputs import outputs
-from consoleOutputs import consoleOutputs
+# Affichage de la grille de Sudoku
+from cursesOutputs import cursesOutputs         # Tous les OS sauf Windows :-)
+from consoleOutputs import consoleOutputs       # Windows et tous les autres OS
 
 #
 # Constantes publiques
@@ -29,38 +29,44 @@ from consoleOutputs import consoleOutputs
 VALUE_SEPARATOR = ","           # Séparateur de valeurs dans les fichiers
 
 #
-# sudokuError : Une erreur ...
-#
-class sudokuError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return self.message
-
-#
 #   sudoku : Résolution du sudoku
 #
 #       Les "cases" sont enregistrées dans une liste, ligne après ligne.
-#       l'objet "pointer" permet de passer d'une position linéaire au tuple (x, y, "petite" grille) 
+#       l'objet "pointer" permet de passer d'une position linéaire au tuple (x, y, "petite" grille") 
 #
 class sudoku(object):
 
     # Données membres
     #
     elements_ = []          # Les "cases" de la grille
+    outputs_ = None         # Affichage
 
     # Index des premiers éléments des "petits" carrés (rien ne sert de les calculer !!!)
     squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
 
     # Construction
     #
-    def __init__(self):
+    def __init__(self, showDetails = False):
+
+        # Gestion des affichage
+        try:
+            from cursesOutputs import cursesOutputs
+            outputs_ = cursesOutputs()
+        except ModuleNotFoundError:
+            print("Le module CURSES n'a pu être importé. Les affichages seront effectués en mode console")
+            outputs_ = consoleOutputs() 
+
+        outputs_.setDetails(showDetails)
+
         # Création de la liste vide
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
+    # Fin des affichages
+    #
+    def close(self):
+        if not None == self.outputs_:
+            self.outputs_.close()
     
     # Affichage de la grille
     #
@@ -104,7 +110,7 @@ class sudoku(object):
                 # Format valide ?
                 if val.isnumeric():
 
-                    # Dans [1,9] ?
+                    # Dans [0,9] ?
                     nVal = int(val)
                     if nVal < 0 or nVal > pointer.LINE_COUNT:
                         raise sudokuError("Erreur : la valeur en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") n'est pas dans le bon intervalle : " + val)
@@ -174,6 +180,9 @@ class sudoku(object):
                 # il faut donc reculer jusqu'à la précédente valeur "posée"
                 position = self._previousPos(position)
 
+                # Mise à jour de l'affichage
+                self.outputs_.update(self.elements_, position)
+
                 # On repart de la valeur utilisée précédement (que l'on incrémentera au prochain passage)
                 candidate = self.elements_[position.index()].empty()
             else :
@@ -181,8 +190,13 @@ class sudoku(object):
                 #
                 if True == self._checkValue(position, candidate):
                     # La valeur est acceptée (pour l'instant) !!!
-                    self.elements_[position.index()].setValue(candidate)   # Je pose la valeur
-                    
+
+                    # Je "pose" la valeur
+                    self.elements_[position.index()].setValue(candidate)
+
+                    # Affichage
+                    self.outputs_.update(self.elements_, position)
+
                     # On avance jusqu'à la position vide suivante
                     position = self._findFirstEmptyPos(position)
                     
@@ -233,7 +247,7 @@ class sudoku(object):
 
     # Recherche du premier emplacement vide en avant
     #
-    #   Retourne un pointeur sur l'emplacement
+    #   Retourne un pointeur sur l'emplacement trouvé
     #   une exeception reachedEndOfList est levée lorsque la fin 
     #   de la liste est atteinte (la grille est donc pleine)
     # 
