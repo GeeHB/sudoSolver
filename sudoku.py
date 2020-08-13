@@ -51,12 +51,18 @@ class sudoku(object):
         # Gestion des affichage
         try:
             from cursesOutputs import cursesOutputs
-            outputs_ = cursesOutputs()
+            self.outputs_ = cursesOutputs()
         except ModuleNotFoundError:
             print("Le module CURSES n'a pu être importé. Les affichages seront effectués en mode console")
-            outputs_ = consoleOutputs() 
+        except sudokuError as e:
+            print(e)
+             
+        # Le gestionnaire n'a pu être crée => utilisation de la console
+        if None == self.outputs_:
+            self.outputs_ = consoleOutputs()
 
-        outputs_.setDetails(showDetails)
+        # Niveau de détail de l'affichage
+        self.outputs_.setDetails(True)
 
         # Création de la liste vide
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
@@ -71,8 +77,7 @@ class sudoku(object):
     # Affichage de la grille
     #
     def showGrid(self):
-        outputs = consoleOutputs()
-        outputs.draw(self.elements_)
+        self.outputs_.draw(self.elements_)
 
     # Lecture d'un fichier d'archive
     #
@@ -151,9 +156,11 @@ class sudoku(object):
             self._resolve()
         except reachedEndOfList:
             # Terminé avec succès
+            self.close()
             return True
         
         # ???
+        self.close()
         return False
 
     #

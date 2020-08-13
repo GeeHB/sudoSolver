@@ -20,8 +20,8 @@ from ownExceptions import sudokuError
 #
 try:
     solver = sudoku()
-    #solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
-    solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    #solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
     
     # Grille d'origine
     solver.showGrid()    
@@ -35,10 +35,7 @@ except sudokuError as e:
 except IndexError:
     # Généré lors du parse du fichier ...
     print("Trop de lignes dans le fichier")
-except:
-    print("Erreur inconnue")
-finally:
-    # Fin des affichages
-    solver.close()
+#except:
+#    print("Erreur inconnue")
 
 # EOF
