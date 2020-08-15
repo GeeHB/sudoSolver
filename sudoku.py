@@ -18,8 +18,7 @@ from element import element, elementStatus
 from pointer import pointer
 from ownExceptions import reachedEndOfList, sudokuError
 
-# Affichage de la grille de Sudoku
-from cursesOutputs import cursesOutputs         # Tous les OS sauf Windows :-)
+# Affichage (s) de la grille de Sudoku
 from consoleOutputs import consoleOutputs       # Windows et tous les autres OS
 
 #
@@ -50,8 +49,10 @@ class sudoku(object):
 
         # Gestion des affichage
         try:
-            from cursesOutputs import cursesOutputs
-            self.outputs_ = cursesOutputs()
+            #from cursesOutputs import cursesOutputs
+            #self.outputs_ = cursesOutputs()
+            from pyOutputs import pyOutputs
+            self.outputs_ = pyOutputs()
         except ModuleNotFoundError:
             print("Le module CURSES n'a pu être importé. Les affichages seront effectués en mode console")
         except sudokuError as e:
@@ -68,6 +69,12 @@ class sudoku(object):
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
+    # Attente d'un évènement clavier
+    #
+    def waitKeyDown(self):
+        if not None == self.outputs_:
+            self.outputs_.waitForKeyboardInput()
+
     # Fin des affichages
     #
     def close(self):

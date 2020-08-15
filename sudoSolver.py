@@ -20,14 +20,20 @@ from ownExceptions import sudokuError
 #
 try:
     solver = sudoku()
-    solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
-    #solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    #solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
     
     # Grille d'origine
     solver.showGrid()    
     
+    print("Appuyez sur entrée pour lancer la résolution")
+    solver.waitKeyDown()
+
     # C'est parti
     solver.resolve()
+
+    print("Appuyez sur entrée pour terminer")
+    solver.waitKeyDown()
 
 except sudokuError as e:
     # Une erreur "Sudoku" => affichage du message
