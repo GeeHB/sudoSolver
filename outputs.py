@@ -25,25 +25,27 @@ class outputs(object):
     # Constantes publiques
     #
 
-    # Seulement 1 / GRID_DRAW_FREQ grille sera affichée
-    #   permet d'accélerer la résolution
-    GRID_DRAW_FREQ_ = 100          
-
     # Données membres
     #
 
     # Affichage des étape lors de la résolution
-    drawDetails_ = False
+    detailsRatio_ = 0          # Taux d'affichage de la progression (0 = aucun)
     detailsCount_ = 0          # Indice d'affichage
 
     
-    def setDetails(self, drawAll = False):
-        self.drawDetails_ = drawAll
+    def setDetailsRatio(self, detailsRatio = 0):
+        self.detailsRatio_ = detailsRatio
 
     # En attente de l'appui d'une touche
     #  à surcharger
     def waitForKeyboardInput(self):
         pass
+
+    # Accepte l'édition ?
+    # à surcharger
+    def allowEdition(self):
+        # Par défaut pas d'édition
+        return False
 
     # Affichage de toute la matrice
     #  à surcharger
@@ -53,11 +55,14 @@ class outputs(object):
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #
     def update(self, elements, limit):
-        # Mise à jour ?
-        self.detailsCount_ += 1
-        if 0 == (self.detailsCount_ % self.GRID_DRAW_FREQ_):
-            self._update(elements, limit)
-            self.detailsCount_ = 0
+        
+        if self.detailsRatio_ > 0 :
+            # Mise à jour de l'affichage ?
+            #
+            self.detailsCount_ += 1
+            if 0 == (self.detailsCount_ % self.detailsRatio_):
+                self._update(elements, limit)
+                self.detailsCount_ = 0
 
     # Fin des affichages
     #  à surcharger

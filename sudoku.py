@@ -45,7 +45,7 @@ class sudoku(object):
 
     # Construction
     #
-    def __init__(self, showDetails = False):
+    def __init__(self, detailsRatio = 0):
 
         # Gestion des affichage
         try:
@@ -63,7 +63,7 @@ class sudoku(object):
             self.outputs_ = consoleOutputs()
 
         # Niveau de détail de l'affichage
-        self.outputs_.setDetails(True)
+        self.outputs_.setDetailsRatio(detailsRatio)
 
         # Création de la liste vide
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):

@@ -42,7 +42,7 @@ DEF_TXT_COLOR       = (64, 64, 64)
 
 # Texte
 #
-FONT_NAME   = 'helvetica'
+FONT_NAME   = 'Helvetica'
 FONT_SIZE   = 45
 
 #

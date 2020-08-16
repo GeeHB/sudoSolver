@@ -20,8 +20,8 @@ from ownExceptions import sudokuError
 #
 try:
     solver = sudoku()
-    #solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
-    solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    solver.loadFromFile("/Users/jhenry-barnaudiere/Nextcloud/dev/python/sudoSolver/grid2.txt")
+    #solver.loadFromFile("/home/jhb/Nextcloud/dev/python/sudoSolver/grid2.txt")
     
     # Grille d'origine
     solver.showGrid()    
