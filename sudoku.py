@@ -106,7 +106,7 @@ class sudoku(object):
 
     # Lecture d'un fichier d'archive
     #
-    def loadFromFile(self, fileName, mustExist):
+    def load(self, fileName, mustExist):
         if None == fileName or 0 == len(fileName):
             # ???
             raise sudokuError("Pas de nom de fichier")
@@ -183,10 +183,50 @@ class sudoku(object):
         # Chargement terminé
         file.close()
 
+    # Sauvegarde du fichier
+    #
+    def save(self):
+        
+        # Ouverture du fichier
+        #
+        try:
+            file = open(self.fileName_, "w")
+            
+            # Un pointeur !
+            pt = pointer(gameMode = False)
+            
+            # Parcours de la grille
+            for lIndex in range(pointer.LINE_COUNT) :
+                for _ in range(pointer.ROW_COUNT):
+                    el = self.elements_[pt.index()]
+                    line+= str(0 if el.isEmpty() else el.value())
+                    line+=VALUE_SEPARATOR
+
+                    # Valeur suivante
+                    pt+=1
+                
+                # Ajout / retrait des séparateurs et sauts de ligne
+                line = line[:len(line) - 1]
+                if lIndex < (pointer.LINE_COUNT -1):
+                    line+="\n"
+                
+                # Ecriture de la ligne
+                file.write(line)
+                line = ""
+            
+            # Terminé
+            file.close()
+        except:
+            raise sudokuError("Erreur lors de l'enregistrement de " + self.fileName_)
+
     # Edition de la grille
     #
     def edit(self):
-        pass
+        if not None == self.outputs_ :
+            # Edition
+            if True == self.outputs_.edit(self.elements_):
+                # Mise à jour / enregistrement
+                self.save()
     
     # Résolution de la grille
     #
@@ -269,7 +309,6 @@ class sudoku(object):
     #  => dans cette colonne ?
     def _checkRow(self, position, value):
         idFirst = position.row()
-
         for tIndex in range(pointer.LINE_COUNT):
             if self.elements_[tIndex * pointer.ROW_COUNT + idFirst].value() == value:
                 # La valeur est déja en place

@@ -46,6 +46,11 @@ class outputs(object):
         # Par défaut pas d'édition
         return False
 
+    # Edition de la grille
+    # à surcharger
+    def edit(self, elements):
+        return False        # Rien n'a été modifié
+
     # Affichage de toute la matrice
     #  à surcharger
     def draw(self, elements):

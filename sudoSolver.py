@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.11"
+CURRENT_VERSION = "0.1.12"
 
 # Options de la ligne de commandes
 #
@@ -132,7 +132,7 @@ print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- vers
 
 try:
     solver = sudoku(drawFreq, consoleMode)
-    solver.loadFromFile(fileName, False == editMode)
+    solver.load(fileName, False == editMode)
     
     if editMode:
         if False == solver.allowEdition():

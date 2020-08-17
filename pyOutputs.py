@@ -89,6 +89,12 @@ class pyOutputs(outputs):
     #
     def allowEdition(self):
         return True
+
+    # Edition de la grille
+    #
+    def edit(self, elements):
+        # Ok
+        return True
    
     # En attente de l'appui d'une touche
     #
