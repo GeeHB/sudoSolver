@@ -37,6 +37,7 @@ class sudoku(object):
 
     # Données membres
     #
+    fileName_ = ""          # Nom du fichier courant
     elements_ = []          # Les "cases" de la grille
     outputs_ = None         # Affichage
 
@@ -45,18 +46,30 @@ class sudoku(object):
 
     # Construction
     #
-    def __init__(self, detailsRatio = 0):
+    def __init__(self, detailsRatio = 0, consoleMode = False):
 
-        # Gestion des affichage
-        try:
-            #from cursesOutputs import cursesOutputs
-            #self.outputs_ = cursesOutputs()
-            from pyOutputs import pyOutputs
-            self.outputs_ = pyOutputs()
-        except ModuleNotFoundError:
-            print("Le module CURSES n'a pu être importé. Les affichages seront effectués en mode console")
-        except sudokuError as e:
-            print(e)
+        # Gestion des affichages
+        #
+
+        # En mode graphique ?
+        if False == consoleMode:
+            try:
+                from pyOutputs import pyOutputs
+                self.outputs_ = pyOutputs()
+            except ModuleNotFoundError:
+                print("PYGame n'est pas installé. Les affichages seront effectués en mode console")
+            except sudokuError as e:
+                print(e)
+
+        # ... sinon en mode console
+        if None == self.outputs_:
+            try:
+                from cursesOutputs import cursesOutputs
+                self.outputs_ = cursesOutputs()
+            except ModuleNotFoundError:
+                print("(n)Curses n'est pas installé. Les affichages seront effectués en mode console simple")
+            except sudokuError as e:
+                print(e)
              
         # Le gestionnaire n'a pu être crée => utilisation de la console
         if None == self.outputs_:
@@ -69,6 +82,11 @@ class sudoku(object):
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
+    # Peut-on éditer une grille ?
+    #
+    def allowEdition(self):
+        return False if None == self.outputs_ else self.outputs_.allowEdition()
+
     # Attente d'un évènement clavier
     #
     def waitKeyDown(self):
@@ -88,16 +106,25 @@ class sudoku(object):
 
     # Lecture d'un fichier d'archive
     #
-    def loadFromFile(self, fileName):
+    def loadFromFile(self, fileName, mustExist):
         if None == fileName or 0 == len(fileName):
             # ???
             raise sudokuError("Pas de nom de fichier")
     
+        self.fileName_ = fileName
+        
+        # On essaye d'ouvir le fichier
+        #
         try:
             file = open(fileName)
         except FileNotFoundError:
-           # Le fichier n'existe pas !
-           raise sudokuError("Le fichier '" + fileName + "' n'existe pas")
+            # Le fichier n'existe pas !
+            if True == mustExist:
+                # Il doit être présent => erreur bloquante
+                raise sudokuError("Le fichier '" + fileName + "' n'existe pas")
+            else:
+                # Le fichier n'a pas besoin d'exister
+                return
             
         # Un pointeur !
         pt = pointer(gameMode = False)
@@ -156,6 +183,11 @@ class sudoku(object):
         # Chargement terminé
         file.close()
 
+    # Edition de la grille
+    #
+    def edit(self):
+        pass
+    
     # Résolution de la grille
     #
     def resolve(self):

@@ -15,7 +15,6 @@
 
 from pointer import pointer
 
-
 #
 # outputs - Affichage de la grille de Sudoku 
 #

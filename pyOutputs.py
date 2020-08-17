@@ -54,8 +54,8 @@ class pyOutputs(outputs):
     #
     win_            = None     # "Fenêtre" d'affichage
     
-    winWidth_       = 0        # Dimensions de la fenêtre
-    winHeight_      = 0
+    width_          = 0        # Dimensions de la fenêtre
+    height_         = 0
     squareWidth_    = 0        # Dimensions intérieures d'un élément
     textOffset_     = 0
 
@@ -73,18 +73,23 @@ class pyOutputs(outputs):
             raise sudokuError("Erreur - L'initialisation de pygame a retourné " + str(rets[1]) + " erreur(s)")
 
         # Dimensions
-        self.winWidth_ = pointer.ROW_COUNT * SQUARE_SIDE + 2 * DELTA_X
-        self.winHeight_ = pointer.LINE_COUNT * SQUARE_SIDE + 2 * DELTA_Y
+        self.width_ = pointer.ROW_COUNT * SQUARE_SIDE + 2 * DELTA_X
+        self.height_ = pointer.LINE_COUNT * SQUARE_SIDE + 2 * DELTA_Y
         self.squareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_WIDTH
         self.textOffset_ = (SQUARE_SIDE - FONT_SIZE) / 2
         
         # Création de la fenêtre
-        self.win_ = pygame.display.set_mode((self.winWidth_, self.winHeight_), pygame.RESIZABLE)
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
         pygame.display.set_caption('sudoSolver')
 
         # On affiche les bordures
         self._drawBorders()
 
+    # Accepte l'édition ?
+    #
+    def allowEdition(self):
+        return True
+   
     # En attente de l'appui d'une touche
     #
     def waitForKeyboardInput(self):
@@ -92,13 +97,6 @@ class pyOutputs(outputs):
         event = pygame.event.wait()
         while not event.type == pygame.KEYDOWN:
             event = pygame.event.wait()
-
-        """
-        # Evènement en haut de la pile
-        evt = pygame.event.poll()
-        while not evt.type == pygame.KEYDOWN:
-            evt = pygame.event.poll()
-        """
 
     # Affichage de toute la matrice
     #
@@ -132,7 +130,7 @@ class pyOutputs(outputs):
     def _drawBorders(self):
         
         # Le fond de la fenêtre
-        pygame.draw.rect(self.win_, DEF_BK_COLOUR, (0, 0, self.winWidth_, self.winHeight_))
+        pygame.draw.rect(self.win_, DEF_BK_COLOUR, (0, 0, self.width_, self.height_))
         
         # Les "petites" bordures ...
         #
