@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.12"
+CURRENT_VERSION = "0.1.13"
 
 # Options de la ligne de commandes
 #
@@ -43,10 +43,10 @@ CMD_OPTION_DETAILS = "d"         # Niveau de détail (0 = aucun)
 #
 def _usage(color):
     print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]))
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SRC + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Résolution d'un Sudoku. Le fichier {srcName} contient la grille à résoudre.")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {destName} ", formatAttr=[textAttribute.FONCE]), ": Lancement en mode édition. Le fichier {destName} est crée ou modifié")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SRC + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Résolution d'un Sudoku. Le fichier {srcName} contient la grille à résoudre")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {destName} ", formatAttr=[textAttribute.FONCE]), ": Lancement en mode édition. Le fichier {destName} sera crée ou modifié")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Affichage en mode console (term ou nCurses si disponible)")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Fréqeunce d'affiche des grilles en cours de résolution (0 = aucun, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Fréquence d'affichage des grilles lors de la résolution (0 = aucun, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
 
 #
 # Point d'entrée de l'application
@@ -150,6 +150,9 @@ try:
 
         # C'est parti
         solver.resolve()
+
+        # Affichage de la grille terminée
+        solver.showGrid()    
 
         print("Appuyez sur entrée pour terminer")
         solver.waitKeyDown()

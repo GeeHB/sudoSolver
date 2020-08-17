@@ -235,7 +235,7 @@ class sudoku(object):
             self._resolve()
         except reachedEndOfList:
             # Terminé avec succès
-            self.close()
+            #self.close()
             return True
         
         # ???
@@ -327,7 +327,7 @@ class sudoku(object):
                     return False
             tIndex+=pointer.ROW_COUNT
 
-        # valeur non-trouvée => ok
+        # Valeur non-trouvée => ok
         return True
 
     # Recherche du premier emplacement vide en avant

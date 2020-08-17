@@ -24,6 +24,17 @@ class outputs(object):
     # Constantes publiques
     #
 
+    # Touches pour les déplacements et les éditions
+    #
+    MOVE_LEFT           = 1     # Déplacement dans la grille
+    MOVE_RIGHT          = 2
+    
+    VALUE_DEC           = 3     # Changement de la valeur de la case
+    VALUE_INC           = 4
+
+    EDIT_CANCEL         = 5     # Annulation des modifications
+    EDIT_QUIT_AND_SAVE  = 6     # Fin des modif. et enregistrement
+
     # Données membres
     #
 
@@ -55,6 +66,11 @@ class outputs(object):
     #  à surcharger
     def draw(self, elements):
        pass
+
+    # Affichage d'un élément de la matrice
+    # à surcharger
+    def drawSingleElement(self, row, line, value, bold, bkColour, txtColour):
+        pass
 
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #

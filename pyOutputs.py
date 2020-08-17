@@ -36,9 +36,12 @@ EXT_BORDER_WIDTH    = 3     # Largeur / épaisseur de la bordure extérieure
 
 #  Quelques couleurs
 #
-DEF_BORDER_COLOUR   = (0,0,0)
-DEF_BK_COLOUR       = (230, 230, 255)
-DEF_TXT_COLOR       = (64, 64, 64)
+BORDER_COLOUR   = (0,0,0)
+BK_COLOUR       = (230, 230, 255)
+TXT_COLOUR      = (64, 64, 64)
+
+SEL_BK_COLOUR   = (50, 50, 255)
+SEL_TXT_COLOUR  = (255, 255, 255)
 
 # Texte
 #
@@ -93,6 +96,31 @@ class pyOutputs(outputs):
     # Edition de la grille
     #
     def edit(self, elements):
+        cont = True
+        position = pointer(gameMode=False)
+        prev = None
+        
+        while cont:
+            # Effacement de l'ancienne position
+            if not None == prev:
+                self.drawSingleElement(prev.row(), prev.line(), elements[prev.index()].value(), True, BK_COLOUR, TXT_COLOUR)
+            
+            # Affichage de la nouvelle valeur
+            self.drawSingleElement(position.row(), position.line(), elements[position.index()].value(), True, SEL_BK_COLOUR, SEL_TXT_COLOUR)
+            prev = position
+
+            # Analyse du clavier
+            event = self.waitForKeyboardInput()
+            if event == pygame.K_LEFT:
+                position -= 1
+            else:
+                if event == pygame.K_RIGHT:
+                    position += 1
+                else:
+                    if event == pygame.K_q:
+                        cont = False
+            
+
         # Ok
         return True
    
@@ -103,6 +131,7 @@ class pyOutputs(outputs):
         event = pygame.event.wait()
         while not event.type == pygame.KEYDOWN:
             event = pygame.event.wait()
+        return event.key
 
     # Affichage de toute la matrice
     #
@@ -114,12 +143,29 @@ class pyOutputs(outputs):
                 
                 # Elément à afficher
                 currentElement = elements[position.index()]
-                self._drawSingleElement(row, line, currentElement.value(), currentElement.isOriginal())
+                self.drawSingleElement(row, line, currentElement.value(), currentElement.isOriginal(), BK_COLOUR, TXT_COLOUR)
 
                 # on avance ...
                 position+=1
 
         pygame.display.update()
+
+    # Affichage d'un élément de la matrice
+    #
+    def drawSingleElement(self, row, line, value, bold, bkColour, txtColour):
+        
+        x = DELTA_X + row * SQUARE_SIDE + EXT_BORDER_WIDTH
+        y = DELTA_Y + line * SQUARE_SIDE + EXT_BORDER_WIDTH
+        
+        # Le fond
+        pygame.draw.rect(self.win_, bkColour, (x, y, self.squareWidth_, self.squareWidth_))
+
+        # La valeur si non nulle
+        if not None == value:
+            font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+            if bold : font.set_bold(True)
+            label = font.render(str(value), 1, txtColour)
+            self.win_.blit(label, (x + self.textOffset_, y + self.textOffset_))
 
     # Fin des affichages
     #
@@ -136,7 +182,7 @@ class pyOutputs(outputs):
     def _drawBorders(self):
         
         # Le fond de la fenêtre
-        pygame.draw.rect(self.win_, DEF_BK_COLOUR, (0, 0, self.width_, self.height_))
+        pygame.draw.rect(self.win_, BK_COLOUR, (0, 0, self.width_, self.height_))
         
         # Les "petites" bordures ...
         #
@@ -144,8 +190,8 @@ class pyOutputs(outputs):
             for row in range(pointer.ROW_COUNT):
                 x = DELTA_X + row * SQUARE_SIDE
                 y = DELTA_Y + line * SQUARE_SIDE
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x, y), (x, y + SQUARE_SIDE))
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x, y + SQUARE_SIDE), (x + SQUARE_SIDE, y + SQUARE_SIDE))
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y), (x, y + SQUARE_SIDE))
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y + SQUARE_SIDE), (x + SQUARE_SIDE, y + SQUARE_SIDE))
 
         # ... puis les bordures extérieures
         #
@@ -154,35 +200,17 @@ class pyOutputs(outputs):
             for row in range(3):
                 x = DELTA_X + row * lSquare
                 y = DELTA_Y + line * lSquare
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, DEF_BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
 
         pygame.display.update()
-
-    # Affichage d'un élément de la matrice
-    #
-    def _drawSingleElement(self, row, line, value, bold = False, colour = DEF_BK_COLOUR):
-        
-        x = DELTA_X + row * SQUARE_SIDE + EXT_BORDER_WIDTH
-        y = DELTA_Y + line * SQUARE_SIDE + EXT_BORDER_WIDTH
-        
-        # Le fond
-        pygame.draw.rect(self.win_, colour, (x, y, self.squareWidth_, self.squareWidth_))
-
-        # La valeur si non nulle
-        if not None == value:
-            font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-            if bold : font.set_bold(True)
-            label = font.render(str(value), 1, DEF_TXT_COLOR)
-            self.win_.blit(label, (x + self.textOffset_, y + self.textOffset_))
         
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #  
     def _update(self, elements, limit):
         # On réaffiche toute la grille ...
-        if True == self.drawDetails_:
-            self.draw(elements) 
+        self.draw(elements) 
 
  # EOF
