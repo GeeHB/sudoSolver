@@ -26,14 +26,25 @@ class outputs(object):
 
     # Touches pour les déplacements et les éditions
     #
-    MOVE_LEFT           = 1     # Déplacement dans la grille
-    MOVE_RIGHT          = 2
+    MOVE_LEFT           = "s"     # Déplacement dans la grille
+    MOVE_RIGHT          = "f"
+    MOVE_UP             = "e"
+    MOVE_DOWN           = "x"
     
-    VALUE_DEC           = 3     # Changement de la valeur de la case
-    VALUE_INC           = 4
+    VALUE_DEC           = "+"     # Changement de la valeur de la case
+    VALUE_INC           = "-"
 
-    EDIT_CANCEL         = 5     # Annulation des modifications
-    EDIT_QUIT_AND_SAVE  = 6     # Fin des modif. et enregistrement
+    EDIT_CANCEL         = "q"    # Annulation des modifications
+    EDIT_QUIT_AND_SAVE  = "w"    # Fin des modif. et enregistrement
+
+    #  Quelques couleurs
+    #
+    BORDER_COLOUR   = (0,0,0)
+    BK_COLOUR       = (230, 230, 255)
+    TXT_COLOUR      = (64, 64, 64)
+
+    SEL_BK_COLOUR   = (50, 50, 255)
+    SEL_TXT_COLOUR  = (255, 255, 255)
 
     # Données membres
     #
@@ -57,11 +68,6 @@ class outputs(object):
         # Par défaut pas d'édition
         return False
 
-    # Edition de la grille
-    # à surcharger
-    def edit(self, elements):
-        return False        # Rien n'a été modifié
-
     # Affichage de toute la matrice
     #  à surcharger
     def draw(self, elements):
@@ -72,9 +78,14 @@ class outputs(object):
     def drawSingleElement(self, row, line, value, bold, bkColour, txtColour):
         pass
 
+    # Mise à jour de l'affichage
+    # à surcharger
+    def update(self):
+        pass
+
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #
-    def update(self, elements, limit):
+    def updateGrid(self, elements, limit):
         
         if self.detailsRatio_ > 0 :
             # Mise à jour de l'affichage ?

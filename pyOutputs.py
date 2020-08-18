@@ -34,15 +34,6 @@ DELTA_Y             = 10
 
 EXT_BORDER_WIDTH    = 3     # Largeur / épaisseur de la bordure extérieure
 
-#  Quelques couleurs
-#
-BORDER_COLOUR   = (0,0,0)
-BK_COLOUR       = (230, 230, 255)
-TXT_COLOUR      = (64, 64, 64)
-
-SEL_BK_COLOUR   = (50, 50, 255)
-SEL_TXT_COLOUR  = (255, 255, 255)
-
 # Texte
 #
 FONT_NAME   = 'Helvetica'
@@ -53,6 +44,19 @@ FONT_SIZE   = 45
 #
 class pyOutputs(outputs):
 
+    # Touches pour les déplacements et les éditions
+    #
+    MOVE_LEFT           = pygame.K_LEFT
+    MOVE_RIGHT          = pygame.K_RIGHT
+    MOVE_UP             = pygame.K_UP
+    MOVE_DOWN           = pygame.K_DOWN
+    
+    VALUE_DEC           = pygame.K_PLUS     # Changement de la valeur de la case
+    VALUE_INC           = pygame.K_MINUS
+
+    EDIT_CANCEL         = pygame.K_ESCAPE   # Annulation des modifications
+    EDIT_QUIT_AND_SAVE  = pygame.K_RETURN   # Fin des modif. et enregistrement
+    
     # Données membres
     #
     win_            = None     # "Fenêtre" d'affichage
@@ -92,37 +96,6 @@ class pyOutputs(outputs):
     #
     def allowEdition(self):
         return True
-
-    # Edition de la grille
-    #
-    def edit(self, elements):
-        cont = True
-        position = pointer(gameMode=False)
-        prev = None
-        
-        while cont:
-            # Effacement de l'ancienne position
-            if not None == prev:
-                self.drawSingleElement(prev.row(), prev.line(), elements[prev.index()].value(), True, BK_COLOUR, TXT_COLOUR)
-            
-            # Affichage de la nouvelle valeur
-            self.drawSingleElement(position.row(), position.line(), elements[position.index()].value(), True, SEL_BK_COLOUR, SEL_TXT_COLOUR)
-            prev = position
-
-            # Analyse du clavier
-            event = self.waitForKeyboardInput()
-            if event == pygame.K_LEFT:
-                position -= 1
-            else:
-                if event == pygame.K_RIGHT:
-                    position += 1
-                else:
-                    if event == pygame.K_q:
-                        cont = False
-            
-
-        # Ok
-        return True
    
     # En attente de l'appui d'une touche
     #
@@ -143,7 +116,7 @@ class pyOutputs(outputs):
                 
                 # Elément à afficher
                 currentElement = elements[position.index()]
-                self.drawSingleElement(row, line, currentElement.value(), currentElement.isOriginal(), BK_COLOUR, TXT_COLOUR)
+                self.drawSingleElement(row, line, currentElement.value(), currentElement.isOriginal(), self.BK_COLOUR, self.TXT_COLOUR)
 
                 # on avance ...
                 position+=1
@@ -167,6 +140,11 @@ class pyOutputs(outputs):
             label = font.render(str(value), 1, txtColour)
             self.win_.blit(label, (x + self.textOffset_, y + self.textOffset_))
 
+    # Mise à jour de l'affichage
+    #
+    def update(self):
+        pygame.display.update()
+    
     # Fin des affichages
     #
     def close(self):
@@ -182,7 +160,7 @@ class pyOutputs(outputs):
     def _drawBorders(self):
         
         # Le fond de la fenêtre
-        pygame.draw.rect(self.win_, BK_COLOUR, (0, 0, self.width_, self.height_))
+        pygame.draw.rect(self.win_, self.BK_COLOUR, (0, 0, self.width_, self.height_))
         
         # Les "petites" bordures ...
         #
@@ -190,8 +168,8 @@ class pyOutputs(outputs):
             for row in range(pointer.ROW_COUNT):
                 x = DELTA_X + row * SQUARE_SIDE
                 y = DELTA_Y + line * SQUARE_SIDE
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y), (x, y + SQUARE_SIDE))
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y + SQUARE_SIDE), (x + SQUARE_SIDE, y + SQUARE_SIDE))
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + SQUARE_SIDE))
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + SQUARE_SIDE), (x + SQUARE_SIDE, y + SQUARE_SIDE))
 
         # ... puis les bordures extérieures
         #
@@ -200,10 +178,10 @@ class pyOutputs(outputs):
             for row in range(3):
                 x = DELTA_X + row * lSquare
                 y = DELTA_Y + line * lSquare
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
-                pygame.draw.line(self.win_, BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
+                pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
 
         pygame.display.update()
         

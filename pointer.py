@@ -53,12 +53,20 @@ class pointer(object):
         # Copie des paramètres
         #
         if not None == other:
-            # Construction par ceopie
-            self.index_ = other.index_
-            self.gameMode_ = other.gameMode_
+            # Construction par recopie
+            self.set(other)
         else:
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
+
+    # Copie
+    #
+    def set(self, other):
+        self.index_ = other.index_
+        self.row_ = other.row_
+        self.line_ = other.line_
+        self.squareID_ = other.squareID_
+        self.gameMode_ = other.gameMode_
 
     # Accès
     #
@@ -110,6 +118,20 @@ class pointer(object):
         # Calculs ...
         self._whereAmI()
         return self
+
+    # Changement de ligne
+    #
+    def upLine(self):
+        self.index_ -= self.ROW_COUNT
+        if self.index_ <= self.INDEX_MIN:
+            self.index_ = self.row_ + (self.ROW_COUNT - 1) * self.ROW_COUNT
+        self._whereAmI()
+
+    def downLine(self):
+        self.index_ += self.ROW_COUNT
+        if self.index_ >= self.INDEX_MAX:
+            self.index_ = self.row_
+        self._whereAmI()
 
     # Changement de coordonnées
     #

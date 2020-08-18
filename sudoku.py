@@ -124,6 +124,7 @@ class sudoku(object):
                 raise sudokuError("Le fichier '" + fileName + "' n'existe pas")
             else:
                 # Le fichier n'a pas besoin d'exister
+                print("Le fichier '" + fileName + "' n'existe pas")
                 return
             
         # Un pointeur !
@@ -221,12 +222,55 @@ class sudoku(object):
 
     # Edition de la grille
     #
+    #   Retourne un boolèen indiquant si la grille a été sauvegardée (ou pas)
+    #
     def edit(self):
-        if not None == self.outputs_ :
-            # Edition
-            if True == self.outputs_.edit(self.elements_):
-                # Mise à jour / enregistrement
-                self.save()
+        # L'édition est impossible
+        if None == self.outputs_ or False == self.outputs_.allowEdition():
+            return False
+
+        # Edition
+        #
+        valid = False
+        cont = True
+        position = pointer(gameMode=False)      # Position actuelle
+        prev = None                             # Position précédente (pour l'effacement)
+        
+        while cont:
+            # Effacement de l'ancienne position
+            if not None == prev:
+                self.outputs_.drawSingleElement(prev.row(), prev.line(), self.elements_[prev.index()].value(), True, self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
+            
+            # Affichage de la nouvelle valeur
+            self.outputs_.drawSingleElement(position.row(), position.line(), self.elements_[position.index()].value(), True, self.outputs_.SEL_BK_COLOUR, self.outputs_.SEL_TXT_COLOUR)
+            self.outputs_.update()
+            prev = pointer(position)
+
+            # Analyse du clavier
+            key = self.outputs_.waitForKeyboardInput()
+            if self.outputs_.MOVE_LEFT == key:
+                position -= 1
+            else:
+                if self.outputs_.MOVE_RIGHT == key:
+                    position += 1
+                else:
+                    if self.outputs_.MOVE_UP == key:
+                        position.upLine()
+                    else:
+                        if self.outputs_.MOVE_DOWN == key:
+                            position.downLine()
+                        else:
+                            if self.outputs_.EDIT_CANCEL == key:
+                                cont = False
+                            else:
+                                if self.outputs_.EDIT_QUIT_AND_SAVE == key:
+                                    cont = False
+                                    valid = True    # Enregistrement
+                        
+            
+        # Mise à jour / enregistrement
+        if True == valid :
+            self.save()
     
     # Résolution de la grille
     #
@@ -267,7 +311,7 @@ class sudoku(object):
                 position = self._previousPos(position)
 
                 # Mise à jour de l'affichage
-                self.outputs_.update(self.elements_, position)
+                self.outputs_.updateGrid(self.elements_, position)
 
                 # On repart de la valeur utilisée précédement (que l'on incrémentera au prochain passage)
                 candidate = self.elements_[position.index()].empty()
@@ -281,7 +325,7 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
 
                     # Affichage
-                    self.outputs_.update(self.elements_, position)
+                    self.outputs_.updateGrid(self.elements_, position)
 
                     # On avance jusqu'à la position vide suivante
                     position = self._findFirstEmptyPos(position)

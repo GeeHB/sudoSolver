@@ -90,13 +90,6 @@ class cursesOutputs(outputs):
         
         # Ne pas oublier de mettre à jour l'affichage !
         self.term_.refresh()
-
-    # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
-    #
-    def _update(self, elements, limit):
-        # On réaffiche toute la grille ...
-        if True == self.drawDetails_:
-            self.draw(elements)
     
     # Fin ...
     #

@@ -67,54 +67,60 @@ drawFreq = 0        # Pas d'affichage de la progression
 #
 parameters = cmdLineParser(CMD_OPTION_CHAR)
 
-if 0 == parameters.size():
-    showUsage = True
-else:
-    # Mode console ?
-    consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
+fileName = "/home/jhb/Nextcloud/dev/python/sudoSolver/grid3.txt"
+editMode = True
+test = True
 
-    # Résolution ?
-    index =  parameters.findAndRemoveOption(CMD_OPTION_SRC)
-    if not parameters.NO_INDEX == index:
-        # L'option doit être suivie du nom du fichier
-        try :
-            rets = parameters.parameterOrValue(index + 1)
-            if rets[1] == False : 
-                fileName = rets[0]
-        except IndexError:
-            # Pas de nom de fichier
-            showUsage = True
+if False == test:
+
+    if 0 == parameters.size():
+        showUsage = True
     else:
-        # Mode édition ?
-        index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
+        # Mode console ?
+        consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
+
+        # Résolution ?
+        index =  parameters.findAndRemoveOption(CMD_OPTION_SRC)
         if not parameters.NO_INDEX == index:
             # L'option doit être suivie du nom du fichier
             try :
                 rets = parameters.parameterOrValue(index + 1)
                 if rets[1] == False : 
                     fileName = rets[0]
-                    editMode = True
             except IndexError:
                 # Pas de nom de fichier
                 showUsage = True
-    
-    # Niveau de détails
-    index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
-    if not parameters.NO_INDEX == index:
-        # L'option doit être suivie d'une valeur numérique
-        try :
-            rets = parameters.parameterOrValue(index + 1)
-            if rets[1] == False : 
-                drawFreq = int(rets[0])
-                drawFreq = drawFreq if drawFreq > 0 else 0  # Dans un intervalle gérable
-        except IndexError:
-            # Pas de valeur
-            showUsage = True
+        else:
+            # Mode édition ?
+            index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
+            if not parameters.NO_INDEX == index:
+                # L'option doit être suivie du nom du fichier
+                try :
+                    rets = parameters.parameterOrValue(index + 1)
+                    if rets[1] == False : 
+                        fileName = rets[0]
+                        editMode = True
+                except IndexError:
+                    # Pas de nom de fichier
+                    showUsage = True
+        
+        # Niveau de détails
+        index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
+        if not parameters.NO_INDEX == index:
+            # L'option doit être suivie d'une valeur numérique
+            try :
+                rets = parameters.parameterOrValue(index + 1)
+                if rets[1] == False : 
+                    drawFreq = int(rets[0])
+                    drawFreq = drawFreq if drawFreq > 0 else 0  # Dans un intervalle gérable
+            except IndexError:
+                # Pas de valeur
+                showUsage = True
 
-# Il ne devrait plus y avoir d'options
-if parameters.options() > 0 or True == showUsage or 0 == len(fileName):
-    _usage(color)
-    exit(1)
+    # Il ne devrait plus y avoir d'options
+    if parameters.options() > 0 or True == showUsage or 0 == len(fileName):
+        _usage(color)
+        exit(1)
 
 """
 if True == editMode:
@@ -134,6 +140,9 @@ try:
     solver = sudoku(drawFreq, consoleMode)
     solver.load(fileName, False == editMode)
     
+    # Affichage de la grille d'origine
+    solver.showGrid()
+
     if editMode:
         if False == solver.allowEdition():
             print("Ce mode d'affichage ne permet pas l'édition des grilles")
@@ -141,10 +150,7 @@ try:
             exit(1)
 
         solver.edit()
-    else:   
-        # Affichage de la grille d'origine
-        solver.showGrid()    
-        
+    else:       
         print("Appuyez sur entrée pour lancer la résolution")
         solver.waitKeyDown()
 
