@@ -9,9 +9,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   x.x.x
+#   Version     :   0.1.16
 #
-#   Date        :   8 aout 2020
+#   Date        :   19 aout 2020
 #
 
 from element import element, elementStatus

@@ -10,9 +10,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   x.x.x
+#   Version     :   0.1.16
 #
-#   Date        :   8 aout 2020
+#   Date        :   19 aout 2020
 #
 
 import math
@@ -154,7 +154,7 @@ class pointer(object):
         self._whereAmI()
 
     #
-    # Changement de valeu
+    # Changement de valeur
     #
 
     def incValue(self, value):
@@ -176,7 +176,7 @@ class pointer(object):
         self.line_ = math.floor(self.index_ / 9)
         self.row_ = self.index_ - 9 * self.line_
 
-        # Indice du "petit" carré dans lequel je suis me trouve
+        # Indice du "petit" carré dans lequel je me trouve
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
 
 # EOF

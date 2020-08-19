@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   x.x.x
+#   Version     :   0.1.16
 #
-#   Date        :   8 aout 2020
+#   Date        :   19 aout 2020
 #
 
 from cmdLineParser import cmdLineParser
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.15"
+CURRENT_VERSION = "0.1.16"
 
 # Options de la ligne de commandes
 #
@@ -67,60 +67,54 @@ drawFreq = 0        # Pas d'affichage de la progression
 #
 parameters = cmdLineParser(CMD_OPTION_CHAR)
 
-fileName = "/home/jhb/Nextcloud/dev/python/sudoSolver/grid3.txt"
-editMode = True
-test = True
+if 0 == parameters.size():
+    showUsage = True
+else:
+    # Mode console ?
+    consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
 
-if False == test:
-
-    if 0 == parameters.size():
-        showUsage = True
+    # Résolution ?
+    index =  parameters.findAndRemoveOption(CMD_OPTION_SRC)
+    if not parameters.NO_INDEX == index:
+        # L'option doit être suivie du nom du fichier
+        try :
+            rets = parameters.parameterOrValue(index + 1)
+            if rets[1] == False : 
+                fileName = rets[0]
+        except IndexError:
+            # Pas de nom de fichier
+            showUsage = True
     else:
-        # Mode console ?
-        consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
-
-        # Résolution ?
-        index =  parameters.findAndRemoveOption(CMD_OPTION_SRC)
+        # Mode édition ?
+        index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
         if not parameters.NO_INDEX == index:
             # L'option doit être suivie du nom du fichier
             try :
                 rets = parameters.parameterOrValue(index + 1)
                 if rets[1] == False : 
                     fileName = rets[0]
+                    editMode = True
             except IndexError:
                 # Pas de nom de fichier
                 showUsage = True
-        else:
-            # Mode édition ?
-            index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
-            if not parameters.NO_INDEX == index:
-                # L'option doit être suivie du nom du fichier
-                try :
-                    rets = parameters.parameterOrValue(index + 1)
-                    if rets[1] == False : 
-                        fileName = rets[0]
-                        editMode = True
-                except IndexError:
-                    # Pas de nom de fichier
-                    showUsage = True
-        
-        # Niveau de détails
-        index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
-        if not parameters.NO_INDEX == index:
-            # L'option doit être suivie d'une valeur numérique
-            try :
-                rets = parameters.parameterOrValue(index + 1)
-                if rets[1] == False : 
-                    drawFreq = int(rets[0])
-                    drawFreq = drawFreq if drawFreq > 0 else 0  # Dans un intervalle gérable
-            except IndexError:
-                # Pas de valeur
-                showUsage = True
+    
+    # Niveau de détails
+    index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
+    if not parameters.NO_INDEX == index:
+        # L'option doit être suivie d'une valeur numérique
+        try :
+            rets = parameters.parameterOrValue(index + 1)
+            if rets[1] == False : 
+                drawFreq = int(rets[0])
+                drawFreq = drawFreq if drawFreq > 0 else 0  # Dans un intervalle gérable
+        except IndexError:
+            # Pas de valeur
+            showUsage = True
 
-    # Il ne devrait plus y avoir d'options
-    if parameters.options() > 0 or True == showUsage or 0 == len(fileName):
-        _usage(color)
-        exit(1)
+# Il ne devrait plus y avoir d'options
+if parameters.options() > 0 or True == showUsage or 0 == len(fileName):
+    _usage(color)
+    exit(1)
 
 """
 if True == editMode:
