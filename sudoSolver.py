@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.13"
+CURRENT_VERSION = "0.1.15"
 
 # Options de la ligne de commandes
 #

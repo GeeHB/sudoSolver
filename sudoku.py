@@ -198,9 +198,10 @@ class sudoku(object):
             
             # Parcours de la grille
             for lIndex in range(pointer.LINE_COUNT) :
+                line = ""
                 for _ in range(pointer.ROW_COUNT):
                     el = self.elements_[pt.index()]
-                    line+= str(0 if el.isEmpty() else el.value())
+                    line+=str(0 if el.isEmpty() else el.value())
                     line+=VALUE_SEPARATOR
 
                     # Valeur suivante
@@ -213,7 +214,6 @@ class sudoku(object):
                 
                 # Ecriture de la ligne
                 file.write(line)
-                line = ""
             
             # Terminé
             file.close()
@@ -247,27 +247,58 @@ class sudoku(object):
             prev = pointer(position)
 
             # Analyse du clavier
+            #
             key = self.outputs_.waitForKeyboardInput()
+            
+            # Position du curseur
+            #
             if self.outputs_.MOVE_LEFT == key:
-                position -= 1
+                #position -= 1
+                position.decRow()
             else:
                 if self.outputs_.MOVE_RIGHT == key:
-                    position += 1
+                    #position += 1
+                    position.incRow()
                 else:
                     if self.outputs_.MOVE_UP == key:
-                        position.upLine()
+                        position.decLine()
                     else:
                         if self.outputs_.MOVE_DOWN == key:
-                            position.downLine()
+                            position.incLine()
                         else:
-                            if self.outputs_.EDIT_CANCEL == key:
-                                cont = False
+                            # Changement de la valeur de la case
+                            #
+                            if self.outputs_.VALUE_DEC == key:
+                                val = self.elements_[position.index()].value()
+                                if None == val : 
+                                    val = 0
+                                
+                                newVal = self._findPreviousValue(position, val)
+                                if not newVal == val:
+                                    # Mise à jour de la valeur
+                                    self.elements_[position.index()].setValue(newVal, True, True)
+                                    prev = None
                             else:
-                                if self.outputs_.EDIT_QUIT_AND_SAVE == key:
-                                    cont = False
-                                    valid = True    # Enregistrement
-                        
-            
+                                if self.outputs_.VALUE_INC == key:
+                                    val = self.elements_[position.index()].value()
+                                    if None == val : 
+                                        val = 0
+                                    
+                                    newVal = self._findNextValue(position, val)
+                                    if not newVal == val:
+                                        # Mise à jour de la valeur
+                                        self.elements_[position.index()].setValue(newVal, True, True)
+                                        prev = None
+                                else:
+                                    # Annulation
+                                    if self.outputs_.EDIT_CANCEL == key:
+                                        cont = False
+                                    else:
+                                        # Enregistrement
+                                        if self.outputs_.EDIT_QUIT_AND_SAVE == key:
+                                            cont = False
+                                            valid = True
+                                
         # Mise à jour / enregistrement
         if True == valid :
             self.save()
@@ -409,5 +440,40 @@ class sudoku(object):
         
         # Terminé
         return newPos
+
+    # Recherche de la première valeur supérieure possible pour la case donnée
+    #
+    #   Retourne la valeur recherchée ou la valeur initiale (seule valeur possible)
+    #
+    def _findNextValue(self, position, val):
+        nextVal = position.incValue(val)
+        while not val == nextVal:
+            if self._checkValue(position, nextVal):
+                # Trouvée !
+                return nextVal
+            
+            # La prochaine peut-être ?
+            nextVal = position.incValue(nextVal)
+
+        
+        # Pas d'autre valeur possible
+        return nextVal
+
+    # Recherche de la première valeur infèrieure possible pour la case donnée
+    #
+    #   Retourne la valeur recherchée ou la valeur initiale (seule valeur possible)
+    #
+    def _findPreviousValue(self, position, val):
+        nextVal = position.decValue(val)
+        while not val == nextVal:
+            if self._checkValue(position, nextVal):
+                # Trouvée !
+                return nextVal
+            
+            # La prochaine peut-être ?
+            nextVal = position.decValue(nextVal)
+               
+        # Pas d'autre valeur possible
+        return nextVal
 
 # EOF

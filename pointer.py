@@ -119,19 +119,55 @@ class pointer(object):
         self._whereAmI()
         return self
 
+    # Changement de colonne
+    #
+    def decRow(self, dec = 1):
+        row = self.row_ - dec
+        if row < 0:
+            # Sortie par la gauche => on reépparait à droite
+            self.index_ = (1 + self.line_ ) * self.ROW_COUNT + row 
+        else:
+            self.index_ -= dec
+        self._whereAmI()
+
+    def incRow(self, inc = 1):
+        row = self.row_ + inc
+        if row >= self.ROW_COUNT:
+            # Sortie par la droite => on reépparait à gauche
+            self.index_ = (self.line_ - 1) * self.ROW_COUNT + row 
+        else:
+            self.index_ += inc
+        self._whereAmI()
+    
     # Changement de ligne
     #
-    def upLine(self):
-        self.index_ -= self.ROW_COUNT
+    def decLine(self, dec = 1):
+        self.index_ -= self.ROW_COUNT * dec
         if self.index_ <= self.INDEX_MIN:
             self.index_ = self.row_ + (self.ROW_COUNT - 1) * self.ROW_COUNT
         self._whereAmI()
 
-    def downLine(self):
-        self.index_ += self.ROW_COUNT
+    def incLine(self, inc = 1):
+        self.index_ += self.ROW_COUNT * inc
         if self.index_ >= self.INDEX_MAX:
             self.index_ = self.row_
         self._whereAmI()
+
+    #
+    # Changement de valeu
+    #
+
+    def incValue(self, value):
+        newVal = value + 1
+        return (self.VALUE_MIN - 1) if newVal > self.VALUE_MAX else newVal
+
+    def decValue(self, value):  
+        newVal = value - 1
+        return self.VALUE_MAX if newVal < (self.VALUE_MIN - 1) else newVal
+
+    #
+    #   Méthodes à usage interne 
+    #
 
     # Changement de coordonnées
     #

@@ -51,8 +51,8 @@ class pyOutputs(outputs):
     MOVE_UP             = pygame.K_UP
     MOVE_DOWN           = pygame.K_DOWN
     
-    VALUE_DEC           = pygame.K_PLUS     # Changement de la valeur de la case
-    VALUE_INC           = pygame.K_MINUS
+    VALUE_DEC           = pygame.K_w     # Changement de la valeur de la case
+    VALUE_INC           = pygame.K_q
 
     EDIT_CANCEL         = pygame.K_ESCAPE   # Annulation des modifications
     EDIT_QUIT_AND_SAVE  = pygame.K_RETURN   # Fin des modif. et enregistrement

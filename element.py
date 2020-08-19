@@ -44,22 +44,27 @@ class element(object):
     #
     #   Paramètres :
     #           value : valeur numérique de la case (aucune vérification n'est effectuée)
-    #           originbal : la valeur est-elle originale ? Une valeur originale se sera pas modifiée
+    #           original : la valeur est-elle originale ? Une valeur originale se sera pas modifiée
     #
-    def setValue(self, value = None, original = False):
-        # La valeur doit-être modifiable
-        if not self.status_ and elementStatus.ORIGINAL:
-            # Mise à jour de la valeur
-            if not value == None:
-                self.value_ = value
-                self.status_ = elementStatus.SET    # J'ai une valeur
+    def setValue(self, value = None, original = False, editMode = False):
+        if False == editMode :
+            # La valeur doit-être modifiable
+            if not self.status_ and elementStatus.ORIGINAL:
+                # Mise à jour de la valeur
+                if not value == None:
+                    self.value_ = value
+                    self.status_ = elementStatus.SET    # J'ai une valeur
 
-                if True == original:
-                    self.status_ |= elementStatus.ORIGINAL
+                    if True == original:
+                        self.status_ |= elementStatus.ORIGINAL
 
-            else:
-                # Effacement de la valeur
-                self.status_ = elementStatus.EMPTY
+                else:
+                    # Effacement de la valeur
+                    self.status_ = elementStatus.EMPTY
+        else:
+            # En mode édition on fait ce que l'on veut ...
+            self.value_ = value
+            self.status_ = elementStatus.EMPTY if 0 == self.value_ else elementStatus.SET | elementStatus.ORIGINAL
 
     def value(self):
         return self.value_ if self.status_ & elementStatus.SET else None
