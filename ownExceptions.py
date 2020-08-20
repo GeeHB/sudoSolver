@@ -10,7 +10,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.17
+#   Version     :   0.1.18
 #
 #   Date        :   20 aout 2020
 #

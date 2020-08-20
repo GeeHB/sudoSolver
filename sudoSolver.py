@@ -8,7 +8,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.17
+#   Version     :   0.1.18
 #
 #   Date        :   20 aout 2020
 #
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.17"
+CURRENT_VERSION = "0.1.18"
 
 # Options de la ligne de commandes
 #
@@ -130,10 +130,21 @@ print("Mode console" if True == consoleMode else "Mode graphique")
 #
 print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- version", CURRENT_VERSION)
 
+solver = None
+
 try:
     solver = sudoku(drawFreq, consoleMode)
     solver.load(fileName, False == editMode)
+except sudokuError as e:
+    # Une erreur "Sudoku" => affichage du message
+    print(e)
+except IndexError:
+    # Généré lors du parse du fichier ...
+    print("Trop de lignes dans le fichier")
+except:
+    print("Erreur inconnue")
     
+try:
     # Affichage de la grille d'origine
     solver.showGrid()
 
@@ -168,9 +179,8 @@ except sudokuError as e:
     # Une erreur "Sudoku" => affichage du message
     print(e)
 except IndexError:
-    # Généré lors du parse du fichier ...
-    print("Trop de lignes dans le fichier")
-#except:
-#    print("Erreur inconnue")
+    print("La grille n'a pas de solution")
+except:
+    print("Erreur inconnue")
 
 # EOF

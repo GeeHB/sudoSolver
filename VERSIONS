@@ -1,3 +1,9 @@
+Version 0.1.18
+    * 20 aout 2020
+    + Corrections mineures
+        + Bug Melk dans l'éditeur lorsque pos = (0,0)
+        + cas des grilles impossibles
+
 Version 0.1.17
     * 20 aout 2020
     + Corrections mineures

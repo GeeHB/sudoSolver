@@ -10,7 +10,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.17
+#   Version     :   0.1.18
 #
 #   Date        :   20 aout 2020
 #
@@ -143,7 +143,7 @@ class pointer(object):
     #
     def decLine(self, dec = 1):
         self.index_ -= self.ROW_COUNT * dec
-        if self.index_ <= self.INDEX_MIN:
+        if self.index_ < self.INDEX_MIN:
             self.index_ = self.row_ + (self.ROW_COUNT - 1) * self.ROW_COUNT
         self._whereAmI()
 

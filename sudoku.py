@@ -9,7 +9,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.17
+#   Version     :   0.1.18
 #
 #   Date        :   20 aout 2020
 #
@@ -127,7 +127,7 @@ class sudoku(object):
                 raise sudokuError("Le fichier '" + fileName + "' n'existe pas")
             else:
                 # Le fichier n'a pas besoin d'exister
-                print("Le fichier '" + fileName + "' n'existe pas")
+                print("Le fichier '" + fileName + "' n'existe pas. Il sera crée")
                 return
             
         # Un pointeur !
@@ -322,9 +322,11 @@ class sudoku(object):
         except reachedEndOfList:
             # Terminé avec succès
             return (self.attempts_, time.time() - start)
-        except:
+        #except IndexError:
+        #    self.showGrid()
+        #except:
             # Une erreur (inconnue)
-            pass
+            #pass
         
         # ???
         return (0,0)
@@ -447,7 +449,7 @@ class sudoku(object):
         self.elements_[newPos.index()].empty()
         newPos -= 1
 
-        # On recule tant que la case est "originale" (ie. tant qu'elle en peut être modifiée)
+        # On recule tant que la case est "originale" (ie. tant qu'elle ne peut être modifiée)
         while self.elements_[newPos.index()].isOriginal():
             newPos -= 1
         
