@@ -9,10 +9,12 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.16
+#   Version     :   0.1.17
 #
-#   Date        :   19 aout 2020
+#   Date        :   20 aout 2020
 #
+
+import time
 
 from element import element, elementStatus
 from pointer import pointer
@@ -39,7 +41,8 @@ class sudoku(object):
     #
     fileName_ = ""          # Nom du fichier courant
     elements_ = []          # Les "cases" de la grille
-    outputs_ = None         # Affichage
+    outputs_ = None         # Affichages
+    attempts_ = 0           # #hyptothèses
 
     # Index des premiers éléments des "petits" carrés (rien ne sert de les calculer !!!)
     squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
@@ -305,17 +308,26 @@ class sudoku(object):
     
     # Résolution de la grille
     #
+    #   retourne le tuple (#essais, durée)
+    #
     def resolve(self):
+        
+        # Initialiisation des compteurs
+        self.attempts_ = 0
+        start = time.time()
+        
+        # C'est parti !
         try:
             self._resolve()
         except reachedEndOfList:
             # Terminé avec succès
-            #self.close()
-            return True
+            return (self.attempts_, time.time() - start)
+        except:
+            # Une erreur (inconnue)
+            pass
         
         # ???
-        self.close()
-        return False
+        return (0,0)
 
     #
     # Méthodes internes
@@ -351,6 +363,7 @@ class sudoku(object):
                 #
                 if True == self._checkValue(position, candidate):
                     # La valeur est acceptée (pour l'instant) !!!
+                    self.attempts_ += 1
 
                     # Je "pose" la valeur
                     self.elements_[position.index()].setValue(candidate)
@@ -423,7 +436,7 @@ class sudoku(object):
 
     # Retour à la position précédente (dernière modification) 
     #
-    #   Retourne un pointeur sur l'emplacement
+    #   Retourne un pointeur sur l'emplacement trouvé
     #   une exeception IndexError est levée lorsque
     #   l'on sort de la liste (ie. la grille est surement impossible)
     # 

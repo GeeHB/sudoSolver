@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.16
+#   Version     :   0.1.17
 #
-#   Date        :   19 aout 2020
+#   Date        :   20 aout 2020
 #
 
 from cmdLineParser import cmdLineParser
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.16"
+CURRENT_VERSION = "0.1.17"
 
 # Options de la ligne de commandes
 #
@@ -145,16 +145,20 @@ try:
 
         solver.edit()
     else:       
-        print("Appuyez sur entrée pour lancer la résolution")
+        print("Appuyez sur une touche pour lancer la résolution")
         solver.waitKeyDown()
 
-        # C'est parti
-        solver.resolve()
+        print("C'est parti ...")
+        attempts, duration = solver.resolve()
 
         # Affichage de la grille terminée
-        solver.showGrid()    
+        solver.showGrid()   
 
-        print("Appuyez sur entrée pour terminer")
+        # Quelques stats.
+        print("Durée de résolution : ", duration, " seconde(s)")
+        print("Tentatives : ", attempts) 
+
+        print("Appuyez sur une touche pour terminer")
         solver.waitKeyDown()
 
     # Fermeture des affichage

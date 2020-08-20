@@ -10,9 +10,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.16
+#   Version     :   0.1.17
 #
-#   Date        :   19 aout 2020
+#   Date        :   20 aout 2020
 #
 
 import math
@@ -43,7 +43,7 @@ class pointer(object):
     row_ = 0                        # Position dans la "matrice"
     line_ = 0
     
-    squareID_ = 0                    # Indice du "petit" rectangle
+    squareID_ = 0                   # Indice du "petit" rectangle
 
     gameMode_ = False               # En mode "jeu"
 
@@ -173,8 +173,15 @@ class pointer(object):
     #
     def _whereAmI(self):
         # Mes coordonnées
+        #
+
+        # V. math
         self.line_ = math.floor(self.index_ / 9)
         self.row_ = self.index_ - 9 * self.line_
+        
+        # V. 2
+        #self.row_ = int(self.index_ % self.ROW_COUNT)
+        #self.line_ = int((self.index_ - self.row_) / self.ROW_COUNT)
 
         # Indice du "petit" carré dans lequel je me trouve
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)

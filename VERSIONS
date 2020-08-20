@@ -1,3 +1,9 @@
+Version 0.1.17
+    * 20 aout 2020
+    + Corrections mineures
+        + Utilisation du module math plus rapide pour les calculs de conversion
+    + Ajout des stats (durée et nnombre de tentatives)
+
 Version 0.1.16
     * 19 aout 2020
     + Première version complète
