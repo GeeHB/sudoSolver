@@ -10,9 +10,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.18
+#   Version     :   0.1.19
 #
-#   Date        :   20 aout 2020
+#   Date        :   21 aout 2020
 #
 
 import math
@@ -149,7 +149,7 @@ class pointer(object):
 
     def incLine(self, inc = 1):
         self.index_ += self.ROW_COUNT * inc
-        if self.index_ >= self.INDEX_MAX:
+        if self.index_ > self.INDEX_MAX:
             self.index_ = self.row_
         self._whereAmI()
 

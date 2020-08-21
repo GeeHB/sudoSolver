@@ -8,9 +8,9 @@
 #                   Classe abstraite, base tous les affichages
 #   Remarque    :  
 #
-#   Version     :   0.1.18
+#   Version     :   0.1.19
 #
-#   Date        :   20 aout 2020
+#   Date        :   21 aout 2020
 #
 
 from pointer import pointer

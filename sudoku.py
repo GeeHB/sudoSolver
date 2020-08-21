@@ -5,13 +5,13 @@
 #   Auteur      :   JHB
 #
 #   Description :   Définition de l'objet :
-#                       - sudoku : "LE" jeu et solver de sudoku
+#                       - sudoku : "LA" grille de sudoku : édtion et/ou résolution
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.18
+#   Version     :   0.1.19
 #
-#   Date        :   20 aout 2020
+#   Date        :   21 aout 2020
 #
 
 import time
@@ -30,7 +30,7 @@ from consoleOutputs import consoleOutputs       # Windows et tous les autres OS
 VALUE_SEPARATOR = ","           # Séparateur de valeurs dans les fichiers
 
 #
-#   sudoku : Résolution du sudoku
+#   sudoku : REdition et/ou résolution du sudoku
 #
 #       Les "cases" sont enregistrées dans une liste, ligne après ligne.
 #       l'objet "pointer" permet de passer d'une position linéaire au tuple (x, y, "petite" grille") 
@@ -42,7 +42,9 @@ class sudoku(object):
     fileName_ = ""          # Nom du fichier courant
     elements_ = []          # Les "cases" de la grille
     outputs_ = None         # Affichages
+    
     attempts_ = 0           # #hyptothèses
+    start_ = 0              # "heure" de début de la résolution
 
     # Index des premiers éléments des "petits" carrés (rien ne sert de les calculer !!!)
     squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
@@ -308,25 +310,20 @@ class sudoku(object):
     
     # Résolution de la grille
     #
-    #   retourne le tuple (#essais, durée)
+    #   retourne le tuple (#essais, durée des traitements en s.)
     #
     def resolve(self):
         
         # Initialiisation des compteurs
         self.attempts_ = 0
-        start = time.time()
+        self.start_ = time.time()
         
         # C'est parti !
         try:
             self._resolve()
         except reachedEndOfList:
             # Terminé avec succès
-            return (self.attempts_, time.time() - start)
-        #except IndexError:
-        #    self.showGrid()
-        #except:
-            # Une erreur (inconnue)
-            #pass
+            return (self.attempts_, time.time() - self.start_) 
         
         # ???
         return (0,0)

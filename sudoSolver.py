@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.18
+#   Version     :   0.1.19
 #
-#   Date        :   20 aout 2020
+#   Date        :   21 aout 2020
 #
 
 from cmdLineParser import cmdLineParser
@@ -23,15 +23,17 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.18"
+CURRENT_VERSION = "0.1.19"
 
 # Options de la ligne de commandes
 #
 
 CMD_OPTION_CHAR = "-"            # Une option débute par ce caractère
 
-CMD_OPTION_SRC = "s"             # Résolution de la grille dont le fichier est passé en paramètres
+CMD_OPTION_SOLVE = "s"           # Résolution de la grille dont le fichier est passé en paramètres
 CMD_OPTION_EDIT = "e"            # Edition d'une (nouvelle) grille
+CMD_OPTION_EDIT_AND_SOLVE = "es"
+
 CMD_OPTION_CONSOLE = "c"         # Affichages en mode console (term ou nCurses ni dispo)
 CMD_OPTION_DETAILS = "d"         # Niveau de détail (0 = aucun)
 
@@ -43,8 +45,9 @@ CMD_OPTION_DETAILS = "d"         # Niveau de détail (0 = aucun)
 #
 def _usage(color):
     print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]))
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SRC + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Résolution d'un Sudoku. Le fichier {srcName} contient la grille à résoudre")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {destName} ", formatAttr=[textAttribute.FONCE]), ": Lancement en mode édition. Le fichier {destName} sera crée ou modifié")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Résolution d'un Sudoku. Le fichier {srcName} contient la grille à résoudre")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Lancement en mode édition. Le fichier {sudoName} sera crée ou modifié")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Edition et résolution d'une nouvelle grille. Le fichier {sudoName} sera crée ou modifié")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Affichage en mode console (term ou nCurses si disponible)")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Fréquence d'affichage des grilles lors de la résolution (0 = aucun, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
 
@@ -60,6 +63,7 @@ color = colorizer(True)
 showUsage = False
 consoleMode = False
 editMode = False
+solveMode = False
 fileName = ""
 drawFreq = 0        # Pas d'affichage de la progression
 
@@ -74,13 +78,14 @@ else:
     consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
 
     # Résolution ?
-    index =  parameters.findAndRemoveOption(CMD_OPTION_SRC)
+    index =  parameters.findAndRemoveOption(CMD_OPTION_SOLVE)
     if not parameters.NO_INDEX == index:
         # L'option doit être suivie du nom du fichier
         try :
             rets = parameters.parameterOrValue(index + 1)
             if rets[1] == False : 
                 fileName = rets[0]
+                solveMode = True
         except IndexError:
             # Pas de nom de fichier
             showUsage = True
@@ -97,6 +102,20 @@ else:
             except IndexError:
                 # Pas de nom de fichier
                 showUsage = True
+        else:
+            # Mode édition & résolution ?
+            index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT_AND_SOLVE)
+            if not parameters.NO_INDEX == index:
+                # L'option doit être suivie du nom du fichier
+                try :
+                    rets = parameters.parameterOrValue(index + 1)
+                    if rets[1] == False : 
+                        fileName = rets[0]
+                        editMode = True
+                        solveMode = True
+                except IndexError:
+                    # Pas de nom de fichier
+                    showUsage = True
     
     # Niveau de détails
     index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
@@ -116,22 +135,15 @@ if parameters.options() > 0 or True == showUsage or 0 == len(fileName):
     _usage(color)
     exit(1)
 
-"""
-if True == editMode:
-    print("Mode édition")
-else:
-    print("Mode résolution")
-
-print("Fichier :", fileName)
-print("Mode console" if True == consoleMode else "Mode graphique")
-"""
-
 # C'est parti
 #
 print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- version", CURRENT_VERSION)
 
+# Ma grille de Sudoku
 solver = None
 
+# Chargement
+#
 try:
     solver = sudoku(drawFreq, consoleMode)
     solver.load(fileName, False == editMode)
@@ -142,12 +154,15 @@ except IndexError:
     # Généré lors du parse du fichier ...
     print("Trop de lignes dans le fichier")
 except:
-    print("Erreur inconnue")
+    print("Erreur inconnue lors de la lecture de '" + fileName + "'")
     
+# Edition et/ou résolution
+#
 try:
     # Affichage de la grille d'origine
     solver.showGrid()
 
+    # Edition
     if editMode:
         if False == solver.allowEdition():
             print("Ce mode d'affichage ne permet pas l'édition des grilles")
@@ -155,9 +170,12 @@ try:
             exit(1)
 
         solver.edit()
-    else:       
-        print("Appuyez sur une touche pour lancer la résolution")
-        solver.waitKeyDown()
+    
+    # Résolution
+    if solveMode:       
+        if False == editMode:
+            print("Appuyez sur une touche pour lancer la résolution")
+            solver.waitKeyDown()
 
         print("C'est parti ...")
         attempts, duration = solver.resolve()

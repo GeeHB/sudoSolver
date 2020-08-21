@@ -1,12 +1,20 @@
+Version 0.1.19
+    * 21 aout 2020
+    + Tests et non-regression
+    + Corrections mineures
+        + bug Melk de l'éditeur en (9,9)
+        + Affichages et messages d'erreur
+    + Ajout de l'option -es : "Edit and Solve"
+
+TODO :
+	+ -b : "Browse" d'un dossier
+	+ "p" pendant la résolution => pause
+
 Version 0.1.18
     * 20 aout 2020
     + Corrections mineures
         + Bug Melk dans l'éditeur lorsque pos = (0,0)
         + cas des grilles impossibles
-
-Version 0.1.17
-    * 20 aout 2020
-    + Corrections mineures
         + Utilisation du module math plus rapide pour les calculs de conversion
     + Ajout des stats (durée et nnombre de tentatives)
 
