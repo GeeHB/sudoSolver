@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.19
+#   Version     :   0.1.20
 #
-#   Date        :   21 aout 2020
+#   Date        :   27 aout 2020
 #
 
 from cmdLineParser import cmdLineParser
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 #
 
 # Version du programme
-CURRENT_VERSION = "0.1.19"
+CURRENT_VERSION = "0.1.20"
 
 # Options de la ligne de commandes
 #
@@ -153,8 +153,10 @@ except sudokuError as e:
 except IndexError:
     # Généré lors du parse du fichier ...
     print("Trop de lignes dans le fichier")
-except:
-    print("Erreur inconnue lors de la lecture de '" + fileName + "'")
+    exit(1)
+#except:
+ #   print("Erreur inconnue lors de la lecture de '" + fileName + "'")
+ #   exit(1)
     
 # Edition et/ou résolution
 #
@@ -175,7 +177,7 @@ try:
     if solveMode:       
         if False == editMode:
             print("Appuyez sur une touche pour lancer la résolution")
-            solver.waitKeyDown()
+            solver.waitForKeyDown()
 
         print("C'est parti ...")
         attempts, duration = solver.resolve()
@@ -188,7 +190,7 @@ try:
         print("Tentatives : ", attempts) 
 
         print("Appuyez sur une touche pour terminer")
-        solver.waitKeyDown()
+        solver.waitForKeyDown()
 
     # Fermeture des affichage
     solver.close()
@@ -198,7 +200,7 @@ except sudokuError as e:
     print(e)
 except IndexError:
     print("La grille n'a pas de solution")
-except:
-    print("Erreur inconnue")
+#except:
+#    print("Erreur inconnue")
 
 # EOF

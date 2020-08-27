@@ -1,3 +1,13 @@
+Version 0.1.20
+    * 27 aout 2020
+    + Retaille de la fenêtre (première mouture)
+    + Corrections mineures
+       
+
+TODO :
+	+ -b : "Browse" d'un dossier
+	+ "p" pendant la résolution => pause
+
 Version 0.1.19
     * 21 aout 2020
     + Tests et non-regression
@@ -5,10 +15,6 @@ Version 0.1.19
         + bug Melk de l'éditeur en (9,9)
         + Affichages et messages d'erreur
     + Ajout de l'option -es : "Edit and Solve"
-
-TODO :
-	+ -b : "Browse" d'un dossier
-	+ "p" pendant la résolution => pause
 
 Version 0.1.18
     * 20 aout 2020

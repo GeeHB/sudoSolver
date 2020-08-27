@@ -8,9 +8,9 @@
 #                   Classe abstraite, base tous les affichages
 #   Remarque    :  
 #
-#   Version     :   0.1.19
+#   Version     :   0.1.20
 #
-#   Date        :   21 aout 2020
+#   Date        :   27 aout 2020
 #
 
 from pointer import pointer
@@ -39,7 +39,7 @@ class outputs(object):
 
     #  Quelques couleurs
     #
-    BORDER_COLOUR   = (0,0,0)
+    BORDER_COLOUR   = (81, 154, 186)
     BK_COLOUR       = (230, 230, 255)
     TXT_COLOUR      = (64, 64, 64)
 
@@ -59,7 +59,7 @@ class outputs(object):
 
     # En attente de l'appui d'une touche
     #  à surcharger
-    def waitForKeyboardInput(self):
+    def waitForEvent(self, elements = None):
         pass
 
     # Accepte l'édition ?

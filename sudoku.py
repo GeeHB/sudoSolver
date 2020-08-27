@@ -9,9 +9,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.19
+#   Version     :   0.1.20
 #
-#   Date        :   21 aout 2020
+#   Date        :   27 aout 2020
 #
 
 import time
@@ -94,9 +94,9 @@ class sudoku(object):
 
     # Attente d'un évènement clavier
     #
-    def waitKeyDown(self):
+    def waitForKeyDown(self):
         if not None == self.outputs_:
-            self.outputs_.waitForKeyboardInput()
+            self.outputs_.waitForEvent(self.elements_)
 
     # Fin des affichages
     #
@@ -253,27 +253,27 @@ class sudoku(object):
 
             # Analyse du clavier
             #
-            key = self.outputs_.waitForKeyboardInput()
+            event = self.outputs_.waitForEvent(self.elements_)
             
             # Position du curseur
             #
-            if self.outputs_.MOVE_LEFT == key:
+            if self.outputs_.MOVE_LEFT == event.key:
                 #position -= 1
                 position.decRow()
             else:
-                if self.outputs_.MOVE_RIGHT == key:
+                if self.outputs_.MOVE_RIGHT == event.key:
                     #position += 1
                     position.incRow()
                 else:
-                    if self.outputs_.MOVE_UP == key:
+                    if self.outputs_.MOVE_UP == event.key:
                         position.decLine()
                     else:
-                        if self.outputs_.MOVE_DOWN == key:
+                        if self.outputs_.MOVE_DOWN == event.key:
                             position.incLine()
                         else:
                             # Changement de la valeur de la case
                             #
-                            if self.outputs_.VALUE_DEC == key:
+                            if self.outputs_.VALUE_DEC == event.key:
                                 val = self.elements_[position.index()].value()
                                 if None == val : 
                                     val = 0
@@ -284,7 +284,7 @@ class sudoku(object):
                                     self.elements_[position.index()].setValue(newVal, True, True)
                                     prev = None
                             else:
-                                if self.outputs_.VALUE_INC == key:
+                                if self.outputs_.VALUE_INC == event.key:
                                     val = self.elements_[position.index()].value()
                                     if None == val : 
                                         val = 0
@@ -296,11 +296,11 @@ class sudoku(object):
                                         prev = None
                                 else:
                                     # Annulation
-                                    if self.outputs_.EDIT_CANCEL == key:
+                                    if self.outputs_.EDIT_CANCEL == event.key:
                                         cont = False
                                     else:
                                         # Enregistrement
-                                        if self.outputs_.EDIT_QUIT_AND_SAVE == key:
+                                        if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
                                             cont = False
                                             valid = True
                                 

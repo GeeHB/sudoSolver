@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.19
+#   Version     :   0.1.20
 #
-#   Date        :   21 aout 2020
+#   Date        :   27 aout 2020
 #
 
 #
