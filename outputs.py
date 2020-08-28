@@ -6,11 +6,10 @@
 #
 #   Description :   Définition de l'objet outputs
 #                   Classe abstraite, base tous les affichages
-#   Remarque    :  
 #
-#   Version     :   0.1.20
+#   Version     :   0.1.21
 #
-#   Date        :   27 aout 2020
+#   Date        :   28 aout 2020
 #
 
 from pointer import pointer
@@ -42,6 +41,7 @@ class outputs(object):
     BORDER_COLOUR   = (81, 154, 186)
     BK_COLOUR       = (230, 230, 255)
     TXT_COLOUR      = (64, 64, 64)
+    RED_COLOUR      = (248, 128, 112)
 
     SEL_BK_COLOUR   = (50, 50, 255)
     SEL_TXT_COLOUR  = (255, 255, 255)

@@ -7,11 +7,9 @@
 #   Description :   Définition de l'objet :
 #                       - sudoku : "LA" grille de sudoku : édtion et/ou résolution
 #
-#   Remarque    :  
+#   Version     :   0.1.21
 #
-#   Version     :   0.1.20
-#
-#   Date        :   27 aout 2020
+#   Date        :   28 aout 2020
 #
 
 import time

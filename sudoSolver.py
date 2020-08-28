@@ -6,11 +6,9 @@
 #
 #   Description :   Affichage & résolution d'une grille de Sudoku
 #
-#   Remarque    :  
+#   Version     :   0.1.21
 #
-#   Version     :   0.1.20
-#
-#   Date        :   27 aout 2020
+#   Date        :   28 aout 2020
 #
 
 from cmdLineParser import cmdLineParser
