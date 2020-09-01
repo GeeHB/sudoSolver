@@ -46,12 +46,20 @@ class outputs(object):
     SEL_BK_COLOUR   = (50, 50, 255)
     SEL_TXT_COLOUR  = (255, 255, 255)
 
+    # Modes d'affichages
+    #
+    MODE_DEFAULT        = 0     # Rien de particulier
+    MODE_EDIT           = 1     # Edition possible
+    MODE_BROWSEFOLDER   = 2     # Parcours des dossiers
+
     # Données membres
     #
 
     # Affichage des étape lors de la résolution
     detailsRatio_ = 0          # Taux d'affichage de la progression (0 = aucun)
     detailsCount_ = 0          # Indice d'affichage
+
+    mode_ = MODE_DEFAULT       # Mode d'affichage
 
     
     def setDetailsRatio(self, detailsRatio = 0):
@@ -65,8 +73,10 @@ class outputs(object):
     # Accepte l'édition ?
     # à surcharger
     def allowEdition(self):
-        # Par défaut pas d'édition
-        return False
+        return not (0 == (self.mode_ & self.MODE_EDIT))
+
+    # Accepte l'analyse des dossier ?
+
 
     # Affichage de toute la matrice
     #  à surcharger
