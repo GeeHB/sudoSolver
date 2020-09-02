@@ -8,9 +8,9 @@
 #                       - pointer : pointeur sur la valeur courante dans le Sudoku
 #                       - reachedEndOfList : Exception levée lorsque le pointeur pointe à la fin de la liste
 #
-#   Version     :   0.1.21
+#   Version     :   0.1.23
 #
-#   Date        :   28 aout 2020
+#   Date        :   2 septembre 2020
 #
 
 import math

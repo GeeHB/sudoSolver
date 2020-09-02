@@ -7,9 +7,9 @@
 #   Description :   Définition de l'objet outputs
 #                   Classe abstraite, base tous les affichages
 #
-#   Version     :   0.1.21
+#   Version     :   0.1.23
 #
-#   Date        :   28 aout 2020
+#   Date        :   2 septembre 2020
 #
 
 from pointer import pointer

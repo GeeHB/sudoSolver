@@ -7,9 +7,9 @@
 #   Description :   Définition de l'objet pyOutputs
 #                   Affichages avec la librairie graphique PYGame
 #
-#   Version     :   0.1.21
+#   Version     :   0.1.23
 #
-#   Date        :   28 aout 2020
+#   Date        :   2 septembre 2020
 #
 
 from outputs import outputs
@@ -27,7 +27,7 @@ import math
 
 # Positions et dimensions
 #
-SQUARE_SIDE         = 80    # Taille initiale d'un "carré"
+SQUARE_SIDE         = 60    # Taille initiale d'un "carré"
 
 SQUARE_MIN          = 10   # Taille min
 
@@ -39,7 +39,7 @@ EXT_BORDER_WIDTH    = 3     # Largeur / épaisseur de la bordure extérieure
 # Texte
 #
 FONT_NAME           = 'Herculanum,Papyrus,Helvetica'
-FONT_SIZE           = 45    # Taille par défaut en pixels
+FONT_SIZE           = 35    # Taille par défaut en pixels
 
 #
 # outputs - Affichage de la grille de Sudoku en mode graphique avec PYGame
@@ -113,33 +113,33 @@ class pyOutputs(outputs):
         self._drawBackground()
    
     # En attente de l'appui d'une touche
+    #   cette méthode prend en charge la retaille de la fnêtre
     #
     def waitForEvent(self, elements):
         # On attend l'appui sur une touche ou la retaille de la fenêtre
         finished = False
         while not finished:
             #for event in pygame.event.wait():    
-                pygame.event.pump()
+                #pygame.event.pump()
                 event = pygame.event.wait()
                 #if event.type == pygame.QUIT or event.type == pygame.KEYDOWN :
                 if event.type == pygame.KEYDOWN :
                     #pygame.event.get()
                     finished = True
                 elif event.type == pygame.VIDEORESIZE:
-                    
-                    # Mise à jour des paramètres d'affichage
-                    self._onResizeWindow(event.w, event.h)
-                    
-                    # Mise à jour de l'affichage
-                    self._setWindowSize()
+                    if not (event.w == self.width_ and event.h == self.height_):
+                        # Mise à jour des paramètres d'affichage
+                        self._onResizeWindow(event.w, event.h)
+                        
+                        # Mise à jour de l'affichage
+                        self._setWindowSize()
 
-                    # On redessine le fond ...
-                    self._drawBackground()
+                        # On redessine le fond ...
+                        self._drawBackground()
 
-                    # ... puis la grille
-                    if not None == elements:
-                        self.draw(elements)
-        
+                        # ... puis la grille
+                        if not None == elements:
+                            self.draw(elements)
         return event
 
     # Affichage de toute la matrice
@@ -170,7 +170,7 @@ class pyOutputs(outputs):
         y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_WIDTH
         
         # Le fond
-        pygame.draw.rect(self.surface_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
+        pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # La valeur si non nulle
         if not None == value:
@@ -179,14 +179,17 @@ class pyOutputs(outputs):
                 txtColour = self.RED_COLOUR
             
             label = self.font_.render(str(value), 1, txtColour)
-            self.surface_.blit(label, (x + self.textOffset_, y + self.textOffset_))
+            self.win_.blit(label, (x + self.textOffset_, y + self.textOffset_))
 
     # Mise à jour de l'affichage
     #
     def update(self):
+        """
         if not self.win_ == None:
             self.win_.blit(self.surface_, (0,0))
         pygame.display.flip()
+        """
+        pygame.display.update()
     
     # Fin des affichages
     #
@@ -236,7 +239,7 @@ class pyOutputs(outputs):
     def _drawBackground(self):
         
         # Le fond de la fenêtre
-        self.surface_.fill(self.BK_COLOUR)
+        self.win_.fill(self.BK_COLOUR)
 
         if not 0 == self.extSquareWidth_ : 
             
@@ -246,8 +249,8 @@ class pyOutputs(outputs):
                 for row in range(pointer.ROW_COUNT):
                     x = self.deltaW_ + row * self.extSquareWidth_
                     y = self.deltaH_ + line * self.extSquareWidth_
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
             # ... puis les bordures extérieures
             #
@@ -256,10 +259,10 @@ class pyOutputs(outputs):
                 for row in range(3):
                     x = self.deltaW_ + row * lSquare
                     y = self.deltaH_ + line * lSquare
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.surface_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
 
         self.update()
 
@@ -268,25 +271,14 @@ class pyOutputs(outputs):
     def _setWindowSize(self):
         # Suppression des anciens objet
         #
-        """
-        if not self.win_ == None:
-            del self.win_
-"""
-
+       
+        # Police
         if not None == self.font_:
             del self.font_
-
-        # Nouvelles dimensions
-        #
-        if None == self.win_:
-            self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
-        
-        if None == self.surface_:
-            self.surface_ = pygame.Surface((self.width_, self.height_))
-        else:
-            pygame.transform.scale(self.surface_, (self.width_, self.height_))
-
         self.font_ = pygame.font.SysFont(FONT_NAME, self.fontSize_)
+
+        # Nouvelles dimensions pour la fenêtre et la "surface"
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
 
         
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
