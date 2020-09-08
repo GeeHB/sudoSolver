@@ -1,8 +1,8 @@
 # coding=UTF-8
 #
-#   Fichier     :   ownExceptions.py
+#   File     :   ownExceptions.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition des exceptions utilisées dans le projet :
 #                       - sudoku : La solution a été trouvée
@@ -10,9 +10,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
 #

@@ -1,8 +1,8 @@
 # coding=UTF-8
 #
-#   Fichier     :   colorizer.py
+#   File     :   colorizer.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition des objets :
 #                     - colorizer : Gestion de la colorisation des sorties enmode terminal (et/ou texte)
@@ -12,7 +12,7 @@
 #
 #   Remarque    :  le module termcolor doit être installé
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
 #   Date        :   9 mai 2020
 #

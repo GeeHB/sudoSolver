@@ -1,15 +1,15 @@
 # coding=UTF-8
 #
-#   Fichier     :   pyOutputs.py
+#   File     :   pyOutputs.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition de l'objet pyOutputs
 #                   Affichages avec la librairie graphique PYGame
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
 from outputs import outputs
@@ -38,14 +38,24 @@ EXT_BORDER_WIDTH    = 3     # Largeur / épaisseur de la bordure extérieure
 
 # Texte
 #
-FONT_NAME           = 'Herculanum,Papyrus,Helvetica'
-FONT_SIZE           = 35    # Taille par défaut en pixels
+APP_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'
+APP_FONT_VAL_SIZE       = 35    # Taille par défaut en pixels
+
+FILE_FONT_NAME          = 'Helvetica,Arial'
+FILE_FONT_SIZE          = 25
+FILE_FONT_POS_X         = 35
+FILE_FONT_POS_Y         = 5
+
+ERASE_NAME_AFTER        = 2000  # in ms
 
 #
 # outputs - Affichage de la grille de Sudoku en mode graphique avec PYGame
 #
 class pyOutputs(outputs):
 
+    EVT_KEYDOWN         = pygame.KEYDOWN
+    EVT_QUIT            = pygame.QUIT
+    
     # Surcharge des touches pour les déplacements et les éditions
     #
     MOVE_LEFT           = pygame.K_LEFT
@@ -53,31 +63,34 @@ class pyOutputs(outputs):
     MOVE_UP             = pygame.K_UP
     MOVE_DOWN           = pygame.K_DOWN
     
-    VALUE_DEC           = pygame.K_w        # Changement de la valeur de la case
-    VALUE_INC           = pygame.K_q
+    VALUE_DEC           = pygame.K_e        # Changement de la valeur de la case
+    VALUE_INC           = pygame.K_r
 
     EDIT_CANCEL         = pygame.K_ESCAPE   # Annulation des modifications
     EDIT_QUIT_AND_SAVE  = pygame.K_RETURN   # Fin des modif. et enregistrement
     
     # Données membres
     #
-    win_            = None     # "Fenêtre" d'affichage
-    surface_        = None     # Surface d'affichage
+    win_            = None     # My window
     
-    width_          = 0        # Dimensions de la fenêtre
+    width_          = 0        # Window's dimensions
     height_         = 0
     
     
-    intSquareWidth_ = 0        # Dimensions intérieures d'un élément
-    extSquareWidth_ = 0        # dim. ext 
+    intSquareWidth_ = 0        # internal dims of an element
+    extSquareWidth_ = 0        # ext. dims 
     
-    deltaW_         = 0        # Décalages
+    deltaW_         = 0        # Offsets
     deltaH_         = 0
     
-    textOffset_     = 0         # Taille et disposition du texte
+    textOffset_     = 0        # Font handling
     fontSize_       = 0
     font_           = None
 
+    nameSurface_    = None     # Display gridname
+    namePos_        = (0,0)
+    nameEvent_      = None
+    
     # Construction
     #
     def __init__(self, showDetails = False):
@@ -102,47 +115,76 @@ class pyOutputs(outputs):
         self.deltaH_ = DELTA_Y
         
         # La police et les infos. d'affichage
-        self.fontSize_ = FONT_SIZE
-        self.textOffset_ = (SQUARE_SIDE - FONT_SIZE) / 2
+        self.fontSize_ = APP_FONT_VAL_SIZE
+        self.textOffset_ = (SQUARE_SIDE - APP_FONT_VAL_SIZE) / 2
                 
-        # Création de la fenêtre
+        # window creation
         self._setWindowSize()
         pygame.display.set_caption('sudoSolver')
 
-        # On affiche les bordures
         self._drawBackground()
+
+        # my own event
+        self.nameEvent_ = pygame.USEREVENT + 1
    
-    # En attente de l'appui d'une touche
-    #   cette méthode prend en charge la retaille de la fnêtre
+    # Wait for an event
     #
-    def waitForEvent(self, elements):
+    def waitForEvent(self, elements, allEvents):
         # On attend l'appui sur une touche ou la retaille de la fenêtre
         finished = False
         while not finished:
-            #for event in pygame.event.wait():    
-                #pygame.event.pump()
-                event = pygame.event.wait()
-                #if event.type == pygame.QUIT or event.type == pygame.KEYDOWN :
-                if event.type == pygame.KEYDOWN :
-                    #pygame.event.get()
+            event = pygame.event.wait()
+            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN :
+                finished = True
+            elif event.type == pygame.VIDEORESIZE:
+                # Update members
+                self._onResizeWindow(event.w, event.h)
+                
+                # Resize the surface
+                self._setWindowSize()
+
+                # Draw bkgrnd & lines ...
+                self._drawBackground()
+
+                # ... and the grid's content
+                if not None == elements:
+                    self.draw(elements)
+                
+                # returns all events ?
+                if True == allEvents:
                     finished = True
-                elif event.type == pygame.VIDEORESIZE:
-                    if not (event.w == self.width_ and event.h == self.height_):
-                        # Mise à jour des paramètres d'affichage
-                        self._onResizeWindow(event.w, event.h)
-                        
-                        # Mise à jour de l'affichage
-                        self._setWindowSize()
+            elif event.type == self.nameEvent_:
+                # erase the name
+                if self.nameSurface_:                    
+                    del self.nameSurface_
+                    self.nameSurface_ = None
+                    
+                    self._drawBackground()
+                    self.draw(elements)
+                    self.update()
 
-                        # On redessine le fond ...
-                        self._drawBackground()
+                pygame.time.set_timer(self.nameEvent_, 0)
+                if True == allEvents:
+                    finished = True
 
-                        # ... puis la grille
-                        if not None == elements:
-                            self.draw(elements)
         return event
 
-    # Affichage de toute la matrice
+    # Set/change the current grid's filename
+    #   overloaded
+    def setGridName(self, fileName):
+        super().setGridName(fileName)
+
+        font = pygame.font.SysFont(FILE_FONT_NAME, FILE_FONT_SIZE)
+        self.nameSurface_ = font.render(fileName, 1, self.TXT_COLOUR, outputs.BK_COLOUR_FILENAME)
+        
+        # Position
+        self.namePos_ = (FILE_FONT_POS_X, FILE_FONT_POS_Y)
+        
+        # erase this name after a while ...
+        pygame.time.set_timer(self.nameEvent_, ERASE_NAME_AFTER)
+
+    
+    # Draw all the content of the current grid
     #
     def draw(self, elements):
         position = pointer(gameMode = False)
@@ -156,27 +198,28 @@ class pyOutputs(outputs):
                 # on avance ...
                 position+=1
 
-        #pygame.display.update()
         self.update()
 
     # Affichage d'un élément de la matrice
     #
     def drawSingleElement(self, row, line, value, highLighted, bkColour, txtColour):
         
+        # too small to be drawn ?
         if 0 == self.extSquareWidth_ :
             return
         
+        # top-left corner position
         x = self.deltaW_ + row * self.extSquareWidth_ + EXT_BORDER_WIDTH
         y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_WIDTH
         
-        # Le fond
+        # Erase background
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
-        # La valeur si non nulle
+        # The value (if valid)
         if not None == value:
             if highLighted : 
                 #font.set_bold(True)
-                txtColour = self.RED_COLOUR
+                txtColour = self.HILITE_COLOUR
             
             label = self.font_.render(str(value), 1, txtColour)
             self.win_.blit(label, (x + self.textOffset_, y + self.textOffset_))
@@ -184,17 +227,16 @@ class pyOutputs(outputs):
     # Mise à jour de l'affichage
     #
     def update(self):
-        """
-        if not self.win_ == None:
-            self.win_.blit(self.surface_, (0,0))
-        pygame.display.flip()
-        """
+        # Display filename ?
+        if self.nameSurface_:
+            # draw the name
+            self.win_.blit(self.nameSurface_, self.namePos_)
         pygame.display.update()
     
     # Fin des affichages
     #
     def close(self):
-        # Fermeture de l'environnement
+        # close the display
         pygame.display.quit()
 
     #
@@ -231,7 +273,7 @@ class pyOutputs(outputs):
         self.deltaH_ = math.floor((newHeight - pointer.LINE_COUNT * self.extSquareWidth_) / 2)
 
         # Taille de la police
-        self.fontSize_ = int(FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
+        self.fontSize_ = int(APP_FONT_VAL_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
         self.textOffset_ = (self.extSquareWidth_ - self.fontSize_) / 2 
 
     # Affichage du fond et des bordures
@@ -275,7 +317,7 @@ class pyOutputs(outputs):
         # Police
         if not None == self.font_:
             del self.font_
-        self.font_ = pygame.font.SysFont(FONT_NAME, self.fontSize_)
+        self.font_ = pygame.font.SysFont(APP_FONT_NAME, self.fontSize_)
 
         # Nouvelles dimensions pour la fenêtre et la "surface"
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)

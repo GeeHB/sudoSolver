@@ -1,16 +1,16 @@
 # coding=UTF-8
 #
-#   Fichier     :   pointer.py
+#   File     :   pointer.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition des objets :
 #                       - pointer : pointeur sur la valeur courante dans le Sudoku
 #                       - reachedEndOfList : Exception levée lorsque le pointeur pointe à la fin de la liste
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
 import math

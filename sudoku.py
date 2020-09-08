@@ -1,18 +1,18 @@
 # coding=UTF-8
 #
-#   Fichier     :   sudoku.py
+#   File     :   sudoku.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition de l'objet :
 #                       - sudoku : "LA" grille de sudoku : édtion et/ou résolution
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
-import time
+import os, time
 
 from element import element, elementStatus
 from pointer import pointer
@@ -37,9 +37,9 @@ class sudoku(object):
 
     # Données membres
     #
-    fileName_ = ""          # Nom du fichier courant
+    gridFileName_ = "" 
     elements_ = []          # Les "cases" de la grille
-    outputs_ = None         # Affichages
+    outputs_ = None         # Object for displaying
     
     attempts_ = 0           # #hyptothèses
     start_ = 0              # "heure" de début de la résolution
@@ -81,40 +81,113 @@ class sudoku(object):
         # Niveau de détail de l'affichage
         self.outputs_.setDetailsRatio(detailsRatio)
 
-        # Création de la liste vide
+        # Create the grid
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
-    # Peut-on éditer une grille ?
+    # what can we do ?
     #
     def allowEdition(self):
         return False if None == self.outputs_ else self.outputs_.allowEdition()
+    def allowFolderBrowsing(self):
+        return False if None == self.outputs_ else self.outputs_.allowFolderBrowsing()
 
     # Attente d'un évènement clavier
     #
     def waitForKeyDown(self):
         if not None == self.outputs_:
-            self.outputs_.waitForEvent(self.elements_)
+            self.outputs_.waitForEvent(self.elements_, allEvents = False)
 
-    # Fin des affichages
+    # End of outputs
     #
     def close(self):
         if not None == self.outputs_:
             self.outputs_.close()
     
-    # Affichage de la grille
+    # Display the grid and its content
     #
     def showGrid(self):
         self.outputs_.draw(self.elements_)
 
-    # Lecture d'un fichier d'archive
+    # Browse a folder (to find a grid)
+    #
+    def browse(self, folderName):
+        if not os.path.isdir(folderName):
+            raise sudokuError(folderName + " is not a valid folder")
+
+        files = []
+        
+        # Only this folder
+        for (_, _, fileNames) in os.walk(folderName):
+            files.extend(fileNames)
+            break
+        
+        prev = -1
+        index = 0
+        done = len(files) <= index   # is the folder empty ?
+        currentFile = ""
+        while not done:
+            # update drawings ?
+            if not prev == index:
+                currentFile = os.path.join(folderName, files[index])
+
+                # load the file
+                try:
+                    self._emptyGrid()
+                    self.load(currentFile, True)
+                    self.outputs_.setGridName(currentFile)
+                    self.outputs_._drawBackground()
+                    self.outputs_.draw(self.elements_)
+                    self.outputs_.update()
+                    prev = index
+                except:
+                    # the file is not valid => remove it from the list
+                    files.pop(index)
+            
+            if 0 == len(files):
+                # Nothing left in the folder
+                done = True
+            else:
+                
+                # Wait for keyboard event
+                #
+                event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
+                
+                if event.type == self.outputs_.EVT_KEYDOWN:
+                    if self.outputs_.MOVE_RIGHT == event.key:
+                        index+=1
+                    else:                    
+                        if self.outputs_.MOVE_LEFT == event.key:
+                            index-=1
+                        else:
+                            # Cancel
+                            if self.outputs_.EDIT_CANCEL == event.key:
+                                done = True
+                                currentFile = "" 
+                            else:
+                                # Choose the grid (for edition or solving)
+                                if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
+                                    done = True                                                            
+                elif event.type == self.outputs_.EVT_QUIT: 
+                    done = True
+                    currentFile = "" 
+                
+                # stay in the folder
+                if index < 0:
+                    index = len(files) - 1
+                elif index >= len(files):
+                    index = 0
+
+        return currentFile
+    
+    # Read a grid'file
     #
     def load(self, fileName, mustExist):
         if None == fileName or 0 == len(fileName):
             # ???
             raise sudokuError("Pas de nom de fichier")
     
-        self.fileName_ = fileName
+        self.gridFileName_ = fileName
         
         # On essaye d'ouvir le fichier
         #
@@ -184,8 +257,9 @@ class sudoku(object):
                 # Valeur suivante
                 pt += 1
 
-        # Chargement terminé
         file.close()
+
+        self.outputs_.setGridName(self.gridFileName_)
 
     # Sauvegarde du fichier
     #
@@ -194,7 +268,7 @@ class sudoku(object):
         # Ouverture du fichier
         #
         try:
-            file = open(self.fileName_, "w")
+            file = open(self.gridFileName_, "w")
             
             # Un pointeur !
             pt = pointer(gameMode = False)
@@ -220,8 +294,9 @@ class sudoku(object):
             
             # Terminé
             file.close()
+            return True
         except:
-            raise sudokuError("Erreur lors de l'enregistrement de " + self.fileName_)
+            raise sudokuError("Erreur lors de l'enregistrement de " + self.gridFileName_)
 
     # Edition de la grille
     #
@@ -236,75 +311,78 @@ class sudoku(object):
         #
         valid = False
         cont = True
-        position = pointer(gameMode=False)      # Position actuelle
-        prev = None                             # Position précédente (pour l'effacement)
+        currentPos = pointer(gameMode=False)      # current position
+        prevPos = None                            # previous pos (if erase needed)
         
         while cont:
             # Effacement de l'ancienne position
-            if not None == prev:
-                self.outputs_.drawSingleElement(prev.row(), prev.line(), self.elements_[prev.index()].value(), True, self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
+            if not None == prevPos:
+                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), True, self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
             
             # Affichage de la nouvelle valeur
-            self.outputs_.drawSingleElement(position.row(), position.line(), self.elements_[position.index()].value(), True, self.outputs_.SEL_BK_COLOUR, self.outputs_.SEL_TXT_COLOUR)
+            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), True, self.outputs_.SEL_BK_COLOUR, self.outputs_.SEL_TXT_COLOUR)
             self.outputs_.update()
-            prev = pointer(position)
+            prevPos = pointer(currentPos)
 
             # Analyse du clavier
             #
-            event = self.outputs_.waitForEvent(self.elements_)
+            event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
             
-            # Position du curseur
+            # change the cursor's position
             #
-            if self.outputs_.MOVE_LEFT == event.key:
-                #position -= 1
-                position.decRow()
-            else:
-                if self.outputs_.MOVE_RIGHT == event.key:
-                    #position += 1
-                    position.incRow()
+            if event.type == self.outputs_.EVT_KEYDOWN:
+                if self.outputs_.MOVE_LEFT == event.key:
+                    #position -= 1
+                    currentPos.decRow()
                 else:
-                    if self.outputs_.MOVE_UP == event.key:
-                        position.decLine()
+                    if self.outputs_.MOVE_RIGHT == event.key:
+                        #position += 1
+                        currentPos.incRow()
                     else:
-                        if self.outputs_.MOVE_DOWN == event.key:
-                            position.incLine()
+                        if self.outputs_.MOVE_UP == event.key:
+                            currentPos.decLine()
                         else:
-                            # Changement de la valeur de la case
-                            #
-                            if self.outputs_.VALUE_DEC == event.key:
-                                val = self.elements_[position.index()].value()
-                                if None == val : 
-                                    val = 0
-                                
-                                newVal = self._findPreviousValue(position, val)
-                                if not newVal == val:
-                                    # Mise à jour de la valeur
-                                    self.elements_[position.index()].setValue(newVal, True, True)
-                                    prev = None
+                            if self.outputs_.MOVE_DOWN == event.key:
+                                currentPos.incLine()
                             else:
-                                if self.outputs_.VALUE_INC == event.key:
-                                    val = self.elements_[position.index()].value()
+                                # Change the current value
+                                #
+                                if self.outputs_.VALUE_DEC == event.key:
+                                    val = self.elements_[currentPos.index()].value()
                                     if None == val : 
                                         val = 0
                                     
-                                    newVal = self._findNextValue(position, val)
+                                    newVal = self._findPreviousValue(currentPos, val)
                                     if not newVal == val:
-                                        # Mise à jour de la valeur
-                                        self.elements_[position.index()].setValue(newVal, True, True)
-                                        prev = None
+                                        self.elements_[currentPos.index()].setValue(newVal, True, True)
+                                        prevPos = None
                                 else:
-                                    # Annulation
-                                    if self.outputs_.EDIT_CANCEL == event.key:
-                                        cont = False
+                                    if self.outputs_.VALUE_INC == event.key:
+                                        val = self.elements_[currentPos.index()].value()
+                                        if None == val : 
+                                            val = 0
+                                        
+                                        newVal = self._findNextValue(currentPos, val)
+                                        if not newVal == val:
+                                            self.elements_[currentPos.index()].setValue(newVal, True, True)
+                                            prevPos = None
                                     else:
-                                        # Enregistrement
-                                        if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
+                                        # Cancel
+                                        if self.outputs_.EDIT_CANCEL == event.key:
                                             cont = False
-                                            valid = True
-                                
-        # Mise à jour / enregistrement
-        if True == valid :
-            self.save()
+                                            valid = False
+                                        else:
+                                            # Save current grid
+                                            if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
+                                                cont = False
+                                                valid = True
+            elif event.type == self.outputs_.EVT_QUIT:
+                # Quits
+                cont = False
+                valid = False
+
+        # Saves changes or exit
+        return self.save() if True == valid else False
     
     # Résolution de la grille
     #
@@ -315,7 +393,7 @@ class sudoku(object):
         # Initialiisation des compteurs
         self.attempts_ = 0
         self.start_ = time.time()
-        
+            
         # C'est parti !
         try:
             self._resolve()
@@ -329,6 +407,12 @@ class sudoku(object):
     #
     # Méthodes internes
     #
+
+    # Empties the grid
+    #
+    def _emptyGrid(self):
+        for element in self.elements_:
+            element.empty()
 
     # Méthode interne pour la résolution de la grille de Sudoku
     #

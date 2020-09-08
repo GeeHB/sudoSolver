@@ -1,16 +1,16 @@
 # coding=UTF-8
 #
-#   Fichier     :   consoleOutputs.py
+#   File     :   consoleOutputs.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition de l'objet consoleOutputs pour l'affichage en mode console
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 from outputs import outputs
 from element import element, elementStatus

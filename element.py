@@ -1,16 +1,16 @@
 # coding=UTF-8
 #
-#   Fichier     :   element.py
+#   File     :   element.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition de l'objet element : une "case" du sudoku
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
 #

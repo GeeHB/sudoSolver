@@ -1,15 +1,15 @@
 # coding=UTF-8
 #
-#   Fichier     :   cmdLineParser.py
+#   File     :   cmdLineParser.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition des objets :
 #                     - cmdLineParser : Gestion de la ligne de commandes
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
 #   Date        :   3 mars 2020
 #

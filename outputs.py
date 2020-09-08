@@ -1,17 +1,19 @@
 # coding=UTF-8
 #
-#   Fichier     :   outputs.py
+#   File     :   outputs.py
 #
-#   Auteur      :   JHB
+#   Author      :   JHB
 #
 #   Description :   Définition de l'objet outputs
 #                   Classe abstraite, base tous les affichages
 #
-#   Version     :   0.1.23
+#   Version     :   0.1.24
 #
-#   Date        :   2 septembre 2020
+#   Date        :   2020-09-08
 #
 
+import os
+from ownExceptions import sudokuError
 from pointer import pointer
 
 #
@@ -22,6 +24,9 @@ class outputs(object):
     #
     # Constantes publiques
     #
+
+    EVT_KEYDOWN         = None  # By default the event doesn't exist
+    EVT_QUIT            = None
 
     # Touches pour les déplacements et les éditions
     #
@@ -36,60 +41,70 @@ class outputs(object):
     EDIT_CANCEL         = "q"    # Annulation des modifications
     EDIT_QUIT_AND_SAVE  = "w"    # Fin des modif. et enregistrement
 
-    #  Quelques couleurs
+    #  App colours
     #
-    BORDER_COLOUR   = (81, 154, 186)
-    BK_COLOUR       = (230, 230, 255)
-    TXT_COLOUR      = (64, 64, 64)
-    RED_COLOUR      = (248, 128, 112)
+    BORDER_COLOUR       = (81, 154, 186)
+    BK_COLOUR           = (230, 230, 255)
+    BK_COLOUR_FILENAME  = (220, 220, 245)
+    TXT_COLOUR          = (64, 64, 64)
+    HILITE_COLOUR       = (248, 128, 112)
 
-    SEL_BK_COLOUR   = (50, 50, 255)
-    SEL_TXT_COLOUR  = (255, 255, 255)
+    SEL_BK_COLOUR       = (50, 50, 255)
+    SEL_TXT_COLOUR      = (255, 255, 255)
 
-    # Modes d'affichages
+    # Display modes
     #
-    MODE_DEFAULT        = 0     # Rien de particulier
-    MODE_EDIT           = 1     # Edition possible
-    MODE_BROWSEFOLDER   = 2     # Parcours des dossiers
+    MODE_DEFAULT        = 0 
+    MODE_EDIT           = 1
+    MODE_BROWSEFOLDER   = 2
 
-    # Données membres
+    #
+    # "private" members
     #
 
     # Affichage des étape lors de la résolution
     detailsRatio_ = 0          # Taux d'affichage de la progression (0 = aucun)
     detailsCount_ = 0          # Indice d'affichage
 
-    mode_ = MODE_DEFAULT       # Mode d'affichage
+    mode_ = MODE_DEFAULT       # Display mode
+    gridFileName_ = None
 
-    
     def setDetailsRatio(self, detailsRatio = 0):
         self.detailsRatio_ = detailsRatio
 
     # En attente de l'appui d'une touche
     #  à surcharger
-    def waitForEvent(self, elements = None):
+    def waitForEvent(self, elements = None, allEvents = False):
         pass
 
     # Accepte l'édition ?
-    # à surcharger
     def allowEdition(self):
         return not (0 == (self.mode_ & self.MODE_EDIT))
 
     # Accepte l'analyse des dossier ?
+    def allowFolderBrowsing(self):
+        return not (0 == (self.mode_ & self.MODE_BROWSEFOLDER))
 
+    # Set/change the current grid's filename
+    #   can be overloaded
+    def setGridName(self, fileName):
+        # the file must exists
+        if False == os.path.isfile(fileName):
+            raise sudokuError(fileName +  " is not a file")
+        self.gridFileName_ = fileName
 
-    # Affichage de toute la matrice
-    #  à surcharger
+    # Draw all the grid
+    #   can be overloaded
     def draw(self, elements):
        pass
 
-    # Affichage d'un élément de la matrice
-    # à surcharger
+    # Draw asingle element in the grid
+    #   can be overloaded
     def drawSingleElement(self, row, line, value, bold, bkColour, txtColour):
         pass
 
-    # Mise à jour de l'affichage
-    # à surcharger
+    # Update the display
+    #   can be overloaded
     def update(self):
         pass
 
@@ -105,8 +120,8 @@ class outputs(object):
                 self._update(elements, limit)
                 self.detailsCount_ = 0
 
-    # Fin des affichages
-    #  à surcharger
+    # End of the object (no more drawings at all)
+    #   can be overloaded
     def close(self):
         pass
 

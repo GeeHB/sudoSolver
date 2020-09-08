@@ -1,3 +1,17 @@
+Version 0.1.24
+    *  sept. 2020
+    + Start translation of comments an messages
+    + Handle grid name - displays on PYGame
+    + Added -b (browse and edit in a folder) and -bs (browse and solve)
+    + Minor bug fixes
+        + exit bug on edition mode
+        + display bug : selected item redraw on window resize
+       
+TODO :
+	+ -b : "Browse" d'un dossier
+	+ "p" pendant la résolution => pause
+    + le clavier Français n'est pas reconnu par pygame sous Windows
+
 Version 0.1.23
     * 2 sept. 2020
     + Corrections mineures
@@ -6,10 +20,6 @@ Version 0.1.23
     + Optimisations
         + retaille uniquement si la taille est différente
        
-TODO :
-	+ -b : "Browse" d'un dossier
-	+ "p" pendant la résolution => pause
-
 Version 0.1.22
     * 1er sept. 2020
     + Corrections mineures
