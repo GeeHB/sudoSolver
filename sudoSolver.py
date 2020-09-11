@@ -14,7 +14,7 @@
 #
 
 from cmdLineParser import cmdLineParser
-from colorizer import colorizer, backColor, textColor, textAttribute    # Pour la coloration des sorties terminal
+from colorizer import colorizer, backColor, textColor, textAttribute    # for text coloration in console mode
 
 from sudoku import sudoku
 from ownExceptions import sudokuError
@@ -22,7 +22,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.24"
+CURRENT_VERSION = "0.1.25"
 
 # Command line options
 #
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                                 # no folder given
                                 showUsage = True
         
-        # display details
+        # display details ?
         index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
         if not parameters.NO_INDEX == index:
             # num value expected
@@ -205,7 +205,7 @@ if __name__ == '__main__':
         # Edition
         if editMode:
             if False == solver.allowEdition():
-                print("This display mode is not compatible with grid edition")
+                solver.displayText("This display mode is not compatible with grid edition")
                 solver.close()
                 exit(1)
 
@@ -216,20 +216,20 @@ if __name__ == '__main__':
         # Search the solution
         if solveMode:       
             if False == editMode:
-                print("Press a key to start resolution")
+                solver.displayText("Press a key to start resolution")
                 solver.waitForKeyDown()
 
-            print("Let's go ...")
+            solver.displayText("Starting ...")
             attempts, duration = solver.resolve()
 
             # Display the solution
             solver.showGrid()   
 
             # A few stats.
-            print("Resoltion duration : ", duration, " second(s)")
-            print("Attempts : ", attempts) 
+            solver.displayText("Resolution duration : " + str(duration) + " second(s)")
+            solver.displayText("Attempts : " + str(attempts)) 
 
-            print("Press a key to quit")
+            solver.displayText("Press a key to quit")
             solver.waitForKeyDown()
 
         solver.close()

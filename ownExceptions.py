@@ -4,9 +4,9 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition des exceptions utilisées dans le projet :
-#                       - sudoku : La solution a été trouvée
-#                       - sudokuError : Exception avec message d'erreur
+#   Description :   Définition of exceptions objects  :
+#                       - reachedEndOfList : A solution has been found
+#                       - sudokuError : a bloking error
 #
 #   Remarque    :  
 #
@@ -16,13 +16,13 @@
 #
 
 #
-# reachedEndOfList : La recherche est terminée (ie, lle pointeur pointe sur la fin de la liste)
+# reachedEndOfList : End of resolution mode
 #
 class reachedEndOfList(Exception):
     pass
 
 #
-# sudokuError : Une erreur ...
+# sudokuError : An error ...
 #
 class sudokuError(Exception):
     def __init__(self, message):
@@ -31,3 +31,5 @@ class sudokuError(Exception):
 
     def __str__(self):
         return self.message
+
+# EOF

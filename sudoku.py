@@ -51,48 +51,53 @@ class sudoku(object):
     #
     def __init__(self, detailsRatio = 0, consoleMode = False):
 
-        # Gestion des affichages
+        # Set display mode
         #
 
-        # En mode graphique ?
+        # Try PYGame
         if False == consoleMode:
             try:
                 from pyOutputs import pyOutputs
                 self.outputs_ = pyOutputs()
             except ModuleNotFoundError:
-                print("PYGame n'est pas installé. Les affichages seront effectués en mode console")
+                print("PYGame isn't installed, outputs will be redirected to console")
             except sudokuError as e:
                 print(e)
 
-        # ... sinon en mode console
         if None == self.outputs_:
             try:
                 from cursesOutputs import cursesOutputs
                 self.outputs_ = cursesOutputs()
             except ModuleNotFoundError:
-                print("(n)Curses n'est pas installé. Les affichages seront effectués en mode console simple")
+                print("(n)Curses isn't installed, outputs will be redirected to the console")
             except sudokuError as e:
                 print(e)
              
-        # Le gestionnaire n'a pu être crée => utilisation de la console
+        # No display mode  => use console
         if None == self.outputs_:
             self.outputs_ = consoleOutputs()
 
-        # Niveau de détail de l'affichage
+        # Details
         self.outputs_.setDetailsRatio(detailsRatio)
 
         # Create the grid
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
-    # what can we do ?
+    # Display text
+    #
+    def displayText(self, text, information = True):
+        # call display's method
+        self.outputs_.displayText(text, information)
+    
+    # What can we do ?
     #
     def allowEdition(self):
         return False if None == self.outputs_ else self.outputs_.allowEdition()
     def allowFolderBrowsing(self):
         return False if None == self.outputs_ else self.outputs_.allowFolderBrowsing()
 
-    # Attente d'un évènement clavier
+    # Waiting for a keyboard event (or exit event)
     #
     def waitForKeyDown(self):
         if not None == self.outputs_:
@@ -549,7 +554,6 @@ class sudoku(object):
             # La prochaine peut-être ?
             nextVal = position.incValue(nextVal)
 
-        
         # Pas d'autre valeur possible
         return nextVal
 

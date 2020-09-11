@@ -1,16 +1,20 @@
-Version 0.1.24
+Version 0.1.25
     *  sept. 2020
+    + Translation
+    + Minor bug fixes
+    + add textSurface object
+       
+Known issues :
+	+ no French keyboard on windows::pygame
+
+Version 0.1.24
+    *  8 sept. 2020
     + Start translation of comments an messages
     + Handle grid name - displays on PYGame
     + Added -b (browse and edit in a folder) and -bs (browse and solve)
     + Minor bug fixes
         + exit bug on edition mode
         + display bug : selected item redraw on window resize
-       
-TODO :
-	+ -b : "Browse" d'un dossier
-	+ "p" pendant la résolution => pause
-    + le clavier Français n'est pas reconnu par pygame sous Windows
 
 Version 0.1.23
     * 2 sept. 2020

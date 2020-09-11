@@ -4,9 +4,7 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet element : une "case" du sudoku
-#
-#   Remarque    :  
+#   Description :   Définition de l'objet element : a single sudoku element
 #
 #   Version     :   0.1.24
 #
@@ -14,14 +12,14 @@
 #
 
 #
-# elementStatus - Statuts pour un élément
+# elementStatus - Element's status
 #
 class elementStatus(object):
 
-    EMPTY = 0           # La case est vide
+    EMPTY = 0
     SET = 1
     VALUED = 1
-    ORIGINAL = 2        # Valeur qui ne peut être modifiée
+    ORIGINAL = 2        # Can't be changed (except on edition mode)
 
 #
 # element - Un élément (ie une case) du Sudoku
@@ -30,13 +28,13 @@ class element(object):
 
     # Données membres
     #
-    value_ = None                   # Valeur de la cellule
-    status_ = elementStatus.EMPTY   # Etat/statut de la case (par défaut vide)
+    value_ = None                   # Num. value
+    status_ = elementStatus.EMPTY   # Current state
 
     # Construction
     def __init__(self, value = None):
         if not None == value:
-            # C'est une valeur originale
+            # On construction values are 'original'
             self.value_ = value
             self.status_ = elementStatus.ORIGINAL | elementStatus.SET
 
@@ -75,7 +73,7 @@ class element(object):
         self.status_ = elementStatus.EMPTY
         return self.value_
 
-    # Status de l'élément
+    # Element's status
     #
     def isEmpty(self):
         return self.status_ == elementStatus.EMPTY

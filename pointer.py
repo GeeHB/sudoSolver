@@ -4,9 +4,7 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition des objets :
-#                       - pointer : pointeur sur la valeur courante dans le Sudoku
-#                       - reachedEndOfList : Exception levée lorsque le pointeur pointe à la fin de la liste
+#   Description :   "pointer" object definition
 #
 #   Version     :   0.1.24
 #
@@ -17,14 +15,12 @@ import math
 from ownExceptions import reachedEndOfList
 
 #
-# pointer - Pointeur sur une case du Sudoku
+# pointer - "ID" of an element in the sudoku's grid
 #
-#   Cet objet effectue les différentes opérations de convertions linéaire <=> matriciel <=> indicaire
+#   This object does all the conversion from linear index to matrix
 #
 class pointer(object):
 
-    # Constantes publiques
-    #
     INDEX_MIN = 0
     INDEX_MAX = 80
 
@@ -34,30 +30,29 @@ class pointer(object):
     VALUE_MIN = 1
     VALUE_MAX = 9
 
-    # Données membres
+    # Members
     #
-    index_      =   INDEX_MIN       # Index de la "case"
+    index_      =   INDEX_MIN       # Current index
     
-    row_ = 0                        # Position dans la "matrice"
+    row_ = 0                        # Position int the "matrix"
     line_ = 0
     
-    squareID_ = 0                   # Indice du "petit" rectangle
+    squareID_ = 0                   # Small square ID
 
-    gameMode_ = False               # En mode "jeu"
+    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoju is solved !
 
     # Construction
     #
     def __init__(self, other = None, index = None, gameMode = True):
-        # Copie des paramètres
+        # Copy ?
         #
         if not None == other:
-            # Construction par recopie
             self.set(other)
         else:
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
 
-    # Copie
+    # Copy
     #
     def set(self, other):
         self.index_ = other.index_
@@ -66,10 +61,9 @@ class pointer(object):
         self.squareID_ = other.squareID_
         self.gameMode_ = other.gameMode_
 
-    # Accès
+    # Access
     #
 
-    # Index du pointeur
     def index(self):
         return self.index_
     
@@ -82,16 +76,14 @@ class pointer(object):
         return self.squareID_
 
     #
-    # Changement d'index
+    # Change index
     #
 
     # +=
     #
     def __iadd__(self, inc):
-        # Incrément
         self.index_ += inc
-
-        # Atteint et dépassé la fin de la liste ?
+        # Reach the end of the matrix ?
         if self.index_ > self.INDEX_MAX:
             if True == self.gameMode_ :
                 raise reachedEndOfList
@@ -99,30 +91,24 @@ class pointer(object):
                 if self.index_ > (1+self.INDEX_MAX):
                     raise IndexError
 
-        # Calculs ...
         self._whereAmI()
         return self
 
     # -=
     #
     def __isub__(self, dec):
-        # Décrément
         self.index_ -= dec
-
-        # On reste dans la liste
         if self.index_ < self.INDEX_MIN:
             raise IndexError
 
-        # Calculs ...
         self._whereAmI()
         return self
 
-    # Changement de colonne
+    # Change "row"
     #
     def decRow(self, dec = 1):
         row = self.row_ - dec
         if row < 0:
-            # Sortie par la gauche => on reépparait à droite
             self.index_ = (1 + self.line_ ) * self.ROW_COUNT + row 
         else:
             self.index_ -= dec
@@ -131,13 +117,12 @@ class pointer(object):
     def incRow(self, inc = 1):
         row = self.row_ + inc
         if row >= self.ROW_COUNT:
-            # Sortie par la droite => on reépparait à gauche
             self.index_ = (self.line_ - 1) * self.ROW_COUNT + row 
         else:
             self.index_ += inc
         self._whereAmI()
     
-    # Changement de ligne
+    # Change "line"
     #
     def decLine(self, dec = 1):
         self.index_ -= self.ROW_COUNT * dec
@@ -152,7 +137,7 @@ class pointer(object):
         self._whereAmI()
 
     #
-    # Changement de valeur
+    # Change the value
     #
 
     def incValue(self, value):
@@ -164,24 +149,17 @@ class pointer(object):
         return self.VALUE_MAX if newVal < (self.VALUE_MIN - 1) else newVal
 
     #
-    #   Méthodes à usage interne 
+    #   internal methods
     #
 
-    # Changement de coordonnées
+    # Updating coordinates
     #
     def _whereAmI(self):
-        # Mes coordonnées
-        #
-
         # V. math
         self.line_ = math.floor(self.index_ / 9)
         self.row_ = self.index_ - 9 * self.line_
         
-        # V. 2
-        #self.row_ = int(self.index_ % self.ROW_COUNT)
-        #self.line_ = int((self.index_ - self.row_) / self.ROW_COUNT)
-
-        # Indice du "petit" carré dans lequel je me trouve
+        # Small square ID
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
 
 # EOF

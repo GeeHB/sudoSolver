@@ -4,8 +4,8 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet outputs
-#                   Classe abstraite, base tous les affichages
+#   Description :   outputs obect
+#                   Abstract class, base for all drawings
 #
 #   Version     :   0.1.24
 #
@@ -17,29 +17,29 @@ from ownExceptions import sudokuError
 from pointer import pointer
 
 #
-# outputs - Affichage de la grille de Sudoku 
+# outputs - abstract class containing all drawing methods 
 #
 class outputs(object):
 
     #
-    # Constantes publiques
+    # Public consts
     #
 
     EVT_KEYDOWN         = None  # By default the event doesn't exist
     EVT_QUIT            = None
 
-    # Touches pour les déplacements et les éditions
+    # Defined keys
     #
-    MOVE_LEFT           = "s"     # Déplacement dans la grille
+    MOVE_LEFT           = "s"     # Moving in the grid (or in browse mode)
     MOVE_RIGHT          = "f"
     MOVE_UP             = "e"
     MOVE_DOWN           = "x"
     
-    VALUE_DEC           = "+"     # Changement de la valeur de la case
+    VALUE_DEC           = "+"     # Change element value (edition mode)
     VALUE_INC           = "-"
 
-    EDIT_CANCEL         = "q"    # Annulation des modifications
-    EDIT_QUIT_AND_SAVE  = "w"    # Fin des modif. et enregistrement
+    EDIT_CANCEL         = "q"
+    EDIT_QUIT_AND_SAVE  = "w"
 
     #  App colours
     #
@@ -62,9 +62,9 @@ class outputs(object):
     # "private" members
     #
 
-    # Affichage des étape lors de la résolution
-    detailsRatio_ = 0          # Taux d'affichage de la progression (0 = aucun)
-    detailsCount_ = 0          # Indice d'affichage
+    # Display grid during resolution
+    detailsRatio_ = 0          # Display rate (0 = none)
+    detailsCount_ = 0
 
     mode_ = MODE_DEFAULT       # Display mode
     gridFileName_ = None
@@ -72,16 +72,26 @@ class outputs(object):
     def setDetailsRatio(self, detailsRatio = 0):
         self.detailsRatio_ = detailsRatio
 
-    # En attente de l'appui d'une touche
-    #  à surcharger
+    # Display text
+    #
+    # can be overloaded
+    def displayText(self, text, information = True):
+        # By default, text is displayed on the console
+        print(text)
+
+    # Waiting for an event
+    #   @allEvents : returns when any event accirs (by default only keyboard and exit events)
+    #   returns the event
+    #
+    #  can be overloaded
     def waitForEvent(self, elements = None, allEvents = False):
         pass
 
-    # Accepte l'édition ?
+    # Is this display mode compatible with edition ?
     def allowEdition(self):
         return not (0 == (self.mode_ & self.MODE_EDIT))
 
-    # Accepte l'analyse des dossier ?
+    # Is this display mode compatible with forlder browsing ?
     def allowFolderBrowsing(self):
         return not (0 == (self.mode_ & self.MODE_BROWSEFOLDER))
 
@@ -98,23 +108,22 @@ class outputs(object):
     def draw(self, elements):
        pass
 
-    # Draw asingle element in the grid
+    # Draw a single element in the grid
     #   can be overloaded
     def drawSingleElement(self, row, line, value, bold, bkColour, txtColour):
         pass
 
-    # Update the display
+    # Update the window
     #   can be overloaded
     def update(self):
         pass
 
-    # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
+    # Update display from beginning to 'limit' (if not None)
     #
     def updateGrid(self, elements, limit):
         
         if self.detailsRatio_ > 0 :
-            # Mise à jour de l'affichage ?
-            #
+            # Display details ?
             self.detailsCount_ += 1
             if 0 == (self.detailsCount_ % self.detailsRatio_):
                 self._update(elements, limit)
@@ -126,13 +135,12 @@ class outputs(object):
         pass
 
     #
-    # Méthodes "privées"
+    # "private" methods
     #
 
-    # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
-    #  à surcharger
+    # Update display from beginning to 'limit' (if not None)
+    # can be overloaded
     def _update(self, elements, limit):
-      # Par défaut on ne fait rien
       pass  
 
  # EOF
