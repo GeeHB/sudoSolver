@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.24
+#   Version     :   0.1.25-2
 #
-#   Date        :   2020-09-08
+#   Date        :   2020-09-13
 #
 
 from outputs import outputs

@@ -8,9 +8,9 @@
 #
 #   Description :   Display and solve a sudoku grid
 #
-#   Version     :   0.1.24
+#   Version     :   0.1.25-2
 #
-#   Date        :   2020-09-08
+#   Date        :   2020-09-13
 #
 
 from cmdLineParser import cmdLineParser
@@ -22,7 +22,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.25"
+CURRENT_VERSION = "0.1.25-2"
 
 # Command line options
 #
@@ -46,14 +46,13 @@ CMD_OPTION_DETAILS = "d"         # Show progression details
 #
 def _usage(color):
     print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]))
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Résolution d'un Sudoku. Le fichier {srcName} contient la grille à résoudre")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Lancement en mode édition. Le fichier {sudoName} sera crée ou modifié")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Edition et résolution d'une nouvelle grille. Le fichier {sudoName} sera crée ou modifié")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Affichage en mode console (term ou nCurses si disponible)")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Affichage et édition des grilles de sudokus contenus dans le dossier {folder}")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Affichage du contenu de {folder} puis résolution du sudoku sélectionné")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Affichage en mode console (term ou nCurses si disponible)")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Fréquence d'affichage des grilles lors de la résolution (0 = aucun, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Find a Sudoku's solution. The file {srcName} the grid to solve")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Start the edition mode. The file {sudoName} will be created or modified")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Edit and solve a new grid. the file {sudoName} will be created or modified")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Console display mode (if term or nCurses are available)")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Browser the folder {folder}. All contained grids will be displayed")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Browse the {folder} folder and solve the choosen Sudoku's grid")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
 
 if __name__ == '__main__':
 
@@ -216,10 +215,10 @@ if __name__ == '__main__':
         # Search the solution
         if solveMode:       
             if False == editMode:
-                solver.displayText("Press a key to start resolution")
+                solver.displayText("Press a key to start resolution", False)
                 solver.waitForKeyDown()
 
-            solver.displayText("Starting ...")
+            solver.displayText("Solving ...", False)
             attempts, duration = solver.resolve()
 
             # Display the solution
@@ -229,7 +228,7 @@ if __name__ == '__main__':
             solver.displayText("Resolution duration : " + str(duration) + " second(s)")
             solver.displayText("Attempts : " + str(attempts)) 
 
-            solver.displayText("Press a key to quit")
+            solver.displayText("Press a key to quit", False)
             solver.waitForKeyDown()
 
         solver.close()

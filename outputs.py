@@ -7,9 +7,9 @@
 #   Description :   outputs obect
 #                   Abstract class, base for all drawings
 #
-#   Version     :   0.1.24
+#   Version     :   0.1.25-2
 #
-#   Date        :   2020-09-08
+#   Date        :   2020-09-13
 #
 
 import os
@@ -75,7 +75,7 @@ class outputs(object):
     # Display text
     #
     # can be overloaded
-    def displayText(self, text, information = True):
+    def displayText(self, text, information = True, elements = None):
         # By default, text is displayed on the console
         print(text)
 

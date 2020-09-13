@@ -9,9 +9,9 @@
 #                   
 #                   pyOutputs inherits outputs class
 #
-#   Version     :   0.1.24
+#   Version     :   0.1.25-2
 #
-#   Date        :   2020-09-08
+#   Date        :   2020-09-13
 #
 
 from outputs import outputs
@@ -48,7 +48,10 @@ FILE_FONT_SIZE          = 25
 FILE_FONT_POS_X         = 35
 FILE_FONT_POS_Y         = 5
 
-ERASE_NAME_AFTER        = 2000  # in ms
+# Events frequencies in ms
+#
+DEF_MSG_HIDING_FREQ     = 2000  # Hide the filename
+DEF_BLINKING_FREQ       = 750   # blinking freq.
 
 #
 # textSurface - "subsurface" containig a single line of text
@@ -59,6 +62,7 @@ class textSurface(object):
     position_   = (0,0)    
     font_       = None      # Font used for drawing the text
     eventID_    = 0         # Event ID - optionnal
+    eventFreq_  = 0
 
     # Construction
     def __init__(self, fontName, fontSize):
@@ -67,6 +71,10 @@ class textSurface(object):
     # Valid ?
     def isValid(self):
         return True if self.surface_ else False
+
+    # Visible ?
+    def isVisible(self):
+        return self.isValid()
 
     # My surface
     def surface(self):
@@ -89,7 +97,7 @@ class textSurface(object):
             del self.surface_
             self.surface_ = None
 
-    # Dimensions & position
+    # Position
     #
     
     # Bounding rectangle
@@ -104,12 +112,48 @@ class textSurface(object):
     def moveTo(self, x, y):
         self.position_ = (x,y)
 
+    # Dimensions
+    #
+    def getWidth(self):
+        return 0 if not self.isVisible() else self.surface_.get_width()
+    def getHeight(self):
+        return 0 if not self.isVisible() else self.surface_.get_height()
+
     # Event ID
+    #
     def eventID(self):
         return self.eventID_
-
-    def setEventID(self, id):
+    def setEventID(self, id, freq):
         self.eventID_ = id
+        self.eventFreq_ = freq
+
+    # Timer
+    #
+    def startTimer(self):
+        pygame.time.set_timer(self.eventID(), self.eventFreq_)
+    def killTimer(self):
+        pygame.time.set_timer(self.eventID(), 0)
+    def frequency(self):
+        return self.eventFreq_
+
+#
+# blinkingText - "subsurface" containig a single line of blinking text
+#
+class blinkingText(textSurface):
+    visible_        = True
+
+    # Construction
+    def __init__(self, fontName, fontSize):
+        super().__init__(fontName, fontSize)
+
+    # Text visibility
+    #
+    def isVisible(self):
+        return self.visible_ if self.isValid() else False
+
+    def changeVisibility(self):
+        self.visible_ = not self.visible_
+        return self.visible_
 
 #
 # pyOutputs - Display sudoku's grid using PYGame library
@@ -151,6 +195,9 @@ class pyOutputs(outputs):
 
     # Display the grid name
     sFileName_       = None
+
+    # Text message
+    sMessage_ = None
         
     # Construction
     #
@@ -184,16 +231,21 @@ class pyOutputs(outputs):
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)
         self.sFileName_.moveTo(FILE_FONT_POS_X, FILE_FONT_POS_Y)
-        self.sFileName_.setEventID(pygame.USEREVENT + 1)   # event for text hidding
+        self.sFileName_.setEventID(pygame.USEREVENT + 1, DEF_MSG_HIDING_FREQ)   # event for text hiding
+
+        # Messages
+        self.sMessage_ = blinkingText(FILE_FONT_NAME, FILE_FONT_SIZE)
+        self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
    
     # Display text
     #
-    def displayText(self, text, information):
+    def displayText(self, text, information, elements):
         if True == information:
            super().displayText(text) 
         else:
             # Display text on top of the board
-            print(text)
+            self._showMessage(text, elements)
+            self._refresh(elements)
     
     # Wait for an event
     #
@@ -221,14 +273,21 @@ class pyOutputs(outputs):
                 # returns all events ?
                 if True == allEvents:
                     finished = True
+            # New filename to display
             elif event.type == self.sFileName_.eventID():
                 # Erase the name
-                self.sFileName_.erase()                    
-                self._drawBackground()
-                self.draw(elements)
-                self.update()
+                self.sFileName_.erase()  
+                self._refresh(elements)
 
-                pygame.time.set_timer(self.sFileName_.eventID(), 0)
+                # kill the timer
+                self.sFileName_.killTimer()
+                if True == allEvents:
+                    finished = True
+            # Blinking text
+            elif event.type == self.sMessage_.eventID():
+                # Change rext visibility
+                self.sMessage_.changeVisibility()
+                self._refresh(elements)
                 if True == allEvents:
                     finished = True
 
@@ -242,7 +301,7 @@ class pyOutputs(outputs):
         self.sFileName_.setText(fileName, self.TXT_COLOUR, outputs.BK_COLOUR_FILENAME)
         
         # erase this name after a while ...
-        pygame.time.set_timer(self.sFileName_.eventID(), ERASE_NAME_AFTER)
+        self.sFileName_.startTimer()
 
     
     # Draw all the content of the current grid
@@ -292,6 +351,15 @@ class pyOutputs(outputs):
         if self.sFileName_ and self.sFileName_.isValid():
             # draw the name
             self.win_.blit(self.sFileName_.surface(), self.sFileName_.position())
+        
+        # A message ?
+        if self.sMessage_ and self.sMessage_.isVisible():
+            x = int((self.width_ - self.sMessage_.getWidth())/2)
+            y = int((self.height_ - self.sMessage_.getHeight())/2)
+
+             # draw the text
+            self.win_.blit(self.sMessage_.surface(), (x,y))
+        
         pygame.display.update()
     
     def close(self):
@@ -301,6 +369,15 @@ class pyOutputs(outputs):
     #
     # "private" methods
     #
+
+    # Refresh the whole window
+    #
+    def _refresh(self, elements):
+        self._drawBackground()
+        if elements:
+            self.draw(elements)
+        else:
+            self.update()
 
     # Handle window's resize
     #
@@ -366,7 +443,7 @@ class pyOutputs(outputs):
 
         self.update()
 
-    # Change the size of themain window
+    # Change the size of the main window
     #
     def _setWindowSize(self):
         # Updates dimensions
@@ -377,5 +454,28 @@ class pyOutputs(outputs):
     def _update(self, elements, limit):
         # On réaffiche toute la grille ...
         self.draw(elements) 
+
+    # Show text message (on top of the grid)
+    #
+    def _showMessage(self, message, elements):
+        if self.sMessage_:
+            # Remove previous message (if any)
+            self._clearMessage(elements)
+
+            # Draw on the specific surface
+            self.sMessage_.setText(message, self.TXT_COLOUR, outputs.BK_COLOUR)
+
+            # start blinking
+            self.sMessage_.startTimer()
+
+    # Clear the current text message
+    #
+    def _clearMessage(self, elements):
+        if self.sMessage_:
+            self.sMessage_.erase()
+            self.sMessage_.killTimer()
+
+            # redraw ...
+            self._refresh(elements)
 
  # EOF

@@ -7,9 +7,9 @@
 #   Description :   Définition de l'objet :
 #                       - sudoku : "LA" grille de sudoku : édtion et/ou résolution
 #
-#   Version     :   0.1.24
+#   Version     :   0.1.25-2
 #
-#   Date        :   2020-09-08
+#   Date        :   2020-09-13
 #
 
 import os, time
@@ -88,7 +88,7 @@ class sudoku(object):
     #
     def displayText(self, text, information = True):
         # call display's method
-        self.outputs_.displayText(text, information)
+        self.outputs_.displayText(text, information, self.elements_)
     
     # What can we do ?
     #
@@ -456,6 +456,7 @@ class sudoku(object):
 
                     # Affichage
                     self.outputs_.updateGrid(self.elements_, position)
+                    #self.outputs_.waitForEvent(self.elements_, True)
 
                     # On avance jusqu'à la position vide suivante
                     position = self._findFirstEmptyPos(position)

@@ -1,8 +1,8 @@
 Version 0.1.25
-    *  sept. 2020
-    + Translation
+    * 13 sept. 2020
+    + Translation in English
     + Minor bug fixes
-    + add textSurface object
+    + add textSurface and blinkingText objects for drawing text on top of sudoku's grid
        
 Known issues :
 	+ no French keyboard on windows::pygame
