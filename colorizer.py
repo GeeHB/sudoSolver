@@ -8,11 +8,11 @@
 #                     - colorizer : Gestion de la colorisation des sorties enmode terminal (et/ou texte)
 #                     - textAttribute : Liste des attributs
 #                     - textColor : Liste des couleurs de texte
-#                     - backColor : Liste des coleurs de fond
+#                     - backColor : Liste des couleurs de fond
 #
 #   Remarque    :  le module termcolor doit être installé
 #
-#   Version     :   0.1.25-2
+#   Version     :   0.1.26
 #
 #   Date        :   9 mai 2020
 #
@@ -29,39 +29,39 @@ except ModuleNotFoundError:
 #
 class backColor:
 
-    GRIS = "on_grey"
-    ROUGE = "on_red"
-    VERT = "on_green"
-    JAUNE = "on_yellow"
-    BLEU = "on_blue"
+    GREY = GRIS = "on_grey"
+    RED = ROUGE = "on_red"
+    GREEN = VERT = "on_green"
+    YELLOW = JAUNE = "on_yellow"
+    BLUE = BLEU = "on_blue"
     MAGENTA = "on_magenta"
     CYAN = "on_cyan"
-    BLANC = "on_white"
+    WHITE = BLANC = "on_white"
 
 #
 # textkColor - Couleurs du texte
 #
 class textColor:
 
-    GRIS = "grey"
-    ROUGE = "red"
-    VERT = "green"
-    JAUNE = "yellow"
-    BLEU = "blue"
+    GREY = GRIS = "grey"
+    RED = ROUGE = "red"
+    GREEN = VERT = "green"
+    YELLOW = JAUNE = "yellow"
+    BLUE = BLEU = "blue"
     MAGENTA = "magenta"
     CYAN = "cyan"
-    BLANC = "white"
+    WHITE = BLANC = "white"
 
 #
 # colorAttribute - Attributs d'affichage
 #
 class textAttribute:
-    GRAS = "bold"
-    FONCE = "dark"
-    SOULIGNE = "underline"
-    CLIGNTANT = "blink"
-    INVERSE = "reverse"
-    CACHE = "concealed"
+    BOLD = GRAS = "bold"
+    DARK = FONCE = "dark"
+    UNDERLINE = SOULIGNE = "underline"
+    BLINK = CLIGNOTANT = "blink"
+    REVERSE = INVERSE = "reverse"
+    CONCELED = CACHE = "concealed"
 
 #
 #   colorizer  - Colorisation du texte
@@ -77,7 +77,7 @@ class colorizer:
 
         if True == colored and False == packageTermColor:
             self.colored_ = False
-            print(self.checkBoxLine(False, "Le package termcolor (python-termcolor) n'est pas installé"))
+            print(self.checkBoxLine(False, "termcolor package (python-termcolor) is not installed"))
                         
     # Formatage d'une ligne de texte
     def colored(self, text, txtColor = None, bkColor = None, formatAttr = None):

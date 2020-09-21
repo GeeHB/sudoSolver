@@ -4,12 +4,12 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet :
-#                       - sudoku : "LA" grille de sudoku : édtion et/ou résolution
+#   Description :   sudoku object 
+#                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.25-2
+#   Version     :   0.1.26
 #
-#   Date        :   2020-09-13
+#   Date        :   2020-09-21
 #
 
 import os, time
@@ -18,33 +18,29 @@ from element import element, elementStatus
 from pointer import pointer
 from ownExceptions import reachedEndOfList, sudokuError
 
-# Affichage (s) de la grille de Sudoku
-from consoleOutputs import consoleOutputs       # Windows et tous les autres OS
+from consoleOutputs import consoleOutputs
 
 #
-# Constantes publiques
+# Public consts
 #
 
-VALUE_SEPARATOR = ","           # Séparateur de valeurs dans les fichiers
+VALUE_SEPARATOR = ","           # Value separator in files
 
 #
-#   sudoku : REdition et/ou résolution du sudoku
-#
-#       Les "cases" sont enregistrées dans une liste, ligne après ligne.
-#       l'objet "pointer" permet de passer d'une position linéaire au tuple (x, y, "petite" grille") 
+#   sudoku : Edition and/or resolution of a single sudoku grid
 #
 class sudoku(object):
 
-    # Données membres
+    # Members
     #
     gridFileName_ = "" 
-    elements_ = []          # Les "cases" de la grille
-    outputs_ = None         # Object for displaying
-    
-    attempts_ = 0           # #hyptothèses
-    start_ = 0              # "heure" de début de la résolution
+    elements_ = []          # The grid (as a flat list)
+    outputs_ = None
 
-    # Index des premiers éléments des "petits" carrés (rien ne sert de les calculer !!!)
+    attempts_ = 0
+    start_ = 0              # Resolution start-time
+
+    # top-left index of "small" squares
     squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
 
     # Construction
@@ -57,8 +53,8 @@ class sudoku(object):
         # Try PYGame
         if False == consoleMode:
             try:
-                from pyOutputs import pyOutputs
-                self.outputs_ = pyOutputs()
+                from pygameOutputs import pygameOutputs
+                self.outputs_ = pygameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed, outputs will be redirected to console")
             except sudokuError as e:
@@ -190,125 +186,104 @@ class sudoku(object):
     def load(self, fileName, mustExist):
         if None == fileName or 0 == len(fileName):
             # ???
-            raise sudokuError("Pas de nom de fichier")
+            raise sudokuError("No valid filename")
     
         self.gridFileName_ = fileName
         
-        # On essaye d'ouvir le fichier
+        # Open and read the file
         #
         try:
             file = open(fileName)
         except FileNotFoundError:
-            # Le fichier n'existe pas !
             if True == mustExist:
-                # Il doit être présent => erreur bloquante
-                raise sudokuError("Le fichier '" + fileName + "' n'existe pas")
+                raise sudokuError("The file '" + fileName + "' doesn't exist")
             else:
-                # Le fichier n'a pas besoin d'exister
-                print("Le fichier '" + fileName + "' n'existe pas. Il sera crée")
+                print("Creation of '" + fileName + "'")
                 return
             
-        # Un pointeur !
         pt = pointer(gameMode = False)
 
-        # Parcours des lignes 1 / 1
+        # Reading the lines
         for line in file: 
 
-            # Retrait du saut de ligne à la fin
+            # removing EOL
             if line[len(line) - 1] == "\n":
                 line = line[:len(line) - 1]
 
-            # Découpage des valeurs
             values = line.split(VALUE_SEPARATOR)
 
-            # Format incorrect pour la ligne
             if not pointer.ROW_COUNT == len(values):
-                raise sudokuError("Format invalide pour la ligne n° " + str(pt.line()+1)+ " - " + str(len(values)) + " valeurs")
+                raise sudokuError("Invalid format for line n° " + str(pt.line()+1)+ " - " + str(len(values)) + " values")
 
-            # Analyse et ajout des valeurs
-            #
             for val in values:
-                # Format valide ?
                 if val.isnumeric():
 
-                    # Dans [0,9] ?
+                    # in [0,9] ?
                     nVal = int(val)
                     if nVal < 0 or nVal > pointer.LINE_COUNT:
-                        raise sudokuError("Erreur : la valeur en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") n'est pas dans le bon intervalle : " + val)
+                        raise sudokuError("Error : le value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") isn't valid : " + val)
 
-                    # Tentative d'ajout de la valeur "originale"
-                    #
-
-                    # La valeur 0 correspond à une case vide
+                    #  Value "0" for empty element
                     if nVal > 0:
-                        # Vérification de la ligne
+                        # Check the line
                         if False == self._checkLine(pt, nVal):
-                            raise sudokuError("Erreur de ligne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                            raise sudokuError("Line value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                        # Vérification de la colonne
+                        # Check the row
                         if False == self._checkRow(pt, nVal):
-                            raise sudokuError("Erreur de colonne : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                            raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                        # Vérification du carré
+                        # Check the "small" square
                         if False == self._checkSquare(pt, nVal):
-                            raise sudokuError("Erreur de carré : la valeur " + val + " ne peut être mise en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                            raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
                         
-                        # Je peux l'ajouter !
+                        # add the value
                         self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
                 else:
                     if (len(val)):
-                        raise sudokuError("Erreur : la valeur en (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") n'est pas numérique : " + val)
+                        raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
 
-                # Valeur suivante
+                # Next value
                 pt += 1
 
         file.close()
 
         self.outputs_.setGridName(self.gridFileName_)
 
-    # Sauvegarde du fichier
+    # Save the file
     #
     def save(self):
         
-        # Ouverture du fichier
-        #
         try:
             file = open(self.gridFileName_, "w")
             
-            # Un pointeur !
             pt = pointer(gameMode = False)
-            
-            # Parcours de la grille
             for lIndex in range(pointer.LINE_COUNT) :
                 line = ""
                 for _ in range(pointer.ROW_COUNT):
                     el = self.elements_[pt.index()]
                     line+=str(0 if el.isEmpty() else el.value())
                     line+=VALUE_SEPARATOR
-
-                    # Valeur suivante
                     pt+=1
                 
-                # Ajout / retrait des séparateurs et sauts de ligne
+                # add separator
                 line = line[:len(line) - 1]
                 if lIndex < (pointer.LINE_COUNT -1):
                     line+="\n"
                 
-                # Ecriture de la ligne
                 file.write(line)
             
-            # Terminé
             file.close()
             return True
         except:
             raise sudokuError("Erreur lors de l'enregistrement de " + self.gridFileName_)
 
-    # Edition de la grille
+    # Edit / modify the grid
     #
-    #   Retourne un boolèen indiquant si la grille a été sauvegardée (ou pas)
+    #   Returns a boolean : grid saved ?
     #
     def edit(self):
-        # L'édition est impossible
+        # Can we edit this grid
         if None == self.outputs_ or False == self.outputs_.allowEdition():
             return False
 
@@ -320,20 +295,20 @@ class sudoku(object):
         prevPos = None                            # previous pos (if erase needed)
         
         while cont:
-            # Effacement de l'ancienne position
+            # if sel. changed, erase previously selected element
             if not None == prevPos:
                 self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), True, self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
             
-            # Affichage de la nouvelle valeur
+            # Hilight the new value
             self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), True, self.outputs_.SEL_BK_COLOUR, self.outputs_.SEL_TXT_COLOUR)
             self.outputs_.update()
             prevPos = pointer(currentPos)
 
-            # Analyse du clavier
+            # Wait for a keyboard event
             #
             event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
             
-            # change the cursor's position
+            # Change the cursor's position
             #
             if event.type == self.outputs_.EVT_KEYDOWN:
                 if self.outputs_.MOVE_LEFT == event.key:
@@ -389,28 +364,28 @@ class sudoku(object):
         # Saves changes or exit
         return self.save() if True == valid else False
     
-    # Résolution de la grille
+    # Try to solve the grid
     #
-    #   retourne le tuple (#essais, durée des traitements en s.)
+    #   return a tuple (#attempts, duration in s.)
     #
     def resolve(self):
         
-        # Initialiisation des compteurs
+        # for stats
         self.attempts_ = 0
         self.start_ = time.time()
             
-        # C'est parti !
+        # Let's go
         try:
             self._resolve()
         except reachedEndOfList:
-            # Terminé avec succès
+            # Found a solution !!!
             return (self.attempts_, time.time() - self.start_) 
         
         # ???
         return (0,0)
 
     #
-    # Méthodes internes
+    # Internal methods
     #
 
     # Empties the grid
@@ -419,160 +394,136 @@ class sudoku(object):
         for element in self.elements_:
             element.empty()
 
-    # Méthode interne pour la résolution de la grille de Sudoku
+    # Solve the grid (internal method without exceptions handling)
     #
     def _resolve(self):
 
         candidate = 0
-        position = pointer(gameMode = True)             # Un pointeur avec limite
+        position = pointer(gameMode = True)
         position = self._findFirstEmptyPos(position)
 
-        # A chaque itération, on considère que la grille est "pleine"
-        # jusqu'au pointeur courant - "position"
-        # la valeur "candidate" va être tentée à l'emplacement courant du pointeur
+        # All the elements "before" the current position are set with possible/allowed values
+        # we'll try to put the "candidate" value at the current position
         while True :
 
             candidate +=1
 
             if candidate > pointer.VALUE_MAX:
-                # Aucune valeur n'a été trouvée pour cet emplacement
-                # il faut donc reculer jusqu'à la précédente valeur "posée"
+                # No possible value found at this position
+                # we'll have to go backward, to the last value setted
                 position = self._previousPos(position)
 
-                # Mise à jour de l'affichage
                 self.outputs_.updateGrid(self.elements_, position)
 
-                # On repart de la valeur utilisée précédement (que l'on incrémentera au prochain passage)
+                # candidate value = prev. value (incremented at next occurence)
                 candidate = self.elements_[position.index()].empty()
             else :
-                # On essaye de positionner la valeur "candidate" à la "position"
+                # Try to put the "candidate" value at current position
                 #
                 if True == self._checkValue(position, candidate):
-                    # La valeur est acceptée (pour l'instant) !!!
+                    # possible !!!
                     self.attempts_ += 1
 
-                    # Je "pose" la valeur
                     self.elements_[position.index()].setValue(candidate)
-
-                    # Affichage
                     self.outputs_.updateGrid(self.elements_, position)
-                    #self.outputs_.waitForEvent(self.elements_, True)
-
+                    
                     # On avance jusqu'à la position vide suivante
                     position = self._findFirstEmptyPos(position)
                     
-                    # On tente toujours avec la plus petite valeur possible
+                    # At the next pos., we alawyas try the lowest possible value
                     candidate = 0 
 
 
-    # Peut-on mettre cette valeur à la position courante ?
+    # Can we put the value at the current position ?
     #
     def _checkValue(self, position, value):
         return self._checkLine(position, value) and self._checkRow(position, value) and self._checkSquare(position, value)
 
-    #   => dans cette ligne ?
+    #   => in the line ?
     def _checkLine(self, position, value):
         idFirst = position.line() * pointer.ROW_COUNT 
         for tIndex in range(pointer.ROW_COUNT):
             if self.elements_[tIndex + idFirst].value() == value:
-                # La valeur est déja en place
                 return False
-
-        # De toute évidence oui
+        # yes
         return True
 
-    #  => dans cette colonne ?
+    #  => in the row ?
     def _checkRow(self, position, value):
         idFirst = position.row()
         for tIndex in range(pointer.LINE_COUNT):
             if self.elements_[tIndex * pointer.ROW_COUNT + idFirst].value() == value:
-                # La valeur est déja en place
                 return False
-
-        # Ok
+        # yes
         return True
 
-    #  => dans ce "petit" carré
+    #  => in the "small" square ?
     def _checkSquare(self, position, value):
         tIndex = self.squareIndex_[position.squareID()]      
         for _ in range (3):
             for tRow in range(3):
                 if self.elements_[tIndex + tRow].value() == value:
-                    # La valeur est déja en place
                     return False
             tIndex+=pointer.ROW_COUNT
-
-        # Valeur non-trouvée => ok
+        # yes
         return True
 
-    # Recherche du premier emplacement vide en avant
+    # Find the next empty pos.
     #
-    #   Retourne un pointeur sur l'emplacement trouvé
-    #   une exeception reachedEndOfList est levée lorsque la fin 
-    #   de la liste est atteinte (la grille est donc pleine)
+    #   Returns a pointer to the found position
+    #   An exception reachedEndOfList is raised when the grid is full (the game is over and a solution has been found) 
     # 
     def _findFirstEmptyPos(self, start):
         newPos = pointer(start)
-
-        # On avance tant que la case n'est pas vide
         while not self.elements_[newPos.index()].isEmpty():
             newPos += 1
         
-        # Terminé
+        # Done
         return newPos
 
-    # Retour à la position précédente (dernière modification) 
+    # Reurns to the previous position 
     #
-    #   Retourne un pointeur sur l'emplacement trouvé
-    #   une exeception IndexError est levée lorsque
-    #   l'on sort de la liste (ie. la grille est surement impossible)
+    #   Returns a pointer to the found position
+    #   An IndexError excpetion is raised when the pointer is out of the grid (index -1)
+    #   No soluce for the grid
     # 
     def _previousPos(self, current):
         newPos = pointer(current)
 
-        # Je supprime cet élément
         self.elements_[newPos.index()].empty()
         newPos -= 1
 
-        # On recule tant que la case est "originale" (ie. tant qu'elle ne peut être modifiée)
         while self.elements_[newPos.index()].isOriginal():
             newPos -= 1
         
-        # Terminé
+        # Ok
         return newPos
 
-    # Recherche de la première valeur supérieure possible pour la case donnée
-    #
-    #   Retourne la valeur recherchée ou la valeur initiale (seule valeur possible)
+    # Find the next possible value for an element (greater than the current one)
     #
     def _findNextValue(self, position, val):
         nextVal = position.incValue(val)
         while not val == nextVal:
             if self._checkValue(position, nextVal):
-                # Trouvée !
                 return nextVal
-            
-            # La prochaine peut-être ?
+            # try the next value         
             nextVal = position.incValue(nextVal)
 
-        # Pas d'autre valeur possible
         return nextVal
 
-    # Recherche de la première valeur infèrieure possible pour la case donnée
-    #
-    #   Retourne la valeur recherchée ou la valeur initiale (seule valeur possible)
+    # Find the lowest possible value for an element
     #
     def _findPreviousValue(self, position, val):
         nextVal = position.decValue(val)
         while not val == nextVal:
             if self._checkValue(position, nextVal):
-                # Trouvée !
+                # found it
                 return nextVal
             
-            # La prochaine peut-être ?
+            # may be the prev ?
             nextVal = position.decValue(nextVal)
                
-        # Pas d'autre valeur possible
+        # No other possible value (than the initial)
         return nextVal
 
 # EOF

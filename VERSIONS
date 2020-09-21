@@ -1,17 +1,29 @@
+Version 0.1.26
+    *  21 sept. 2020
+    + End of translation in English
+    + Minor bug fixes
+        - center text of element's value
+        - blink text bug (not always visible)
+        - purge blinking event when deleting the message
+
+Known issues :
+	+ no French keyboard on windows::pygame
+    + pygame::window resizing error on Fedora (Linux ?)
+    + blinking error on MacOS (no text if proc. occupied)
+
 Version 0.1.25
     * 13 sept. 2020
     + Translation in English
     + Minor bug fixes
     + add textSurface and blinkingText objects for drawing text on top of sudoku's grid
        
-Known issues :
-	+ no French keyboard on windows::pygame
-
 Version 0.1.24
     *  8 sept. 2020
     + Start translation of comments an messages
-    + Handle grid name - displays on PYGame
-    + Added -b (browse and edit in a folder) and -bs (browse and solve)
+    + Handle grid's filename - displays on PYGame
+    + Added command line options : 
+        + -b (browse and edit in a folder)
+        + -bs (browse and solve)
     + Minor bug fixes
         + exit bug on edition mode
         + display bug : selected item redraw on window resize
@@ -33,13 +45,6 @@ Version 0.1.22
         + affichage du texte
         + "mode" d'affichage - Ajout de "l'énumérateur"
        
-Version 0.1.21
-    * 28 aout 2020
-    + Corrections mineures
-        + retaille de la police
-        + gestion des evt clavier
-    + Affichage des nombres
-
 Version 0.1.20
     * 27 aout 2020
     + Retaille de la fenêtre (première mouture)
@@ -49,7 +54,7 @@ Version 0.1.19
     * 21 aout 2020
     + Tests et non-regression
     + Corrections mineures
-        + bug Melk de l'éditeur en (9,9)
+        + bug Melk de l'éditeur en (8,8)
         + Affichages et messages d'erreur
     + Ajout de l'option -es : "Edit and Solve"
 
@@ -59,7 +64,7 @@ Version 0.1.18
         + Bug Melk dans l'éditeur lorsque pos = (0,0)
         + cas des grilles impossibles
         + Utilisation du module math plus rapide pour les calculs de conversion
-    + Ajout des stats (durée et nnombre de tentatives)
+    + Ajout des stats (durée et nombre de tentatives)
 
 Version 0.1.16
     * 19 aout 2020

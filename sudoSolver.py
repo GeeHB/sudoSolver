@@ -8,11 +8,12 @@
 #
 #   Description :   Display and solve a sudoku grid
 #
-#   Version     :   0.1.25-2
+#   Version     :   0.1.26
 #
-#   Date        :   2020-09-13
+#   Date        :   2020-09-21
 #
 
+import time
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, backColor, textColor, textAttribute    # for text coloration in console mode
 
@@ -22,7 +23,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.25-2"
+CURRENT_VERSION = "0.1.26"
 
 # Command line options
 #
@@ -45,14 +46,14 @@ CMD_OPTION_DETAILS = "d"         # Show progression details
 # Show usage
 #
 def _usage(color):
-    print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]))
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.FONCE]), ": Find a Sudoku's solution. The file {srcName} the grid to solve")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Start the edition mode. The file {sudoName} will be created or modified")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.FONCE]), ": Edit and solve a new grid. the file {sudoName} will be created or modified")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.FONCE]), ": Console display mode (if term or nCurses are available)")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Browser the folder {folder}. All contained grids will be displayed")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.FONCE]), ": Browse the {folder} folder and solve the choosen Sudoku's grid")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.FONCE]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+    print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.BOLD]))
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Find a Sudoku's solution. The file {srcName} the grid to solve")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Start the edition mode. The file {sudoName} will be created or modified")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Edit and solve a new grid. the file {sudoName} will be created or modified")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browser the folder {folder}. All contained grids will be displayed")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browse the {folder} folder and solve the choosen Sudoku's grid")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
 
 if __name__ == '__main__':
 
@@ -105,7 +106,7 @@ if __name__ == '__main__':
                     # no filename ...
                     showUsage = True
             else:
-                # Mode édition & résolution ?
+                # Edition & resolution ?
                 index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT_AND_SOLVE)
                 if not parameters.NO_INDEX == index:
                     # filename expected
@@ -219,6 +220,7 @@ if __name__ == '__main__':
                 solver.waitForKeyDown()
 
             solver.displayText("Solving ...", False)
+            time.sleep(1)
             attempts, duration = solver.resolve()
 
             # Display the solution
@@ -236,7 +238,7 @@ if __name__ == '__main__':
     except sudokuError as e:
         print(e)
     except IndexError:
-        print("No solution found for this grid")
+        print("No soluce found for this grid")
     #except:
     #    print("Unknown error")
 
