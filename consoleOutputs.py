@@ -4,24 +4,24 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet consoleOutputs pour l'affichage en mode console
+#   Description :   consoleOutputs object - Display the sudoku'grid on a console
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.26
+#   Version     :   0.1.26-2
 #
-#   Date        :   2020-09-21
+#   Date        :   2020-09-26
 #
 from outputs import outputs
 from element import element, elementStatus
 from pointer import pointer
 
 #
-# consoleOutputs - Affichages basiques en mode console
+# consoleOutputs - Basic display in console mode
 #
 class consoleOutputs(outputs):
     
-    # Affichage de toute la matrice
+    # Draw the grid
     #
     def draw(self, elements):
         
@@ -30,7 +30,7 @@ class consoleOutputs(outputs):
 
         print("")
 
-        # Affichage ligne par ligne
+        # Draw line / line
         #
         for _ in range(pointer.LINE_COUNT):
             line = ""
@@ -42,17 +42,17 @@ class consoleOutputs(outputs):
                 line+=" "
                 myIndex += 1
 
-                # Changement de carré ?
+                # Change "small square"
                 myCol += 1
                 if 3 == myCol:
                     line += " "
                     myCol = 0
             
-            # Fin de ligne
+            # EOL
             print(line)
             myLine += 1
             if 3 == myLine:
-                # ligne vide entre les "petits" carrés
+                # empty line between "small" squares
                 myLine = 0
                 print("")
  

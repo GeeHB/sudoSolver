@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.26
+#   Version     :   0.1.26-2
 #
-#   Date        :   2020-09-21
+#   Date        :   2020-09-26
 #
 
 import os, time
@@ -206,7 +206,7 @@ class sudoku(object):
         # Reading the lines
         for line in file: 
 
-            # removing EOL
+            # remove EOL
             if line[len(line) - 1] == "\n":
                 line = line[:len(line) - 1]
 

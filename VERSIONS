@@ -8,8 +8,8 @@ Version 0.1.26
 
 Known issues :
 	+ no French keyboard on windows::pygame
-    + pygame::window resizing error on Fedora (Linux ?)
-    + blinking error on MacOS (no text if proc. occupied)
+ 	+ pygame::window resizing error on Fedora (Linux ?)
+  	+ blinking error on MacOS (no text if proc. occupied)
 
 Version 0.1.25
     * 13 sept. 2020

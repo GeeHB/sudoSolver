@@ -7,9 +7,9 @@
 #   Description :   outputs obect
 #                   Abstract class, base for all drawings
 #
-#   Version     :   0.1.26
+#   Version     :   0.1.26-2
 #
-#   Date        :   2020-09-21
+#   Date        :   2020-09-26
 #
 
 import os

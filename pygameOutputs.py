@@ -9,19 +9,18 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   0.1.26
+#   Version     :   0.1.26-2
 #
-#   Date        :   2020-09-21
+#   Date        :   2020-09-26
 #
+
+import pygame, math
 
 from outputs import outputs
 
 from ownExceptions import reachedEndOfList, sudokuError
 from element import element, elementStatus
 from pointer import pointer
-
-import pygame
-import math
 
 # 
 # Internal conts.

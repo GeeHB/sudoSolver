@@ -4,11 +4,11 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet element : a single sudoku element
+#   Description :   element object definition - a single sudoku element
 #
-#   Version     :   0.1.26
+#   Version     :   0.1.26-2
 #
-#   Date        :   2020-09-21
+#   Date        :   2020-09-26
 #
 
 #
@@ -22,11 +22,11 @@ class elementStatus(object):
     ORIGINAL = 2        # Can't be changed (except on edition mode)
 
 #
-# element - Un élément (ie une case) du Sudoku
+# element - a single sudoku element
 #
 class element(object):
 
-    # Données membres
+    # Members
     #
     value_ = None                   # Num. value
     status_ = elementStatus.EMPTY   # Current state
@@ -34,41 +34,39 @@ class element(object):
     # Construction
     def __init__(self, value = None):
         if not None == value:
-            # On construction values are 'original'
+            # value is 'original'
             self.value_ = value
             self.status_ = elementStatus.ORIGINAL | elementStatus.SET
 
-    # Gestion de la valeur
+    # Set/modify the value
     #
-    #   Paramètres :
-    #           value : valeur numérique de la case (aucune vérification n'est effectuée)
-    #           original : la valeur est-elle originale ? Une valeur originale se sera pas modifiée
+    #           value : num. value (at this state the integrity is not checked)
+    #           original : "original" value ? An "original" value won't be modified
     #
     def setValue(self, value = None, original = False, editMode = False):
         if False == editMode :
-            # La valeur doit-être modifiable
+            # The element can't be "original"
             if not self.status_ and elementStatus.ORIGINAL:
-                # Mise à jour de la valeur
+                # Update the value
                 if not value == None:
                     self.value_ = value
-                    self.status_ = elementStatus.SET    # J'ai une valeur
+                    self.status_ = elementStatus.SET
 
                     if True == original:
                         self.status_ |= elementStatus.ORIGINAL
 
                 else:
-                    # Effacement de la valeur
                     self.status_ = elementStatus.EMPTY
         else:
-            # En mode édition on fait ce que l'on veut ...
+            # Edition mode => value can be changed
             self.value_ = value
             self.status_ = elementStatus.EMPTY if 0 == self.value_ else elementStatus.SET | elementStatus.ORIGINAL
 
     def value(self):
         return self.value_ if self.status_ & elementStatus.SET else None
 
-    # L'élément est (à nouveau) vide
-    # retourne l'ancienne valeur
+    # The element is empty
+    #   returns previous value
     def  empty(self):
         self.status_ = elementStatus.EMPTY
         return self.value_
