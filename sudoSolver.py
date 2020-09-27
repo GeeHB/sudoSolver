@@ -8,7 +8,7 @@
 #
 #   Description :   Display and solve a sudoku grid
 #
-#   Version     :   0.1.26-3
+#   Version     :   0.1.26-4
 #
 #   Date        :   2020-09-27
 #
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.26-3"
+CURRENT_VERSION = "0.1.26-4"
 
 # Command line options
 #

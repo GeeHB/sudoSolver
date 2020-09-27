@@ -6,7 +6,7 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   0.1.26-3
+#   Version     :   0.1.26-4
 #
 #   Date        :   2020-09-27
 #

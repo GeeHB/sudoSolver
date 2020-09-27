@@ -1,5 +1,5 @@
 Version 0.1.26
-    *  21 sept. 2020
+    * 27 sept. 2020
     + End of translation in English
     + Minor bug fixes
         - regression : console & curses display mode
@@ -9,8 +9,9 @@ Version 0.1.26
 
 Known issues :
 	+ no French keyboard on windows::pygame
- 	+ pygame::window resizing error on Fedora (Linux ?)
-  	+ blinking error on MacOS (no text if proc. occupied)
+    + no edition on console modes (won't be complicated to do :-))
+ 	- pygame::window resizing error on Fedora (Linux ?)
+  	- blinking error on MacOS (no text if proc. occupied)
 
 Version 0.1.25
     * 13 sept. 2020
