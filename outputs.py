@@ -7,12 +7,12 @@
 #   Description :   outputs obect
 #                   Abstract class, base for all drawings
 #
-#   Version     :   0.1.26-2
+#   Version     :   0.1.26-3
 #
-#   Date        :   2020-09-26
+#   Date        :   2020-09-27
 #
 
-import os
+import os, sys, time, os, termios, fcntl
 from ownExceptions import sudokuError
 from pointer import pointer
 
@@ -80,12 +80,15 @@ class outputs(object):
         print(text)
 
     # Waiting for an event
-    #   @allEvents : returns when any event accirs (by default only keyboard and exit events)
+    #   @allEvents : returns when any event occurs (by default only keyboard and exit events)
     #   returns the event
     #
     #  can be overloaded
     def waitForEvent(self, elements = None, allEvents = False):
-        pass
+        wait = True
+        while wait:
+            c = self._readKeyboard()
+            wait = (len(c) == 0)    
 
     # Is this display mode compatible with edition ?
     def allowEdition(self):
@@ -143,4 +146,30 @@ class outputs(object):
     def _update(self, elements, limit):
       pass  
 
+    # Read the keyboard
+    # returns  a  char
+    def _readKeyboard(self):
+
+        fd = sys.stdin.fileno()
+
+        oldterm = termios.tcgetattr(fd)
+        newattr = termios.tcgetattr(fd)
+        newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+        termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+        oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+
+        try:        
+            while True:            
+                try:
+                    c = sys.stdin.read(1)
+                    break
+                except IOError: 
+                    pass
+        finally:
+            termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+        return c
+        
  # EOF

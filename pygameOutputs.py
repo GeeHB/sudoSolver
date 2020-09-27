@@ -9,9 +9,9 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   0.1.26-2
+#   Version     :   0.1.26-3
 #
-#   Date        :   2020-09-26
+#   Date        :   2020-09-27
 #
 
 import pygame, math

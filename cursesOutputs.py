@@ -8,9 +8,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.26-2
+#   Version     :   0.1.26-3
 #
-#   Date        :   2020-09-26
+#   Date        :   2020-09-27
 #
 
 from outputs import outputs
@@ -55,6 +55,13 @@ class cursesOutputs(outputs):
         curses.init_pair(COLOUR_EVEN_ID, curses.COLOR_WHITE, curses.COLOR_BLACK)
         curses.init_pair(COLOUR_ODD_ID, curses.COLOR_BLUE, curses.COLOR_WHITE)
 
+    # Display text
+    #
+    def displayText(self, text, information, elements):
+        # no text with curses. Except when curses is not launched ...
+        if None == self.term_:
+           super().displayText(text) 
+    
     # Draw the whole matrix
     #
     def draw(self, elements):
@@ -80,7 +87,9 @@ class cursesOutputs(outputs):
     # Finish ...
     #
     def close(self):
-        # close curses
-        curses.endwin()
+        if self.term_:
+            # close curses
+            curses.endwin()
+            self.term_ = None
 
  # EOF

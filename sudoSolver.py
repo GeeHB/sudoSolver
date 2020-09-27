@@ -8,9 +8,9 @@
 #
 #   Description :   Display and solve a sudoku grid
 #
-#   Version     :   0.1.26-2
+#   Version     :   0.1.26-3
 #
-#   Date        :   2020-09-26
+#   Date        :   2020-09-27
 #
 
 import time
@@ -23,7 +23,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.26-2"
+CURRENT_VERSION = "0.1.26-3"
 
 # Command line options
 #
@@ -179,6 +179,7 @@ if __name__ == '__main__':
         
         if browseFolder:
             if not solver.allowFolderBrowsing():
+                solver.close()
                 raise sudokuError("This display mode is not compatible with folder browsing")
             fileName = solver.browse(folderName)
             if 0 == len(fileName):
@@ -192,9 +193,9 @@ if __name__ == '__main__':
     except IndexError:
         print("Too many lines in the file")
         exit(1)
-    #except:
-        #print("Unknown error while loading '" + fileName + "'")
-        #exit(1)
+    except:
+        print("Unknown error while loading '" + fileName + "'")
+        exit(1)
         
     # Edition and/or resolution
     #
@@ -205,8 +206,8 @@ if __name__ == '__main__':
         # Edition
         if editMode:
             if False == solver.allowEdition():
-                solver.displayText("This display mode is not compatible with grid edition")
                 solver.close()
+                solver.displayText("This display mode is not compatible with grid edition")
                 exit(1)
 
             # Succefully edited ?
@@ -220,20 +221,21 @@ if __name__ == '__main__':
                 solver.waitForKeyDown()
 
             solver.displayText("Solving ...", False)
-            time.sleep(1)
+                  
             attempts, duration = solver.resolve()
-
+            
             # Display the solution
             solver.showGrid()   
+            solver.displayText("Press a key to quit", False)
+
+            time.sleep(1)
+
+            solver.waitForKeyDown()
+            solver.close()
 
             # A few stats.
-            solver.displayText("Resolution duration : " + str(duration) + " second(s)")
-            solver.displayText("Attempts : " + str(attempts)) 
-
-            solver.displayText("Press a key to quit", False)
-            solver.waitForKeyDown()
-
-        solver.close()
+            print("Resolution duration : " + str(duration) + " second(s)")
+            print("Attempts : " + str(attempts)) 
 
     except sudokuError as e:
         print(e)

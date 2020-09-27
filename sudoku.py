@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.26-2
+#   Version     :   0.1.26-3
 #
-#   Date        :   2020-09-26
+#   Date        :   2020-09-27
 #
 
 import os, time
@@ -378,7 +378,7 @@ class sudoku(object):
         try:
             self._resolve()
         except reachedEndOfList:
-            # Found a solution !!!
+            # Find a solution !!!
             return (self.attempts_, time.time() - self.start_) 
         
         # ???
