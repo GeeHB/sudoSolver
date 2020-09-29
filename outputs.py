@@ -4,15 +4,15 @@
 #
 #   Author      :   JHB
 #
-#   Description :   outputs obect
+#   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   0.1.26-4
+#   Version     :   0.1.26-5
 #
-#   Date        :   2020-09-27
+#   Date        :   2020-09-29
 #
 
-import os, sys, time, os, termios, fcntl
+import os, sys, time, os
 from ownExceptions import sudokuError
 from pointer import pointer
 
@@ -68,6 +68,8 @@ class outputs(object):
 
     mode_ = MODE_DEFAULT       # Display mode
     gridFileName_ = None
+
+    keyHandler_ = None
 
     def setDetailsRatio(self, detailsRatio = 0):
         self.detailsRatio_ = detailsRatio
@@ -149,27 +151,19 @@ class outputs(object):
     # Read the keyboard
     # returns  a  char
     def _readKeyboard(self):
+        # Loaded ?
+        if None == self.keyHandler_:
+            try:
+                import posixKeyboard
+                self.keyHandler_ = posixKeyboard.posixKeyboard()
+            except ModuleNotFoundError:
+                import msKeyboard
+                self.keyHandler_ = msKeyboard.msKeyboard()
 
-        fd = sys.stdin.fileno()
+        # handle the key
+        return self.keyHandler_.getChar()
+        
 
-        oldterm = termios.tcgetattr(fd)
-        newattr = termios.tcgetattr(fd)
-        newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-        termios.tcsetattr(fd, termios.TCSANOW, newattr)
 
-        oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
-
-        try:        
-            while True:            
-                try:
-                    c = sys.stdin.read(1)
-                    break
-                except IOError: 
-                    pass
-        finally:
-            termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
-        return c
         
  # EOF

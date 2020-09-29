@@ -6,24 +6,23 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Display and solve a sudoku grid
+#   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   0.1.26-4
+#   Version     :   0.1.26-5
 #
-#   Date        :   2020-09-27
+#   Date        :   2020-09-29
 #
 
 import time
 from cmdLineParser import cmdLineParser
-from colorizer import colorizer, backColor, textColor, textAttribute    # for text coloration in console mode
-
+from colorizer import colorizer, backColor, textColor, textAttribute
 from sudoku import sudoku
 from ownExceptions import sudokuError
 
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.26-4"
+CURRENT_VERSION = "0.1.26-5"
 
 # Command line options
 #
@@ -35,6 +34,8 @@ CMD_OPTION_EDIT = "e"
 CMD_OPTION_EDIT_AND_SOLVE = "es"
 CMD_OPTION_BROWSE = "b"
 CMD_OPTION_BROWSE_AND_SOLVE = "bs"
+
+CMD_OPTION_SAVE_SOLUCE      = "x"
 
 CMD_OPTION_CONSOLE = "c"         # Console mode
 CMD_OPTION_DETAILS = "d"         # Show progression details
@@ -54,6 +55,7 @@ def _usage(color):
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browser the folder {folder}. All contained grids will be displayed")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browse the {folder} folder and solve the choosen Sudoku's grid")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE, formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file ({srcName}.soluce)")
 
 if __name__ == '__main__':
 
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     fileName = ""
     folderName = ""
     drawFreq = 0        # don't display progression
+    exportSoluce = False
 
     # Parse command line
     #
@@ -79,6 +82,9 @@ if __name__ == '__main__':
     else:
         # Console display mode ?
         consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
+
+        # export the solution ?
+        exportSoluce = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUCE) == parameters.NO_INDEX)
 
         # Solve mode ?
         index =  parameters.findAndRemoveOption(CMD_OPTION_SOLVE)
@@ -162,6 +168,10 @@ if __name__ == '__main__':
                 # no value
                 showUsage = True
 
+    # Export solution => solverMode activated
+    if exportSoluce and not solveMode:
+        showUsage = True
+
     # There should be no options left
     if parameters.options() > 0 or True == showUsage or (0 == len(fileName) and 0 == len(folderName)):
         _usage(color)
@@ -214,7 +224,7 @@ if __name__ == '__main__':
             if False == solver.edit():
                 solveMode = False
         
-        # Search the solution
+        # Search for the solution
         if solveMode:       
             if False == editMode:
                 solver.displayText("Press a key to start resolution", False)
@@ -236,6 +246,17 @@ if __name__ == '__main__':
             # A few stats.
             print("Resolution duration : " + str(duration) + " second(s)")
             print("Attempts : " + str(attempts)) 
+
+            # Export the solution ?
+            if exportSoluce:
+                comments = []
+                comments.append(" ")
+                comments.append(" Source file : " + solver.fileName())
+                comments.append(" ")
+                comments.append("Solved by JHB::sudoSolver.py in " + str(duration) + " sec.")
+                comments.append(" ")
+                if True == solver.save(True, comments):
+                    print("Soluce successfully saved in ", solver.fileName() + solver.FILE_EXPORT_EXTENSION) 
 
     except sudokuError as e:
         print(e)

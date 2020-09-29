@@ -1,17 +1,19 @@
 Version 0.1.26
-    * 27 sept. 2020
+    * 29 sept. 2020
     + End of translation in English
     + Minor bug fixes
         - regression : console & curses display mode
         - center text of element's value
         - blink text bug (not always visible)
         - purge blinking event when deleting the message
+    + -x option to save the solution in a file
 
 Known issues :
 	+ no French keyboard on windows::pygame
     + no edition on console modes (won't be complicated to do :-))
  	- pygame::window resizing error on Fedora (Linux ?)
   	- blinking error on MacOS (no text if proc. occupied)
+    - progression works only with console or curses (very slow on PYGame)
 
 Version 0.1.25
     * 13 sept. 2020

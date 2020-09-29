@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.26-4
+#   Version     :   0.1.26-5
 #
-#   Date        :   2020-09-27
+#   Date        :   2020-09-29
 #
 
 import os, time
@@ -21,19 +21,20 @@ from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
 #
-# Public consts
-#
-
-VALUE_SEPARATOR = ","           # Value separator in files
-
-#
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #
 class sudoku(object):
 
+    # Consts
+    #
+    VALUE_SEPARATOR =       ","         # Value separator in files
+    FILE_EXPORT_EXTENSION = ".soluce"   # A solution grid
+    FILE_COMMENTS =         "#"         # Comment lines start with
+
+
     # Members
     #
-    gridFileName_ = "" 
+    gridFileName_ = None
     elements_ = []          # The grid (as a flat list)
     outputs_ = None
 
@@ -80,6 +81,11 @@ class sudoku(object):
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
         
+    # Filename (of the source grid)
+    #
+    def fileName(self):
+        return self.gridFileName_
+    
     # Display text
     #
     def displayText(self, text, information = True):
@@ -122,14 +128,21 @@ class sudoku(object):
         for (_, _, fileNames) in os.walk(folderName):
             files.extend(fileNames)
             break
-        
+
+        # No soluce files in the list !
+        for file in files:
+            _, fileExt = os.path.splitext(file)
+            if self.FILE_EXPORT_EXTENSION == fileExt:
+                # remove the file from the list
+                files.remove(file)
+
         prev = -1
         index = 0
         done = len(files) <= index   # is the folder empty ?
         currentFile = ""
         while not done:
             # update drawings ?
-            if not prev == index:
+            if  prev != index:
                 currentFile = os.path.join(folderName, files[index])
 
                 # load the file
@@ -206,45 +219,47 @@ class sudoku(object):
         # Reading the lines
         for line in file: 
 
-            # remove EOL
-            if line[len(line) - 1] == "\n":
-                line = line[:len(line) - 1]
+            # Not a comment !
+            if line[0] != self.FILE_COMMENTS :
+                # remove EOL
+                if line[len(line) - 1] == "\n":
+                    line = line[:len(line) - 1]
 
-            values = line.split(VALUE_SEPARATOR)
+                values = line.split(self.VALUE_SEPARATOR)
 
-            if not pointer.ROW_COUNT == len(values):
-                raise sudokuError("Invalid format for line n° " + str(pt.line()+1)+ " - " + str(len(values)) + " values")
+                if not pointer.ROW_COUNT == len(values):
+                    raise sudokuError("Invalid format for line n° " + str(pt.line()+1)+ " - " + str(len(values)) + " values")
 
-            for val in values:
-                if val.isnumeric():
+                for val in values:
+                    if val.isnumeric():
 
-                    # in [0,9] ?
-                    nVal = int(val)
-                    if nVal < 0 or nVal > pointer.LINE_COUNT:
-                        raise sudokuError("Error : le value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") isn't valid : " + val)
+                        # in [0,9] ?
+                        nVal = int(val)
+                        if nVal < 0 or nVal > pointer.LINE_COUNT:
+                            raise sudokuError("Error : le value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") isn't valid : " + val)
 
-                    #  Value "0" for empty element
-                    if nVal > 0:
-                        # Check the line
-                        if False == self._checkLine(pt, nVal):
-                            raise sudokuError("Line value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                        #  Value "0" for empty element
+                        if nVal > 0:
+                            # Check the line
+                            if False == self._checkLine(pt, nVal):
+                                raise sudokuError("Line value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                        # Check the row
-                        if False == self._checkRow(pt, nVal):
-                            raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                            # Check the row
+                            if False == self._checkRow(pt, nVal):
+                                raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                        # Check the "small" square
-                        if False == self._checkSquare(pt, nVal):
-                            raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
-                        
-                        # add the value
-                        self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
-                else:
-                    if (len(val)):
-                        raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
+                            # Check the "small" square
+                            if False == self._checkSquare(pt, nVal):
+                                raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                            
+                            # add the value
+                            self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
+                    else:
+                        if (len(val)):
+                            raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
 
-                # Next value
-                pt += 1
+                    # Next value
+                    pt += 1
 
         file.close()
 
@@ -252,18 +267,35 @@ class sudoku(object):
 
     # Save the file
     #
-    def save(self):
+    def save(self, genName = False, comments = None):
+        
+        if None == self.gridFileName_:
+            return False
+        
+        fileName = self.gridFileName_
+        if genName :
+            fileName += self.FILE_EXPORT_EXTENSION
         
         try:
-            file = open(self.gridFileName_, "w")
+            file = open(fileName, "w")
             
+            # a few comments ?
+            if comments and len(comments):
+                for comment in comments:
+                    line = self.FILE_COMMENTS
+                    line+=" "
+                    line+=comment
+                    line+="\n"
+                    file.write(line)
+            
+            # File content
             pt = pointer(gameMode = False)
             for lIndex in range(pointer.LINE_COUNT) :
                 line = ""
                 for _ in range(pointer.ROW_COUNT):
                     el = self.elements_[pt.index()]
                     line+=str(0 if el.isEmpty() else el.value())
-                    line+=VALUE_SEPARATOR
+                    line+=self.VALUE_SEPARATOR
                     pt+=1
                 
                 # add separator
@@ -275,8 +307,8 @@ class sudoku(object):
             
             file.close()
             return True
-        except:
-            raise sudokuError("Erreur lors de l'enregistrement de " + self.gridFileName_)
+        except ModuleNotFoundError:
+            raise sudokuError("io error while writing in " + self.gridFileName_)
 
     # Edit / modify the grid
     #

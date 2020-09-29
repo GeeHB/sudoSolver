@@ -1,0 +1,5 @@
+termios
+fcntl
+pygame
+termcolor
+curses
