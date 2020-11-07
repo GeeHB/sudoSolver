@@ -8,7 +8,7 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   0.1.26-5
+#   Version     :   0.1.26-6
 #
 #   Date        :   2020-09-29
 #
@@ -22,7 +22,7 @@ from ownExceptions import sudokuError
 # App. consts
 #
 
-CURRENT_VERSION = "0.1.26-5"
+CURRENT_VERSION = "0.1.26-6"
 
 # Command line options
 #
@@ -47,13 +47,13 @@ CMD_OPTION_DETAILS = "d"         # Show progression details
 # Show usage
 #
 def _usage(color):
-    print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.BOLD]))
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Find a Sudoku's solution. The file {srcName} the grid to solve")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Start the edition mode. The file {sudoName} will be created or modified")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Edit and solve a new grid. the file {sudoName} will be created or modified")
+    print(color.colored("\nsudoSolver.py", formatAttr=[textAttribute.BOLD]), "\n")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Find a solution for the grid in the file {srcName}")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Edit or create the file {sudoName}")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {sudoName} ", formatAttr=[textAttribute.DARK]), ": Edit and solve the file {sudoName}")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browser the folder {folder}. All contained grids will be displayed")
-    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browse the {folder} folder and solve the choosen Sudoku's grid")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browse the folder {folder} and display contained grids")
+    print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {folder} ", formatAttr=[textAttribute.DARK]), ": Browse {folder} and solve the choosen grid")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
     print("\t", color.colored(CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE, formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file ({srcName}.soluce)")
 
@@ -83,13 +83,13 @@ if __name__ == '__main__':
         # Console display mode ?
         consoleMode = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
 
-        # export the solution ?
+        # Export the solution ?
         exportSoluce = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUCE) == parameters.NO_INDEX)
 
         # Solve mode ?
         index =  parameters.findAndRemoveOption(CMD_OPTION_SOLVE)
         if not parameters.NO_INDEX == index:
-            # filename expected
+            # File name expected
             try :
                 rets = parameters.parameterOrValue(index + 1)
                 if rets[1] == False : 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
             # Edition mode ?
             index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
             if not parameters.NO_INDEX == index:
-                # filename expected
+                # File name expected
                 try :
                     rets = parameters.parameterOrValue(index + 1)
                     if rets[1] == False : 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
                 # Edition & resolution ?
                 index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT_AND_SOLVE)
                 if not parameters.NO_INDEX == index:
-                    # filename expected
+                    # File name expected
                     try :
                         rets = parameters.parameterOrValue(index + 1)
                         if rets[1] == False : 
