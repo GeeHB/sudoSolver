@@ -6,9 +6,9 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   0.1.26-6
+#   Version     :   0.1.26-7
 #
-#   Date        :   2020-09-29
+#   Date        :   2020-11-14
 #
 
 import math

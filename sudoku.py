@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.26-6
+#   Version     :   0.1.26-7
 #
-#   Date        :   2020-09-29
+#   Date        :   2020-11-14
 #
 
 import os, time

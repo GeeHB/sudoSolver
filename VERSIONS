@@ -1,8 +1,8 @@
 Version 0.1.26
-    * 7 nov. 2020
+    * 14 nov. 2020
     + End of translation in English
     + Minor bug fixes
-        - displayed text
+        - displayed texts
         - regression : console & curses display mode
         - center text of element's value
         - blink text bug (not always visible)

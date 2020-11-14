@@ -9,7 +9,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.26-6
+#   Version     :   0.1.26-7
 #
 #   Date        :   3 mars 2020
 #
