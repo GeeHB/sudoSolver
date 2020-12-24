@@ -4,9 +4,7 @@
 #
 #   Author      :   JHB
 #
-#   Description :   Définition de l'objet cursesOutputs pour l'affiche avec la librairie Curses (Unix / LINUX et MAcOS)
-#
-#   Remarque    :  
+#   Description :   cursesOutputs object definition - Display a Sudoku grid using (n)Curses library (Unix / Linux and MacOS)
 #
 #   Version     :   0.1.28
 #
@@ -32,7 +30,7 @@ ORIGIN_X = 5
 ORIGIN_Y = 5
 
 #
-# cursesOutputs - Affichage de la grille de Sudoku en mode console avec (n)Curses 
+# cursesOutputs - Display a Sudoku grid using (n)Curses 
 #
 class cursesOutputs(outputs):
 

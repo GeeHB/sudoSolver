@@ -5,7 +5,7 @@
 #   Author      :   JHB
 #
 #   Description :   sudoku object 
-#                       -  edtion et/ou resolution of a sudoku's grid
+#                       -  edtion and/or resolution of a sudoku's grid
 #
 #   Version     :   0.1.28
 #

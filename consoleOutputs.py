@@ -4,9 +4,7 @@
 #
 #   Author      :   JHB
 #
-#   Description :   consoleOutputs object - Display the sudoku'grid on a console
-#
-#   Remarque    :  
+#   Description :   consoleOutputs object - Display the sudoku's grid on a console
 #
 #   Version     :   0.1.28
 #
