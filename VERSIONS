@@ -1,3 +1,7 @@
+Version 0.1.28
+    * 24 dev. 2020
+    + add sudoku::checkValue for UI purpose
+
 Version 0.1.27
     * 15 nov. 2020
     + Minor bug fixes

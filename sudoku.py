@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion et/ou resolution of a sudoku's grid
 #
-#   Version     :   0.1.27
+#   Version     :   0.1.28
 #
-#   Date        :   2020-11-15
+#   Date        :   2020-12-24
 #
 
 import os, time
@@ -415,6 +415,19 @@ class sudoku(object):
         
         # ???
         return (0,0)
+
+    # Get the list of possible values at a given position
+    #
+    def getValues(self, position):
+        values = []
+
+        for value in range(pointer.VALUE_MIN, pointer.VALUE_MAX):
+            if self._checkValue(position, value):
+                # This value can be used
+                values.append(value)
+        
+        # return the list
+        return values
 
     #
     # Internal methods

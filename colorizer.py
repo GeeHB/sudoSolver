@@ -12,7 +12,7 @@
 #
 #   Remarque    :  le module termcolor doit être installé
 #
-#   Version     :   0.1.27
+#   Version     :   0.1.28
 #
 #   Date        :   9 mai 2020
 #
