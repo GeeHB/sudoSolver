@@ -132,4 +132,13 @@ class cmdLineParser:
             if parameter[0] == self.optionChar_:
                 # Une option de +
                 self.options_+=1
+                
+    # Taille
+    def __len__(self) :
+        size = self.size()
+        return (size if size >= 0 else 0) # len ne doit pas retourner de valeur négative ! 
+        
+    # Accès
+    def __getitem__(self, index):
+        return self.at(index)     
 # EOF
