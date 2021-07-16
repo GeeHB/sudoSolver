@@ -10,11 +10,11 @@
 #                     - textColor : Liste des couleurs de texte
 #                     - backColor : Liste des couleurs de fond
 #
-#   Remarque    :  le module termcolor doit être installé
+#   Comment    :  le module termcolor doit être installé (pip3 install termcolor)
 #
-#   Version     :   0.1.28
+#   Version     :   1.2.24
 #
-#   Date        :   9 mai 2020
+#   Date        :   26 avril 2021
 #
 
 try :
@@ -72,21 +72,27 @@ class colorizer:
     colored_ = False       # Doit-on coloriser ?
     
     # Construction
-    def __init__(self, colored = True):
-        self.colored_ = colored
+    def __init__(self, colored = True, message = True):
+        self.setColorized(colored)
 
         if True == colored and False == packageTermColor:
             self.colored_ = False
-            print(self.checkBoxLine(False, "termcolor package (python-termcolor) is not installed"))
+            if message:
+                print("Attention - le package termcolor (python-termcolor) n'est pas installé")
+                # print("Warning - termcolor package (python-termcolor) is not installed")
                         
+    # Mise en place de la colorisation
+    def setColorized(self, colored = True):
+        self.colored_ = colored
+    
     # Formatage d'une ligne de texte
     def colored(self, text, txtColor = None, bkColor = None, formatAttr = None):
         # On colorise ou pas ...
         return colored(text, color=txtColor, on_color = bkColor, attrs = formatAttr) if True == self.colored_ else text
 
     # Début de ligne en mode [OK] / [KO]
-    def checkBoxLine(self, checked = True, text = "", color = None):
-        box="["
+    def checkBoxLine(self, checked = True, text = "", color = None, prefix = ""):
+        box=prefix + "["
         if True == checked:
             box+=self.colored("OK", textColor.VERT)
         else:

@@ -19,7 +19,8 @@ class elementStatus(object):
     EMPTY = 0
     SET = 1
     VALUED = 1
-    ORIGINAL = 2        # Can't be changed (except on edition mode)
+    OBVIOUS = 2
+    ORIGINAL = 4        # Can't be changed (except on edition mode)
 
 #
 # element - a single sudoku element
@@ -66,7 +67,7 @@ class element(object):
         return self.value_ if self.status_ & elementStatus.SET else None
 
     # The element is empty
-    #   returns previous value
+    #   returns the previous value
     def  empty(self):
         self.status_ = elementStatus.EMPTY
         return self.value_
@@ -78,5 +79,9 @@ class element(object):
     
     def isOriginal(self):
         return ((self.status_ & elementStatus.ORIGINAL) == elementStatus.ORIGINAL)
+
+    # At least can we modifiy this particular value ?
+    def isChangeable(self):
+        return self.status <= elementStatus.SET
 
 # EOF

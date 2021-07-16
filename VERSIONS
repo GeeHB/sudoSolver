@@ -1,5 +1,14 @@
-Version 0.1.28
-    * 24 dev. 2020
+Version 1.1.1
+    * 15 jul. 2021
+    + Search obvious values before brute-force searching
+        + Added elementStatus.OBVIOUS for obvious values
+        + 
+    + options.py : handle parameters and command-line parsing
+    + Minor bug fixes
+
+Version 1.0.0
+    * 24 dec. 2020
+    + Release 1 !!!
     + add sudoku::checkValue for UI purpose
     - Minor bug fixes
 

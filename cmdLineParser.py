@@ -9,9 +9,9 @@
 #
 #   Remarque    :  
 #
-#   Version     :   0.1.28
+#   Version     :   1.1.1
 #
-#   Date        :   3 mars 2020
+#   Date        :   26 avril 2021
 #
 
 import sys

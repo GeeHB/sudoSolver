@@ -538,7 +538,10 @@ class sudoku(object):
         self.elements_[newPos.index()].empty()
         newPos -= 1
 
-        while self.elements_[newPos.index()].isOriginal():
+        # while self.elements_[newPos.index()].isOriginal():
+        
+        # Don't touch "Original" nor "Obvious" values
+        while self.elements_[newPos.index()].isChangeable():
             newPos -= 1
         
         # Ok
