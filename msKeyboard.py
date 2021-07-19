@@ -7,9 +7,9 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   0.1.28
+#   Version     :   1.1.2
 #
-#   Date        :   2020-12-24
+#   Date        :   2021-07-19
 #
 
 import msvcrt
@@ -23,4 +23,3 @@ class msKeyboard(keyboard.keyboard):
          return msvcrt.getch()
 
 #EOF
-    

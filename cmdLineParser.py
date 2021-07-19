@@ -9,7 +9,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   1.1.1
+#   Version     :   1.1.2
 #
 #   Date        :   26 avril 2021
 #

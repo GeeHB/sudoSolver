@@ -8,9 +8,9 @@
 #
 #   Description :   Handle command-line
 #
-#   Version     :   0.1.28
+#   Version     :   1.1.2
 #
-#   Date        :   2020-12-24
+#   Date        :   2021-07-19
 #
 
 from cmdLineParser import cmdLineParser
@@ -26,6 +26,7 @@ CMD_OPTION_EDIT = "e"
 CMD_OPTION_EDIT_AND_SOLVE = "es"
 CMD_OPTION_BROWSE = "b"
 CMD_OPTION_BROWSE_AND_SOLVE = "bs"
+CMD_OPTION_SEARCH_OBVIOUS = "o"
 
 CMD_OPTION_SAVE_SOLUCE      = "x"
 
@@ -53,6 +54,7 @@ class options(object):
         self.folderName_ = ""
         self.drawFreq_ = 0        # don't display progression
         self.exportSoluce_ = False
+        self.obviousValues = False
 
     # Browse the command line
     #   returns True when ok
@@ -68,6 +70,9 @@ class options(object):
 
             # Export the solution ?
             self.exportSoluce_ = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUCE) == parameters.NO_INDEX)
+
+            # Search obvious values ?
+            self.obviousValues_ = not (parameters.findAndRemoveOption(CMD_OPTION_SEARCH_OBVIOUS) == parameters.NO_INDEX)
 
             # Solve mode ?
             index =  parameters.findAndRemoveOption(CMD_OPTION_SOLVE)
@@ -179,6 +184,7 @@ class options(object):
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+        print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS, formatAttr=[textAttribute.DARK]),": Search for obvious values before \"brute-force\" soluce searching")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE, formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file ({srcName}.soluce)")
 
 # EOF

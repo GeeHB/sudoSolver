@@ -8,9 +8,9 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   0.1.28
+#   Version     :   1.1.2
 #
-#   Date        :   2020-12-24
+#   Date        :   2021-07-19
 #
 
 import time
@@ -19,10 +19,7 @@ from colorizer import colorizer, backColor, textColor, textAttribute
 from sudoku import sudoku
 from ownExceptions import sudokuError
 
-# App. consts
-#
-
-CURRENT_VERSION = "1.1.1"
+CURRENT_VERSION = "1.1.2"
 
 #
 #   Functions
@@ -92,6 +89,17 @@ if __name__ == '__main__':
 
             solver.displayText("Solving ...", False)
                   
+            # Obvious values first ...
+            if True == params.obviousValues_:
+                count, duration = solver.findObviousValues()
+                
+                # Found obvious values ?
+                if count:
+                    print("Found " + str(count) + " obvious value(s) in " + str(duration) + " second(s)")
+                else:
+                    print("No obvious value found")
+
+            # ... and then try to resolve
             attempts, duration = solver.resolve()
             
             # Display the solution
@@ -122,7 +130,7 @@ if __name__ == '__main__':
         print(e)
     except IndexError:
         print("No soluce found for this grid")
-    #except:
-    #    print("Unknown error")
+    except:
+        print("Unknown error")
 
 # EOF

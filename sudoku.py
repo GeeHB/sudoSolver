@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   0.1.28
+#   Version     :   1.1.2
 #
-#   Date        :   2020-12-24
+#   Date        :   2021-07-19
 #
 
 import os, time
@@ -396,6 +396,25 @@ class sudoku(object):
         # Saves changes or exit
         return self.save() if True == valid else False
     
+    # Find all the obvious values
+    #
+    #   return a tuple (#obvious values, duration in s.)
+    #
+    def findObviousValues(self):
+        
+        # for stats
+        found = 0
+        self.start_ = time.time()
+            
+        values = 1
+        while 0 < values:
+            values = self._setObviousValues()
+            found += values
+
+        # Find a solution !!!
+        return (found, time.time() - self.start_)
+        
+        
     # Try to solve the grid
     #
     #   return a tuple (#attempts, duration in s.)
@@ -527,7 +546,7 @@ class sudoku(object):
         # Done
         return newPos
 
-    # Reurns to the previous position 
+    # Returns to the previous position 
     #
     #   Returns a pointer to the found position
     #   An IndexError excpetion is raised when the pointer is out of the grid (index -1)
@@ -582,15 +601,17 @@ class sudoku(object):
         found = 0
 
         position = pointer()
-        for index in range(pointer.INDEX_MAX+1):
-            
-            value = self._checkObviousValue(position)
-            if not None == value:
-                # One more obvious value !!!!
-                self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
-                self.outputs_.updateGrid(self.elements_, position)
-                found += 1
-            
+        
+        for index in range(pointer.INDEX_MAX):
+            if index == 26:
+                Stop = True
+            if self.elements_[position.index()].isEmpty():
+                value = self._checkObviousValue(position)
+                if not None == value:
+                    # One more obvious value !!!!
+                    self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
+                    found += 1
+                    
             # Next pos.
             position+=1
 
@@ -605,11 +626,11 @@ class sudoku(object):
     def _checkObviousValue(self, position):
         value = None
 
-        for test in range(pointer.VALUE_MIN, pointer.VALUE_MAX):
+        for test in range(pointer.VALUE_MIN, pointer.VALUE_MAX + 1):
             if self._checkValue(position, test):
                 # This value can be used
                 if value :
-                    # already a possible value at thispos.
+                    # already a possible value at this pos.
                     return None
                 value = test
        

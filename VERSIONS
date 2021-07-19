@@ -1,9 +1,7 @@
-Version 1.1.1
-    * 15 jul. 2021
+Version 1.1.2
+    * 19 jul. 2021
     + Search obvious values before brute-force searching
-        + Added elementStatus.OBVIOUS for obvious values
-        + 
-    + options.py : handle parameters and command-line parsing
+    + add options.py : handle parameters and command-line parsing
     + Minor bug fixes
 
 Version 1.0.0
