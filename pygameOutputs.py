@@ -9,7 +9,7 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.1.2
+#   Version     :   1.2.1
 #
 #   Date        :   2021-07-19
 #
@@ -303,7 +303,7 @@ class pygameOutputs(outputs):
         self.sFileName_.startTimer()
 
     
-    # Draw all the content of the current grid
+    # Draw the whole grid
     #
     def draw(self, elements):
         position = pointer(gameMode = False)
@@ -311,7 +311,7 @@ class pygameOutputs(outputs):
         for line in range(pointer.LINE_COUNT):
             for row in range(pointer.ROW_COUNT):    
                 currentElement = elements[position.index()]
-                self.drawSingleElement(row, line, currentElement.value(), currentElement.isOriginal(), self.BK_COLOUR, self.TXT_COLOUR)
+                self.drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
 
                 # next element ...
                 position+=1
@@ -320,7 +320,7 @@ class pygameOutputs(outputs):
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row, line, value, highLighted, bkColour, txtColour):
+    def drawSingleElement(self, row, line, value, bkColour, txtColour):
         
         # too small to be drawn ?
         if 0 == self.extSquareWidth_ :
@@ -334,11 +334,7 @@ class pygameOutputs(outputs):
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # The value (if valid)
-        if not None == value:
-            if highLighted : 
-                #font.set_bold(True)
-                txtColour = self.HILITE_COLOUR
-            
+        if None != value:
             self.sElement_.setText(str(value), txtColour)
             
             # Center the text

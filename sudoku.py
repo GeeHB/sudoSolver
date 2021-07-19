@@ -7,7 +7,7 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.1.2
+#   Version     :   1.2.1
 #
 #   Date        :   2021-07-19
 #
@@ -199,8 +199,11 @@ class sudoku(object):
     def load(self, fileName, mustExist):
         if None == fileName or 0 == len(fileName):
             # ???
-            raise sudokuError("No valid filename")
-    
+            raise sudokuError("No valid file name")
+
+        if os.path.isdir(fileName):
+            raise sudokuError(fileName + " is not a valid file")
+
         self.gridFileName_ = fileName
         
         # Open and read the file
@@ -329,10 +332,10 @@ class sudoku(object):
         while cont:
             # if sel. changed, erase previously selected element
             if not None == prevPos:
-                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), True, self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
+                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
             
             # Hilight the new value
-            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), True, self.outputs_.SEL_BK_COLOUR, self.outputs_.SEL_TXT_COLOUR)
+            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), self.outputs_.SEL_BK_COLOUR, self.outputs_.HILITE_COLOUR)
             self.outputs_.update()
             prevPos = pointer(currentPos)
 

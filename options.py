@@ -8,7 +8,7 @@
 #
 #   Description :   Handle command-line
 #
-#   Version     :   1.1.2
+#   Version     :   1.2.1
 #
 #   Date        :   2021-07-19
 #
@@ -162,7 +162,6 @@ class options(object):
 
         # There should be no options left
         if True == showUsage or parameters.options() > 0 or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
-        #if True == showUsage or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
             self.usage()
             return False
         

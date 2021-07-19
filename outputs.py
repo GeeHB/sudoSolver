@@ -7,7 +7,7 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.1.2
+#   Version     :   1.2.1
 #
 #   Date        :   2021-07-19
 #
@@ -48,6 +48,7 @@ class outputs(object):
     BK_COLOUR_FILENAME  = (220, 220, 245)
     TXT_COLOUR          = (64, 64, 64)
     HILITE_COLOUR       = (248, 128, 112)
+    OBVIOUS_COLOUR      = BORDER_COLOUR
 
     SEL_BK_COLOUR       = (50, 50, 255)
     SEL_TXT_COLOUR      = (255, 255, 255)

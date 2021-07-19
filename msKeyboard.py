@@ -7,12 +7,18 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   1.1.2
+#   Version     :   1.2.1
 #
 #   Date        :   2021-07-19
 #
 
-import msvcrt
+from ownExceptions import sudokuError
+
+try:
+    import msvcrt
+except ModuleNotFoundError:
+    raise sudokuError("msvcrt module is not installed")
+
 import keyboard
 
 class msKeyboard(keyboard.keyboard):
