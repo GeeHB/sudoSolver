@@ -253,7 +253,7 @@ class sudoku(object):
                                 raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
                             
                             # add the value
-                            self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, True)
+                            self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, elementStatus.ORIGINAL)
                     else:
                         if (len(val)):
                             raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
@@ -366,7 +366,7 @@ class sudoku(object):
                                     
                                     newVal = self._findPreviousValue(currentPos, val)
                                     if not newVal == val:
-                                        self.elements_[currentPos.index()].setValue(newVal, True, True)
+                                        self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
                                         prevPos = None
                                 else:
                                     if self.outputs_.VALUE_INC == event.key:
@@ -376,7 +376,7 @@ class sudoku(object):
                                         
                                         newVal = self._findNextValue(currentPos, val)
                                         if not newVal == val:
-                                            self.elements_[currentPos.index()].setValue(newVal, True, True)
+                                            self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
                                             prevPos = None
                                     else:
                                         # Cancel
@@ -454,6 +454,7 @@ class sudoku(object):
             candidate +=1
 
             if candidate > pointer.VALUE_MAX:
+                
                 # No possible value found at this position
                 # we'll have to go backward, to the last value setted
                 position = self._previousPos(position)
@@ -472,7 +473,7 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
                     self.outputs_.updateGrid(self.elements_, position)
                     
-                    # On avance jusqu'à la position vide suivante
+                    # Go to the next "empty" position
                     position = self._findFirstEmptyPos(position)
                     
                     # At the next pos., we alawyas try the lowest possible value
@@ -541,7 +542,7 @@ class sudoku(object):
         # while self.elements_[newPos.index()].isOriginal():
         
         # Don't touch "Original" nor "Obvious" values
-        while self.elements_[newPos.index()].isChangeable():
+        while not self.elements_[newPos.index()].isChangeable():
             newPos -= 1
         
         # Ok
@@ -573,5 +574,46 @@ class sudoku(object):
                
         # No other possible value (than the initial)
         return nextVal
+
+    # Search and set all the possible obvious values in the grid
+    #   returns the # of values found (and set)
+    #
+    def _setObviousValues(self):
+        found = 0
+
+        position = pointer()
+        for index in range(pointer.INDEX_MAX+1):
+            
+            value = self._checkObviousValue(position)
+            if not None == value:
+                # One more obvious value !!!!
+                self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
+                self.outputs_.updateGrid(self.elements_, position)
+                found += 1
+            
+            # Next pos.
+            position+=1
+
+        # End of search loop
+        return found
+
+
+    # Is there an obvious value for the given position ?
+    #
+    #      returns the value (if just one possible) or None
+    #
+    def _checkObviousValue(self, position):
+        value = None
+
+        for test in range(pointer.VALUE_MIN, pointer.VALUE_MAX):
+            if self._checkValue(position, test):
+                # This value can be used
+                if value :
+                    # already a possible value at thispos.
+                    return None
+                value = test
+       
+        # Finish
+        return value
 
 # EOF

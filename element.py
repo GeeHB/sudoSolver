@@ -44,7 +44,7 @@ class element(object):
     #           value : num. value (at this state the integrity is not checked)
     #           original : "original" value ? An "original" value won't be modified
     #
-    def setValue(self, value = None, original = False, editMode = False):
+    def setValue(self, value = None, status = 0, editMode = False):
         if False == editMode :
             # The element can't be "original"
             if not self.status_ and elementStatus.ORIGINAL:
@@ -53,8 +53,8 @@ class element(object):
                     self.value_ = value
                     self.status_ = elementStatus.SET
 
-                    if True == original:
-                        self.status_ |= elementStatus.ORIGINAL
+                    if 0 != status:
+                        self.status_ |= status
 
                 else:
                     self.status_ = elementStatus.EMPTY
@@ -82,6 +82,6 @@ class element(object):
 
     # At least can we modifiy this particular value ?
     def isChangeable(self):
-        return self.status <= elementStatus.SET
+        return self.status_ <= elementStatus.SET
 
 # EOF

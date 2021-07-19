@@ -52,7 +52,7 @@ class pointer(object):
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
 
-    # Copy
+    # Copy_checkValue
     #
     def set(self, other):
         self.index_ = other.index_

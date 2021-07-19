@@ -58,8 +58,7 @@ class options(object):
     #   returns True when ok
     def parse(self):
 
-        showUsage = True
-
+        showUsage = False
         parameters = cmdLineParser(CMD_OPTION_CHAR)
         if 0 == parameters.size():
             showUsage = True
@@ -153,12 +152,13 @@ class options(object):
                     showUsage = True
 
         # Export solution => solverMode activated
-        if self.exportSoluce_ and not solveMode:
+        if self.exportSoluce_ and not self.solveMode_:
             showUsage = True
 
         # There should be no options left
-        if parameters.options() > 0 or True == showUsage or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
-            self.usage(color)
+        if True == showUsage or parameters.options() > 0 or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
+        #if True == showUsage or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
+            self.usage()
             return False
         
         # Done

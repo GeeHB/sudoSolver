@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     # Parse command line
     #
-    params = options.options()
+    params = options()
     if False == params.parse() :
         exit(1)
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             if not solver.allowFolderBrowsing():
                 solver.close()
                 raise sudokuError("This display mode is not compatible with folder browsing")
-            fileName = solver.browse(params.folderName_)
+            params.fileName_ = solver.browse(params.folderName_)
             if 0 == len(params.fileName_):
                 # Cancelled by user
                 exit(0)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                 solveMode = False
         
         # Search for the solution
-        if solveMode:       
+        if params.solveMode_:       
             if False == params.editMode_:
                 solver.displayText("Press a key to start resolution", False)
                 solver.waitForKeyDown()
