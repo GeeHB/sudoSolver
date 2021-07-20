@@ -1,13 +1,16 @@
-Version 1.2.xxx
-    * xxx
-    + PIGame mode : shpws obvious values using border colour
+Version 1.2.2
+    * 20 jul. 2021
+    + Mutlithreaded mode - a specific thread is dedicated to PYGame's drawings
+        + drawThread.py
+        + -d options with no more freq.
+    + PYGame mode : shows obvious values using border colour
     + Fixes and corrections
         + Function protypes corrections
         + "-es {filename}" option checks if {filename} ia a real file
         + "-bs {folder}" option checks if {folder} ia a real folder
-        - Regression bug for curses et console modes on non-Windows env.
+        - Regression bug for curses and console modes on non-Windows env.
 
-Version 1.2.1
+Version 1.1.2
     * 19 jul. 2021
     + Search for obvious values before brute-force searching (-o parameter)
     + add options.py : handle parameters and command-line parsing

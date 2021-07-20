@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-
+#!/usr/bin/python  
+#
 # coding=UTF-8
 #
 #   File        :   sudoSolver.py
@@ -8,18 +8,19 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.2.1
+#   Version     :   1.2.2
 #
-#   Date        :   2021-07-19
+#   Date        :   202 1-07-19
 #
 
 import time
 from options import options
 from colorizer import colorizer, backColor, textColor, textAttribute
 from sudoku import sudoku
+from drawThread import drawThread
 from ownExceptions import sudokuError
 
-CURRENT_VERSION = "1.2.1"
+CURRENT_VERSION = "1.2.2"
 
 #
 #   Functions
@@ -42,7 +43,7 @@ if '__main__' == __name__:
     # Loading ...
     #
     try:
-        solver = sudoku(params.drawFreq_, params.consoleMode_)
+        solver = sudoku(params.consoleMode_)
         
         if params.browseFolder_:
             if not solver.allowFolderBrowsing():
@@ -87,14 +88,24 @@ if '__main__' == __name__:
                 solver.displayText("Press a key to start resolution", False)
                 solver.waitForKeyDown()
 
-            solver.displayText("Solving ...", False)
-                  
+            # Start the drawing thread
+            if params.drawProgress_:
+                myThread = drawThread(solver.outputs(), solver.grid())
+                myThread.start()
+            else:
+                solver.displayText("Solving ...", False)
+      
             # Obvious values first ...
+            count = 0
             if True == params.obviousValues_:
                 count, obvDuration = solver.findObviousValues()
 
             # ... and then try to resolve
             attempts, duration = solver.resolve()
+
+            # Start the drawing thread
+            if params.drawProgress_:
+                myThread.stop()
             
             # Display the solution
             solver.showGrid()   

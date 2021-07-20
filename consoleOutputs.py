@@ -6,9 +6,9 @@
 #
 #   Description :   consoleOutputs object - Display the sudoku's grid on a console
 #
-#   Version     :   1.2.1
+#   Version     :   1.2.2
 #
-#   Date        :   2021-07-19
+#   Date        :   2021-07-20
 #
 from outputs import outputs
 from element import element, elementStatus

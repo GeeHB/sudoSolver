@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env/python3
 
 # coding=UTF-8
 #
@@ -8,9 +8,9 @@
 #
 #   Description :   Handle command-line
 #
-#   Version     :   1.2.1
+#   Version     :   1.2.2
 #
-#   Date        :   2021-07-19
+#   Date        :   2021-07-20
 #
 
 from cmdLineParser import cmdLineParser
@@ -52,7 +52,7 @@ class options(object):
         self.solveMode_ = False
         self.fileName_ = ""
         self.folderName_ = ""
-        self.drawFreq_ = 0        # don't display progression
+        self.drawProgress_ = False        # don't display progression
         self.exportSoluce_ = False
         self.obviousValues = False
 
@@ -143,18 +143,8 @@ class options(object):
                                     # no folder given
                                     showUsage = True
             
-            # display details ?
-            index =  parameters.findAndRemoveOption(CMD_OPTION_DETAILS)
-            if not parameters.NO_INDEX == index:
-                # num value expected
-                try :
-                    rets = parameters.parameterOrValue(index + 1)
-                    if rets[1] == False : 
-                        self.drawFreq_ = int(rets[0])
-                        self.drawFreq_ = self.drawFreq_ if self.drawFreq_ > 0 else 0
-                except IndexError:
-                    # no value
-                    showUsage = True
+            # display progression ?
+            self.drawProgress_ = not (parameters.findAndRemoveOption(CMD_OPTION_DETAILS) == parameters.NO_INDEX)
 
         # Export solution => solverMode activated
         if self.exportSoluce_ and not self.solveMode_:
@@ -182,7 +172,7 @@ class options(object):
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_CONSOLE, formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
-        print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " {drawFreq} ",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. {drawFreq} is the drawing rate (0 = none, 1 : 100%, 10 = 1/10, 100 = 1/100,  ...")
+        print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_DETAILS,formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process. Only valid with PYGame")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS, formatAttr=[textAttribute.DARK]),": Search for obvious values before \"brute-force\" soluce searching")
         print("\t", self.color_.colored(CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE, formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file ({srcName}.soluce)")
 

@@ -7,9 +7,9 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.2.1
+#   Version     :   1.2.2
 #
-#   Date        :   2021-07-19
+#   Date        :   2021-07-20
 #
 
 import os, sys, time, os
@@ -63,17 +63,10 @@ class outputs(object):
     # "private" members
     #
 
-    # Display grid during resolution
-    detailsRatio_ = 0          # Display rate (0 = none)
-    detailsCount_ = 0
-
     mode_ = MODE_DEFAULT       # Display mode
     gridFileName_ = None
 
     keyHandler_ = None
-
-    def setDetailsRatio(self, detailsRatio = 0):
-        self.detailsRatio_ = detailsRatio
 
     # Display text
     #
@@ -127,14 +120,8 @@ class outputs(object):
     # Update display from beginning to 'limit' (if not None)
     #
     def updateGrid(self, elements, limit):
+        self._update(elements, limit)
         
-        if self.detailsRatio_ > 0 :
-            # Display details ?
-            self.detailsCount_ += 1
-            if 0 == (self.detailsCount_ % self.detailsRatio_):
-                self._update(elements, limit)
-                self.detailsCount_ = 0
-
     # End of the object (no more drawings at all)
     #   can be overloaded
     def close(self):
@@ -163,8 +150,5 @@ class outputs(object):
 
         # handle the key
         return self.keyHandler_.getChar()
-        
-
-
         
  # EOF

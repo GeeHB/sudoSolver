@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.2.1
+#   Version     :   1.2.2
 #
-#   Date        :   2021-07-19
+#   Date        :   2021-07-20
 #
 
 import os, time
@@ -46,7 +46,7 @@ class sudoku(object):
 
     # Construction
     #
-    def __init__(self, detailsRatio = 0, consoleMode = False):
+    def __init__(self, consoleMode = False):
 
         # Set display mode
         #
@@ -57,7 +57,7 @@ class sudoku(object):
                 from pygameOutputs import pygameOutputs
                 self.outputs_ = pygameOutputs()
             except ModuleNotFoundError:
-                print("PYGame isn't installed, outputs will be redirected to console")
+                print("PYGame isn't installed, outputs will be redirected to console or nCurses")
             except sudokuError as e:
                 print(e)
 
@@ -74,9 +74,6 @@ class sudoku(object):
         if None == self.outputs_:
             self.outputs_ = consoleOutputs()
 
-        # Details
-        self.outputs_.setDetailsRatio(detailsRatio)
-
         # Create the grid
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
@@ -85,7 +82,14 @@ class sudoku(object):
     #
     def fileName(self):
         return self.gridFileName_
-    
+
+    # Access
+    #
+    def outputs(self):
+        return self.outputs_
+    def grid(self):
+        return self.elements_
+
     # Display text
     #
     def displayText(self, text, information = True):
@@ -481,8 +485,6 @@ class sudoku(object):
                 # we'll have to go backward, to the last value setted
                 position = self._previousPos(position)
 
-                self.outputs_.updateGrid(self.elements_, position)
-
                 # candidate value = prev. value (incremented at next occurence)
                 candidate = self.elements_[position.index()].empty()
             else :
@@ -493,7 +495,6 @@ class sudoku(object):
                     self.attempts_ += 1
 
                     self.elements_[position.index()].setValue(candidate)
-                    self.outputs_.updateGrid(self.elements_, position)
                     
                     # Go to the next "empty" position
                     position = self._findFirstEmptyPos(position)
