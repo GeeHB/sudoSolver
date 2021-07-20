@@ -7,7 +7,7 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   2021-07-20
 #

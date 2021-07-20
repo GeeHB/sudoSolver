@@ -1,4 +1,8 @@
-Version 1.2.2
+Version 1.2.3
+    * 20 jul. 2021
+    + Minor bug fixes and corrections
+
+Version 1.2.3
     * 20 jul. 2021
     + Mutlithreaded mode - a specific thread is dedicated to PYGame's drawings
         + drawThread.py
@@ -6,8 +10,8 @@ Version 1.2.2
     + PYGame mode : shows obvious values using border colour
     + Fixes and corrections
         + Function protypes corrections
-        + "-es {filename}" option checks if {filename} ia a real file
-        + "-bs {folder}" option checks if {folder} ia a real folder
+        + "-es {filename}" option checks if {filename} is a real file
+        + "-bs {folder}" option checks if {folder} is a real folder
         - Regression bug for curses and console modes on non-Windows env.
 
 Version 1.1.2

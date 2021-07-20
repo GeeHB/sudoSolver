@@ -1,4 +1,3 @@
-
 # coding=UTF-8
 #
 #   File     :   keyboard.py
@@ -7,7 +6,7 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   2021-07-20
 #

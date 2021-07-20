@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # coding=UTF-8
 #
 #   File        :   drawThread.py
@@ -8,15 +6,13 @@
 #
 #   Description :   Thread used for drawing the grid (PYGame only)
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   2021-07-20
 #
 
 import threading
-from outputs import outputs
 import pygameOutputs
-#import element
 
 #
 #   drawThread object : Draw the grid during search process
@@ -29,7 +25,7 @@ class drawThread(threading.Thread):
         # Initialize members
         self.outputs_ = gridOutputs
         self.elements_ = elements
-        self.done_ = False
+        self.over_ = False
 
     # Where all the stuff is done
     def run(self):
@@ -39,11 +35,13 @@ class drawThread(threading.Thread):
             # Yes !!!    
         
             # Keep on drawing the grid's elements
-            while not self.done_:
+            while not self.over_:
                 self.outputs_.draw(self.elements_)
 
-    # Stop the thread ...
+            # until it's over ...
+
+    # Stop the thread
     def stop(self):
-        self.done_ = True
+        self.over_ = True
 
 # EOF

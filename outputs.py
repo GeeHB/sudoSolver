@@ -7,14 +7,13 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   2021-07-20
 #
 
 import os, sys, time, os
 from ownExceptions import sudokuError
-from pointer import pointer
 
 #
 # outputs - abstract class containing all drawing methods 

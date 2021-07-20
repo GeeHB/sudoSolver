@@ -1,4 +1,4 @@
-#!/usr/bin/python  
+#!/usr/bin/python3
 #
 # coding=UTF-8
 #
@@ -8,19 +8,17 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   202 1-07-19
 #
 
 import time
-from options import options
-from colorizer import colorizer, backColor, textColor, textAttribute
+import options
+from colorizer import textAttribute
 from sudoku import sudoku
 from drawThread import drawThread
 from ownExceptions import sudokuError
-
-CURRENT_VERSION = "1.2.2"
 
 #
 #   Functions
@@ -30,12 +28,12 @@ if '__main__' == __name__:
 
     # Parse command line
     #
-    params = options()
+    params = options.options()
     if False == params.parse() :
         exit(1)
 
     # Let's start the game
-    print(params.color_.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- version", CURRENT_VERSION)
+    print(params.color_.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- release", options.CURRENT_VERSION)
 
     # my sudoku grid
     solver = None

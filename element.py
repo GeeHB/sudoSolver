@@ -6,19 +6,20 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.2.2
+#   Version     :   1.2.3
 #
 #   Date        :   2021-07-20
 #
 
 #
 # elementStatus - Element's status
+#   It can be one or a combination of theses values
 #
 class elementStatus(object):
 
     EMPTY = 0
     SET = 1
-    OBVIOUS = 2
+    OBVIOUS = 2         # An obvious value found at run time (option -o)
     ORIGINAL = 4        # Can't be changed (except on edition mode)
 
 #
