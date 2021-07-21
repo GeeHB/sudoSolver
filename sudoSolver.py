@@ -8,14 +8,13 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.2.3
+#   Version     :   1.2.4
 #
-#   Date        :   202 1-07-19
+#   Date        :   2021-07-21
 #
 
 import time
 import options
-from colorizer import textAttribute
 from sudoku import sudoku
 from drawThread import drawThread
 from ownExceptions import sudokuError
@@ -33,8 +32,8 @@ if '__main__' == __name__:
         exit(1)
 
     # Let's start the game
-    print(params.color_.colored("\nsudoSolver.py", formatAttr=[textAttribute.GRAS]), "- release", options.CURRENT_VERSION)
-
+    params.usage(False)
+    
     # my sudoku grid
     solver = None
 
@@ -101,7 +100,7 @@ if '__main__' == __name__:
             # ... and then try to resolve
             attempts, duration = solver.resolve()
 
-            # Start the drawing thread
+            # Stop the drawing thread
             if params.drawProgress_:
                 myThread.stop()
             
@@ -114,15 +113,18 @@ if '__main__' == __name__:
             solver.waitForKeyDown()
             solver.close()
 
+            # A few stats.
+            #
+            print("\t- " + solver.fileName())
+
             # Found obvious values ?
             if count:
-                print("Found " + str(count) + " obvious value(s) in " + str(obvDuration) + " second(s)")
+                print("\t- Found " + str(count) + " obvious value(s) in " + str(round(obvDuration, 2)) + " second(s)")
             else:
-                print("No obvious value found")
+                print("\t- No obvious value found")
 
-            # A few stats.
-            print("Resolution duration : " + str(duration) + " second(s)")
-            print("Attempts : " + str(attempts)) 
+            print("\t- Solved in " + str(round(duration, 2)) + " second(s)")
+            print("\t- " + str(attempts) + " attempt(s)\n") 
 
             # Export the solution ?
             if params.exportSoluce_:
@@ -130,7 +132,7 @@ if '__main__' == __name__:
                 comments.append(" ")
                 comments.append(" Source file : " + solver.fileName())
                 comments.append(" ")
-                comments.append("Solved by JHB::sudoSolver.py in " + str(duration) + " sec.")
+                comments.append("Solved by JHB::sudoSolver.py in " + str(round(duration, 2)) + " sec.")
                 comments.append(" ")
                 if True == solver.save(True, comments):
                     print("Soluce successfully saved in ", solver.fileName() + solver.FILE_EXPORT_EXTENSION) 
@@ -139,8 +141,6 @@ if '__main__' == __name__:
         print(e)
     except IndexError:
         print("No soluce found for this grid")
-    """
     except:
         print("Unknown error")
-    """
 # EOF

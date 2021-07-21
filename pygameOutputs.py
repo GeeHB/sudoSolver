@@ -9,15 +9,14 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.2.3
+#   Version     :   1.2.4
 #
-#   Date        :   2021-07-20
+#   Date        :   2021-07-21
 #
 
 import pygame, math
 
 from outputs import outputs
-
 from ownExceptions import sudokuError
 from pointer import pointer
 
@@ -25,7 +24,7 @@ from pointer import pointer
 # Internal conts.
 #
 
-# Positions and dimensions
+# Positions and dimensions in pixels
 #
 SQUARE_SIDE         = 60   #  Initial external size of a square element
 
@@ -36,7 +35,7 @@ DELTA_Y             = 10
 
 EXT_BORDER_WIDTH    = 3     # Width of external border
 
-# Elements'text font
+# Elements'text font sizes (in pixels) and names
 #
 ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
 ELT_FONT_SIZE           = 35                                # default size
@@ -49,21 +48,21 @@ FILE_FONT_POS_Y         = 5
 # Events frequencies in ms
 #
 DEF_MSG_HIDING_FREQ     = 2000  # Hide the filename
-DEF_BLINKING_FREQ       = 750   # blinking freq.
+DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
 
 #
 # textSurface - "subsurface" containig a single line of text
 #
 class textSurface(object):
-    # Members
-    surface_    = None
-    position_   = (0,0)    
-    font_       = None      # Font used for drawing the text
-    eventID_    = 0         # Event ID - optionnal
-    eventFreq_  = 0
 
     # Construction
     def __init__(self, fontName, fontSize):
+        # Members
+        self.surface_    = None
+        self.position_   = (0,0)    
+        self.font_       = None      # Font used for drawing the text
+        self.eventID_    = 0         # Event ID - optionnal
+        self.eventFreq_  = 0
         self.setFont(fontName, fontSize)
 
     # Valid ?

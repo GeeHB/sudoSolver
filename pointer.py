@@ -6,9 +6,9 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.2.3
+#   Version     :   1.2.4
 #
-#   Date        :   2021-07-20
+#   Date        :   2021-07-21
 #
 
 import math
@@ -17,7 +17,7 @@ from ownExceptions import reachedEndOfList
 #
 # pointer - "ID" of an element in the sudoku's grid
 #
-#   This object does all the conversion from linear index to matrix
+#   This object does all the conversion from linear index to matrix coordinates
 #
 class pointer(object):
 
@@ -52,14 +52,15 @@ class pointer(object):
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
 
-    # Copy_checkValue
+    # Copy constrcutor
     #
     def set(self, other):
-        self.index_ = other.index_
-        self.row_ = other.row_
-        self.line_ = other.line_
-        self.squareID_ = other.squareID_
-        self.gameMode_ = other.gameMode_
+        if type(other) is pointer:
+            self.index_ = other.index_
+            self.row_ = other.row_
+            self.line_ = other.line_
+            self.squareID_ = other.squareID_
+            self.gameMode_ = other.gameMode_
 
     # Access
     #

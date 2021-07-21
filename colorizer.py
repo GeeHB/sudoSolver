@@ -12,7 +12,7 @@
 #
 #   Comment    :  le module termcolor doit être installé (pip3 install termcolor)
 #
-#   Version     :   1.2.34
+#   Version     :   1.2.24
 #
 #   Date        :   26 avril 2021
 #
@@ -67,19 +67,18 @@ class textAttribute:
 #   colorizer  - Colorisation du texte
 #
 class colorizer:
-    # Données membres
-    #
-    colored_ = False       # Doit-on coloriser ?
     
     # Construction
     def __init__(self, colored = True, message = True):
+        
+        colored_ = False       # Doit-on coloriser ?
+        
         self.setColorized(colored)
-
         if True == colored and False == packageTermColor:
             self.colored_ = False
             if message:
-                print("Attention - le package termcolor (python-termcolor) n'est pas installé")
-                # print("Warning - termcolor package (python-termcolor) is not installed")
+                #print("Attention - le package termcolor (python-termcolor) n'est pas installé")
+                print("Warning - termcolor package (python-termcolor) is not installed")
                         
     # Mise en place de la colorisation
     def setColorized(self, colored = True):

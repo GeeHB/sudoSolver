@@ -6,15 +6,15 @@
 #
 #   Description :   Handle command-line
 #
-#   Version     :   1.2.3
+#   Version     :   1.2.4
 #
-#   Date        :   2021-07-20
+#   Date        :   2021-07-21
 #
 
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.2.3"
+CURRENT_VERSION = "1.2.4"
 
 # Command line options
 #
@@ -53,7 +53,7 @@ class options(object):
         self.folderName_ = ""
         self.drawProgress_ = False        # don't display progression
         self.exportSoluce_ = False
-        self.obviousValues = False
+        self.obviousValues = False        # don't search "obvious" values before trying to solve
 
     # Browse the command line
     #   returns True when ok
@@ -159,20 +159,23 @@ class options(object):
 
     # Show usage
     #
-    def usage(self):
+    def usage(self, fullUsage = True):
         if None == self.color_:
             # ???
             return
 
         print(self.color_.colored("\nsudoSolver.py", formatAttr=[textAttribute.BOLD]), "- release", CURRENT_VERSION, "\n")
-        print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
-        print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Find a solution for the grid saved in {srcName}")
-        print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Edit or create the file {srcName}")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[textAttribute.DARK]), ": Edit and solve the sudoku in {srcName}")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[textAttribute.DARK]),": Search for obvious vals before \"brute-force\" soluce searching")
-        print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE + " ]", formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.soluce")
+            
+        # Show all commands ?
+        if True == fullUsage:
+            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
+            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Find a solution for the grid saved in {srcName}")
+            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {srcName} ", formatAttr=[textAttribute.DARK]), ": Edit or create the file {srcName}")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[textAttribute.DARK]), ": Edit and solve the sudoku in {srcName}")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[textAttribute.DARK]),": Search for obvious vals before \"brute-force\" soluce searching")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE + " ]", formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.soluce")
 
 # EOF

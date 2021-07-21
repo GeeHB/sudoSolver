@@ -7,17 +7,15 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.2.3
+#   Version     :   1.2.4
 #
-#   Date        :   2021-07-20
+#   Date        :   2021-07-21
 #
 
 import os, time
-
 from element import element, elementStatus
 from pointer import pointer
 from ownExceptions import reachedEndOfList, sudokuError
-
 from consoleOutputs import consoleOutputs
 
 #
@@ -30,7 +28,6 @@ class sudoku(object):
     VALUE_SEPARATOR =       ","         # Value separator in files
     FILE_EXPORT_EXTENSION = ".soluce"   # A solution grid
     FILE_COMMENTS =         "#"         # Comment lines start with
-
 
     # Members
     #
@@ -336,7 +333,7 @@ class sudoku(object):
         while cont:
             # if sel. changed, erase previously selected element
             if not None == prevPos:
-                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.TXT_COLOUR)
+                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.HILITE_COLOUR)
             
             # Hilight the new value
             self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), self.outputs_.SEL_BK_COLOUR, self.outputs_.HILITE_COLOUR)
@@ -477,7 +474,7 @@ class sudoku(object):
         # we'll try to put the "candidate" value at the current position
         while True :
 
-            candidate +=1
+            candidate+=1
 
             if candidate > pointer.VALUE_MAX:
                 
@@ -635,6 +632,7 @@ class sudoku(object):
                 # This value can be used
                 if value :
                     # already a possible value at this pos.
+                    # => no unique value
                     return None
                 value = test
        
