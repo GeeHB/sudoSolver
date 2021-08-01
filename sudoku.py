@@ -15,6 +15,7 @@
 import os, time
 from element import element, elementStatus
 from pointer import pointer
+from sSquare import sSquare, SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
@@ -37,9 +38,6 @@ class sudoku(object):
 
     attempts_ = 0
     start_ = 0              # Resolution start-time
-
-    # top-left index of "small" squares
-    squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
 
     # Construction
     #
@@ -525,14 +523,19 @@ class sudoku(object):
 
     #  => in the "small" square ?
     def _checkSquare(self, position, value):
-        tIndex = self.squareIndex_[position.squareID()]      
+        """"
+        tIndex = sSquare.SQUARES_INDEXES[position.squareID()]      
         for _ in range (3):
             for tRow in range(3):
                 if self.elements_[tIndex + tRow].value() == value:
+                    # Not possible !!!
                     return False
             tIndex+=pointer.ROW_COUNT
-        # yes
-        return True
+        """
+
+        # Search in my "small" square
+        mySquare = sSquare(position.squareID())
+        return False == mySquare.inMe(self.elements_, value)
 
     # Find the next empty pos.
     #
@@ -595,6 +598,10 @@ class sudoku(object):
         # No other possible value (than the initial)
         return nextVal
 
+    #
+    #   Obvious values
+    #    
+    
     # Search and set all the possible obvious values in the grid
     #   returns the # of values found (and set)
     #
@@ -606,13 +613,23 @@ class sudoku(object):
         for index in range(pointer.INDEX_MAX):
             if index == 26:
                 Stop = True
+            
             if self.elements_[position.index()].isEmpty():
+                # Try to set a single value at this empty place
                 value = self._checkObviousValue(position)
+            
                 if not None == value:
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
                     found += 1
-                    
+            """"
+            else:
+                # Can we put this value on another line ?
+                found += self._setObviousValueinLines(position, value)
+
+                # ... or/and put it in another col ?
+                found += self._setObviousValueinRows(position, value)
+            """      
             # Next pos.
             position+=1
 
@@ -632,11 +649,62 @@ class sudoku(object):
                 # This value can be used
                 if value :
                     # already a possible value at this pos.
-                    # => no unique value
+                    # => not a unique value
                     return None
                 value = test
        
         # Finish
         return value
+
+    # Try to put the value in another line
+    #
+    #   return the count (0 or 1) of value set
+    #
+    def _setObviousValueinLines(self, position, value):
+        # "little" squares IDs for this line
+        if 0 == position.row():
+            # Left pos
+            firstID = position.squareID() + 1
+            secondID = position.squareID() + 2
+        else:
+            if 1 == position.row():
+                # centered
+                firstID = position.squareID() - 1
+                secondID = position.squareID() + 1
+            else:
+                # on the right
+                firstID = position.squareID() - 2
+                secondID = position.squareID() - 1
+
+    # Try to put the value in another row
+    #
+    #   return the count (0 or 1) of value set
+    #
+    def _setObviousValueinRows(self, position, value):
+        pass
+
+    # Find the line in a "small" square which doesn't contain a value
+    #
+    #   return the line ID or -1
+    #
+    def _findLineID(self, squareID, value):
+        
+        """"
+        myID = ###
+
+        # Browse the square
+        for _ in range(3):
+            for _ in range(3):
+
+            # The searched value ?
+            if sSquare.value() == value:
+                return -1
+
+            # Next pos
+            sSquare+=1
+
+        # not found
+        """
+        return -1
 
 # EOF

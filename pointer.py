@@ -39,7 +39,7 @@ class pointer(object):
     
     squareID_ = 0                   # Small square ID
 
-    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoju is solved !
+    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoku is solved !
 
     # Construction
     #
@@ -51,6 +51,8 @@ class pointer(object):
         else:
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
+
+            self._whereAmI()
 
     # Copy constrcutor
     #

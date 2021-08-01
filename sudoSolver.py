@@ -36,6 +36,7 @@ if '__main__' == __name__:
     
     # my sudoku grid
     solver = None
+    invalid = True
 
     # Loading ...
     #
@@ -49,6 +50,7 @@ if '__main__' == __name__:
             params.fileName_ = solver.browse(params.folderName_)
             if 0 == len(params.fileName_):
                 # Cancelled by user
+                invalid = False
                 exit(0)
         else :
             solver.load(params.fileName_, False == params.editMode_)
@@ -58,10 +60,12 @@ if '__main__' == __name__:
     except IndexError:
         print("Too many lines in the file")
         exit(1)
+    """"
     except:
-        print("Unknown error while loading '" + params.fileName_ + "'")
+        if True == invalid:
+            print("Unknown error while loading '" + params.fileName_ + "'")
         exit(1)
-        
+    """
     # Edition and/or resolution
     #
     try:
@@ -118,10 +122,11 @@ if '__main__' == __name__:
             print("\t- " + solver.fileName())
 
             # Found obvious values ?
-            if count:
-                print("\t- Found " + str(count) + " obvious value(s) in " + str(round(obvDuration, 2)) + " second(s)")
-            else:
-                print("\t- No obvious value found")
+            if True == params.obviousValues_:
+                if count:
+                    print("\t- Found " + str(count) + " obvious value(s) in " + str(round(obvDuration, 2)) + " second(s)")
+                else:
+                    print("\t- No obvious value found")
 
             print("\t- Solved in " + str(round(duration, 2)) + " second(s)")
             print("\t- " + str(attempts) + " attempt(s)\n") 
