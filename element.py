@@ -6,9 +6,9 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 #
@@ -19,8 +19,8 @@ class elementStatus(object):
 
     EMPTY = 0
     SET = 1
-    OBVIOUS = 2         # An obvious value found at run time (option -o)
-    ORIGINAL = 4        # Can't be changed (except on edition mode)
+    OBVIOUS = 2         # An obvious value found at runtime (option -o)
+    ORIGINAL = 4        # Can't be changed (except in edition mode)
 
 #
 # element - a single sudoku element
@@ -85,6 +85,6 @@ class element(object):
 
     # At least can we modifiy this particular value ?
     def isChangeable(self):
-        return self.status_ <= elementStatus.SET
+        return self.status_ <= elementStatus.SET    # just SET or EMPTY ?   
 
 # EOF

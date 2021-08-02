@@ -1,9 +1,9 @@
-Version 1.3.xxxx
+Version 1.3.2
     * 2 aug. 2021
     + New algo. for obvious values discovering
         = Search for obvious values for empty places (previous algo.)
         + Try to set a particular value in anpother line or row
-    + Add sSquare.py - handle "small" squares
+    + Add tinySquare.py - handle "small" squares
     + Add testing grids
     + Minor bug fixes and improvments
 

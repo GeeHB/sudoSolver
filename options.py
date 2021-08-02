@@ -6,15 +6,15 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.3.xxx"
+CURRENT_VERSION = "1.3.2"
 
 # Command line options
 #

@@ -6,9 +6,9 @@
 #
 #   Description :   consoleOutputs object - Display the sudoku's grid on a console
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 from outputs import outputs
 from pointer import pointer
@@ -39,7 +39,7 @@ class consoleOutputs(outputs):
                 line+=" "
                 myIndex += 1
 
-                # Change "small square"
+                # Change tiny-square"
                 myCol += 1
                 if 3 == myCol:
                     line += " "
@@ -49,7 +49,7 @@ class consoleOutputs(outputs):
             print(line)
             myLine += 1
             if 3 == myLine:
-                # empty line between "small" squares
+                # empty line between tiny-squares
                 myLine = 0
                 print("")
  

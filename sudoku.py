@@ -7,15 +7,15 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 import os, time, math
 from element import element, elementStatus
 from pointer import pointer
-from sSquare import sSquare, SQUARES_INDEXES
+from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
@@ -250,8 +250,8 @@ class sudoku(object):
                             if False == self._checkRow(pt, nVal):
                                 raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                            # Check the "small" square
-                            if False == self._checkSquare(pt, nVal):
+                            # Check the tiny-square
+                            if False == self._checkTinySquare(pt, nVal):
                                 raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
                             
                             # add the value
@@ -501,7 +501,7 @@ class sudoku(object):
     # Can we put the value at the current position ?
     #
     def _checkValue(self, position, value):
-        return self._checkLine(position, value) and self._checkRow(position, value) and self._checkSquare(position, value)
+        return self._checkLine(position, value) and self._checkRow(position, value) and self._checkTinySquare(position, value)
 
     #   => in the line ?
     def _checkLine(self, position, value):
@@ -521,10 +521,10 @@ class sudoku(object):
         # yes
         return True
 
-    #  => in the "small" square ?
-    def _checkSquare(self, position, value):
-        # Search in my "small" square
-        mySquare = sSquare(position.squareID())
+    #  => in the tiny-square ?
+    def _checkTinySquare(self, position, value):
+        # Search in my tiny-square
+        mySquare = tinySquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
 
     # Find the next empty pos.
@@ -657,17 +657,17 @@ class sudoku(object):
         modID = position.squareID() % 3
         if 0 ==  modID:
             # At the left pos
-            firstSquare = sSquare(position.squareID() + 1)
-            secondSquare = sSquare(position.squareID() + 2)
+            firstSquare = tinySquare(position.squareID() + 1)
+            secondSquare = tinySquare(position.squareID() + 2)
         else:
             if 1 == modID:
                 # centered
-                firstSquare = sSquare(position.squareID() - 1)
-                secondSquare = sSquare(position.squareID() + 1)
+                firstSquare = tinySquare(position.squareID() - 1)
+                secondSquare = tinySquare(position.squareID() + 1)
             else:
                 # on the right
-                firstSquare = sSquare(position.squareID() - 2)
-                secondSquare = sSquare(position.squareID() - 1)
+                firstSquare = tinySquare(position.squareID() - 2)
+                secondSquare = tinySquare(position.squareID() - 1)
 
         # Is the value already in theses squares ?
         firstPos = firstSquare.findValue(self.elements_, value)
@@ -693,15 +693,19 @@ class sudoku(object):
         foundPos = None
         pos = pointer(index = 0)
         pos.moveTo(candidateLine, candidate.topRow())
-        for _ in range(sSquare.S_ROW_COUNT):
-            if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
-                if None != foundPos:
-                    # Already a candiate => not obvious
-                    return 0
-                foundPos = pointer(other = pos) # call the copy constructor !!!
-            
-            # Next row
-            pos+=1
+        
+        try:
+            for _ in range(tinySquare.TINY_ROW_COUNT):
+                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                    if None != foundPos:
+                        # Already a candiate => not obvious
+                        return 0
+                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                
+                # Next row
+                pos+=1
+        except reachedEndOfList:      # Might go out of range and raise reachedEndOfList exception
+            pass
 
         # Did we find a position ?
         if None != foundPos:
@@ -721,17 +725,17 @@ class sudoku(object):
         modID = math.floor(position.squareID() / 3)
         if 0 ==  modID:
             # At the top pos
-            firstSquare = sSquare(position.squareID() + sSquare.S_ROW_COUNT)
-            secondSquare = sSquare(position.squareID() + 2 * sSquare.S_ROW_COUNT)
+            firstSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
+            secondSquare = tinySquare(position.squareID() + 2 * tinySquare.TINY_ROW_COUNT)
         else:
             if 1 == modID:
                 # centered
-                firstSquare = sSquare(position.squareID() - sSquare.S_ROW_COUNT)
-                secondSquare = sSquare(position.squareID() + sSquare.S_ROW_COUNT)
+                firstSquare = tinySquare(position.squareID() - tinySquare.TINY_ROW_COUNT)
+                secondSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
             else:
                 # on the bottom
-                firstSquare = sSquare(position.squareID() - 2 * sSquare.S_ROW_COUNT)
-                secondSquare = sSquare(position.squareID() - 1 * sSquare.S_ROW_COUNT)
+                firstSquare = tinySquare(position.squareID() - 2 * tinySquare.TINY_ROW_COUNT)
+                secondSquare = tinySquare(position.squareID() - 1 * tinySquare.TINY_ROW_COUNT)
 
         # Is the value already in theses squares ?
         firstPos = firstSquare.findValue(self.elements_, value)
@@ -757,15 +761,19 @@ class sudoku(object):
         foundPos = None
         pos = pointer(index = 0)
         pos.moveTo(candidate.topLine(), candidateRow)
-        for _ in range(sSquare.S_LINE_COUNT):
-            if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
-                if None != foundPos:
-                    # Already a candiate => not obvious
-                    return 0
-                foundPos = pointer(other = pos) # call the copy constructor !!!
-            
-            # Next line
-            pos+=pos.ROW_COUNT
+        
+        try:
+            for _ in range(tinySquare.TINY_LINE_COUNT):
+                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                    if None != foundPos:
+                        # Already a candiate => not obvious
+                        return 0
+                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                
+                # Next line
+                pos+=pos.ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
+        except reachedEndOfList:
+            pass
 
         # Did we find a position ?
         if None != foundPos:

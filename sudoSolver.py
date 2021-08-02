@@ -8,9 +8,9 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 import time
@@ -60,12 +60,11 @@ if '__main__' == __name__:
     except IndexError:
         print("Too many lines in the file")
         exit(1)
-    """"
     except:
         if True == invalid:
             print("Unknown error while loading '" + params.fileName_ + "'")
         exit(1)
-    """
+    
     # Edition and/or resolution
     #
     try:
@@ -139,6 +138,7 @@ if '__main__' == __name__:
                 comments.append(" ")
                 comments.append("Solved by JHB::sudoSolver.py in " + str(round(duration, 2)) + " sec.")
                 comments.append(" ")
+                
                 if True == solver.save(True, comments):
                     print("Soluce successfully saved in ", solver.fileName() + solver.FILE_EXPORT_EXTENSION) 
 

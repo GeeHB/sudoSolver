@@ -1,34 +1,32 @@
 # coding=UTF-8
 #
-#   File     :   sSquare.py
+#   File     :   tinySquare.py
 #
 #   Author      :   JHB
 #
-#   Description :   "sSquare" object 
+#   Description :   tinySquare object 
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 from pointer import pointer
-from element import element
 
-# Top-left index of "small" squares
+# Top-left index of tiny-squares
 #
-SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
+TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
 #
-# sSquare object
+# tinySquare object
 #
-#   A "small" square is one of the 9 3x3 matrix composing the whole grid
+#   A tiny-square is one of the 9 3x3 matrix composing the whole grid
 #
-class sSquare(object):
+class tinySquare(object):
 
-    S_LINE_COUNT = 3
-    S_ROW_COUNT = 3
-
-    MAX_ID = 8
+    # Dimensions
+    TINY_LINE_COUNT = 3
+    TINY_ROW_COUNT = 3
 
     # Construction
     #
@@ -43,7 +41,7 @@ class sSquare(object):
     # Copy constrcutor
     #
     def set(self, other):
-        if type(other) is sSquare:
+        if type(other) is tinySquare:
             self.Id_ = other.Id_
             self.topLine_ = other.topLine_
             self.topRow_ = other.topRow_
@@ -52,13 +50,13 @@ class sSquare(object):
     #
     def IdFromIndex(self, index):
         if type(index) is int:
-            if index < 0 or index > self.MAX_ID:
+            if index < 0 or index >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
                 raise IndexError
 
             self.Id_ = index
 
             # "top" values
-            position = pointer(index = SQUARES_INDEXES[index])
+            position = pointer(index = TINY_SQUARES_INDEXES[index])
             self.topLine_ = position.line_
             self.topRow_ = position.row_
 
@@ -78,64 +76,45 @@ class sSquare(object):
     #
     #   returns a 3x3 matrix : line[0] / line[1] / line[2]
     #
-    def indexesByLine(self):
+    def indexes(self):
 
-        matrix = []
+        ids = []
 
         # Start index
-        index = SQUARES_INDEXES[self.Id_]      
-        for _ in range (self.S_LINE_COUNT):
+        index = TINY_SQUARES_INDEXES[self.Id_]      
+        for _ in range (self.TINY_LINE_COUNT):
             line = []    
-            for row in range(self.S_ROW_COUNT):
-                line.append(index + row)
+            for row in range(self.TINY_ROW_COUNT):
+                line.append(index + row)    # Add the index to the line
             
-            matrix.append(line)
+            ids.append(line)                # Add the line to the matrix
             index+=pointer.ROW_COUNT
 
-        return matrix
+        # Finish !!!
+        return ids
     
-    # Indexes by row
-    #
-    #   returns a 3x3 matrix : row[0] / row[1] / row[2]
-    #
-    def indexesByRow(self):
-        matrix = []
-
-        # Start index
-        index = SQUARES_INDEXES[self.Id_]      
-        for rowID in range (self.S_LINE_COUNT):
-            line = []    
-            for lineID in range(self.S_ROW_COUNT):
-                line.append(index)
-                index += element.ROW_COUNT
-
-            matrix.append(line)
-            index = SQUARES_INDEXES[self.Id_] + rowID
-
-        return matrix
-
-    # Search for the position of the value "in" the square ?
+    # Search for the position of the value "in" the square
     #
     #   returns the tuple (line, row) if found or (None, None)
     #
     def findValue(self, elements, value):
         
         # All my positions
-        positions = self.indexesByLine()
+        positions = self.indexes()
 
         # Check all the positions
-        for line in range (sSquare.S_LINE_COUNT):
-            for row in range(sSquare.S_ROW_COUNT):
+        for line in range (tinySquare.TINY_LINE_COUNT):
+            for row in range(tinySquare.TINY_ROW_COUNT):
                 if value == elements[positions[line][row]].value():
                     # This value is in the square
                     return (line, row)
         
-        # No (this value is not in this small square)
+        # No, this value is not in this square
         return (None, None)
 
     # Is the value "in" the square ?
     #
-    #   Check wether the value is in the current small square   
+    #   Check wether the value is in the current tiny-square   
     #
     #   return a boolean - True if found
     #

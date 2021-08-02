@@ -6,9 +6,9 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 import math
@@ -21,14 +21,14 @@ from ownExceptions import reachedEndOfList
 #
 class pointer(object):
 
-    INDEX_MIN = 0
-    INDEX_MAX = 80
-
     ROW_COUNT = 9
     LINE_COUNT = 9
 
     VALUE_MIN = 1
     VALUE_MAX = 9
+
+    INDEX_MIN = 0
+    INDEX_MAX = (ROW_COUNT * LINE_COUNT - 1)
 
     # Members
     #
@@ -37,7 +37,7 @@ class pointer(object):
     row_ = 0                        # Position in the "matrix"
     line_ = 0
     
-    squareID_ = 0                   # Small square ID
+    squareID_ = 0                   # tiny-square ID
 
     gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoku is solved !
 

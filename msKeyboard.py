@@ -6,9 +6,9 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 from ownExceptions import sudokuError
