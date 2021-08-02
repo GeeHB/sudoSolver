@@ -6,9 +6,9 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
 import math
@@ -21,25 +21,25 @@ from ownExceptions import reachedEndOfList
 #
 class pointer(object):
 
-    INDEX_MIN = 0
-    INDEX_MAX = 80
-
     ROW_COUNT = 9
     LINE_COUNT = 9
 
     VALUE_MIN = 1
     VALUE_MAX = 9
 
+    INDEX_MIN = 0
+    INDEX_MAX = (ROW_COUNT * LINE_COUNT - 1)
+
     # Members
     #
     index_      =   INDEX_MIN       # Current index
     
-    row_ = 0                        # Position int the "matrix"
+    row_ = 0                        # Position in the "matrix"
     line_ = 0
     
-    squareID_ = 0                   # Small square ID
+    squareID_ = 0                   # tiny-square ID
 
-    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoju is solved !
+    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoku is solved !
 
     # Construction
     #
@@ -52,6 +52,8 @@ class pointer(object):
             self.index_ = 0 if None == index else index
             self.gameMode_ = gameMode 
 
+            self._whereAmI()
+
     # Copy constrcutor
     #
     def set(self, other):
@@ -62,6 +64,16 @@ class pointer(object):
             self.squareID_ = other.squareID_
             self.gameMode_ = other.gameMode_
 
+    # Absolute position
+    #
+    def moveTo(self, line, row):
+        self.line_ = line
+        self.row_ = row
+        self.index_ = row + line * self.ROW_COUNT
+
+        # the square ID is missing
+        self._whereAmI(False)
+        
     # Access
     #
 
@@ -155,10 +167,12 @@ class pointer(object):
 
     # Updating coordinates
     #
-    def _whereAmI(self):
-        # V. math
-        self.line_ = math.floor(self.index_ / 9)
-        self.row_ = self.index_ - 9 * self.line_
+    def _whereAmI(self, all = True):
+        
+        if True == all:
+            # V. math
+            self.line_ = math.floor(self.index_ / self.ROW_COUNT)
+            self.row_ = self.index_ - self.ROW_COUNT * self.line_
         
         # Small square ID
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)

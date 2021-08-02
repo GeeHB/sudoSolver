@@ -7,14 +7,15 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.2.4
+#   Version     :   1.3.1
 #
-#   Date        :   2021-07-21
+#   Date        :   2021-08-02
 #
 
-import os, time
+import os, time, math
 from element import element, elementStatus
 from pointer import pointer
+from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
@@ -37,9 +38,6 @@ class sudoku(object):
 
     attempts_ = 0
     start_ = 0              # Resolution start-time
-
-    # top-left index of "small" squares
-    squareIndex_ = [0, 3, 6, 27, 30, 33, 54, 57, 60]       
 
     # Construction
     #
@@ -252,8 +250,8 @@ class sudoku(object):
                             if False == self._checkRow(pt, nVal):
                                 raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
 
-                            # Check the "small" square
-                            if False == self._checkSquare(pt, nVal):
+                            # Check the tiny-square
+                            if False == self._checkTinySquare(pt, nVal):
                                 raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
                             
                             # add the value
@@ -503,7 +501,7 @@ class sudoku(object):
     # Can we put the value at the current position ?
     #
     def _checkValue(self, position, value):
-        return self._checkLine(position, value) and self._checkRow(position, value) and self._checkSquare(position, value)
+        return self._checkLine(position, value) and self._checkRow(position, value) and self._checkTinySquare(position, value)
 
     #   => in the line ?
     def _checkLine(self, position, value):
@@ -523,16 +521,11 @@ class sudoku(object):
         # yes
         return True
 
-    #  => in the "small" square ?
-    def _checkSquare(self, position, value):
-        tIndex = self.squareIndex_[position.squareID()]      
-        for _ in range (3):
-            for tRow in range(3):
-                if self.elements_[tIndex + tRow].value() == value:
-                    return False
-            tIndex+=pointer.ROW_COUNT
-        # yes
-        return True
+    #  => in the tiny-square ?
+    def _checkTinySquare(self, position, value):
+        # Search in my tiny-square
+        mySquare = tinySquare(position.squareID())
+        return False == mySquare.inMe(self.elements_, value)
 
     # Find the next empty pos.
     #
@@ -595,6 +588,10 @@ class sudoku(object):
         # No other possible value (than the initial)
         return nextVal
 
+    #
+    #   Obvious values
+    #    
+    
     # Search and set all the possible obvious values in the grid
     #   returns the # of values found (and set)
     #
@@ -606,13 +603,25 @@ class sudoku(object):
         for index in range(pointer.INDEX_MAX):
             if index == 26:
                 Stop = True
+            
             if self.elements_[position.index()].isEmpty():
+                # Try to set a single value at this empty place
                 value = self._checkObviousValue(position)
+            
                 if not None == value:
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
                     found += 1
-                    
+            else:
+                
+                value = self.elements_[position.index()].value()
+                
+                # Can we put this value on another line ?
+                found += self._setObviousValueinLines(position, value)
+
+                # ... or/and put it in another col ?
+                found += self._setObviousValueinRows(position, value)
+
             # Next pos.
             position+=1
 
@@ -632,11 +641,147 @@ class sudoku(object):
                 # This value can be used
                 if value :
                     # already a possible value at this pos.
-                    # => no unique value
+                    # => not a unique value
                     return None
                 value = test
        
         # Finish
         return value
+
+    # Try to put the value in another line
+    #
+    #   return the count (0 or 1) of value set
+    #
+    def _setObviousValueinLines(self, position, value):
+        # "little" squares IDs for this line
+        modID = position.squareID() % 3
+        if 0 ==  modID:
+            # At the left pos
+            firstSquare = tinySquare(position.squareID() + 1)
+            secondSquare = tinySquare(position.squareID() + 2)
+        else:
+            if 1 == modID:
+                # centered
+                firstSquare = tinySquare(position.squareID() - 1)
+                secondSquare = tinySquare(position.squareID() + 1)
+            else:
+                # on the right
+                firstSquare = tinySquare(position.squareID() - 2)
+                secondSquare = tinySquare(position.squareID() - 1)
+
+        # Is the value already in theses squares ?
+        firstPos = firstSquare.findValue(self.elements_, value)
+        secondPos = secondSquare.findValue(self.elements_, value)
+
+        # None of them or both of them
+        if (None == firstPos[0] and None == secondPos[0]) or (None != firstPos[0] and None != secondPos[0]) :
+            return 0
+
+        # Just one square misses the value => we'll try to put this value in the correct line
+        # 
+        #   The sum of the 3 lineID is a consts and we know 2 oh them
+        #
+        if None == firstPos[0]:
+            candidate = firstSquare
+            candidateLine = 2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1 
+        else: 
+            candidate = secondSquare
+            candidateLine = 2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
+
+        # Try to pout the value ...
+        #
+        foundPos = None
+        pos = pointer(index = 0)
+        pos.moveTo(candidateLine, candidate.topRow())
+        
+        try:
+            for _ in range(tinySquare.TINY_ROW_COUNT):
+                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                    if None != foundPos:
+                        # Already a candiate => not obvious
+                        return 0
+                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                
+                # Next row
+                pos+=1
+        except reachedEndOfList:      # Might go out of range and raise reachedEndOfList exception
+            pass
+
+        # Did we find a position ?
+        if None != foundPos:
+            # Yes !!!
+            self.elements_[foundPos.index()].setValue(value, elementStatus.OBVIOUS)
+            return 1
+
+        # No ...
+        return 0
+
+    # Try to put the value in another row
+    #
+    #   return the count (0 or 1) of value set
+    #
+    def _setObviousValueinRows(self, position, value):
+        # "little" squares IDs for this line
+        modID = math.floor(position.squareID() / 3)
+        if 0 ==  modID:
+            # At the top pos
+            firstSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
+            secondSquare = tinySquare(position.squareID() + 2 * tinySquare.TINY_ROW_COUNT)
+        else:
+            if 1 == modID:
+                # centered
+                firstSquare = tinySquare(position.squareID() - tinySquare.TINY_ROW_COUNT)
+                secondSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
+            else:
+                # on the bottom
+                firstSquare = tinySquare(position.squareID() - 2 * tinySquare.TINY_ROW_COUNT)
+                secondSquare = tinySquare(position.squareID() - 1 * tinySquare.TINY_ROW_COUNT)
+
+        # Is the value already in theses squares ?
+        firstPos = firstSquare.findValue(self.elements_, value)
+        secondPos = secondSquare.findValue(self.elements_, value)
+
+        # None of them or both of them
+        if (None == firstPos[0] and None == secondPos[0]) or (None != firstPos[0] and None != secondPos[0]) :
+            return 0
+
+        # Just one square misses the value => we'll try to put this value in the correct line
+        # 
+        #   The sum of the 3 lineID is a consts and we know 2 oh them
+        #
+        if None == firstPos[0]:
+            candidate = firstSquare
+            candidateRow = 2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1 
+        else: 
+            candidate = secondSquare
+            candidateRow = 2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
+
+        # Try to pout the value ...
+        #
+        foundPos = None
+        pos = pointer(index = 0)
+        pos.moveTo(candidate.topLine(), candidateRow)
+        
+        try:
+            for _ in range(tinySquare.TINY_LINE_COUNT):
+                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                    if None != foundPos:
+                        # Already a candiate => not obvious
+                        return 0
+                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                
+                # Next line
+                pos+=pos.ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
+        except reachedEndOfList:
+            pass
+
+        # Did we find a position ?
+        if None != foundPos:
+            # Yes !!!
+            self.elements_[foundPos.index()].setValue(value, elementStatus.OBVIOUS)
+            return 1
+
+        # No ...
+        return 0
 
 # EOF
