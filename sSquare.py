@@ -11,7 +11,6 @@
 #   Date        :   2021-07-21
 #
 
-from ownExceptions import reachedEndOfList
 from pointer import pointer
 from element import element
 
@@ -26,8 +25,8 @@ SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 #
 class sSquare(object):
 
-    LINE_COUNT = 3
-    ROW_COUNT = 3
+    S_LINE_COUNT = 3
+    S_ROW_COUNT = 3
 
     MAX_ID = 8
 
@@ -46,17 +45,34 @@ class sSquare(object):
     def set(self, other):
         if type(other) is sSquare:
             self.Id_ = other.Id_
+            self.topLine_ = other.topLine_
+            self.topRow_ = other.topRow_
 
-    # Get index form positionnal index (of an element)
+    # Get index from positionnal index (of an element)
     #
     def IdFromIndex(self, index):
-        self.Id_ = index
-    
+        if type(index) is int:
+            if index < 0 or index > self.MAX_ID:
+                raise IndexError
+
+            self.Id_ = index
+
+            # "top" values
+            position = pointer(index = SQUARES_INDEXES[index])
+            self.topLine_ = position.line_
+            self.topRow_ = position.row_
+
     # Access
     #
-
     def Id(self):
         return self.Id_
+    
+    # Top indexes
+    def topLine(self):
+        return self.topLine_
+        
+    def topRow(self):
+        return self.topRow_
     
     # Indexes by line
     #
@@ -68,9 +84,9 @@ class sSquare(object):
 
         # Start index
         index = SQUARES_INDEXES[self.Id_]      
-        for _ in range (self.LINE_COUNT):
+        for _ in range (self.S_LINE_COUNT):
             line = []    
-            for row in range(self.ROW_COUNT):
+            for row in range(self.S_ROW_COUNT):
                 line.append(index + row)
             
             matrix.append(line)
@@ -87,9 +103,9 @@ class sSquare(object):
 
         # Start index
         index = SQUARES_INDEXES[self.Id_]      
-        for rowID in range (self.LINE_COUNT):
+        for rowID in range (self.S_LINE_COUNT):
             line = []    
-            for lineID in range(self.ROW_COUNT):
+            for lineID in range(self.S_ROW_COUNT):
                 line.append(index)
                 index += element.ROW_COUNT
 
@@ -98,20 +114,33 @@ class sSquare(object):
 
         return matrix
 
-    # Is the value "in" the square ?
-    def inMe(self, elements, value):
+    # Search for the position of the value "in" the square ?
+    #
+    #   returns the tuple (line, row) if found or (None, None)
+    #
+    def findValue(self, elements, value):
         
         # All my positions
         positions = self.indexesByLine()
 
         # Check all the positions
-        for line in range (sSquare.LINE_COUNT):
-            for row in range(sSquare.ROW_COUNT):
+        for line in range (sSquare.S_LINE_COUNT):
+            for row in range(sSquare.S_ROW_COUNT):
                 if value == elements[positions[line][row]].value():
-                    # This value is already in the square
-                    return True
+                    # This value is in the square
+                    return (line, row)
         
         # No (this value is not in this small square)
-        return False
+        return (None, None)
+
+    # Is the value "in" the square ?
+    #
+    #   Check wether the value is in the current small square   
+    #
+    #   return a boolean - True if found
+    #
+    def inMe(self, elements, value):
+        rets = self.findValue(elements, value)
+        return False if None == rets[0] else True
 
 # EOF

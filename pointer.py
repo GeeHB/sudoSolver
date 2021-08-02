@@ -34,7 +34,7 @@ class pointer(object):
     #
     index_      =   INDEX_MIN       # Current index
     
-    row_ = 0                        # Position int the "matrix"
+    row_ = 0                        # Position in the "matrix"
     line_ = 0
     
     squareID_ = 0                   # Small square ID
@@ -64,6 +64,16 @@ class pointer(object):
             self.squareID_ = other.squareID_
             self.gameMode_ = other.gameMode_
 
+    # Absolute position
+    #
+    def moveTo(self, line, row):
+        self.line_ = line
+        self.row_ = row
+        self.index_ = row + line * self.ROW_COUNT
+
+        # the square ID is missing
+        self._whereAmI(False)
+        
     # Access
     #
 
@@ -157,10 +167,12 @@ class pointer(object):
 
     # Updating coordinates
     #
-    def _whereAmI(self):
-        # V. math
-        self.line_ = math.floor(self.index_ / 9)
-        self.row_ = self.index_ - 9 * self.line_
+    def _whereAmI(self, all = True):
+        
+        if True == all:
+            # V. math
+            self.line_ = math.floor(self.index_ / self.ROW_COUNT)
+            self.row_ = self.index_ - self.ROW_COUNT * self.line_
         
         # Small square ID
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)

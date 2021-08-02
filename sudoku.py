@@ -12,7 +12,7 @@
 #   Date        :   2021-07-21
 #
 
-import os, time
+import os, time, math
 from element import element, elementStatus
 from pointer import pointer
 from sSquare import sSquare, SQUARES_INDEXES
@@ -523,16 +523,6 @@ class sudoku(object):
 
     #  => in the "small" square ?
     def _checkSquare(self, position, value):
-        """"
-        tIndex = sSquare.SQUARES_INDEXES[position.squareID()]      
-        for _ in range (3):
-            for tRow in range(3):
-                if self.elements_[tIndex + tRow].value() == value:
-                    # Not possible !!!
-                    return False
-            tIndex+=pointer.ROW_COUNT
-        """
-
         # Search in my "small" square
         mySquare = sSquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
@@ -622,14 +612,16 @@ class sudoku(object):
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(value, elementStatus.OBVIOUS)
                     found += 1
-            """"
             else:
+                
+                value = self.elements_[position.index()].value()
+                
                 # Can we put this value on another line ?
                 found += self._setObviousValueinLines(position, value)
 
                 # ... or/and put it in another col ?
                 found += self._setObviousValueinRows(position, value)
-            """      
+
             # Next pos.
             position+=1
 
@@ -662,49 +654,126 @@ class sudoku(object):
     #
     def _setObviousValueinLines(self, position, value):
         # "little" squares IDs for this line
-        if 0 == position.row():
-            # Left pos
-            firstID = position.squareID() + 1
-            secondID = position.squareID() + 2
+        modID = position.squareID() % 3
+        if 0 ==  modID:
+            # At the left pos
+            firstSquare = sSquare(position.squareID() + 1)
+            secondSquare = sSquare(position.squareID() + 2)
         else:
-            if 1 == position.row():
+            if 1 == modID:
                 # centered
-                firstID = position.squareID() - 1
-                secondID = position.squareID() + 1
+                firstSquare = sSquare(position.squareID() - 1)
+                secondSquare = sSquare(position.squareID() + 1)
             else:
                 # on the right
-                firstID = position.squareID() - 2
-                secondID = position.squareID() - 1
+                firstSquare = sSquare(position.squareID() - 2)
+                secondSquare = sSquare(position.squareID() - 1)
+
+        # Is the value already in theses squares ?
+        firstPos = firstSquare.findValue(self.elements_, value)
+        secondPos = secondSquare.findValue(self.elements_, value)
+
+        # None of them or both of them
+        if (None == firstPos[0] and None == secondPos[0]) or (None != firstPos[0] and None != secondPos[0]) :
+            return 0
+
+        # Just one square misses the value => we'll try to put this value in the correct line
+        # 
+        #   The sum of the 3 lineID is a consts and we know 2 oh them
+        #
+        if None == firstPos[0]:
+            candidate = firstSquare
+            candidateLine = 2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1 
+        else: 
+            candidate = secondSquare
+            candidateLine = 2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
+
+        # Try to pout the value ...
+        #
+        foundPos = None
+        pos = pointer(index = 0)
+        pos.moveTo(candidateLine, candidate.topRow())
+        for _ in range(sSquare.S_ROW_COUNT):
+            if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                if None != foundPos:
+                    # Already a candiate => not obvious
+                    return 0
+                foundPos = pointer(other = pos) # call the copy constructor !!!
+            
+            # Next row
+            pos+=1
+
+        # Did we find a position ?
+        if None != foundPos:
+            # Yes !!!
+            self.elements_[foundPos.index()].setValue(value, elementStatus.OBVIOUS)
+            return 1
+
+        # No ...
+        return 0
 
     # Try to put the value in another row
     #
     #   return the count (0 or 1) of value set
     #
     def _setObviousValueinRows(self, position, value):
-        pass
+        # "little" squares IDs for this line
+        modID = math.floor(position.squareID() / 3)
+        if 0 ==  modID:
+            # At the top pos
+            firstSquare = sSquare(position.squareID() + sSquare.S_ROW_COUNT)
+            secondSquare = sSquare(position.squareID() + 2 * sSquare.S_ROW_COUNT)
+        else:
+            if 1 == modID:
+                # centered
+                firstSquare = sSquare(position.squareID() - sSquare.S_ROW_COUNT)
+                secondSquare = sSquare(position.squareID() + sSquare.S_ROW_COUNT)
+            else:
+                # on the bottom
+                firstSquare = sSquare(position.squareID() - 2 * sSquare.S_ROW_COUNT)
+                secondSquare = sSquare(position.squareID() - 1 * sSquare.S_ROW_COUNT)
 
-    # Find the line in a "small" square which doesn't contain a value
-    #
-    #   return the line ID or -1
-    #
-    def _findLineID(self, squareID, value):
-        
-        """"
-        myID = ###
+        # Is the value already in theses squares ?
+        firstPos = firstSquare.findValue(self.elements_, value)
+        secondPos = secondSquare.findValue(self.elements_, value)
 
-        # Browse the square
-        for _ in range(3):
-            for _ in range(3):
+        # None of them or both of them
+        if (None == firstPos[0] and None == secondPos[0]) or (None != firstPos[0] and None != secondPos[0]) :
+            return 0
 
-            # The searched value ?
-            if sSquare.value() == value:
-                return -1
+        # Just one square misses the value => we'll try to put this value in the correct line
+        # 
+        #   The sum of the 3 lineID is a consts and we know 2 oh them
+        #
+        if None == firstPos[0]:
+            candidate = firstSquare
+            candidateRow = 2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1 
+        else: 
+            candidate = secondSquare
+            candidateRow = 2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
 
-            # Next pos
-            sSquare+=1
+        # Try to pout the value ...
+        #
+        foundPos = None
+        pos = pointer(index = 0)
+        pos.moveTo(candidate.topLine(), candidateRow)
+        for _ in range(sSquare.S_LINE_COUNT):
+            if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                if None != foundPos:
+                    # Already a candiate => not obvious
+                    return 0
+                foundPos = pointer(other = pos) # call the copy constructor !!!
+            
+            # Next line
+            pos+=pos.ROW_COUNT
 
-        # not found
-        """
-        return -1
+        # Did we find a position ?
+        if None != foundPos:
+            # Yes !!!
+            self.elements_[foundPos.index()].setValue(value, elementStatus.OBVIOUS)
+            return 1
+
+        # No ...
+        return 0
 
 # EOF

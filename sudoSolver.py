@@ -146,6 +146,8 @@ if '__main__' == __name__:
         print(e)
     except IndexError:
         print("No soluce found for this grid")
+    """
     except:
         print("Unknown error")
+    """
 # EOF
