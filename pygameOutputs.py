@@ -9,9 +9,9 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.3.1
+#   Version     :   1.3.3
 #
-#   Date        :   2021-08-02
+#   Date        :   2021-08-04
 #
 
 import pygame, math
@@ -168,8 +168,14 @@ class pygameOutputs(outputs):
     MOVE_UP             = pygame.K_UP
     MOVE_DOWN           = pygame.K_DOWN
     
-    VALUE_DEC           = pygame.K_e        # Change element value
+    # Change element value
+    VALUE_DEC           = pygame.K_PAGEUP
+    VALUE_INC           = pygame.K_PAGEDOWN
+
+    """
+    VALUE_DEC           = pygame.K_e
     VALUE_INC           = pygame.K_r
+    """
 
     EDIT_CANCEL         = pygame.K_ESCAPE
     EDIT_QUIT_AND_SAVE  = pygame.K_RETURN
