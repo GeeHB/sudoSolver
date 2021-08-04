@@ -7,13 +7,23 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.3.1
+#   Version     :   1.3.3
 #
-#   Date        :   2021-08-02
+#   Date        :   2021-08-04
 #
 
 import os, sys, time, os
 from ownExceptions import sudokuError
+
+#
+# stats - Informations about a solution
+#
+class stats(object):
+    obvValues_ = 0          # Count of obvious values found
+    obvDuration_ = 0        # Duration in sec. of obvious-values search process
+
+    bruteDuration_ = 0      # Duration in sec. of brute-force search process
+    bruteAttempts_  = 0     # Brute-froce attempts counter
 
 #
 # outputs - abstract class containing all drawing methods 
@@ -73,6 +83,24 @@ class outputs(object):
     def displayText(self, text, information = True, elements = None):
         # By default, text is displayed on the console
         print(text)
+
+    # Show resolution stats
+    #   
+    #   Print stats on console (by default)
+    #
+    # can be overloaded
+    def showStats(self, params, sStats):
+        print("\t- " + params.fileName_)
+
+        # Found obvious values ?
+        if True == params.obviousValues_:
+            if sStats.obvValues_:
+                print("\t- Found " + str(sStats.obvValues_) + " obvious value(s) in " + str(round(sStats.obvDuration_, 2)) + " second(s)")
+            else:
+                print("\t- No obvious value found")
+
+        print("\t- Solved in " + str(round(sStats.bruteDuration_, 2)) + " second(s)")
+        print("\t- " + str(sStats.bruteAttempts_) + " attempt(s)\n") 
 
     # Waiting for an event
     #   @allEvents : returns when any event occurs (by default only keyboard and exit events)

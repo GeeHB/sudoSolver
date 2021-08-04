@@ -7,17 +7,19 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.3.1
+#   Version     :   1.3.3
 #
-#   Date        :   2021-08-02
+#   Date        :   2021-08-04
 #
 
+from drawThread import drawThread
 import os, time, math
 from element import element, elementStatus
 from pointer import pointer
 from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
+from drawThread import drawThread
 
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid
@@ -38,6 +40,8 @@ class sudoku(object):
 
     attempts_ = 0
     start_ = 0              # Resolution start-time
+
+    dThread_ = None         # Drawing thread
 
     # Construction
     #
@@ -90,6 +94,26 @@ class sudoku(object):
     def displayText(self, text, information = True):
         # call display's method
         self.outputs_.displayText(text, information, self.elements_)
+
+    # Show resolution stats
+    #
+    def showStats(self, params, sStats):
+        self.outputs_.showStats(params, sStats)
+
+    #
+    # Drawing thread management
+    #
+    
+    # Starting ...
+    def startDrawingThread(self):
+        self.dThread_ = drawThread(self.outputs_, self.elements_)
+        self.dThread_.start()
+
+    # Stopping ...
+    def stopDrawingThread(self):
+        if None != self.dThread_:
+            self.dThread_.stop()
+            self.dThread_ = None    # Don't stop it twice
     
     # What can we do ?
     #

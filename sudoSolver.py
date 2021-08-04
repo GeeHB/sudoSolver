@@ -8,15 +8,14 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.3.1
+#   Version     :   1.3.3
 #
-#   Date        :   2021-08-02
+#   Date        :   2021-08-04
 #
 
 import time
-import options
+import options, outputs
 from sudoku import sudoku
-from drawThread import drawThread
 from ownExceptions import sudokuError
 
 #
@@ -36,7 +35,7 @@ if '__main__' == __name__:
     
     # my sudoku grid
     solver = None
-    invalid = True
+    exitNow = False
 
     # Loading ...
     #
@@ -50,20 +49,22 @@ if '__main__' == __name__:
             params.fileName_ = solver.browse(params.folderName_)
             if 0 == len(params.fileName_):
                 # Cancelled by user
-                invalid = False
-                exit(0)
+                exitNow = True
         else :
             solver.load(params.fileName_, False == params.editMode_)
     except sudokuError as e:
         print(e)
-        exit(1)
+        exitNow = True
     except IndexError:
         print("Too many lines in the file")
-        exit(1)
+        exitNow = True
     except:
-        if True == invalid:
-            print("Unknown error while loading '" + params.fileName_ + "'")
-        exit(1)
+        print("Unknown error while loading '" + params.fileName_ + "'")
+        exitNow = True
+    
+    # Exit anyway ...
+    if True == exitNow :
+        exit(0)
     
     # Edition and/or resolution
     #
@@ -83,6 +84,9 @@ if '__main__' == __name__:
                 solveMode = False
         
         # Search for the solution
+        #
+        
+        myStats = outputs.stats
         if params.solveMode_:       
             if False == params.editMode_:
                 solver.displayText("Press a key to start resolution", False)
@@ -90,22 +94,20 @@ if '__main__' == __name__:
 
             # Start the drawing thread
             if params.drawProgress_:
-                myThread = drawThread(solver.outputs(), solver.grid())
-                myThread.start()
+                solver.startDrawingThread()
             else:
                 solver.displayText("Solving ...", False)
       
             # Obvious values first ...
-            count = 0
             if True == params.obviousValues_:
-                count, obvDuration = solver.findObviousValues()
+                myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            attempts, duration = solver.resolve()
+            myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
 
             # Stop the drawing thread
             if params.drawProgress_:
-                myThread.stop()
+                solver.stopDrawingThread()
             
             # Display the solution
             solver.showGrid()   
@@ -117,18 +119,7 @@ if '__main__' == __name__:
             solver.close()
 
             # A few stats.
-            #
-            print("\t- " + solver.fileName())
-
-            # Found obvious values ?
-            if True == params.obviousValues_:
-                if count:
-                    print("\t- Found " + str(count) + " obvious value(s) in " + str(round(obvDuration, 2)) + " second(s)")
-                else:
-                    print("\t- No obvious value found")
-
-            print("\t- Solved in " + str(round(duration, 2)) + " second(s)")
-            print("\t- " + str(attempts) + " attempt(s)\n") 
+            solver.showStats(params, myStats)
 
             # Export the solution ?
             if params.exportSoluce_:

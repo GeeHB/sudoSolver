@@ -6,9 +6,9 @@
 #
 #   Description :   posixKeyoard : handle keyboard
 #
-#   Version     :   1.3.1
+#   Version     :   1.3.3
 #
-#   Date        :   2021-08-02
+#   Date        :   2021-08-04
 #
 
 import os, sys, time, os, termios, fcntl
