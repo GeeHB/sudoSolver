@@ -6,15 +6,15 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.3.3"
+CURRENT_VERSION = "1.3.4"
 
 # Command line options
 #
@@ -28,10 +28,11 @@ CMD_OPTION_BROWSE = "b"
 CMD_OPTION_BROWSE_AND_SOLVE = "bs"
 CMD_OPTION_SEARCH_OBVIOUS = "o"
 
-CMD_OPTION_SAVE_SOLUCE      = "x"       # Export soluce
+CMD_OPTION_SAVE_SOLUTION = "x"          # Export the solution
 
 CMD_OPTION_CONSOLE = "c"                # Console mode
-CMD_OPTION_DETAILS = "d"                # Show progression details
+CMD_OPTION_DISPLAY = "d"                # Show grid while searching a solution
+CMD_OPTION_DETAILS = "dd"               # Show progression details
 
 #
 #   options object : command-line parsing and parameters management
@@ -51,9 +52,10 @@ class options(object):
         self.solveMode_ = False
         self.fileName_ = ""
         self.folderName_ = ""
-        self.drawProgress_ = False        # don't display progression
-        self.exportSoluce_ = False
-        self.obviousValues = False        # don't search "obvious" values before trying to solve
+        self.exportSolution_ = False
+        self.obviousValues = False      # don't search "obvious" values before trying to solve
+        self.displayGrid_ = False       # Draw the grid during the search process
+        self.showDetails_ = False       # Draw "slowly" the grid during search process
 
     # Browse the command line
     #   returns True when ok
@@ -68,7 +70,7 @@ class options(object):
             self.consoleMode_ = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
 
             # Export the solution ?
-            self.exportSoluce_ = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUCE) == parameters.NO_INDEX)
+            self.exportSolution_ = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUTION) == parameters.NO_INDEX)
 
             # Search obvious values ?
             self.obviousValues_ = not (parameters.findAndRemoveOption(CMD_OPTION_SEARCH_OBVIOUS) == parameters.NO_INDEX)
@@ -143,10 +145,16 @@ class options(object):
                                     showUsage = True
             
             # display progression ?
-            self.drawProgress_ = not (parameters.findAndRemoveOption(CMD_OPTION_DETAILS) == parameters.NO_INDEX)
+            self.showDetails_ = not (parameters.findAndRemoveOption(CMD_OPTION_DETAILS) == parameters.NO_INDEX)
+            if True == self.showDetails_:
+                # Show details => show the grid
+                self.displayGrid_ = True
+            else:
+                # display grid ?
+                self.displayGrid_ = not (parameters.findAndRemoveOption(CMD_OPTION_DISPLAY) == parameters.NO_INDEX)
 
         # Export solution => solverMode activated
-        if self.exportSoluce_ and not self.solveMode_:
+        if self.exportSolution_ and not self.solveMode_:
             showUsage = True
 
         # There should be no options left
@@ -174,8 +182,9 @@ class options(object):
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[textAttribute.DARK]), ": Edit and solve the sudoku stored in {srcName}")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[textAttribute.DARK]),": Search for obvious vals before \"brute-force\" soluce searching")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUCE + " ]", formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.soluce")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DISPLAY + " ]",formatAttr=[textAttribute.DARK]),": Draw the grid during resolution process")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[textAttribute.DARK]),": Show progression during resolution process")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[textAttribute.DARK]),": Search for obvious vals before brute-force solution searching")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUTION + " ]", formatAttr=[textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.solution")
 
 # EOF

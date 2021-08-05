@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 from drawThread import drawThread
@@ -29,7 +29,7 @@ class sudoku(object):
     # Consts
     #
     VALUE_SEPARATOR =       ","         # Value separator in files
-    FILE_EXPORT_EXTENSION = ".soluce"   # A solution grid
+    FILE_EXPORT_EXTENSION = ".solution" # A solution grid
     FILE_COMMENTS =         "#"         # Comment lines start with
 
     # Members
@@ -42,11 +42,15 @@ class sudoku(object):
     start_ = 0              # Resolution start-time
 
     dThread_ = None         # Drawing thread
+    showDetails_ = False
 
     # Construction
     #
-    def __init__(self, consoleMode = False):
+    def __init__(self, consoleMode = False, details = False):
 
+        # Show progression details
+        self.showDetails_ = details
+        
         # Set display mode
         #
 
@@ -152,7 +156,7 @@ class sudoku(object):
             files.extend(fileNames)
             break
 
-        # No soluce files in the list !
+        # No solution files in the list !
         for file in files:
             _, fileExt = os.path.splitext(file)
             if self.FILE_EXPORT_EXTENSION == fileExt:
@@ -338,7 +342,7 @@ class sudoku(object):
 
     # Edit / modify the grid
     #
-    #   Returns a boolean : grid saved ?
+    #   Returns a boolean : grid saved (or successfully edited) ?
     #
     def edit(self):
         # Can we edit this grid
@@ -347,6 +351,7 @@ class sudoku(object):
 
         # Edition
         #
+        modified = False                           # Has this grid been changed ?
         valid = False
         cont = True
         currentPos = pointer(gameMode=False)      # current position
@@ -391,9 +396,10 @@ class sudoku(object):
                                         val = 0
                                     
                                     newVal = self._findPreviousValue(currentPos, val)
-                                    if not newVal == val:
+                                    if newVal != val:
                                         self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
                                         prevPos = None
+                                        modified = True
                                 else:
                                     if self.outputs_.VALUE_INC == event.key:
                                         val = self.elements_[currentPos.index()].value()
@@ -401,14 +407,16 @@ class sudoku(object):
                                             val = 0
                                         
                                         newVal = self._findNextValue(currentPos, val)
-                                        if not newVal == val:
+                                        if newVal != val:
                                             self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
                                             prevPos = None
+                                            modified = True
                                     else:
                                         # Cancel
                                         if self.outputs_.EDIT_CANCEL == event.key:
                                             cont = False
                                             valid = False
+                                            modified = False
                                         else:
                                             # Save current grid
                                             if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
@@ -420,7 +428,7 @@ class sudoku(object):
                 valid = False
 
         # Saves changes or exit
-        return self.save() if True == valid else False
+        return (self.save() if True == valid else False) if modified else True
     
     # Find all the obvious values
     #
@@ -443,9 +451,11 @@ class sudoku(object):
         
     # Try to solve the grid
     #
-    #   return a tuple (#attempts, duration in s.)
+    #   return a tuple (escaped?, #attempts, duration in s.)
     #
     def resolve(self):
+        
+        escaped = False
         
         # for stats
         self.attempts_ = 0
@@ -456,10 +466,12 @@ class sudoku(object):
             self._resolve()
         except reachedEndOfList:
             # Find a solution !!!
-            return (self.attempts_, time.time() - self.start_) 
+            return (False, self.attempts_, time.time() - self.start_) 
+        except:
+            escaped = True
         
         # ???
-        return (0,0)
+        return (escaped, 0,0)
 
     # Get the list of possible values at a given position
     #
@@ -496,8 +508,17 @@ class sudoku(object):
         # we'll try to put the "candidate" value at the current position
         while True :
 
-            candidate+=1
+            # Let the drawing thread do its job ...
+            if self.showDetails_:
+                # Sleep for very short time ...
+                time.sleep(0.001)
 
+                # Stopped ?
+                status = self.outputs_.keyPressed()
+                if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
+                    exit(0)
+
+            candidate+=1
             if candidate > pointer.VALUE_MAX:
                 
                 # No possible value found at this position
@@ -568,7 +589,7 @@ class sudoku(object):
     #
     #   Returns a pointer to the found position
     #   An IndexError excpetion is raised when the pointer is out of the grid (index -1)
-    #   No soluce for the grid
+    #   No solution for the grid
     # 
     def _previousPos(self, current):
         newPos = pointer(current)

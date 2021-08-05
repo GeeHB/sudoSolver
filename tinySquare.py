@@ -6,9 +6,9 @@
 #
 #   Description :   tinySquare object 
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 from pointer import pointer

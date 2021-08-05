@@ -9,9 +9,9 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 import pygame, math
@@ -295,6 +295,16 @@ class pygameOutputs(outputs):
                     finished = True
 
         return event
+
+    # Is a key pressed ?
+    #
+    #   returns the tuple (pressed?, key or None if not pressed)
+    #
+    #  can be overloaded
+    def keyPressed(self, elements = None, allEvents = False):
+        evt = pygame.event.poll()
+        pressed = (evt.type == pygame.QUIT or evt.type == pygame.KEYDOWN)
+        return (pressed, evt if pressed else None)    
 
     # Set/change the current grid's filename
     #   overloaded

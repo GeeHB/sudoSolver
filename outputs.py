@@ -7,9 +7,9 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 import os, sys, time, os
@@ -112,6 +112,14 @@ class outputs(object):
         while wait:
             c = self._readKeyboard()
             wait = (len(c) == 0)    
+
+    # Is a key pressed ?
+    #
+    #   returns the tuple (pressed?, key or None if not pressed)
+    #
+    #  can be overloaded
+    def keyPressed(self, elements = None, allEvents = False):
+        return (False, None)    
 
     # Is this display mode compatible with edition ?
     def allowEdition(self):

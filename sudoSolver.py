@@ -8,9 +8,9 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.3.3
+#   Version     :   1.3.4
 #
-#   Date        :   2021-08-04
+#   Date        :   2021-08-05
 #
 
 import time
@@ -40,7 +40,7 @@ if '__main__' == __name__:
     # Loading ...
     #
     try:
-        solver = sudoku(params.consoleMode_)
+        solver = sudoku(params.consoleMode_, params.showDetails_)
         
         if params.browseFolder_:
             if not solver.allowFolderBrowsing():
@@ -68,17 +68,18 @@ if '__main__' == __name__:
     
     # Edition and/or resolution
     #
+    
+    if params.editMode_ and False == solver.allowEdition():
+        solver.close()
+        solver.displayText("This display mode is not compatible with grid edition")
+        exit(1)
+    
     try:
         # display starting grid
         solver.showGrid()
 
         # Edition
         if params.editMode_:
-            if False == solver.allowEdition():
-                solver.close()
-                solver.displayText("This display mode is not compatible with grid edition")
-                exit(1)
-
             # Succefully edited ?
             if False == solver.edit():
                 solveMode = False
@@ -93,7 +94,7 @@ if '__main__' == __name__:
                 solver.waitForKeyDown()
 
             # Start the drawing thread
-            if params.drawProgress_:
+            if params.displayGrid_:
                 solver.startDrawingThread()
             else:
                 solver.displayText("Solving ...", False)
@@ -103,10 +104,10 @@ if '__main__' == __name__:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
+            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
 
             # Stop the drawing thread
-            if params.drawProgress_:
+            if params.displayGrid_:
                 solver.stopDrawingThread()
             
             # Display the solution
@@ -118,25 +119,28 @@ if '__main__' == __name__:
             solver.waitForKeyDown()
             solver.close()
 
-            # A few stats.
-            solver.showStats(params, myStats)
+            if escaped:
+                print("Resolution canceled")
+            else:
+                # A few stats.
+                solver.showStats(params, myStats)
 
-            # Export the solution ?
-            if params.exportSoluce_:
-                comments = []
-                comments.append(" ")
-                comments.append(" Source file : " + solver.fileName())
-                comments.append(" ")
-                comments.append("Solved by JHB::sudoSolver.py in " + str(round(duration, 2)) + " sec.")
-                comments.append(" ")
-                
-                if True == solver.save(True, comments):
-                    print("Soluce successfully saved in ", solver.fileName() + solver.FILE_EXPORT_EXTENSION) 
+                # Export the solution ?
+                if params.exportSolution_:
+                    comments = []
+                    comments.append(" ")
+                    comments.append(" Source file : " + params.fileName_)
+                    comments.append(" ")
+                    comments.append("Solved by JHB::sudoSolver.py in " + str(round(myStats.bruteDuration_, 2)) + " sec.")
+                    comments.append(" ")
+                    
+                    if True == solver.save(True, comments):
+                        print("Solution successfully saved in ", params.fileName_ + solver.FILE_EXPORT_EXTENSION) 
 
     except sudokuError as e:
         print(e)
     except IndexError:
-        print("No soluce found for this grid")
+        print("No solution found for this grid")
     """
     except:
         print("Unknown error")
