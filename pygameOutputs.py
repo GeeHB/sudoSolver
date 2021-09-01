@@ -169,8 +169,8 @@ class pygameOutputs(outputs):
     MOVE_DOWN           = pygame.K_DOWN
     
     # Change element value
-    VALUE_DEC           = pygame.K_PAGEUP
-    VALUE_INC           = pygame.K_PAGEDOWN
+    VALUE_DEC           = pygame.K_PAGEDOWN
+    VALUE_INC           = pygame.K_PAGEUP
 
     """
     VALUE_DEC           = pygame.K_e

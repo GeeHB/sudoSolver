@@ -14,7 +14,7 @@
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.3.4"
+CURRENT_VERSION = "1.3.5"
 
 # Command line options
 #
