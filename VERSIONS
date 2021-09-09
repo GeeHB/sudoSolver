@@ -1,3 +1,9 @@
+Version 1.3.5
+    * 9 sept. 2021
+    * element::elementStatus is an enumeration !!! - inherites from IntFlag 
+        https://docs.python.org/fr/3/library/enum.html
+    * integrate new interfaces from cmdLineParser.py and colorizer.py
+
 Version 1.3.4
     * 5 aug. 2021
     + Modifiy outputs.py : now display stats

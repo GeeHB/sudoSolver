@@ -14,7 +14,7 @@
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.3.5"
+CURRENT_VERSION = "1.3.6"
 
 # Command line options
 #
@@ -45,7 +45,6 @@ class options(object):
 
         # Default values
         self.color_ = colorizer(True)
-        self.showUsage_ = False
         self.consoleMode_ = False
         self.browseFolder_ = False
         self.editMode_ = False

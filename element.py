@@ -11,11 +11,13 @@
 #   Date        :   2021-08-05
 #
 
+from enum import IntFlag
+
 #
 # elementStatus - Element's status
 #   It can be one or a combination of theses values
 #
-class elementStatus(object):
+class elementStatus(IntFlag):
 
     EMPTY = 0
     SET = 1
