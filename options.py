@@ -14,20 +14,21 @@
 from cmdLineParser import cmdLineParser
 from colorizer import colorizer, textAttribute
 
-CURRENT_VERSION = "1.3.6"
+CURRENT_VERSION = "1.3.5"
 
 # Command line options
 #
 
-CMD_OPTION_CHAR = "-"           # Parameters start with ...
+CMD_OPTION_CHAR = "-"                   # Parameters start with ...
 
-CMD_OPTION_SOLVE = "s"
-CMD_OPTION_EDIT = "e"
-CMD_OPTION_EDIT_AND_SOLVE = "es"
-CMD_OPTION_BROWSE = "b"
+CMD_OPTION_BROWSE = "b"                 # Browse a folder
+CMD_OPTION_EDIT = "e"                   # Edit (and modify or create) a grid
+CMD_OPTION_SOLVE = "s"                  # Search for a solution for the grid
+
 CMD_OPTION_BROWSE_AND_SOLVE = "bs"
-CMD_OPTION_SEARCH_OBVIOUS = "o"
+CMD_OPTION_EDIT_AND_SOLVE = "es"
 
+CMD_OPTION_SEARCH_OBVIOUS = "o"         # First search for obvious values
 CMD_OPTION_SAVE_SOLUTION = "x"          # Export the solution
 
 CMD_OPTION_CONSOLE = "c"                # Console mode
@@ -59,106 +60,80 @@ class options(object):
     # Browse the command line
     #   returns True when ok
     def parse(self):
-
-        showUsage = False
-        parameters = cmdLineParser(CMD_OPTION_CHAR)
-        if 0 == parameters.size():
-            showUsage = True
-        else:
-            # Console display mode ?
-            self.consoleMode_ = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
-
-            # Export the solution ?
-            self.exportSolution_ = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUTION) == parameters.NO_INDEX)
-
-            # Search obvious values ?
-            self.obviousValues_ = not (parameters.findAndRemoveOption(CMD_OPTION_SEARCH_OBVIOUS) == parameters.NO_INDEX)
-
-            # Solve mode ?
-            index =  parameters.findAndRemoveOption(CMD_OPTION_SOLVE)
-            if not parameters.NO_INDEX == index:
-                # File name expected
-                try :
-                    rets = parameters.parameterOrValue(index + 1)
-                    if rets[1] == False : 
-                        self.fileName_ = rets[0]
-                        self.solveMode_ = True
-                except IndexError:
-                    # no filename
-                    showUsage = True
-            else:
-                # Edition mode ?
-                index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT)
-                if not parameters.NO_INDEX == index:
-                    # File name expected
-                    try :
-                        rets = parameters.parameterOrValue(index + 1)
-                        if rets[1] == False : 
-                            self.fileName_ = rets[0]
-                            self.editMode_ = True
-                    except IndexError:
-                        # no filename ...
-                        showUsage = True
-                else:
-                    # Edition & resolution ?
-                    index =  parameters.findAndRemoveOption(CMD_OPTION_EDIT_AND_SOLVE)
-                    if not parameters.NO_INDEX == index:
-                        # File name expected
-                        try :
-                            rets = parameters.parameterOrValue(index + 1)
-                            if rets[1] == False : 
-                                self.fileName_ = rets[0]
-                                self.editMode_ = True
-                                self.solveMode_ = True
-                        except IndexError:
-                            # no filename ...
-                            showUsage = True
-                    else:
-                        # Parse/browse folder ?
-                        index =  parameters.findAndRemoveOption(CMD_OPTION_BROWSE)
-                        if not parameters.NO_INDEX == index:
-                            # foldername needed
-                            try :
-                                rets = parameters.parameterOrValue(index + 1)
-                                if rets[1] == False : 
-                                    self.folderName_ = rets[0]
-                                    self.browseFolder_ = True
-                                    self.editMode_ = True
-                            except IndexError:
-                                # no folder given
-                                showUsage = True
-                        else:
-                            # browse and solve ?
-                            index =  parameters.findAndRemoveOption(CMD_OPTION_BROWSE_AND_SOLVE)
-                            if not parameters.NO_INDEX == index:
-                                # foldername needed
-                                try :
-                                    rets = parameters.parameterOrValue(index + 1)
-                                    if rets[1] == False : 
-                                        self.folderName_ = rets[0]
-                                        self.browseFolder_ = True
-                                        self.editMode_ = True
-                                        self.solveMode_ = True
-                                except IndexError:
-                                    # no folder given
-                                    showUsage = True
-            
-            # display progression ?
-            self.showDetails_ = not (parameters.findAndRemoveOption(CMD_OPTION_DETAILS) == parameters.NO_INDEX)
-            if True == self.showDetails_:
-                # Show details => show the grid
-                self.displayGrid_ = True
-            else:
-                # display grid ?
-                self.displayGrid_ = not (parameters.findAndRemoveOption(CMD_OPTION_DISPLAY) == parameters.NO_INDEX)
-
-        # Export solution => solverMode activated
-        if self.exportSolution_ and not self.solveMode_:
-            showUsage = True
-
-        # There should be no options left
-        if True == showUsage or parameters.options() > 0 or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
+        if False == self._parse():
             self.usage()
+            return False
+        return True
+
+    def _parse(self):
+
+        parameters = cmdLineParser(CMD_OPTION_CHAR)
+        
+        # Parameters needed
+        if 0 == parameters.size():
+            return False
+        
+        # Console display mode ?
+        self.consoleMode_ = not (parameters.findAndRemoveOption(CMD_OPTION_CONSOLE) == parameters.NO_INDEX)
+
+        # Export the solution ?
+        self.exportSolution_ = not (parameters.findAndRemoveOption(CMD_OPTION_SAVE_SOLUTION) == parameters.NO_INDEX)
+
+        # Search obvious values ?
+        self.obviousValues_ = not (parameters.findAndRemoveOption(CMD_OPTION_SEARCH_OBVIOUS) == parameters.NO_INDEX)
+
+        # Solve mode ?
+        rets = parameters.getOptionValue(CMD_OPTION_SOLVE)
+        if False == rets[1] and len(rets[0]) > 0:
+            # File name expected
+            self.fileName_ = rets[0]
+            self.solveMode_ = True
+        else:
+            # Edition mode ?
+            rets = parameters.getOptionValue(CMD_OPTION_EDIT)
+            if False == rets[1] and len(rets[0]) > 0:
+                self.fileName_ = rets[0]
+                self.editMode_ = True                
+            else:
+                # Edition & resolution ?
+                rets = parameters.getOptionValue(CMD_OPTION_EDIT_AND_SOLVE)
+                if False == rets[1] and len(rets[0]) > 0:
+                    self.fileName_ = rets[0]
+                    self.editMode_ = True
+                    self.solveMode_ = True                    
+                else:
+                    # Parse/browse folder ?
+                    rets = parameters.getOptionValue(CMD_OPTION_BROWSE)
+                    if False == rets[1] and len(rets[0]) > 0:
+                        self.folderName_ = rets[0]
+                        self.browseFolder_ = True
+                        self.editMode_ = True                        
+                    else:
+                        # browse and solve ?
+                        rets = parameters.getOptionValue(CMD_OPTION_BROWSE_AND_SOLVE)
+                        if False == rets[1] and len(rets[0]) > 0:
+                            self.folderName_ = rets[0]
+                            self.browseFolder_ = True
+                            self.editMode_ = True
+                            self.solveMode_ = True
+                        else:
+                            showUsage = True
+        
+        # display progression ?
+        self.showDetails_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DETAILS))
+        if True == self.showDetails_:
+            # Show details => show the grid
+            self.displayGrid_ = True
+        else:
+            # display grid ?
+            self.displayGrid_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DISPLAY))
+
+        # Export solution => solverMode should be activated
+        if self.exportSolution_ and not self.solveMode_:
+            return False
+
+        # There should be no options left and no errors ...
+        if parameters.options() > 0 or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
             return False
         
         # Done

@@ -12,7 +12,7 @@
 #
 #   Comment    :  le module termcolor doit être installé (pip3 install termcolor)
 #
-#   Version     :   1.3.2
+#   Version     :   1.4.1
 #
 #   Date        :   09 spetembre 2021
 #
@@ -29,13 +29,12 @@ from datetime import datetime
 
 # Format de la date (pour les logs)
 #
-#LOG_DATE_FORMAT = "[%d/%m/%Y - %H:%M:%S] "
-LOG_DATE_FORMAT = "[%m/%d/%Y - %H:%M:%S] "
+LOG_DATE_FORMAT = "[%d/%m/%Y - %H:%M:%S] "
 
 # Messages d'erreur
 #
-#MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
-MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
+MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
+#MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
 
 #
 # backColor - Couleurs de fond

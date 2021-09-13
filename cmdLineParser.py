@@ -129,7 +129,7 @@ class cmdLineParser:
         index = self.findAndRemoveOption(*args)
         if self.NO_INDEX == index:
             # non trouvé
-            return None, False
+            return "", False
 
         # Recherche de la valeur (qui doit suivre) ...
         try :
@@ -138,7 +138,7 @@ class cmdLineParser:
                 return rets[0], False
         except IndexError:
             # Pas de valeur ...
-            return None, True
+            return "", True
 
     # Recherche d'une option et de sa valeur numérique à partir d'un ou plusieurs noms
     #   Lorsque les bornes min et max sont fournies, la métode s'assurera que la valeur sera dans l'intervalle
@@ -158,13 +158,23 @@ class cmdLineParser:
                 num = int(res[0])    # Peut malgré tout poser des pb ...
                 
                 # Valeur bornée (et bornes valides) ?
-                return self._minMax(num, min, max) if (min!=None and max!=None and min < max) else num , False
+                return self.minMax(num, min, max) if (min!=None and max!=None and min < max) else num , False
         except ValueError:
             # Problème de format et/ou de conversion
             pass
 
         # Une erreur ou dans un mauvais format
         return None, True
+    
+    # On s'assure qu'une valeur se trouve dans un intervalle donné
+    #   retourne la valeur ou sa version corrigée
+    def minMax(self, source, min, max):
+        if source < min :
+            source = min
+        else:
+            if source > max:
+                source = max
+        return source
 
     #
     # Méthodes privées
@@ -187,14 +197,4 @@ class cmdLineParser:
     # Accès
     def __getitem__(self, index):
         return self.at(index)
-
-    # On s'assure qu'une valeur se trouve dans un intervalle donné
-    #   retourne la valeur ou sa version corrigée
-    def _minMax(self, source, min, max):
-        if source < min :
-            source = min
-        else:
-            if source > max:
-                source = max
-        return source
 # EOF
