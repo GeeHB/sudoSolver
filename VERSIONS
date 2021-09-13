@@ -1,7 +1,8 @@
 Version 1.3.5
-    * 9 sept. 2021
-    * element::elementStatus is an enumeration !!! - inherites from IntFlag 
+    * 13 sept. 2021
+    - element::elementStatus is an enumeration !!! - inherites from IntFlag 
         https://docs.python.org/fr/3/library/enum.html
+        ! Very slow => return to simple int (more than 3 times slower !)
     * integrate new interfaces from cmdLineParser.py and colorizer.py
 
 Version 1.3.4

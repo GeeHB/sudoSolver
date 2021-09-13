@@ -7,9 +7,9 @@
 #   Description :   cursesOutputs object definition
 #                   Display a Sudoku grid using (n)Curses library (Unix / Linux and MacOS)
 #
-#   Version     :   1.3.4
+#   Version     :   1.3.5
 #
-#   Date        :   2021-08-05
+#   Date        :   2021-09-13
 #
 
 from ownExceptions import sudokuError

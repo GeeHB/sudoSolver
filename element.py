@@ -6,18 +6,19 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.3.4
+#   Version     :   1.3.5
 #
-#   Date        :   2021-08-05
+#   Date        :   2021-09-13
 #
 
-from enum import IntFlag
+#from enum import IntFlag
 
 #
 # elementStatus - Element's status
 #   It can be one or a combination of theses values
 #
-class elementStatus(IntFlag):
+#class elementStatus(IntFlag):
+class elementStatus(object):
 
     EMPTY = 0
     SET = 1
