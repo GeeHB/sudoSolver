@@ -90,7 +90,7 @@ if '__main__' == __name__:
         myStats = outputs.stats
         if params.solveMode_:       
             if False == params.editMode_:
-                solver.displayText("Press a key to start resolution", False)
+                solver.displayText("Press a key to start the solver", False)
                 solver.waitForKeyDown()
 
             # Start the drawing thread
@@ -120,7 +120,7 @@ if '__main__' == __name__:
             solver.close()
 
             if escaped:
-                print("Resolution canceled")
+                print("Resolution process canceled")
             else:
                 # A few stats.
                 solver.showStats(params, myStats)
