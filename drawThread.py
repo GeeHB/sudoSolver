@@ -6,9 +6,9 @@
 #
 #   Description :   Thread used for drawing the grid (PYGame only)
 #
-#   Version     :   1.3.5
+#   Version     :   1.4.1
 #
-#   Date        :   2021-09-13
+#   Date        :   2021-09-22
 #
 
 import threading
