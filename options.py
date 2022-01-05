@@ -6,15 +6,15 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.4.1
+#   Version     :   1.4.2
 #
-#   Date        :   2021-09-22
+#   Date        :   22022-01-05
 #
 
 from sharedTools.common import cmdLineParser as parser
 from sharedTools.common import colorizer as color
 
-CURRENT_VERSION = "1.4.1"
+CURRENT_VERSION = "1.4.2"
 
 # Command line options
 #
@@ -151,9 +151,9 @@ class options(object):
             
         # Show all commands ?
         if True == fullUsage:
-            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ", formatAttr=[color.textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
-            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ", formatAttr=[color.textAttribute.DARK]), ": Find a solution for the grid saved in {srcName}")
-            print("\t", self.color_.colored("  " + CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {srcName} ", formatAttr=[color.textAttribute.DARK]), ": Edit or create the file {srcName}")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE + " {srcFolder} ]", formatAttr=[color.textAttribute.DARK]), ": Browse {srcFolder} and display contained grids")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SOLVE + " {srcName} ]", formatAttr=[color.textAttribute.DARK]), ": Find a solution for the grid saved in {srcName}")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT + " {srcName} ]", formatAttr=[color.textAttribute.DARK]), ": Edit or create the file {srcName}")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[color.textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[color.textAttribute.DARK]), ": Edit and solve the sudoku stored in {srcName}")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[color.textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
