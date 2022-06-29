@@ -26,14 +26,14 @@ from pointer import pointer
 
 # Positions and dimensions in pixels
 #
-SQUARE_SIDE         = 60   #  Initial external size of a square element
+SQUARE_SIDE             = 60   #  Initial external size of a square element
 
-SQUARE_MIN          = 10   # Minimal square size
+SQUARE_MIN              = 10   # Minimal square size
 
-DELTA_X             = 10    # Grid offsets
-DELTA_Y             = 10
+DELTA_X                 = 10    # Grid offsets
+DELTA_Y                 = 10
 
-EXT_BORDER_WIDTH    = 3     # Width of external border
+EXT_BORDER_WIDTH        = 3     # Width of external border
 
 # Elements'text font sizes (in pixels) and names
 #

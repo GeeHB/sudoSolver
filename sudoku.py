@@ -19,7 +19,6 @@ from pointer import pointer
 from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
-from drawThread import drawThread
 
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid

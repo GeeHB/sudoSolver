@@ -36,7 +36,11 @@ class drawThread(threading.Thread):
         
             # Keep on drawing the grid's elements
             while not self.over_:
-                self.outputs_.draw(self.elements_)
+                try:
+                    self.outputs_.draw(self.elements_)
+                except:
+                    # Une erreur ???
+                    pass
 
             # until it's over ...
 

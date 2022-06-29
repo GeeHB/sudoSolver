@@ -44,8 +44,11 @@ class outputs(object):
     MOVE_UP             = "e"
     MOVE_DOWN           = "x"
     
-    VALUE_DEC           = "+"     # Change element value (edition mode)
-    VALUE_INC           = "-"
+    VALUE_DEC_OLD       = "+"     # Change element value (edition mode)
+    VALUE_INC_OLD       = "-"
+
+    VALUE_DEC           = "q"     # Change element value (edition mode)
+    VALUE_INC           = "w"
 
     EDIT_CANCEL         = "q"
     EDIT_QUIT_AND_SAVE  = "w"
