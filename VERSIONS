@@ -1,15 +1,15 @@
-Version 1.4.2
-    * 05 janv. 2022
+Version 1.4.4
+    * 29 june 2022
     + use of module sharedTools.common for cmdLineParser et colorizer versions
     + Corrections
-        - bug dans le parse de la ligne de commandes
+        - bug while parsing command-line
         - usage display (if no params)
 
 Version 1.3.5
     * 13 sept. 2021
     - element::elementStatus is an enumeration !!! - inherites from IntFlag 
         https://docs.python.org/fr/3/library/enum.html
-        ! Very slow => return to simple int (more than 3 times slower !)
+        ! Very slow => return to simple int (more than 3 times faster !)
     * integrate new interfaces from cmdLineParser.py and colorizer.py
 
 Version 1.3.4
@@ -18,8 +18,8 @@ Version 1.3.4
     + drawing thread is now handled by sudoku object
     + New algo. for obvious values discovering
         = Search for obvious values for empty places (previous algo.)
-        + Try to set a particular value in anpother line or row
-        + Add tinySquare.py - handle "small" squares
+        + Try to set a particular value in another line or row
+    + Add tinySquare.py - handle "small" squares
     + Add testing grids
     + Add "-dd" option for showing progress => display grid (-d)
     + Minor bug fixes and improvments

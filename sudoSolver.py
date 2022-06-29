@@ -8,9 +8,9 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.4.2
+#   Version     :   1.4.4
 #
-#   Date        :   22022-01-05
+#   Date        :   2022-06-29
 #
 
 import time
