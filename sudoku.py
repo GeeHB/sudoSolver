@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.4.4
+#   Version     :   1.5.1
 #
-#   Date        :   2022-06-29
+#   Date        :   2022-07-01
 #
 
 from drawThread import drawThread
@@ -441,7 +441,7 @@ class sudoku(object):
             
         values = 1
         while 0 < values:
-            values = self._setObviousValues()
+            values = self._findObviousValues()
             found += values
 
         # Find a solution !!!
@@ -450,9 +450,13 @@ class sudoku(object):
         
     # Try to solve the grid
     #
+    #   @multiThreaded : boolean - use multithreaded algo ?
+    #
+    #   @showProgress  : boolean - Show grid during process ?
+    #   
     #   return a tuple (escaped?, #attempts, duration in s.)
     #
-    def resolve(self):
+    def resolve(self, multiThreaded, showProgress):
         
         escaped = False
         
@@ -462,7 +466,11 @@ class sudoku(object):
             
         # Let's go
         try:
-            self._resolve()
+            if False == multiThreaded:
+                self._resolveSingleThreaded(showProgress)
+            else:
+                # multithreading is just for drawings !!!
+                self._resolveMultiThreaded(True)
         except reachedEndOfList:
             # Find a solution !!!
             return (False, self.attempts_, time.time() - self.start_) 
@@ -495,9 +503,12 @@ class sudoku(object):
         for element in self.elements_:
             element.empty()
 
+    #
     # Solve the grid (internal method without exceptions handling)
     #
-    def _resolve(self):
+
+    # Single Threaded mode (default)
+    def _resolveSingleThreaded(self, showProgress):
 
         candidate = 0
         position = pointer(gameMode = True)
@@ -506,7 +517,51 @@ class sudoku(object):
         # All the elements "before" the current position are set with possible/allowed values
         # we'll try to put the "candidate" value at the current position
         while True :
+           # Stopped ?
+            status = self.outputs_.keyPressed()
+            if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
+                exit(0)
+            
+            candidate+=1
+            if candidate > pointer.VALUE_MAX:
+                
+                # No possible value found at this position
+                # we'll have to go backward, to the last value setted
+                position = self._previousPos(position)
 
+                # candidate value = prev. value (incremented at next occurence)
+                candidate = self.elements_[position.index()].empty()
+            else :
+                # Try to put the "candidate" value at current position
+                #
+                if True == self._checkValue(position, candidate):
+                    # possible !!!
+                    self.attempts_ += 1
+
+                    self.elements_[position.index()].setValue(candidate)
+
+                    # Update drawings
+                    if showProgress:
+                        self.outputs_.draw(self.elements_)
+                    
+                    # Go to the next "empty" position
+                    position = self._findFirstEmptyPos(position)
+                    
+                    # At the next pos., we alawyas try the lowest possible value
+                    candidate = 0 
+
+
+    # Multithreaded mode
+    def _resolveMultiThreaded(self, showProgress):
+
+        candidate = 0
+        position = pointer(gameMode = True)
+        position = self._findFirstEmptyPos(position)
+
+        # All the elements "before" the current position are set with possible/allowed values
+        # we'll try to put the "candidate" value at the current position
+        while True :
+            """
             # Let the drawing thread do its job ...
             if self.showDetails_:
                 # Sleep for very short time ...
@@ -516,7 +571,7 @@ class sudoku(object):
                 status = self.outputs_.keyPressed()
                 if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
                     exit(0)
-
+            """
             candidate+=1
             if candidate > pointer.VALUE_MAX:
                 
@@ -639,7 +694,7 @@ class sudoku(object):
     # Search and set all the possible obvious values in the grid
     #   returns the # of values found (and set)
     #
-    def _setObviousValues(self):
+    def _findObviousValues(self):
         found = 0
 
         position = pointer()
@@ -661,10 +716,10 @@ class sudoku(object):
                 value = self.elements_[position.index()].value()
                 
                 # Can we put this value on another line ?
-                found += self._setObviousValueinLines(position, value)
+                found += self._setObviousValueInLines(position, value)
 
                 # ... or/and put it in another col ?
-                found += self._setObviousValueinRows(position, value)
+                found += self._setObviousValueInRows(position, value)
 
             # Next pos.
             position+=1
@@ -673,7 +728,7 @@ class sudoku(object):
         return found
 
 
-    # Is there an obvious value for the given position ?
+    # Is there an obvious value for the given @position ?
     #
     #      returns the value (if just one possible) or None
     #
@@ -696,7 +751,7 @@ class sudoku(object):
     #
     #   return the count (0 or 1) of value set
     #
-    def _setObviousValueinLines(self, position, value):
+    def _setObviousValueInLines(self, position, value):
         # "little" squares IDs for this line
         modID = position.squareID() % 3
         if 0 ==  modID:
@@ -764,7 +819,7 @@ class sudoku(object):
     #
     #   return the count (0 or 1) of value set
     #
-    def _setObviousValueinRows(self, position, value):
+    def _setObviousValueInRows(self, position, value):
         # "little" squares IDs for this line
         modID = math.floor(position.squareID() / 3)
         if 0 ==  modID:
@@ -800,7 +855,7 @@ class sudoku(object):
             candidate = secondSquare
             candidateRow = 2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
 
-        # Try to pout the value ...
+        # Try to put the value ...
         #
         foundPos = None
         pos = pointer(index = 0)
@@ -812,6 +867,7 @@ class sudoku(object):
                     if None != foundPos:
                         # Already a candiate => not obvious
                         return 0
+                    
                     foundPos = pointer(other = pos) # call the copy constructor !!!
                 
                 # Next line
@@ -819,7 +875,7 @@ class sudoku(object):
         except reachedEndOfList:
             pass
 
-        # Did we find a position ?
+        # Did we find a valid position ?
         if None != foundPos:
             # Yes !!!
             self.elements_[foundPos.index()].setValue(value, elementStatus.OBVIOUS)

@@ -9,9 +9,9 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.4.4
+#   Version     :   1.5.1
 #
-#   Date        :   2022-06-29
+#   Date        :   2022-07-01
 #
 
 import pygame, math
@@ -423,7 +423,7 @@ class pygameOutputs(outputs):
         self.sElement_.moveTo((self.extSquareWidth_ - fontSize) / 2, 0) 
 
 
-    # Draw window's background and grid'borders
+    # Draw window's background and grid's borders
     #
     def _drawBackground(self):
         

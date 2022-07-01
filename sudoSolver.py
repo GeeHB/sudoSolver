@@ -8,9 +8,9 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.4.4
+#   Version     :   1.5.1
 #
-#   Date        :   2022-06-29
+#   Date        :   2022-07-01
 #
 
 import time
@@ -93,23 +93,27 @@ if '__main__' == __name__:
                 solver.displayText("Press a key to start the solver", False)
                 solver.waitForKeyDown()
 
+            """
             # Start the drawing thread
             if params.displayGrid_:
                 solver.startDrawingThread()
             else:
                 solver.displayText("Solving ...", False)
-      
+            """
+
             # Obvious values first ...
             if True == params.obviousValues_:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
+            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(False, params.displayGrid_)
 
+            """
             # Stop the drawing thread
             if params.displayGrid_:
                 solver.stopDrawingThread()
-            
+            """
+
             # Display the solution
             solver.showGrid()   
             solver.displayText("Press a key to quit", False)

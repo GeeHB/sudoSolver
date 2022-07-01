@@ -1,4 +1,10 @@
-Version 1.4.4
+Version 1.5.1
+    * xxx 2022
+    + Bugs corrections
+        - GL is no longer threaded !!! (since PyGame 2.xx)
+    + 2 solver modes : threaded and non-threaded (default)
+
+Version 1.5.1
     * 29 june 2022
     + use of module sharedTools.common for cmdLineParser et colorizer versions
     + Corrections

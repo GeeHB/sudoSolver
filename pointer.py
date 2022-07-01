@@ -6,9 +6,9 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.4.4
+#   Version     :   1.5.1
 #
-#   Date        :   2022-06-29
+#   Date        :   2022-07-01
 #
 
 import math
@@ -39,7 +39,7 @@ class pointer(object):
     
     squareID_ = 0                   # tiny-square ID
 
-    gameMode_ = False               # In game mode when tyhe end of the matrix is reached, the sudoku is solved !
+    gameMode_ = False               # In game mode when the end of the matrix is reached, the sudoku is solved !
 
     # Construction
     #
