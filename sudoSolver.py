@@ -106,7 +106,7 @@ if '__main__' == __name__:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(False, params.displayGrid_)
+            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(False)
 
             """
             # Stop the drawing thread

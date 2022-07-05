@@ -155,10 +155,20 @@ class outputs(object):
     def update(self):
         pass
 
+    # Start of solving process
+    #   can be overloaded
+    def startedSolving(self, elements):
+        pass
+
+    # Solving process eneded
+    #   can be overloaded
+    def endedSolving(self):
+        pass
+
     # Update display from beginning to 'limit' (if not None)
     #
     def updateGrid(self, elements, limit):
-        self._update(elements, limit)
+        self._updateGrid(elements, limit)
         
     # End of the object (no more drawings at all)
     #   can be overloaded
@@ -171,7 +181,7 @@ class outputs(object):
 
     # Update display from beginning to 'limit' (if not None)
     # can be overloaded
-    def _update(self, elements, limit):
+    def _updateGrid(self, elements, limit):
       pass  
 
     # Read the keyboard

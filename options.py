@@ -14,7 +14,7 @@
 from sharedTools.common import cmdLineParser as parser
 from sharedTools.common import colorizer as color
 
-CURRENT_VERSION = "1.5.1"
+CURRENT_VERSION = "1.5.2"
 
 # Command line options
 #
@@ -33,8 +33,8 @@ CMD_OPTION_SEARCH_OBVIOUS = "o"         # Search for obvious values
 CMD_OPTION_SAVE_SOLUTION = "x"          # Export the solution
 
 CMD_OPTION_CONSOLE = "c"                # Console mode
-CMD_OPTION_DISPLAY = "d"                # Show grid while searching a solution (not all grids are displayed)
-CMD_OPTION_DETAILS = "dd"               # Show progression details (all grids are displayed => very slow)
+CMD_OPTION_DISPLAY = "d"                # Show grid while searching a solution (not all grids are displayed) / multithreaded
+CMD_OPTION_DETAILS = "dd"               # Show progression details (all grids are displayed => very slow) / singlethreaded
 
 #
 #   options object : command-line parsing and parameters management

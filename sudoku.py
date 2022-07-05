@@ -451,34 +451,36 @@ class sudoku(object):
     # Try to solve the grid
     #
     #   @multiThreaded : boolean - use multithreaded algo ?
-    #
-    #   @showProgress  : boolean - Show grid during process ?
     #   
     #   return a tuple (escaped?, #attempts, duration in s.)
     #
-    def resolve(self, multiThreaded, showProgress):
+    def resolve(self, multiThreaded):
         
         escaped = False
         
         # for stats
         self.attempts_ = 0
         self.start_ = time.time()
-            
+        endTime = 0
+
+        self.outputs_.startedSolving(self.elements_)
+        
         # Let's go
         try:
             if False == multiThreaded:
-                self._resolveSingleThreaded(showProgress)
+                self._resolveSingleThreaded()
             else:
                 # multithreading is just for drawings !!!
-                self._resolveMultiThreaded(True)
+                self._resolveMultiThreaded()
         except reachedEndOfList:
             # Find a solution !!!
-            return (False, self.attempts_, time.time() - self.start_) 
+            endTime = time.time() - self.start_ 
         except:
             escaped = True
         
-        # ???
-        return (escaped, 0,0)
+        # Finished (anyway)
+        self.outputs_.endedSolving()
+        return (escaped, self.attempts_, endTime)
 
     # Get the list of possible values at a given position
     #
@@ -508,7 +510,7 @@ class sudoku(object):
     #
 
     # Single Threaded mode (default)
-    def _resolveSingleThreaded(self, showProgress):
+    def _resolveSingleThreaded(self):
 
         candidate = 0
         position = pointer(gameMode = True)
@@ -541,7 +543,7 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if showProgress:
+                    if self.showDetails_:
                         self.outputs_.draw(self.elements_)
                     
                     # Go to the next "empty" position
@@ -552,7 +554,7 @@ class sudoku(object):
 
 
     # Multithreaded mode
-    def _resolveMultiThreaded(self, showProgress):
+    def _resolveMultiThreaded(self):
 
         candidate = 0
         position = pointer(gameMode = True)

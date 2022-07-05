@@ -1,6 +1,6 @@
 # coding=UTF-8
 #
-#   File     :   pygameOutputs.py
+#   File        :   pygameOutputs.py
 #
 #   Author      :   JHB
 #
@@ -21,7 +21,7 @@ from ownExceptions import sudokuError
 from pointer import pointer
 
 # 
-# Internal conts.
+# Internal constants
 #
 
 # Positions and dimensions in pixels
@@ -205,7 +205,10 @@ class pygameOutputs(outputs):
         
     # Construction
     #
-    def __init__(self, showDetails = False):
+    def __init__(self):
+        self._start()
+
+    def _start(self) :
         
         self.mode_ = self.MODE_EDIT + self.MODE_BROWSEFOLDER
 
@@ -247,9 +250,12 @@ class pygameOutputs(outputs):
         if True == information:
            super().displayText(text) 
         else:
-            # Display text on top of the board
-            self._showMessage(text, elements)
-            self._refresh(elements)
+            self._displayText(text, elements)
+
+    def _displayText(self, text, elements):
+        # Display text on top of the board
+        self._showMessage(text, elements)
+        self._refresh(elements)
     
     # Wait for an event
     #
@@ -288,7 +294,7 @@ class pygameOutputs(outputs):
                     finished = True
             # Blinking text
             elif event.type == self.sMessage_.eventID():
-                # Change rext visibility
+                # Change text visibility
                 self.sMessage_.changeVisibility()
                 self._refresh(elements)
                 if True == allEvents:
@@ -309,6 +315,9 @@ class pygameOutputs(outputs):
     # Set/change the current grid's filename
     #   overloaded
     def setGridName(self, fileName):
+        self._setGridName(fileName)
+    
+    def _setGridName(self, fileName):
         super().setGridName(fileName)
 
         self.sFileName_.setText(fileName, self.TXT_COLOUR, outputs.BK_COLOUR_FILENAME)
@@ -320,21 +329,27 @@ class pygameOutputs(outputs):
     # Draw the whole grid
     #
     def draw(self, elements):
+        self._draw(elements)
+    
+    def _draw(self, elements):
         position = pointer(gameMode = False)
 
         for line in range(pointer.LINE_COUNT):
             for row in range(pointer.ROW_COUNT):    
                 currentElement = elements[position.index()]
-                self.drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
+                self._drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
 
                 # next element ...
                 position+=1
 
-        self.update()
+        self._update()
 
     # Draw/erase a single element and its background
     #
     def drawSingleElement(self, row, line, value, bkColour, txtColour):
+        self._drawSingleElement(row, line, value, bkColour, txtColour)
+
+    def _drawSingleElement(self, row, line, value, bkColour, txtColour):
         
         # too small to be drawn ?
         if 0 == self.extSquareWidth_ :
@@ -359,6 +374,9 @@ class pygameOutputs(outputs):
     # Update the window
     #
     def update(self):
+        self._update()
+    
+    def _update(self):
         # Display filename ?
         if self.sFileName_ and self.sFileName_.isValid():
             # draw the name
@@ -374,6 +392,7 @@ class pygameOutputs(outputs):
         
         pygame.display.update()
     
+    # Close the display
     def close(self):
         # close the display
         pygame.display.quit()
@@ -387,9 +406,9 @@ class pygameOutputs(outputs):
     def _refresh(self, elements):
         self._drawBackground()
         if elements:
-            self.draw(elements)
+            self._draw(elements)
         else:
-            self.update()
+            self._update()
 
     # Handle window's resize
     #
@@ -453,13 +472,13 @@ class pygameOutputs(outputs):
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
 
-        self.update()
+        self._update()
 
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #  
-    def _update(self, elements, limit):
+    def _updateGrid(self, elements, limit):
         # On réaffiche toute la grille ...
-        self.draw(elements) 
+        self._draw(elements) 
 
     # Show text message (on top of the grid)
     #
