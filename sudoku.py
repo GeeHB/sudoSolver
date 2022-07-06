@@ -11,11 +11,10 @@
 #
 #   Date        :   2022-07-01
 #
-
-from drawThread import drawThread
 import os, time, math
 from element import element, elementStatus
 from pointer import pointer
+from pygameThreadedOutputs import pygameThreadedOutputs
 from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
@@ -40,15 +39,16 @@ class sudoku(object):
     attempts_ = 0
     start_ = 0              # Resolution start-time
 
-    dThread_ = None         # Drawing thread
-    showDetails_ = False
+    showDetails_ = False    # Draw the gird during search process ?
+    multiThreaded_ = False  # ... using another thread ?
 
     # Construction
     #
-    def __init__(self, consoleMode = False, details = False):
+    def __init__(self, consoleMode = False, details = False, multiThreaded = False):
 
         # Show progression details
         self.showDetails_ = details
+        self.multiThreaded_ = multiThreaded
         
         # Set display mode
         #
@@ -57,7 +57,7 @@ class sudoku(object):
         if False == consoleMode:
             try:
                 from pygameOutputs import pygameOutputs
-                self.outputs_ = pygameOutputs()
+                self.outputs_ = pygameThreadedOutputs() if self.multiThreaded_ else pygameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed, outputs will be redirected to console or nCurses")
             except sudokuError as e:
@@ -563,17 +563,6 @@ class sudoku(object):
         # All the elements "before" the current position are set with possible/allowed values
         # we'll try to put the "candidate" value at the current position
         while True :
-            """
-            # Let the drawing thread do its job ...
-            if self.showDetails_:
-                # Sleep for very short time ...
-                time.sleep(0.001)
-
-                # Stopped ?
-                status = self.outputs_.keyPressed()
-                if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
-                    exit(0)
-            """
             candidate+=1
             if candidate > pointer.VALUE_MAX:
                 

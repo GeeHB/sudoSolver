@@ -54,9 +54,9 @@ class options(object):
         self.fileName_ = ""
         self.folderName_ = ""
         self.exportSolution_ = False
-        self.obviousValues = False      # don't search "obvious" values before trying to solve
-        self.displayGrid_ = False       # Draw the grid during the search process
-        self.showDetails_ = False       # Draw "slowly" the grid during search process
+        self.obviousValues = False              # don't search "obvious" values before trying to solve
+        self.multiThreadedProgress_ = False     # Draw the grid during the search process
+        self.singleThreadedProgress_ = False    # Draw "slowly" the grid during search process
 
     # Browse the command line
     #   returns True when ok
@@ -121,13 +121,10 @@ class options(object):
                             showUsage = True
         
         # display progression ?
-        self.showDetails_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DETAILS))
-        if True == self.showDetails_:
-            # Show details => show the grid
-            self.displayGrid_ = True
-        else:
-            # display grid ?
-            self.displayGrid_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DISPLAY))
+        self.singleThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DETAILS))
+        
+        # display grid ?
+        self.multiThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DISPLAY))
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:
@@ -157,8 +154,8 @@ class options(object):
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[color.textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[color.textAttribute.DARK]), ": Edit and solve the sudoku stored in {srcName}")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[color.textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DISPLAY + " ]",formatAttr=[color.textAttribute.DARK]),": Draw the grid during resolution process")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[color.textAttribute.DARK]),": Show progression during resolution process (slow mode)")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DISPLAY + " ]",formatAttr=[color.textAttribute.DARK]),": Draw the grid during resolution process - multithreaded mode")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[color.textAttribute.DARK]),": Show progression during resolution process - single thread mode")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[color.textAttribute.DARK]),": Search for obvious vals before brute-force solution searching")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUTION + " ]", formatAttr=[color.textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.solution")
 

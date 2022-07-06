@@ -40,7 +40,7 @@ if '__main__' == __name__:
     # Loading ...
     #
     try:
-        solver = sudoku(params.consoleMode_, params.showDetails_)
+        solver = sudoku(params.consoleMode_, params.singleThreadedProgress_, params.multiThreadedProgress_)
         
         if params.browseFolder_:
             if not solver.allowFolderBrowsing():
@@ -93,26 +93,12 @@ if '__main__' == __name__:
                 solver.displayText("Press a key to start the solver", False)
                 solver.waitForKeyDown()
 
-            """
-            # Start the drawing thread
-            if params.displayGrid_:
-                solver.startDrawingThread()
-            else:
-                solver.displayText("Solving ...", False)
-            """
-
             # Obvious values first ...
             if True == params.obviousValues_:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
             escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(False)
-
-            """
-            # Stop the drawing thread
-            if params.displayGrid_:
-                solver.stopDrawingThread()
-            """
 
             # Display the solution
             solver.showGrid()   

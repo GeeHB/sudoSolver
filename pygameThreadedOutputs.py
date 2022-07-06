@@ -73,7 +73,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Construction
     #
     def __init__(self):
-        pass
+        # Try to start the thread
+        threading.Thread.__init__(self)
 
     #
     # Methods overloaded from outputs
@@ -151,11 +152,11 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Where all the stuff is done
     #
     def run(self):
-        # Try to init PYGame
-        self._start()
-
         # At this point the thread is running ...
         #
+
+        # Try to init PYGame
+        self._start()
 
         # Action list is free
         self.accessList_.set()
