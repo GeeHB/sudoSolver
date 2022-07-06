@@ -58,10 +58,11 @@ if '__main__' == __name__:
     except IndexError:
         print("Too many lines in the file")
         exitNow = True
+    """
     except:
         print("Unknown error while loading '" + params.fileName_ + "'")
         exitNow = True
-    
+    """
     # Exit anyway ...
     if True == exitNow :
         exit(0)
@@ -75,7 +76,7 @@ if '__main__' == __name__:
         exit(1)
     
     try:
-        # display starting grid
+        # Display starting grid
         solver.showGrid()
 
         # Edition
@@ -86,7 +87,6 @@ if '__main__' == __name__:
         
         # Search for the solution
         #
-        
         myStats = outputs.stats
         if params.solveMode_:       
             if False == params.editMode_:

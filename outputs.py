@@ -80,6 +80,13 @@ class outputs(object):
 
     keyHandler_ = None
 
+
+    # Ready to go ?
+    #
+    # can be overloaded
+    def isReady(self):
+        return True
+
     # Display text
     #
     # can be overloaded

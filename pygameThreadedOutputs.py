@@ -14,8 +14,9 @@
 #   Date        :   2022-07-01
 #
 
+from pickletools import read_bytes1
 from ssl import ALERT_DESCRIPTION_UNSUPPORTED_CERTIFICATE, OP_CIPHER_SERVER_PREFERENCE
-import threading
+import threading, time
 import pygame, math
 
 from outputs import outputs
@@ -40,6 +41,7 @@ ACTION_DRAW_TEXT        = 3
 ACTION_GRID_NAME        = 4
 
 ACTION_UPDATE           = 10
+ACTION_REFRESH          = 11
 
 ACTION_SOLVING_STARTED  = 20
 ACTION_SOLVING_ENDED    = 21
@@ -57,7 +59,7 @@ class pygameAction(object):
 
     # Construction
     def __init__(self, id = ACTION_NONE):
-        id_ = id
+        self.id_ = id
 #
 # pygameThreadedOutputs - Display sudoku's grid using PYGame library
 #
@@ -65,6 +67,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
     # Members
     #
+    ready_          = False               # Am I ready ?
     actions_        = []                  # Actions (to perform)
     
     newAction_      = threading.Event()   # Notifies the thread a new action is to be performed
@@ -73,13 +76,18 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Construction
     #
     def __init__(self):
-        # Try to start the thread
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self)     # Create the new thread
+        self.start()                        # start the thread (ie. call run() method )
 
     #
     # Methods overloaded from outputs
     #
     
+    # Ready to go ?
+    #
+    def isReady(self):
+        return self.ready_
+
     # Display text
     #
     def displayText(self, text, information, elements):
@@ -95,7 +103,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     #   overloaded
     def setGridName(self, fileName):
         action = pygameAction(ACTION_GRID_NAME)
-        action.params_ = (fileName)
+        action.params_ = (fileName, "")
         
         self._addAction(action)
 
@@ -103,7 +111,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     #
     def draw(self, elements):
         action = pygameAction(ACTION_DRAW_GRID)
-        action.params_ = (elements)
+        action.params_ = (elements, "")
         self._addAction(action)
 
     # Draw/erase a single element and its background
@@ -131,7 +139,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     def startedSolving(self, elements):
          # Create the action
         action = pygameAction(ACTION_SOLVING_STARTED)
-        action.params_ = (elements)
+        action.params_ = (elements, "")
 
         # Add it to the async. todo list
         self._addAction(action)
@@ -145,6 +153,16 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     def close(self):
         self._addAction(id = ACTION_END_THREAD)
 
+    #
+    # Methods overloaded from pygameOutputs
+    #
+
+    # Refresh the whole window
+    #
+    def _refresh(self, elements):
+        action = pygameAction(ACTION_REFRESH)
+        action.params_ = (elements, "")
+        self._addAction(action)
     #
     # Method overloaded from threading.Thread
     #   
@@ -161,6 +179,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         # Action list is free
         self.accessList_.set()
 
+        # Ready to start !
+        self.ready_ = True
         over = False
         elements = None
         
@@ -169,11 +189,11 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         while not over:
             if True == self.newAction_.wait():
                 # Do all the "actions"
-                over, elements = self._handleActions()
+                over, elements = self._handleActions(elements)
 
                 # Wait for end of solving process ?
                 if elements is not None :
-                    self._draw(elements)
+                    self._int_Draw(elements)
 
         # Finished !!!
         super().close()
@@ -205,6 +225,9 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
         # List is now free
         self.accessList_.set()
+
+        # There's a new action to perform
+        self.newAction_.set()
         
         # Done
         return True
@@ -241,21 +264,23 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
             # Any drawings to do ?
             if elements is not None:
-                self._draw(elements)
+                self._int_Draw(elements)
 
             # Handle action
             if ACTION_END_THREAD == action.id_:
                 endThread = True
             elif ACTION_GRID_NAME == action.id_:
-                self.__setGridName(action.params_[0])
+                self._int_setGridName(action.params_[0])
             elif ACTION_DRAW_TEXT == action.id_:
-                self._drawText(action.params_[0], action.params_[1])
+                self._int_displayText(action.params_[0], action.params_[1])
             elif ACTION_DRAW_GRID == action.id_:
-                self._draw(action.params_[0])
+                self._int_Draw(action.params_[0])
             elif ACTION_DRAW_ELEMENT == action.id_:
                 self.drawSingleElement(action.params_[0], action.params_[1], action.params_[2], action.params_[3], action.params_[4])
             elif ACTION_UPDATE == action.id_:
-                self._update()
+                self._int_update()
+            elif ACTION_REFRESH == action.id_:
+                self._int_refresh(action.params_[0])
             elif ACTION_SOLVING_STARTED == action.id_:
                 elements = action.params_[0]
             elif ACTION_SOLVING_ENDED == action.id_:

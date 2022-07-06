@@ -63,6 +63,7 @@ class sudoku(object):
             except sudokuError as e:
                 print(e)
 
+        # Try nCurses
         if None == self.outputs_:
             try:
                 from cursesOutputs import cursesOutputs
@@ -75,6 +76,10 @@ class sudoku(object):
         # No display mode  => use console
         if None == self.outputs_:
             self.outputs_ = consoleOutputs()
+
+        # Ready ?
+        while not self.outputs_.isReady():
+            time.sleep(0.1)
 
         # Create the grid
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
@@ -102,21 +107,6 @@ class sudoku(object):
     #
     def showStats(self, params, sStats):
         self.outputs_.showStats(params, sStats)
-
-    #
-    # Drawing thread management
-    #
-    
-    # Starting ...
-    def startDrawingThread(self):
-        self.dThread_ = drawThread(self.outputs_, self.elements_)
-        self.dThread_.start()
-
-    # Stopping ...
-    def stopDrawingThread(self):
-        if None != self.dThread_:
-            self.dThread_.stop()
-            self.dThread_ = None    # Don't stop it twice
     
     # What can we do ?
     #

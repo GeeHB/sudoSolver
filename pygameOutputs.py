@@ -250,9 +250,9 @@ class pygameOutputs(outputs):
         if True == information:
            super().displayText(text) 
         else:
-            self._displayText(text, elements)
+            self._int_displayText(text, elements)
 
-    def _displayText(self, text, elements):
+    def _int_displayText(self, text, elements):
         # Display text on top of the board
         self._showMessage(text, elements)
         self._refresh(elements)
@@ -315,9 +315,9 @@ class pygameOutputs(outputs):
     # Set/change the current grid's filename
     #   overloaded
     def setGridName(self, fileName):
-        self._setGridName(fileName)
+        self._int_setGridName(fileName)
     
-    def _setGridName(self, fileName):
+    def _int_setGridName(self, fileName):
         super().setGridName(fileName)
 
         self.sFileName_.setText(fileName, self.TXT_COLOUR, outputs.BK_COLOUR_FILENAME)
@@ -329,27 +329,27 @@ class pygameOutputs(outputs):
     # Draw the whole grid
     #
     def draw(self, elements):
-        self._draw(elements)
+        self._int_Draw(elements)
     
-    def _draw(self, elements):
+    def _int_Draw(self, elements):
         position = pointer(gameMode = False)
 
         for line in range(pointer.LINE_COUNT):
             for row in range(pointer.ROW_COUNT):    
                 currentElement = elements[position.index()]
-                self._drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
+                self._int_drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
 
                 # next element ...
                 position+=1
 
-        self._update()
+        self._int_update()
 
     # Draw/erase a single element and its background
     #
     def drawSingleElement(self, row, line, value, bkColour, txtColour):
-        self._drawSingleElement(row, line, value, bkColour, txtColour)
+        self._int_drawSingleElement(row, line, value, bkColour, txtColour)
 
-    def _drawSingleElement(self, row, line, value, bkColour, txtColour):
+    def _int_drawSingleElement(self, row, line, value, bkColour, txtColour):
         
         # too small to be drawn ?
         if 0 == self.extSquareWidth_ :
@@ -374,9 +374,9 @@ class pygameOutputs(outputs):
     # Update the window
     #
     def update(self):
-        self._update()
+        self._int_update()
     
-    def _update(self):
+    def _int_update(self):
         # Display filename ?
         if self.sFileName_ and self.sFileName_.isValid():
             # draw the name
@@ -403,12 +403,17 @@ class pygameOutputs(outputs):
 
     # Refresh the whole window
     #
+    # can be overloaded
+    #
     def _refresh(self, elements):
+        self._int_refresh(elements)
+
+    def _int_refresh(self, elements):
         self._drawBackground()
         if elements:
-            self._draw(elements)
+            self._int_Draw(elements)
         else:
-            self._update()
+            self._int_update()
 
     # Handle window's resize
     #
@@ -472,13 +477,13 @@ class pygameOutputs(outputs):
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
 
-        self._update()
+        self._int_update()
 
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #  
     def _updateGrid(self, elements, limit):
         # On réaffiche toute la grille ...
-        self._draw(elements) 
+        self._int_Draw(elements) 
 
     # Show text message (on top of the grid)
     #
