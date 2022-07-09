@@ -19,6 +19,8 @@ from ssl import ALERT_DESCRIPTION_UNSUPPORTED_CERTIFICATE, OP_CIPHER_SERVER_PREF
 import threading, time
 import pygame, math
 
+from regex import A
+
 from outputs import outputs
 from pygameOutputs import pygameOutputs, textSurface, blinkingText
 from ownExceptions import sudokuError
@@ -46,6 +48,9 @@ ACTION_REFRESH          = 11
 ACTION_SOLVING_STARTED  = 20
 ACTION_SOLVING_ENDED    = 21
 
+ACTION_CHECK_KEYPRESSED = 30        # Sync event
+ACTION_WAIT_EVENT       = 31
+
 ACTION_END_THREAD       = 999
 
 #
@@ -54,8 +59,9 @@ ACTION_END_THREAD       = 999
 class pygameAction(object):
     # Members
     #
-    id_ = ACTION_NONE       # What to do ...
-    params_ = ()            # Optionnal parameters (depends on action)
+    id_         = ACTION_NONE       # What to do ...
+    sync_       = False             # Synchronized whith the calling thread ?
+    params_     = ()                # Optionnal parameters (depends on action)
 
     # Construction
     def __init__(self, id = ACTION_NONE):
@@ -67,11 +73,14 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
     # Members
     #
-    ready_          = False               # Am I ready ?
-    actions_        = []                  # Actions (to perform)
+    ready_          = False                 # Am I ready ?
+    actions_        = []                    # Actions (to perform)
+
+    syncRet_        = None                  # Returns from a sync-action
     
-    newAction_      = threading.Event()   # Notifies the thread a new action is to be performed
-    accessList_     = threading.Event()   # Is action list free ?
+    newAction_      = threading.Event()     # Notifies the thread a new action is to be performed
+    accessList_     = threading.Event()     # Is action-list free ?
+    syncThreads_    = threading.Event()     # Event for threads synchronisation
      
     # Construction
     #
@@ -144,7 +153,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         # Add it to the async. todo list
         self._addAction(action)
 
-    # Solving process eneded
+    # Solving process ended
     #   can be overloaded
     def endedSolving(self):
         self._addAction(id = ACTION_SOLVING_ENDED)
@@ -152,6 +161,28 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Tell the thread to close
     def close(self):
         self._addAction(id = ACTION_END_THREAD)
+
+    # Is a key pressed ?
+    #
+    #   returns the tuple (pressed?, key or None if not pressed)
+    #
+    def keyPressed(self, elements = None, allEvents = False):
+        # Create the action
+        action = pygameAction(ACTION_CHECK_KEYPRESSED)
+        action.params_ = (elements, allEvents)
+
+        # Add it as a sync action
+        return self._addAction(action, wait = True)
+        
+    # Wait for an event
+    #
+    def waitForEvent(self, elements, allEvents):
+        # Create the action
+        action = pygameAction(ACTION_WAIT_EVENT)
+        action.params_ = (elements, allEvents)
+
+        # Add it as a sync action
+        return self._addAction(action, wait = True)
 
     #
     # Methods overloaded from pygameOutputs
@@ -199,12 +230,12 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         super().close()
 
     #
-    # "Internal" methodes
+    # "Internal" methods
     #   
     
     # Add an action to the internal list
     # 
-    def _addAction(self, action = None, id = None):
+    def _addAction(self, action = None, id = None, wait = False):
         
         # Action or id must be present
         if action == None and id == None:
@@ -221,14 +252,31 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         if None == action:
             action = pygameAction(id)
 
+        # Should I think both threads ?
+        action.sync_ = wait
+
+        # Wait for action completion ?
+        if True == wait:
+            self.syncThreads_.clear()   # Should be useless !
+
         self.actions_.append(action)
 
         # List is now free
         self.accessList_.set()
 
         # There's a new action to perform
-        self.newAction_.set()
-        
+        self.newAction_.set() 
+
+        # Wait for completion ...
+        if True == wait:
+            self.syncThreads_.wait()
+            
+            # done ...
+            self.syncThreads_.clear()
+
+            # handle return
+            return self.syncRet_
+
         # Done
         return True
 
@@ -259,6 +307,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         self.accessList_.set()
         
         endThread = False
+        self.syncRet_ = None
 
         for action in workingList:
 
@@ -286,6 +335,12 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
             elif ACTION_SOLVING_ENDED == action.id_:
                 # No more drawings
                 elements = None
+            elif ACTION_CHECK_KEYPRESSED == action.id_:
+                self.syncRet_ = self._int_keyPressed(action.params_[0], action.params_[1])
+
+            # Should I sync. ? (ie. should I notify the calling thread ?)
+            if True == action.sync_ :
+                self.syncThreads_.set()
              
         return (endThread, elements)
 

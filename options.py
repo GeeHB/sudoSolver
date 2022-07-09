@@ -33,8 +33,8 @@ CMD_OPTION_SEARCH_OBVIOUS = "o"         # Search for obvious values
 CMD_OPTION_SAVE_SOLUTION = "x"          # Export the solution
 
 CMD_OPTION_CONSOLE = "c"                # Console mode
-CMD_OPTION_DISPLAY = "d"                # Show grid while searching a solution (not all grids are displayed) / multithreaded
-CMD_OPTION_DETAILS = "dd"               # Show progression details (all grids are displayed => very slow) / singlethreaded
+CMD_OPTION_DETAILS = "d"                # Show progression details (all grids are displayed => very slow) / singlethreaded
+CMD_OPTION_DISPLAY = "dd"               # Show grid while searching a solution (not all grids are displayed) / multithreaded
 
 #
 #   options object : command-line parsing and parameters management

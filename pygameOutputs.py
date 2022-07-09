@@ -260,6 +260,9 @@ class pygameOutputs(outputs):
     # Wait for an event
     #
     def waitForEvent(self, elements, allEvents):
+        return self._int_waitForEvent(elements, allEvents)
+        
+    def _int_waitForEvent(self, elements, allEvents):
         finished = False
         while not finished:
             event = pygame.event.wait()
@@ -306,14 +309,16 @@ class pygameOutputs(outputs):
     #
     #   returns the tuple (pressed?, key or None if not pressed)
     #
-    #  can be overloaded
     def keyPressed(self, elements = None, allEvents = False):
+        return self._int_keyPressed(elements, allEvents)
+
+    def _int_keyPressed(self, elements = None, allEvents = False):
         evt = pygame.event.poll()
         pressed = (evt.type == pygame.QUIT or evt.type == pygame.KEYDOWN)
         return (pressed, evt if pressed else None)    
 
     # Set/change the current grid's filename
-    #   overloaded
+    #
     def setGridName(self, fileName):
         self._int_setGridName(fileName)
     

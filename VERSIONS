@@ -6,6 +6,7 @@ Version 1.5.2
     + Added pygameThreadedOutputs object
         + Dedicated thread to pyGame outputs
         + Inherits pygameOutputs & threading.Thread   
+        + Based on sync or async "actions" to be performed
     + pygameOutputs object call be mono or multithreaded
     - remove drawingThread.py (now included in pygameThreadedOutputs)
 
@@ -18,7 +19,7 @@ Version 1.4.xxx
 
 Version 1.3.5
     * 13 sept. 2021
-    - element::elementStatus is an enumeration !!! - inherites from IntFlag 
+    - element::elementStatus is an enumeration !!! - inherits IntFlag 
         https://docs.python.org/fr/3/library/enum.html
         ! Very slow => return to simple int (more than 3 times faster !)
     * integrate new interfaces from cmdLineParser.py and colorizer.py
