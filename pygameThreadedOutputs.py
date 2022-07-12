@@ -106,7 +106,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         if True == information:
            super().displayText(text, True, elements) 
         else:
-            action = pygameAction(self.lastId_, ACTION_DRAW_TEXT)
+            action = pygameAction(ACTION_DRAW_TEXT)
             action.params_ = (text, elements)
             
             self._addAction(action)

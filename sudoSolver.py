@@ -98,7 +98,7 @@ if '__main__' == __name__:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(False)
+            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(params.multiThreadedProgress_)
 
             # Display the solution
             solver.showGrid()   
