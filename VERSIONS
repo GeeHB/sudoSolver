@@ -7,8 +7,8 @@ Version 1.5.2
         + Dedicated thread to pyGame outputs
         + Inherits pygameOutputs & threading.Thread   
         + Based on sync or async "actions" to be performed
-    + pygameOutputs object call be mono or multithreaded
-    - remove drawingThread.py (now included in pygameThreadedOutputs)
+        + pygameOutputs object calls can be monothreaded (_int_<method>) or multithreaded (<method>)
+    - remove drawingThread.py (now part of pygameThreadedOutputs)
 
 Version 1.4.xxx
     * 29 jun. 2022

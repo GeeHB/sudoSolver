@@ -59,13 +59,15 @@ ACTION_END_THREAD       = 999
 class pygameAction(object):
     # Members
     #
-    id_         = ACTION_NONE       # What to do ...
+    actionId_   = ACTION_NONE       # What to do ...
+    uid_        = 0                 # Unique id
     sync_       = False             # Synchronized whith the calling thread ?
     params_     = ()                # Optionnal parameters (depends on action)
 
     # Construction
     def __init__(self, id = ACTION_NONE):
-        self.id_ = id
+        self.uid_ = 0
+        self.actionId_ = id
 #
 # pygameThreadedOutputs - Display sudoku's grid using PYGame library
 #
@@ -76,7 +78,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     ready_          = False                 # Am I ready ?
     actions_        = []                    # Actions (to perform)
 
-    syncRet_        = None                  # Returns from a sync-action
+    syncRet_        = {}                    # Returns from a sync-action
+    lastId_         = 0
     
     newAction_      = threading.Event()     # Notifies the thread a new action is to be performed
     accessList_     = threading.Event()     # Is action-list free ?
@@ -103,7 +106,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         if True == information:
            super().displayText(text, True, elements) 
         else:
-            action = pygameAction(ACTION_DRAW_TEXT)
+            action = pygameAction(self.lastId_, ACTION_DRAW_TEXT)
             action.params_ = (text, elements)
             
             self._addAction(action)
@@ -222,9 +225,13 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                 # Do all the "actions"
                 over, elements = self._handleActions(elements)
 
+            
                 # Wait for end of solving process ?
-                if elements is not None :
+                while elements is not None :
                     self._int_Draw(elements)
+                    if True == self.newAction_.wait(0.1):
+                        # Do all the "actions"
+                        over, elements = self._handleActions(elements)
 
         # Finished !!!
         super().close()
@@ -242,7 +249,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
             return False
         
         # Valid action id ?
-        if (action != None and action.id_ == ACTION_NONE) or (action == None and id == ACTION_NONE) or False == self.accessList_.wait(MAX_LIST_WAIT):
+        if (action != None and action.actionId_ == ACTION_NONE) or (action == None and id == ACTION_NONE) or False == self.accessList_.wait(MAX_LIST_WAIT):
             return False
             
         # Take list ownership
@@ -259,6 +266,9 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         if True == wait:
             self.syncThreads_.clear()   # Should be useless !
 
+        # Add to list (with uid)
+        self.lastId_ = self.lastId_ + 1
+        action.uid_ = self.lastId_
         self.actions_.append(action)
 
         # List is now free
@@ -275,7 +285,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
             self.syncThreads_.clear()
 
             # handle return
-            return self.syncRet_
+            return self.syncRet_[action.uid_]
 
         # Done
         return True
@@ -307,8 +317,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         self.accessList_.set()
         
         endThread = False
-        self.syncRet_ = None
-
+        
         for action in workingList:
 
             # Any drawings to do ?
@@ -316,27 +325,29 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                 self._int_Draw(elements)
 
             # Handle action
-            if ACTION_END_THREAD == action.id_:
+            if ACTION_END_THREAD == action.actionId_:
                 endThread = True
-            elif ACTION_GRID_NAME == action.id_:
+            elif ACTION_GRID_NAME == action.actionId_:
                 self._int_setGridName(action.params_[0])
-            elif ACTION_DRAW_TEXT == action.id_:
+            elif ACTION_DRAW_TEXT == action.actionId_:
                 self._int_displayText(action.params_[0], action.params_[1])
-            elif ACTION_DRAW_GRID == action.id_:
+            elif ACTION_DRAW_GRID == action.actionId_:
                 self._int_Draw(action.params_[0])
-            elif ACTION_DRAW_ELEMENT == action.id_:
+            elif ACTION_DRAW_ELEMENT == action.actionId_:
                 self.drawSingleElement(action.params_[0], action.params_[1], action.params_[2], action.params_[3], action.params_[4])
-            elif ACTION_UPDATE == action.id_:
+            elif ACTION_UPDATE == action.actionId_:
                 self._int_update()
-            elif ACTION_REFRESH == action.id_:
+            elif ACTION_REFRESH == action.actionId_:
                 self._int_refresh(action.params_[0])
-            elif ACTION_SOLVING_STARTED == action.id_:
+            elif ACTION_SOLVING_STARTED == action.actionId_:
                 elements = action.params_[0]
-            elif ACTION_SOLVING_ENDED == action.id_:
+            elif ACTION_SOLVING_ENDED == action.actionId_:
                 # No more drawings
                 elements = None
-            elif ACTION_CHECK_KEYPRESSED == action.id_:
-                self.syncRet_ = self._int_keyPressed(action.params_[0], action.params_[1])
+            elif ACTION_CHECK_KEYPRESSED == action.actionId_:
+                self.syncRet_[action.uid_] = self._int_keyPressed(action.params_[0], action.params_[1])
+            elif ACTION_WAIT_EVENT == action.actionId_:
+                self.syncRet_[action.uid_] = self._int_waitForEvent(action.params_[0], action.params_[1])
 
             # Should I sync. ? (ie. should I notify the calling thread ?)
             if True == action.sync_ :
