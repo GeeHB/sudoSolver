@@ -1,6 +1,6 @@
 # coding=UTF-8
 #
-#   File     :   ownExceptions.py
+#   File        :   ownExceptions.py
 #
 #   Author      :   JHB
 #
@@ -10,7 +10,7 @@
 #
 #   Remarque    :  
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

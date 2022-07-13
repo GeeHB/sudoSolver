@@ -1,12 +1,12 @@
 # coding=UTF-8
 #
-#   File     :   tinySquare.py
+#   File        :   tinySquare.py
 #
 #   Author      :   JHB
 #
 #   Description :   tinySquare object 
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

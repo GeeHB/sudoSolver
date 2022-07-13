@@ -1,12 +1,12 @@
 # coding=UTF-8
 #
-#   File     :   keyboard.py
+#   File        :   keyboard.py
 #
 #   Author      :   JHB
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

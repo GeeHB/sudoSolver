@@ -1,13 +1,13 @@
 # coding=UTF-8
 #
-#   File     :   outputs.py
+#   File        :   outputs.py
 #
 #   Author      :   JHB
 #
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

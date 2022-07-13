@@ -1,12 +1,12 @@
 # coding=UTF-8
 #
-#   File     :   pointer.py
+#   File        :   pointer.py
 #
 #   Author      :   JHB
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

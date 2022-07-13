@@ -1,13 +1,13 @@
 # coding=UTF-8
 #
-#   File     :   sudoku.py
+#   File        :   sudoku.py
 #
 #   Author      :   JHB
 #
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

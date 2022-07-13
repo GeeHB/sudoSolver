@@ -8,7 +8,7 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #
@@ -58,11 +58,10 @@ if '__main__' == __name__:
     except IndexError:
         print("Too many lines in the file")
         exitNow = True
-    """
     except:
         print("Unknown error while loading '" + params.fileName_ + "'")
         exitNow = True
-    """
+    
     # Exit anyway ...
     if True == exitNow :
         exit(0)
@@ -107,8 +106,7 @@ if '__main__' == __name__:
             time.sleep(1)
 
             solver.waitForKeyDown()
-            solver.close()
-
+            
             if escaped:
                 print("Resolution process canceled")
             else:
@@ -127,12 +125,13 @@ if '__main__' == __name__:
                     if True == solver.save(True, comments):
                         print("Solution successfully saved in ", params.fileName_ + solver.FILE_EXPORT_EXTENSION) 
 
+            solver.close()
+
     except sudokuError as e:
         print(e)
     except IndexError:
         print("No solution found for this grid")
-    """
     except:
-        print("Unknown error")
-    """
+        #print("Unknown error")
+        pass
 # EOF

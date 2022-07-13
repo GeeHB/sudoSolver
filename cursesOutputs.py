@@ -1,13 +1,13 @@
 # coding=UTF-8
 #
-#   File     :   cursesOutputs.py
+#   File        :   cursesOutputs.py
 #
 #   Author      :   JHB
 #
 #   Description :   cursesOutputs object definition
 #                   Display a Sudoku grid using (n)Curses library (Unix / Linux and MacOS)
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

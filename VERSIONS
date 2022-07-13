@@ -2,6 +2,7 @@ Version 1.5.3
     * 13 jul. 2022
     + Bugs corrections
         - GL is no longer multithreaded !!! (since PyGame 2.xx)
+        - Error in mulithreaded mode when closing PyGame (still a seg. error message)
     + 2 solver modes : threaded (-dd) and non-threaded (-d = default)
     + Added pygameThreadedOutputs object
         + Dedicated thread to pyGame outputs in multithreaded mode

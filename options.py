@@ -6,7 +6,7 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #
@@ -14,7 +14,7 @@
 from sharedTools.common import cmdLineParser as parser
 from sharedTools.common import colorizer as color
 
-CURRENT_VERSION = "1.5.2"
+CURRENT_VERSION = "1.5.3"
 
 # Command line options
 #
@@ -112,7 +112,7 @@ class options(object):
                     else:
                         # browse and solve ?
                         rets = parameters.getOptionValue(CMD_OPTION_BROWSE_AND_SOLVE)
-                        if False == rets[1] and rets[0] != None:
+                        if not rets is None and False == rets[1] and rets[0] != None:
                             self.folderName_ = rets[0]
                             self.browseFolder_ = True
                             self.editMode_ = True

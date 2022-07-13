@@ -1,12 +1,12 @@
 # coding=UTF-8
 #
-#   File     :   element.py
+#   File        :   element.py
 #
 #   Author      :   JHB
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

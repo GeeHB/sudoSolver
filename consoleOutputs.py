@@ -1,12 +1,12 @@
 # coding=UTF-8
 #
-#   File     :   consoleOutputs.py
+#   File        :   consoleOutputs.py
 #
 #   Author      :   JHB
 #
 #   Description :   consoleOutputs object - Display the sudoku's grid on a console
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #

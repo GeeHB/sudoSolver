@@ -9,12 +9,12 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #
 
-import pygame, math
+import pygame, math, sys
 
 from outputs import outputs
 from ownExceptions import sudokuError
@@ -93,6 +93,12 @@ class textSurface(object):
         if self.surface_ :
             del self.surface_
             self.surface_ = None
+
+    # End ...
+    def end(self):
+        self.killTimer()
+        self.erase()
+        del self.font_
 
     # Position
     #
@@ -254,7 +260,7 @@ class pygameOutputs(outputs):
     def _int_displayText(self, text, elements):
         # Display text on top of the board
         self._showMessage(text, elements)
-        self._refresh(elements)
+        self._int_refresh(elements)
     
     # Wait for an event
     #
@@ -275,11 +281,11 @@ class pygameOutputs(outputs):
                 self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
 
                 # Draw bkgrnd & lines ...
-                self._drawBackground()
+                self._int_drawBackground()
 
                 # ... and the grid's content
                 if not None == elements:
-                    self.draw(elements)
+                    self._int_draw(elements)
                 
                 # returns all events ?
                 if True == allEvents:
@@ -398,10 +404,14 @@ class pygameOutputs(outputs):
     
     # Close the display
     def close(self):
+        # Close text objects
+        self.sFileName_.end()
+        self.sMessage_.end()
+        
         # close the display
         pygame.display.quit()
+        pygame.quit()
 
-    #
     # "private" methods
     #
 
@@ -413,7 +423,7 @@ class pygameOutputs(outputs):
         self._int_refresh(elements)
 
     def _int_refresh(self, elements):
-        self._int_drawBackGround()
+        self._int_drawBackground()
         if elements:
             self._int_draw(elements)
         else:
@@ -454,9 +464,9 @@ class pygameOutputs(outputs):
     # Draw window's background and grid's borders
     #
     def _drawBackground(self):
-        self._int_drawBackGround()
+        self._int_drawBackground()
 
-    def _int_drawBackGround(self):
+    def _int_drawBackground(self):
         
         # background ...
         self.win_.fill(self.BK_COLOUR)

@@ -9,7 +9,7 @@
 #                   
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
-#   Version     :   1.5.2
+#   Version     :   1.5.3
 #
 #   Date        :   2022-07-13
 #
@@ -164,7 +164,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     
     # Tell the thread to close
     def close(self):
-        self._addAction(id = ACTION_END_THREAD)
+        self._addAction(id = ACTION_END_THREAD, wait = True)
+        self.join()
 
     # Is a key pressed ?
     #
@@ -215,8 +216,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
         # Try to init PYGame
         self._start()
-        self._int_drawBackGround()      # Show an empty grid
-
+        self._int_drawBackground()      # Show an empty grid
 
         # Action list is free
         self.accessList_.set()
@@ -241,7 +241,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                         over, elements = self._handleActions(elements)
 
         # Finished !!!
-        super().close()
+        #super().close()
 
     #
     # "Internal" methods
@@ -333,13 +333,14 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
             # Handle action
             if ACTION_END_THREAD == action.actionId_:
+                super().close()
                 endThread = True
             elif ACTION_GRID_NAME == action.actionId_:
                 self._int_setGridName(action.params_[0])
             elif ACTION_DRAW_TEXT == action.actionId_:
                 self._int_displayText(action.params_[0], action.params_[1])
             elif ACTION_DRAW_BKGRND == action.actionId_:
-                self._int_drawBackGround()
+                self._int_drawBackground()
             elif ACTION_DRAW_GRID == action.actionId_:
                 self._int_draw(action.params_[0])
             elif ACTION_DRAW_ELEMENT == action.actionId_:
