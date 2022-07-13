@@ -9,9 +9,9 @@
 #                   
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
-#   Version     :   1.5.1
+#   Version     :   1.5.2
 #
-#   Date        :   2022-07-01
+#   Date        :   2022-07-13
 #
 
 from pickletools import read_bytes1
@@ -37,10 +37,11 @@ MAX_LIST_WAIT           = 5         # in sec.
 #
 ACTION_NONE             = 0         # Nothing to do
 
-ACTION_DRAW_GRID        = 1
-ACTION_DRAW_ELEMENT     = 2
-ACTION_DRAW_TEXT        = 3
-ACTION_GRID_NAME        = 4
+ACTION_DRAW_BKGRND      = 1
+ACTION_DRAW_GRID        = 2
+ACTION_DRAW_ELEMENT     = 3
+ACTION_DRAW_TEXT        = 4
+ACTION_GRID_NAME        = 5
 
 ACTION_UPDATE           = 10
 ACTION_REFRESH          = 11
@@ -191,6 +192,11 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Methods overloaded from pygameOutputs
     #
 
+    # Draw window's background and grid's borders
+    #
+    def _drawBackground(self):
+        self._addAction(id = ACTION_DRAW_BKGRND)
+    
     # Refresh the whole window
     #
     def _refresh(self, elements):
@@ -225,10 +231,9 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                 # Do all the "actions"
                 over, elements = self._handleActions(elements)
 
-            
                 # Wait for end of solving process ?
                 while elements is not None :
-                    self._int_Draw(elements)
+                    self._int_draw(elements)
                     if True == self.newAction_.wait(0.1):
                         # Do all the "actions"
                         over, elements = self._handleActions(elements)
@@ -322,7 +327,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
             # Any drawings to do ?
             if elements is not None:
-                self._int_Draw(elements)
+                self._int_draw(elements)
 
             # Handle action
             if ACTION_END_THREAD == action.actionId_:
@@ -331,8 +336,10 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                 self._int_setGridName(action.params_[0])
             elif ACTION_DRAW_TEXT == action.actionId_:
                 self._int_displayText(action.params_[0], action.params_[1])
+            elif ACTION_DRAW_BKGRND == action.actionId_:
+                self._int_drawBackGround()
             elif ACTION_DRAW_GRID == action.actionId_:
-                self._int_Draw(action.params_[0])
+                self._int_draw(action.params_[0])
             elif ACTION_DRAW_ELEMENT == action.actionId_:
                 self.drawSingleElement(action.params_[0], action.params_[1], action.params_[2], action.params_[3], action.params_[4])
             elif ACTION_UPDATE == action.actionId_:

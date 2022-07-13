@@ -9,9 +9,9 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.5.1
+#   Version     :   1.5.2
 #
-#   Date        :   2022-07-01
+#   Date        :   2022-07-13
 #
 
 import pygame, math
@@ -289,7 +289,7 @@ class pygameOutputs(outputs):
             elif event.type == self.sFileName_.eventID():
                 # Erase the name
                 self.sFileName_.erase()  
-                self._refresh(elements)
+                self._int_refresh(elements)
 
                 # kill the timer
                 self.sFileName_.killTimer()
@@ -334,9 +334,9 @@ class pygameOutputs(outputs):
     # Draw the whole grid
     #
     def draw(self, elements):
-        self._int_Draw(elements)
+        self._int_draw(elements)
     
-    def _int_Draw(self, elements):
+    def _int_draw(self, elements):
         position = pointer(gameMode = False)
 
         for line in range(pointer.LINE_COUNT):
@@ -414,9 +414,9 @@ class pygameOutputs(outputs):
         self._int_refresh(elements)
 
     def _int_refresh(self, elements):
-        self._drawBackground()
+        self._int_drawBackGround()
         if elements:
-            self._int_Draw(elements)
+            self._int_draw(elements)
         else:
             self._int_update()
 
@@ -455,6 +455,9 @@ class pygameOutputs(outputs):
     # Draw window's background and grid's borders
     #
     def _drawBackground(self):
+        self._int_drawBackGround()
+
+    def _int_drawBackGround(self):
         
         # background ...
         self.win_.fill(self.BK_COLOUR)
@@ -488,7 +491,7 @@ class pygameOutputs(outputs):
     #  
     def _updateGrid(self, elements, limit):
         # On réaffiche toute la grille ...
-        self._int_Draw(elements) 
+        self._int_draw(elements) 
 
     # Show text message (on top of the grid)
     #
@@ -515,6 +518,6 @@ class pygameOutputs(outputs):
             self.sMessage_.killTimer()
 
             # redraw ...
-            self._refresh(elements)
+            self._int_refresh(elements)
 
  # EOF

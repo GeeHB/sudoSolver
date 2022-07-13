@@ -6,9 +6,9 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.5.1
+#   Version     :   1.5.2
 #
-#   Date        :   2022-07-01
+#   Date        :   2022-07-13
 #
 
 from sharedTools.common import cmdLineParser as parser

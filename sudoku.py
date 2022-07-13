@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.5.1
+#   Version     :   1.5.2
 #
-#   Date        :   2022-07-01
+#   Date        :   2022-07-13
 #
 import os, time, math
 from element import element, elementStatus
@@ -161,7 +161,7 @@ class sudoku(object):
             if  prev != index:
                 currentFile = os.path.join(folderName, files[index])
 
-                # load the file
+                # load the file and update drawings
                 try:
                     self._emptyGrid()
                     self.load(currentFile, True)

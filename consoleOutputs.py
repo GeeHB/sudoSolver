@@ -6,9 +6,9 @@
 #
 #   Description :   consoleOutputs object - Display the sudoku's grid on a console
 #
-#   Version     :   1.5.1
+#   Version     :   1.5.2
 #
-#   Date        :   2022-07-01
+#   Date        :   2022-07-13
 #
 from outputs import outputs
 from pointer import pointer
