@@ -1,13 +1,13 @@
-Version 1.5.2
-    * xxx 2022
+Version 1.5.3
+    * 13 jul. 2022
     + Bugs corrections
         - GL is no longer multithreaded !!! (since PyGame 2.xx)
-    + 2 solver modes : threaded and non-threaded (default)
+    + 2 solver modes : threaded (-dd) and non-threaded (-d = default)
     + Added pygameThreadedOutputs object
-        + Dedicated thread to pyGame outputs
+        + Dedicated thread to pyGame outputs in multithreaded mode
         + Inherits pygameOutputs & threading.Thread   
         + Based on sync or async "actions" to be performed
-        + pygameOutputs object calls can be monothreaded (_int_<method>) or multithreaded (<method>)
+        + pygameThreadedOutputs object calls can be monothreaded (_int_<method>) or multithreaded (<method>)
     - remove drawingThread.py (now part of pygameThreadedOutputs)
 
 Version 1.4.xxx

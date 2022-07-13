@@ -207,8 +207,9 @@ class pygameOutputs(outputs):
     #
     def __init__(self):
         self._start()
+        self._drawBackground()
 
-    def _start(self) :
+    def _start(self, ) :
         
         self.mode_ = self.MODE_EDIT + self.MODE_BROWSEFOLDER
 
@@ -232,8 +233,6 @@ class pygameOutputs(outputs):
         # window creation
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
         pygame.display.set_caption('sudoSolver')
-
-        self._drawBackground()
 
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)

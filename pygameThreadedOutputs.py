@@ -215,6 +215,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
         # Try to init PYGame
         self._start()
+        self._int_drawBackGround()      # Show an empty grid
+
 
         # Action list is free
         self.accessList_.set()
@@ -341,7 +343,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
             elif ACTION_DRAW_GRID == action.actionId_:
                 self._int_draw(action.params_[0])
             elif ACTION_DRAW_ELEMENT == action.actionId_:
-                self.drawSingleElement(action.params_[0], action.params_[1], action.params_[2], action.params_[3], action.params_[4])
+                self._int_drawSingleElement(action.params_[0], action.params_[1], action.params_[2], action.params_[3], action.params_[4])
             elif ACTION_UPDATE == action.actionId_:
                 self._int_update()
             elif ACTION_REFRESH == action.actionId_:
