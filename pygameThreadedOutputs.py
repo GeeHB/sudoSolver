@@ -14,17 +14,8 @@
 #   Date        :   2022-07-13
 #
 
-from pickletools import read_bytes1
-from ssl import ALERT_DESCRIPTION_UNSUPPORTED_CERTIFICATE, OP_CIPHER_SERVER_PREFERENCE
-import threading, time
-import pygame, math
-
-from regex import A
-
-from outputs import outputs
-from pygameOutputs import pygameOutputs, textSurface, blinkingText
-from ownExceptions import sudokuError
-from pointer import pointer
+import threading
+from pygameOutputs import pygameOutputs
 
 #
 # Internal constants
@@ -85,12 +76,14 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     newAction_      = threading.Event()     # Notifies the thread a new action is to be performed
     accessList_     = threading.Event()     # Is action-list free ?
     syncThreads_    = threading.Event()     # Event for threads synchronisation
-     
+ 
     # Construction
     #
     def __init__(self):
+        
         threading.Thread.__init__(self)     # Create the new thread
         self.start()                        # start the thread (ie. call run() method )
+
 
     #
     # Methods overloaded from outputs
@@ -165,8 +158,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Tell the thread to close
     def close(self):
         self._addAction(id = ACTION_END_THREAD, wait = True)
-        self.join()
-
+        print("no more thread")
+        
     # Is a key pressed ?
     #
     #   returns the tuple (pressed?, key or None if not pressed)
@@ -212,7 +205,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     #
     def run(self):
         # At this point the thread is running ...
-        #
+        #  
 
         # Try to init PYGame
         self._start()
@@ -288,11 +281,15 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
         if True == wait:
             self.syncThreads_.wait()
             
-            # done ...
-            self.syncThreads_.clear()
+            if action.actionId_ != ACTION_END_THREAD:
+                # done ...
+                self.syncThreads_.clear()
 
-            # handle return
-            return self.syncRet_[action.uid_]
+                # handle return
+                try:
+                    return self.syncRet_[action.uid_]
+                except:
+                    return False
 
         # Done
         return True

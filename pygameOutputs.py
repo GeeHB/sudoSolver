@@ -237,7 +237,8 @@ class pygameOutputs(outputs):
         self.sElement_.moveTo((SQUARE_SIDE - ELT_FONT_SIZE) / 2, 0)
         
         # window creation
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
+        # self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
         pygame.display.set_caption('sudoSolver')
 
         # fileName displays
@@ -274,6 +275,7 @@ class pygameOutputs(outputs):
             if event.type == pygame.QUIT or event.type == pygame.KEYDOWN :
                 finished = True
             elif event.type == pygame.VIDEORESIZE:
+                
                 # Update members
                 self._onResizeWindow(event.w, event.h)
                 
@@ -411,7 +413,7 @@ class pygameOutputs(outputs):
         # close the display
         pygame.display.quit()
         pygame.quit()
-
+        
     # "private" methods
     #
 

@@ -64,6 +64,7 @@ if '__main__' == __name__:
     
     # Exit anyway ...
     if True == exitNow :
+        solver.close()
         exit(0)
     
     # Edition and/or resolution
@@ -132,6 +133,6 @@ if '__main__' == __name__:
     except IndexError:
         print("No solution found for this grid")
     except:
-        #print("Unknown error")
-        pass
+        print("Unknown error")
+        #pass
 # EOF
