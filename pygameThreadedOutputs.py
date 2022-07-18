@@ -9,9 +9,9 @@
 #                   
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
-#   Version     :   1.5.3
+#   Version     :   1.5.4
 #
-#   Date        :   2022-07-13
+#   Date        :   2022-07-18
 #
 
 import threading
@@ -331,7 +331,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
             # Handle action
             if ACTION_END_THREAD == action.actionId_:
-                super().close()
+                #super().close()
                 endThread = True
             elif ACTION_GRID_NAME == action.actionId_:
                 self._int_setGridName(action.params_[0])

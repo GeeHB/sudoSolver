@@ -1,6 +1,6 @@
 Version 1.5.4
-    * 13 jul. 2022
-    + Bugs corrections
+    * 18 jul. 2022
+    + Segmentation Fault bug correction (due ti PYGame)
 
 Version 1.5.3
     * 13 jul. 2022

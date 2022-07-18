@@ -7,9 +7,9 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.5.3
+#   Version     :   1.5.4
 #
-#   Date        :   2022-07-13
+#   Date        :   2022-07-18
 #
 import os, time, math
 from element import element, elementStatus
