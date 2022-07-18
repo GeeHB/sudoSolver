@@ -6,7 +6,7 @@
 #
 #   Description :   tinySquare object 
 #
-#   Version     :   1.5.4
+#   Version     :   1.5.5
 #
 #   Date        :   2022-07-18
 #

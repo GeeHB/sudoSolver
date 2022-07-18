@@ -1,6 +1,7 @@
-Version 1.5.4
+Version 1.5.5
     * 18 jul. 2022
     + Segmentation Fault bug correction (due ti PYGame)
+    + (re)added ./sharedTools folder containing cmdLineParser and colorizer classes
 
 Version 1.5.3
     * 13 jul. 2022
