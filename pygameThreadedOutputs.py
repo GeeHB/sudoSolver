@@ -158,7 +158,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     # Tell the thread to close
     def close(self):
         self._addAction(id = ACTION_END_THREAD, wait = True)
-        print("no more thread")
+        #print("no more thread")
         
     # Is a key pressed ?
     #
@@ -279,9 +279,10 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
         # Wait for completion ...
         if True == wait:
-            self.syncThreads_.wait()
-            
             if action.actionId_ != ACTION_END_THREAD:
+                
+                self.syncThreads_.wait()
+            
                 # done ...
                 self.syncThreads_.clear()
 

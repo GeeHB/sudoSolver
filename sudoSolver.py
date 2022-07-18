@@ -18,6 +18,8 @@ import options, outputs
 from sudoku import sudoku
 from ownExceptions import sudokuError
 
+#import faulthandler; faulthandler.enable()
+
 #
 #   Functions
 #
@@ -36,6 +38,8 @@ if '__main__' == __name__:
     # my sudoku grid
     solver = None
     exitNow = False
+
+    #sys.stderr = open("/home/jhb/out.err", 'a')
 
     # Loading ...
     #
@@ -134,5 +138,4 @@ if '__main__' == __name__:
         print("No solution found for this grid")
     except:
         print("Unknown error")
-        #pass
 # EOF

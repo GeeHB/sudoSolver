@@ -14,7 +14,7 @@
 from sharedTools.common import cmdLineParser as parser
 from sharedTools.common import colorizer as color
 
-CURRENT_VERSION = "1.5.3"
+CURRENT_VERSION = "1.5.4"
 
 # Command line options
 #

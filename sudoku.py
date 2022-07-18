@@ -126,6 +126,7 @@ class sudoku(object):
     def close(self):
         if not None == self.outputs_:
             self.outputs_.close()
+            self.outputs_ = None
     
     # Display the grid and its content
     #
