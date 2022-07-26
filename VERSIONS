@@ -1,6 +1,27 @@
+Known issues
+    - No window resizing on Linux systems
+
+
+Dependencies:
+    + Fedora 36
+        + termios
+        + fcntl
+        + termcolor
+        + nCcurses
+    + Windows 10 x64
+    + PyGame 2.1.2 
+    
+Version 1.5.6
+    * xxx
+    + Bugs correction
+        - Translation errors
+        - ModuleNotFoundError exception raised when pyGame is not installed (regression)
+        - No stats with nCurses outputs
+    + Added README.md and ./Github for captures et logos
+
 Version 1.5.5
     * 18 jul. 2022
-    + Segmentation Fault bug correction (due ti PYGame)
+    + Segmentation Fault bug correction (due to PYGame)
     + (re)added ./sharedTools folder containing cmdLineParser and colorizer classes
 
 Version 1.5.3

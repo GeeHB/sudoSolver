@@ -7,7 +7,7 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #

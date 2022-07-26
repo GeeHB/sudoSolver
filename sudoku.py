@@ -7,14 +7,13 @@
 #   Description :   sudoku object 
 #                       -  edtion and/or resolution of a sudoku's grid
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #
 import os, time, math
 from element import element, elementStatus
 from pointer import pointer
-from pygameThreadedOutputs import pygameThreadedOutputs
 from tinySquare import tinySquare, TINY_SQUARES_INDEXES
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
@@ -57,6 +56,7 @@ class sudoku(object):
         if False == consoleMode:
             try:
                 from pygameOutputs import pygameOutputs
+                from pygameThreadedOutputs import pygameThreadedOutputs
                 self.outputs_ = pygameThreadedOutputs() if self.multiThreaded_ else pygameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed, outputs will be redirected to console or nCurses")
@@ -84,6 +84,12 @@ class sudoku(object):
         # Create the grid
         for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
             self.elements_.append(element())
+
+    # Destructor
+    #
+    def __del__(self):
+        if not self.outputs_ is None:
+            self.outputs_ = None
         
     # Filename (of the source grid)
     #
@@ -124,10 +130,9 @@ class sudoku(object):
     # End of outputs
     #
     def close(self):
-        if not None == self.outputs_:
+        if not self.outputs_ is None:
             self.outputs_.close()
-            self.outputs_ = None
-    
+            
     # Display the grid and its content
     #
     def showGrid(self):

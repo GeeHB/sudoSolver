@@ -8,7 +8,7 @@
 #
 #   Description :   Display, edit and solve a sudoku grid
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #
@@ -115,9 +115,6 @@ if '__main__' == __name__:
             if escaped:
                 print("Resolution process canceled")
             else:
-                # A few stats.
-                solver.showStats(params, myStats)
-
                 # Export the solution ?
                 if params.exportSolution_:
                     comments = []
@@ -131,11 +128,16 @@ if '__main__' == __name__:
                         print("Solution successfully saved in ", params.fileName_ + solver.FILE_EXPORT_EXTENSION) 
 
             solver.close()
+            
+            # A few stats.
+            solver.showStats(params, myStats)
 
     except sudokuError as e:
         print(e)
     except IndexError:
         print("No solution found for this grid")
+    """
     except:
         print("Unknown error")
+    """
 # EOF

@@ -6,7 +6,7 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #
@@ -16,7 +16,7 @@
 from sharedTools import cmdLineParser as parser
 from sharedTools import colorizer as color
 
-CURRENT_VERSION = "1.5.5"
+CURRENT_VERSION = "1.5.6"
 
 # Command line options
 #
@@ -35,8 +35,8 @@ CMD_OPTION_SEARCH_OBVIOUS = "o"         # Search for obvious values
 CMD_OPTION_SAVE_SOLUTION = "x"          # Export the solution
 
 CMD_OPTION_CONSOLE = "c"                # Console mode
-CMD_OPTION_DETAILS = "d"                # Show progression details (all grids are displayed => very slow) / singlethreaded
-CMD_OPTION_DISPLAY = "dd"               # Show grid while searching a solution (not all grids are displayed) / multithreaded
+CMD_OPTION_SHOW_DETAILS = "d"                # Show progression details (all grids are displayed => very slow) / singlethreaded
+CMD_OPTION_SHOW_DETAILS_MT = "dd"               # Show grid while searching a solution (not all grids are displayed) / multithreaded
 
 #
 #   options object : command-line parsing and parameters management
@@ -48,7 +48,7 @@ class options(object):
     def __init__(self):
 
         # Default values
-        self.color_ = color.colorizer(True)
+        self.color_ = color.colorizer(True, False)
         self.consoleMode_ = False
         self.browseFolder_ = False
         self.editMode_ = False
@@ -122,11 +122,11 @@ class options(object):
                         else:
                             showUsage = True
         
-        # display progression ?
-        self.singleThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DETAILS))
+        # display progression?
+        self.singleThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_SHOW_DETAILS))
         
-        # display grid ?
-        self.multiThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_DISPLAY))
+        # display grid in multithreaded mode ?
+        self.multiThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_SHOW_DETAILS_MT))
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:
@@ -156,8 +156,8 @@ class options(object):
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_BROWSE_AND_SOLVE + " {srcFolder} ]", formatAttr=[color.textAttribute.DARK]), ": Browse {srcFolder} and solve the choosen grid")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_EDIT_AND_SOLVE + " {srcName} ]", formatAttr=[color.textAttribute.DARK]), ": Edit and solve the sudoku stored in {srcName}")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_CONSOLE + " ]", formatAttr=[color.textAttribute.DARK]), ": Console display mode (if term or nCurses are available)")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DISPLAY + " ]",formatAttr=[color.textAttribute.DARK]),": Draw the grid during resolution process - multithreaded mode")
-            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_DETAILS + " ]",formatAttr=[color.textAttribute.DARK]),": Show progression during resolution process - single thread mode")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SHOW_DETAILS_MT + " ]",formatAttr=[color.textAttribute.DARK]),": Draw the grid during resolution process - multithreaded mode")
+            print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SHOW_DETAILS + " ]",formatAttr=[color.textAttribute.DARK]),": Show progression during resolution process - single thread mode")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SEARCH_OBVIOUS + " ]", formatAttr=[color.textAttribute.DARK]),": Search for obvious vals before brute-force solution searching")
             print("\t", self.color_.colored("[ " + CMD_OPTION_CHAR + CMD_OPTION_SAVE_SOLUTION + " ]", formatAttr=[color.textAttribute.DARK]),": Save the solution of the grid in a file - {srcName}.solution")
 

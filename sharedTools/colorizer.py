@@ -27,8 +27,8 @@ LOG_DATE_FORMAT = "[%d/%m/%Y - %H:%M:%S] "
 
 # Messages d'erreur
 #
-MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
-#MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
+#MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
+MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
 
 #
 # backColor - Couleurs de fond

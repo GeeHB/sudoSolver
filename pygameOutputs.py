@@ -9,7 +9,7 @@
 #                   
 #                   pygameOutputs inherits outputs class
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #
@@ -237,8 +237,8 @@ class pygameOutputs(outputs):
         self.sElement_.moveTo((SQUARE_SIDE - ELT_FONT_SIZE) / 2, 0)
         
         # window creation
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
-        # self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
+        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
         pygame.display.set_caption('sudoSolver')
 
         # fileName displays

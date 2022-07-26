@@ -6,7 +6,7 @@
 #
 #   Description :   "pointer" object definition
 #
-#   Version     :   1.5.5
+#   Version     :   1.5.6
 #
 #   Date        :   2022-07-18
 #
