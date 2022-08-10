@@ -10,9 +10,7 @@
 #
 #   Date        :   2022-07-18
 #
-
-#from sharedTools.common import cmdLineParser as parser
-#from sharedTools.common import colorizer as color
+import sysconfig
 from sharedTools import cmdLineParser as parser
 from sharedTools import colorizer as color
 
@@ -127,6 +125,14 @@ class options(object):
         
         # display grid in multithreaded mode ?
         self.multiThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(CMD_OPTION_SHOW_DETAILS_MT))
+        if True == self.multiThreadedProgress_:
+            # Check if macOS
+            if -1 != sysconfig.get_platform().find("macos"):
+                print("No multi-threading on macos")
+                self.multiThreadedProgress_ = False
+                self.singleThreadedProgress_ = True
+            else:
+                self.singleThreadedProgress_ = False
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:
