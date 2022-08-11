@@ -16,8 +16,11 @@ Version 1.5.6
     + Bugs correction
         - Translation errors
         - ModuleNotFoundError exception raised when pyGame is not installed (regression)
+        - Multithreaded version not fonctionnal on MacOS (MacOS bugs ???) => force single threaded
         - No stats with nCurses outputs
-    + Added README.md and ./Github for captures et logos
+        - Print a message when no solution has been found
+    + Added README.md and ./Github for captures and logos
+    + Rename files in ./grids (and added new ones)
 
 Version 1.5.5
     * 18 jul. 2022
@@ -107,7 +110,7 @@ Version 0.1.26
         - center text of element's value
         - blink text bug (not always visible)
         - purge blinking event when deleting the message
-    + -x option to export the solution in a (.solution) file
+    + -x option to export solution in a (.solution) file
 
 Known issues :
     + no French keyboard on windows::pygame

@@ -14,7 +14,7 @@
 #   Date        :   2022-07-18
 #
 
-import pygame, math, sys
+import pygame, math
 
 from outputs import outputs
 from ownExceptions import sudokuError
@@ -30,10 +30,10 @@ SQUARE_SIDE             = 60   #  Initial external size of a square element
 
 SQUARE_MIN              = 10   # Minimal square size
 
-DELTA_X                 = 10    # Grid offsets
+DELTA_X                 = 10   # Grid offsets
 DELTA_Y                 = 10
 
-EXT_BORDER_WIDTH        = 3     # Width of external border
+EXT_BORDER_WIDTH        = 3    # Width of external border
 
 # Elements'text font sizes (in pixels) and names
 #

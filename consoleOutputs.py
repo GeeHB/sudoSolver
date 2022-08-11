@@ -39,7 +39,7 @@ class consoleOutputs(outputs):
                 line+=" "
                 myIndex += 1
 
-                # Change tiny-square"
+                # Change tiny-square
                 myCol += 1
                 if 3 == myCol:
                     line += " "

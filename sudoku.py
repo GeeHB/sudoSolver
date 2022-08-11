@@ -14,7 +14,7 @@
 import os, time, math
 from element import element, elementStatus
 from pointer import pointer
-from tinySquare import tinySquare, TINY_SQUARES_INDEXES
+from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
@@ -448,11 +448,12 @@ class sudoku(object):
     #
     #   @multiThreaded : boolean - use multithreaded algo ?
     #   
-    #   return a tuple (escaped?, #attempts, duration in s.)
+    #   return a tuple (found a solution ?, game escaped ?, #attempts, duration in s.)
     #
     def resolve(self, multiThreaded):
         
         escaped = False
+        found = True        # We assume we'll find a solution !
         
         # for stats
         self.attempts_ = 0
@@ -471,12 +472,15 @@ class sudoku(object):
         except reachedEndOfList:
             # Find a solution !!!
             endTime = time.time() - self.start_ 
+        except IndexError:
+            # No solution found
+            found = False
         except:
             escaped = True
         
         # Finished (anyway)
         self.outputs_.endedSolving()
-        return (escaped, self.attempts_, endTime)
+        return (found, escaped, self.attempts_, endTime)
 
     # Get the list of possible values at a given position
     #
@@ -629,7 +633,7 @@ class sudoku(object):
     # Returns to the previous position 
     #
     #   Returns a pointer to the found position
-    #   An IndexError excpetion is raised when the pointer is out of the grid (index -1)
+    #   An IndexError exception is raised when the pointer is out of the grid (index -1)
     #   No solution for the grid
     # 
     def _previousPos(self, current):
@@ -715,7 +719,7 @@ class sudoku(object):
         return found
 
 
-    # Is there an obvious value for the given @position ?
+    # Is there an obvious value for the given position ?
     #
     #      returns the value (if just one possible) or None
     #
@@ -833,7 +837,7 @@ class sudoku(object):
 
         # Just one square misses the value => we'll try to put this value in the correct line
         # 
-        #   The sum of the 3 lineID is a consts and we know 2 oh them
+        #   The sum of the 3 lineID is a consts and we know 2 of them
         #
         if None == firstPos[0]:
             candidate = firstSquare

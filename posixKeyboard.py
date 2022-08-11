@@ -11,7 +11,7 @@
 #   Date        :   2022-07-18
 #
 
-import os, sys, time, os, termios, fcntl
+import os, sys, termios, fcntl
 import keyboard
 
 class posixKeyboard(keyboard.keyboard):

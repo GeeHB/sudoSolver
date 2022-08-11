@@ -18,8 +18,6 @@ import options, outputs
 from sudoku import sudoku
 from ownExceptions import sudokuError
 
-#import faulthandler; faulthandler.enable()
-
 #
 #   Functions
 #
@@ -102,9 +100,9 @@ if '__main__' == __name__:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
             # ... and then try to resolve
-            escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(params.multiThreadedProgress_)
+            found, escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(params.multiThreadedProgress_)
 
-            # Display the solution
+            # Display the solution (if any)
             solver.showGrid()   
             solver.displayText("Press a key to quit", False)
 
@@ -130,14 +128,14 @@ if '__main__' == __name__:
             solver.close()
             
             # A few stats.
-            solver.showStats(params, myStats)
+            if True == found:
+                solver.showStats(params, myStats)
+            else:
+                print("No solution found for '" + params.fileName_ + "'")
 
     except sudokuError as e:
-        print(e)
-    except IndexError:
-        print("No solution found for this grid")
-    """
+        # Other error
+        print(e)    
     except:
         print("Unknown error")
-    """
 # EOF

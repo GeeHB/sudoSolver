@@ -12,7 +12,7 @@
 #   Date        :   2022-07-18
 #
 
-import os, sys, time, os
+import os
 from ownExceptions import sudokuError
 
 #
