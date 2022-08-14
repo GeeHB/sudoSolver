@@ -11,7 +11,7 @@
 #
 #   Version     :   1.5.6
 #
-#   Date        :   2022-07-18
+#   Date        :   2022-08-14
 #
 
 import pygame, math
@@ -250,6 +250,11 @@ class pygameOutputs(outputs):
         self.sMessage_ = blinkingText(FILE_FONT_NAME, FILE_FONT_SIZE)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
    
+    # Use GUI ?
+    #
+    def useGUI(self):
+        return True
+    
     # Display text
     #
     def displayText(self, text, information, elements):

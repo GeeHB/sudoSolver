@@ -10,7 +10,7 @@
 #
 #   Version     :   1.5.6
 #
-#   Date        :   2022-07-18
+#   Date        :   2022-08-14
 #
 
 import time
@@ -99,6 +99,11 @@ if '__main__' == __name__:
             if True == params.obviousValues_:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
+                if True == solver.outputs().useGUI() and myStats.obvValues_ > 0:
+                    solver.displayText("Found " + str(myStats.obvValues_) + " obvious values", False)
+                    solver.showGrid()   
+                    solver.waitForKeyDown()
+                    
             # ... and then try to resolve
             found, escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(params.multiThreadedProgress_)
 

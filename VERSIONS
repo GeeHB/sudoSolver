@@ -12,7 +12,7 @@ Dependencies:
     + PyGame 2.1.2 
     
 Version 1.5.6
-    * xxx
+    * 14 aug. 2022
     + Bugs correction
         - Translation errors
         - ModuleNotFoundError exception raised when pyGame is not installed (regression)
@@ -21,6 +21,7 @@ Version 1.5.6
         - Print a message when no solution has been found
     + Added README.md and ./Github for captures and logos
     + Rename files in ./grids (and added new ones)
+    + Show obvious values
 
 Version 1.5.5
     * 18 jul. 2022

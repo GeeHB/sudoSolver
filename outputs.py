@@ -9,7 +9,7 @@
 #
 #   Version     :   1.5.6
 #
-#   Date        :   2022-07-18
+#   Date        :   2022-08-14
 #
 
 import os
@@ -86,6 +86,12 @@ class outputs(object):
     # can be overloaded
     def isReady(self):
         return True
+
+    # Use GUI ?
+    #
+    # can be overloaded
+    def useGUI(self):
+        return False
 
     # Display text
     #
