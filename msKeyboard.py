@@ -6,9 +6,9 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-#   Version     :   1.5.6
+#   Version     :   1.5.7
 #
-#   Date        :   2022-08-14
+#   Date        :   2022-11-02
 #
 
 from ownExceptions import sudokuError
@@ -19,6 +19,7 @@ except ModuleNotFoundError:
     raise sudokuError("msvcrt module is not installed")
 
 import keyboard
+
 
 class msKeyboard(keyboard.keyboard):
 

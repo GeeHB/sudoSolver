@@ -11,8 +11,8 @@ Dependencies:
     + Windows 10 x64
     + PyGame 2.1.2 
     
-Version 1.5.6
-    * 14 aug. 2022
+Version 1.5.7
+    * 02 nov. 2022
     + Bugs correction
         - Translation errors
         - ModuleNotFoundError exception raised when pyGame is not installed (regression)

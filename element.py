@@ -6,12 +6,13 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.5.6
+#   Version     :   1.5.7
 #
-#   Date        :   2022-08-14
+#   Date        :   2022-11-02
 #
 
 #from enum import IntFlag
+
 
 #
 # elementStatus - Element's status
@@ -24,6 +25,7 @@ class elementStatus(object):
     SET = 1
     OBVIOUS = 2         # An obvious value found at runtime (option -o)
     ORIGINAL = 4        # Can't be changed (except in edition mode)
+
 
 #
 # element - a single sudoku element

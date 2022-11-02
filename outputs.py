@@ -7,13 +7,14 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.5.6
+#   Version     :   1.5.7
 #
-#   Date        :   2022-08-14
+#   Date        :   2022-11-02
 #
 
 import os
 from ownExceptions import sudokuError
+
 
 #
 # stats - Informations about a solution
@@ -23,7 +24,8 @@ class stats(object):
     obvDuration_ = 0        # Duration in sec. of obvious-values search process
 
     bruteDuration_ = 0      # Duration in sec. of brute-force search process
-    bruteAttempts_  = 0     # Brute-froce attempts counter
+    bruteAttempts_  = 0     # Brute-force attempts counter
+
 
 #
 # outputs - abstract class containing all drawing methods 
