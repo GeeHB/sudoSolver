@@ -47,31 +47,31 @@ When the application is called without any parameter, usage screen is displayed.
 
 ### Examples
 
-Create (and edit) the *newGrid.txt* file : 
+Create (and edit) the *newGrid.txt* file :
 
 ```
 sudoSolver.py -e newGrid.txt
 ```
 
-Browse *backup* folder : 
+Browse *backup* folder :
 
 ```
 sudoSolver.py -b backup
 ```
 
-Edit and solve with opitmisation newGrid.txt and show progression : 
+Edit and solve with opitmisation newGrid.txt and show progression :
 
 ```
 sudoSolver.py -es newGrid.txt -o -d
 ```
 
-Solve, in console mode, newGrid.txt : 
+Solve, in console mode, newGrid.txt :
 
 ```
 sudoSolver.py -s newGrid.txt -c
 ```
 
-Browse the backup folder and solve the choosen grid using optimisation and show progress in a multithreaded mode; result must be saved : 
+Browse the backup folder and solve the choosen grid using optimisation and show progress in a multithreaded mode; result must be saved :
 
 sudoSolver.py -bs ./backup -o -dd -x
 
@@ -129,10 +129,17 @@ Press "enter" and the solution is displayed :
 
 When the application searches for *obvious values*, the values found are displayed using the blue color.
 
-In this sample the application start the edition of a grid :
-![Selected grid](github/newGrid.png) Then the founded obvious values are displayed : ![](github/obvious.png)
-And last, the solution is displayed :
-![](github/solved.png)
+In this sample the application start the edition of a grid : 
+
+ ![Selected grid](github/newGrid.png) 
+
+Then the founded obvious values are displayed : 
+
+![](github/obvious.png)
+
+And last, the solution is displayed : 
+
+ ![](github/solved.png)
 
 ### Author
 

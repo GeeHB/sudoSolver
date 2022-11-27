@@ -33,8 +33,6 @@ if '__main__' == __name__:
     solver = None
     exitNow = False
 
-    #sys.stderr = open("/home/jhb/out.err", 'a')
-
     # Loading ...
     #
     try:
@@ -59,7 +57,6 @@ if '__main__' == __name__:
     except:
         print("Unknown error while loading '" + params.fileName_ + "'")
         exitNow = True
-    
     # Exit anyway ...
     if True == exitNow :
         solver.close()

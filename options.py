@@ -11,7 +11,7 @@ import sysconfig
 from sharedTools import cmdLineParser as parser
 from sharedTools import colorizer as color
 
-CURRENT_VERSION = "1.5.9"
+CURRENT_VERSION = "1.6.1"
 
 # Command line options
 #

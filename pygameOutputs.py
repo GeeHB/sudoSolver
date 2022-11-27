@@ -213,13 +213,21 @@ class pygameOutputs(outputs):
 
     def _start(self, ) :
         
+        self.initDone_ = False
         self.mode_ = self.MODE_EDIT + self.MODE_BROWSEFOLDER
 
         # Init. the lib.
-        rets = pygame.init()
+        try:
+            rets = pygame.init()
+        except:
+            raise sudokuError("PYGame initialization error - Mayb you should reinstall PYGame")
+
         if 0 != rets[1] :
             raise sudokuError("PYGame initialization error - PYGame returns " + str(rets[1]) + " error(s)")
 
+        # PYGame init. is ok
+        self.initDone_ = True
+        
         # Default dimensions
         self.width_ = pointer.ROW_COUNT * SQUARE_SIDE + 2 * DELTA_X
         self.height_ = pointer.LINE_COUNT * SQUARE_SIDE + 2 * DELTA_Y
@@ -407,13 +415,14 @@ class pygameOutputs(outputs):
     
     # Close the display
     def close(self):
-        # Close text objects
-        self.sFileName_.end()
-        self.sMessage_.end()
+        if self.initDone_:
+            # Close text objects
+            self.sFileName_.end()
+            self.sMessage_.end()
         
-        # close the display
-        pygame.display.quit()
-        pygame.quit()
+            # close the display
+            pygame.display.quit()
+            pygame.quit()
         
     # "private" methods
     #
