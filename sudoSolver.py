@@ -134,6 +134,8 @@ if '__main__' == __name__:
     except sudokuError as e:
         # Other error
         print(e)    
+    """
     except:
         print("Unknown error")
+    """
 # EOF

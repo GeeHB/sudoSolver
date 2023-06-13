@@ -62,12 +62,11 @@ class pointer(object):
 
     # Absolute position
     #
-    def moveTo(self, line, row):
-        self.line_ = line
-        self.row_ = row
-        self.index_ = row + line * self.ROW_COUNT
+    def moveTo(self, line = 0, row = 0, pos = None):
+        self.line_ = self._setInRange(line if pos is None else pos[1])
+        self.row_ = self._setInRange(row if pos is None else pos[0])
+        self.index_ = self.row_ + self.line_ * self.ROW_COUNT
 
-        # the square ID is missing
         self._whereAmI(False)
         
     # Access
@@ -172,5 +171,11 @@ class pointer(object):
         
         # Small square ID
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
+
+    # check position
+    #
+    def _setInRange(self, value):
+        return 0 if value < 0 else (self.ROW_COUNT - 1) if value >= self.ROW_COUNT else value
+        #return value
 
 # EOF

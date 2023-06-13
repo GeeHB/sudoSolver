@@ -35,6 +35,14 @@ class outputs(object):
     EVT_KEYDOWN         = None  # By default the event doesn't exist
     EVT_QUIT            = None
 
+    EVT_MOUSEBUTTONDOWN = None  # No mouse
+
+    # Mouse button ID
+    MOUSE_BUTTON_NONE   = None
+    MOUSE_BUTTON_LEFT   = 1
+    MOUSE_BUTTON_MIDDLE = 2
+    MOUSE_BUTTON_RIGHT  = 4
+
     # Defined keys
     #
     MOVE_LEFT           = "s"     # Moving in the grid (or in browse mode)
@@ -42,11 +50,16 @@ class outputs(object):
     MOVE_UP             = "e"
     MOVE_DOWN           = "x"
     
+    REMOVE_VALUE        = " "
+
     VALUE_DEC_OLD       = "+"     # Change element value (edition mode)
     VALUE_INC_OLD       = "-"
 
     VALUE_DEC           = "q"     # Change element value (edition mode)
     VALUE_INC           = "w"
+
+    VALUE_1             = "1"     # Set value (edition mode)
+    VALUE_9             = "9"
 
     EDIT_CANCEL         = "q"
     EDIT_QUIT_AND_SAVE  = "w"
@@ -126,6 +139,23 @@ class outputs(object):
         while wait:
             c = self._readKeyboard()
             wait = (len(c) == 0)    
+
+    # Check current/last event
+    #
+    def pollEvent(self):
+        return self.waitForEvent()
+    
+    # Mouse events and status
+    #
+    #   returns tuple (ButtonID or None, (xPos, yPos))
+    #
+    def mouseButtonStatus(self, event):
+        return self.MOUSE_BUTTON_NONE, (0, 0)
+    
+    # Mouse position
+    #
+    def mousePosition(self, pos):
+        return None
 
     # Is a key pressed ?
     #

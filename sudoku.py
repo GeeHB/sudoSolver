@@ -350,6 +350,9 @@ class sudoku(object):
         prevPos = None                            # previous pos (if erase needed)
         
         while cont:
+            
+            #print(f"Index : {currentPos.index()}")
+            
             # if sel. changed, erase previously selected element
             if not None == prevPos:
                 self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.HILITE_COLOUR)
@@ -359,65 +362,88 @@ class sudoku(object):
             self.outputs_.update()
             prevPos = pointer(currentPos)
 
-            # Wait for a keyboard event
+            # Wait for an event
             #
-            event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
-            
+            #event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
+            event = self.outputs_.pollEvent()
+
             # Change the cursor's position
             #
-            if event.type == self.outputs_.EVT_KEYDOWN:
-                if self.outputs_.MOVE_LEFT == event.key:
-                    #position -= 1
-                    currentPos.decRow()
-                else:
-                    if self.outputs_.MOVE_RIGHT == event.key:
-                        #position += 1
-                        currentPos.incRow()
+            
+            # By a mouse click ?
+            if self.outputs_.EVT_MOUSEBUTTONDOWN == event.type:
+                button, pos = self.outputs_.mouseButtonStatus(event)
+                if button == self.outputs_.MOUSE_BUTTON_LEFT:
+                    #print(f"Click en {self.outputs_.mousePosition(pos)}")
+                    currentPos.moveTo(pos = self.outputs_.mousePosition(pos))
+            else:
+                # With the keyboard
+                if self.outputs_.EVT_KEYDOWN == event.type:
+                    if self.outputs_.MOVE_LEFT == event.key:
+                        #position -= 1
+                        currentPos.decRow()
                     else:
-                        if self.outputs_.MOVE_UP == event.key:
-                            currentPos.decLine()
+                        if self.outputs_.MOVE_RIGHT == event.key:
+                            #position += 1
+                            currentPos.incRow()
                         else:
-                            if self.outputs_.MOVE_DOWN == event.key:
-                                currentPos.incLine()
+                            if self.outputs_.MOVE_UP == event.key:
+                                currentPos.decLine()
                             else:
-                                # Change the current value
-                                #
-                                if self.outputs_.VALUE_DEC == event.key:
-                                    val = self.elements_[currentPos.index()].value()
-                                    if None == val : 
-                                        val = 0
-                                    
-                                    newVal = self._findPreviousValue(currentPos, val)
-                                    if newVal != val:
-                                        self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
-                                        prevPos = None
-                                        modified = True
+                                if self.outputs_.MOVE_DOWN == event.key:
+                                    currentPos.incLine()
                                 else:
-                                    if self.outputs_.VALUE_INC == event.key:
+                                    # Change the current value
+                                    #
+                                    if self.outputs_.VALUE_DEC == event.key:
                                         val = self.elements_[currentPos.index()].value()
                                         if None == val : 
                                             val = 0
                                         
-                                        newVal = self._findNextValue(currentPos, val)
+                                        newVal = self._findPreviousValue(currentPos, val)
                                         if newVal != val:
                                             self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
                                             prevPos = None
                                             modified = True
                                     else:
-                                        # Cancel
-                                        if self.outputs_.EDIT_CANCEL == event.key:
-                                            cont = False
-                                            valid = False
-                                            modified = False
+                                        if self.outputs_.VALUE_INC == event.key:
+                                            val = self.elements_[currentPos.index()].value()
+                                            if None == val : 
+                                                val = 0
+                                            
+                                            newVal = self._findNextValue(currentPos, val)
+                                            if newVal != val:
+                                                self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
+                                                prevPos = None
+                                                modified = True
                                         else:
-                                            # Save current grid
-                                            if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
-                                                cont = False
-                                                valid = True
-            elif event.type == self.outputs_.EVT_QUIT:
-                # Quits
-                cont = False
-                valid = False
+                                            if event.key >= self.outputs_.VALUE_1 and event.key <= self.outputs_.VALUE_9:
+                                                newVal = event.key - self.outputs_.VALUE_1 + 1
+                                                if self._checkValue(currentPos, newVal):
+                                                    self.elements_[currentPos.index()].setValue(newVal, elementStatus.ORIGINAL, True)
+                                                    prevPos = None
+                                                    modified = True
+                                            else:
+                                                # No value
+                                                if self.outputs_.REMOVE_VALUE == event.key:
+                                                    self.elements_[currentPos.index()].setValue(0, elementStatus.ORIGINAL, True)
+                                                    prevPos = None
+                                                    modified = True
+                                                else:
+                                                    # Cancel
+                                                    if self.outputs_.EDIT_CANCEL == event.key:
+                                                        cont = False
+                                                        valid = False
+                                                        modified = False
+                                                    else:
+                                                        # Save current grid
+                                                        if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
+                                                            cont = False
+                                                            valid = True
+                elif event.type == self.outputs_.EVT_QUIT:
+                    # Quits
+                    cont = False
+                    valid = False
 
         # Saves changes or exit
         return (self.save() if True == valid else False) if modified else True

@@ -13,6 +13,17 @@
 * All OS
    * PyGame 2.1.2
 
+#### Version 1.6.0
+* xxx
+* Added :
+   * use argparse for commandline
+   * Mouse support for PYGame
+   * Enhance keyboard control
+      * select direct value (1, ..9)
+      * delete a value
+* Bugs correction:
+
+
 #### Version 1.5.9
 * 10 nov. 2022
 * Added :
