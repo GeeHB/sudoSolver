@@ -21,7 +21,7 @@ APP_AUTHOR = "GeeHB (j.henrybarnaudiere@gmail.com)"
 
 ARG_BROWSE_S = "-b"                 # Browse a folder
 ARG_BROWSE   = "--browse"
-COMMENT_BROWS = "Browse the folder and display contained grids"
+COMMENT_BROWSE = "Browse the folder and display contained grids"
 
 ARG_EDIT_S = "-e"                   # Edit (and modify or create) a grid
 ARG_EDIT   = "--edit"
@@ -32,9 +32,11 @@ ARG_SOLVE   = "--solve"
 COMMENT_SOLVE = "Solve (find a solution) for the grid"
 
 ARG_BROWSE_AND_SOLVE_S = "-bs"
+ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the folder and solve the choosen grid"
 
 ARG_EDIT_AND_SOLVE_S = "-es"
+ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku"
 
 ARG_SEARCH_OBVIOUS_S = "-o"         # Search for obvious values
@@ -53,8 +55,8 @@ COMMENT_CONSOLE = "Force displays in console mode (using nCurses if available)"
 ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show grids during proces"
-MIN__DETAILS    = 1 # Slow
-MAX_DTAILS      = 2
+MIN_DETAILS    = 1 # Slow
+MAX_DETAILS    = 2
 
 #
 #   options object : command-line parsing and parameters management
@@ -82,70 +84,95 @@ class options(object):
     #   returns True when ok
     def parse(self):
         if False == self._parse():
-            self.usage()
             return False
         return True
 
     def _parse(self):
 
-        parameters = parser.cmdLineParser(ARG_OPTION_CHAR)
-        
-        # Parameters needed
-        if 0 == parameters.size():
-            return False
-        
-        # Console display mode ?
-        self.consoleMode_ = not (parameters.findAndRemoveOption(ARG_OPTION_CONSOLE) == parameters.NO_INDEX)
+        parser = argparse.ArgumentParser(epilog = self.version())
 
+        # Add parameters
+        #
+         
+        # Console display mode ?
+        parser.add_argument(ARG_CONSOLE_S, ARG_CONSOLE, action='store_true', help = COMMENT_CONSOLE, required = False)
+        
         # Export the solution ?
-        self.exportSolution_ = not (parameters.findAndRemoveOption(ARG_OPTION_SAVE_SOLUTION) == parameters.NO_INDEX)
+        parser.add_argument(ARG_SAVE_SOLUTION_S, ARG_SAVE_SOLUTION, action='store_true', help = COMMENT_SAVE_SOLUTION, required = False)
+        
+        # Search obvious values ?
+        parser.add_argument(ARG_SEARCH_OBVIOUS_S, ARG_SEARCH_OBVIOUS, action='store_true', help = COMMENT_SEARCH_OBVIOUS, required = False)
+        
+        # display progression?
+        parser.add_argument(ARG_DETAILS_S, ARG_DETAILS, help = COMMENT_DETAILS, required = False, nargs=1, type=int, choices=range(MIN_DETAILS, MAX_DETAILS + 1))
+        
+        # Mutually exclusive actions
+        #
+        action = parser.add_mutually_exclusive_group()
+
+        # Browse folder
+        action.add_argument(ARG_BROWSE_S, ARG_BROWSE, help = COMMENT_BROWSE, required = False, nargs=1)
+
+        # Edition file
+        action.add_argument(ARG_EDIT_S, ARG_EDIT, help = COMMENT_EDIT, required = False, nargs=1) 
+        
+        # Solve file
+        action.add_argument(ARG_SOLVE_S, ARG_SOLVE, help = COMMENT_SOLVE, required = False, nargs=1)
+
+        # Browse folder and edit selected file
+        action.add_argument(ARG_BROWSE_AND_SOLVE_S, ARG_BROWSE_AND_SOLVE, help = COMMENT_BROWSE_AND_SOLVE, required = False, nargs=1)
+
+        # Edit and solve file
+        action.add_argument(ARG_EDIT_AND_SOLVE_S, ARG_EDIT_AND_SOLVE, help = COMMENT_EDIT_AND_SOLVE, required = False, nargs=1)
+        
+        
+        # Parse line
+        #
+        args = parser.parse_args()
+
+        # Console mode
+        self.consoleMode_ = args.console
+
+        # Export / save the solution
+        self.exportSolution_ = args.export
 
         # Search obvious values ?
-        self.obviousValues_ = not (parameters.findAndRemoveOption(ARG_OPTION_SEARCH_OBVIOUS) == parameters.NO_INDEX)
+        self.obviousValues_ = args.obvious
 
-        # Solve mode ?
-        rets = parameters.getOptionValue(ARG_OPTION_SOLVE)
-        if False == rets[1] and rets[0] != None:
-            # File name expected
-            self.fileName_ = rets[0]
+        # Solve ?
+        if args.solve is not None:
+            self.fileName_ = args.solve[0]
             self.solveMode_ = True
         else:
             # Edition mode ?
-            rets = parameters.getOptionValue(ARG_OPTION_EDIT)
-            if False == rets[1] and rets[0] != None:
-                self.fileName_ = rets[0]
+            if args.edit is not None:
+                self.fileName_ = args.edit[0]
                 self.editMode_ = True                
             else:
-                # Edition & resolution ?
-                rets = parameters.getOptionValue(ARG_OPTION_EDIT_AND_SOLVE)
-                if False == rets[1] and rets[0] != None:
-                    self.fileName_ = rets[0]
+                # Edit and solve
+                if args.editSolve is not None:
+                    self.fileName_ = args.editSolve[0]
                     self.editMode_ = True
                     self.solveMode_ = True                    
                 else:
                     # Parse/browse folder ?
-                    rets = parameters.getOptionValue(ARG_OPTION_BROWSE)
-                    if False == rets[1] and rets[0] != None:
-                        self.folderName_ = rets[0]
+                    if args.browse is not None:
+                        self.folderName_ = args.browse[0]
                         self.browseFolder_ = True
                         self.editMode_ = True                        
                     else:
                         # browse and solve ?
-                        rets = parameters.getOptionValue(ARG_OPTION_BROWSE_AND_SOLVE)
-                        if not rets is None and False == rets[1] and rets[0] != None:
-                            self.folderName_ = rets[0]
+                        if args.browseSolve is not None:
+                            self.folderName_ = args.browseSolve[0]
                             self.browseFolder_ = True
                             self.editMode_ = True
                             self.solveMode_ = True
-                        else:
-                            showUsage = True
         
-        # display progression?
-        self.singleThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(ARG_OPTION_SHOW_DETAILS))
+        # display grid ?
+        display = args.details if args.details is not None else 0 
         
-        # display grid in multithreaded mode ?
-        self.multiThreadedProgress_ = not (parameters.NO_INDEX == parameters.findAndRemoveOption(ARG_OPTION_SHOW_DETAILS_MT))
-        if True == self.multiThreadedProgress_:
+        if display == 2:
+            self.multiThreadedProgress_ = True
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")
@@ -153,25 +180,28 @@ class options(object):
                 self.singleThreadedProgress_ = True
             else:
                 self.singleThreadedProgress_ = False
+        else :
+            self.singleThreadedProgress_ = True if display == 1 else False
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:
             return False
-
-        # There should be no options left and no errors ...
-        if parameters.options() > 0 or (0 == len(self.fileName_) and 0 == len(self.folderName_)):
-            return False
         
-        # Done
-        return True
+        # At least one action !
+        ret = True if self.editMode_ or self.solveMode_ or self.browseFolder_ else False
+        if ret :
+            return True
+        else:
+            parser.print_help()
+            return False
 
     # Display app version infos
     #
     #   return a string
     #
-    def version(self):
+    def version(self, verbose = True):
         if None == self.color_:
             self.color_ = color.colorizer(True)
 
-        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD], datePrefix=(False == self.verbose_))} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
+        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD], datePrefix=(False == verbose))} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
 # EOF

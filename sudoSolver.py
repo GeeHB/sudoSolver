@@ -27,7 +27,7 @@ if '__main__' == __name__:
         exit(1)
 
     # Let's start the game
-    params.usage(False)
+    params.version()
     
     # my sudoku grid
     solver = None
