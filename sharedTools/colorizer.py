@@ -8,15 +8,15 @@
 #                     - textColor : Liste des couleurs de texte
 #                     - backColor : Liste des couleurs de fond
 #
-#   Commentaire :  le module termcolor doit être installé (pip3 install termcolor)
+#   Commentaire :  le module termcolor doit être installé (pip install termcolor)
 #
 
 try :
     # Pour la coloration des sorties terminal
     from termcolor import colored
-    packageTermColor = True
+    packageTermColor__ = True
 except ModuleNotFoundError:
-    packageTermColor = False
+    packageTermColor__ = False
 
 # Pour l'ajout de la date et de l'heure en mode "logs
 from datetime import datetime
@@ -27,8 +27,8 @@ LOG_DATE_FORMAT = "[%d/%m/%Y - %H:%M:%S] "
 
 # Messages d'erreur
 #
-#MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
-MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
+MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est pas installé"
+#MSG_NO_TERM_COLOR = "Warning - termcolor package (python-termcolor) is not installed"
 
 #
 # backColor - Couleurs de fond
@@ -79,15 +79,16 @@ class colorizer:
         
         colored_ = False       # Doit-on coloriser ?
         
-        self.setColorized(colored)
-        if True == colored and False == packageTermColor:
-            self.colored_ = False
-            if message:
-                print(MSG_NO_TERM_COLOR)
+        self.setColorized(colored, message)
                         
     # Mise en place de la colorisation
-    def setColorized(self, colored = True):
+    def setColorized(self, colored = True, message = None):
         self.colored_ = colored
+
+        if True == colored and False == packageTermColor__:
+            self.colored_ = False
+            if message is not None:
+                print(MSG_NO_TERM_COLOR)
     
     # Formatage d'une ligne de texte
     #   Retourne la chaine complète

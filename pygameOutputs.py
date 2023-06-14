@@ -252,7 +252,8 @@ class pygameOutputs(outputs):
         
         # window creation
         #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
+        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED)
         pygame.display.set_caption('sudoSolver')
 
         # fileName displays
