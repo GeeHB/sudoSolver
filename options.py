@@ -13,7 +13,7 @@ from sharedTools import colorizer as color
 # App informations
 APP_NAME = "sudoSolver.py"
 APP_CURRENT_VERSION = "1.6.1"
-APP_RELEASE_DATE = "12 jun. 2023"
+APP_RELEASE_DATE = "06/14/2023"
 APP_AUTHOR = "GeeHB (j.henrybarnaudiere@gmail.com)"
 
 # Command line options
@@ -21,23 +21,23 @@ APP_AUTHOR = "GeeHB (j.henrybarnaudiere@gmail.com)"
 
 ARG_BROWSE_S = "-b"                 # Browse a folder
 ARG_BROWSE   = "--browse"
-COMMENT_BROWSE = "Browse the folder and display contained grids"
+COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained grids"
 
 ARG_EDIT_S = "-e"                   # Edit (and modify or create) a grid
 ARG_EDIT   = "--edit"
-COMMENT_EDIT = "Edit or create the file"
+COMMENT_EDIT = "Edit or create the {FILE} file"
 
 ARG_SOLVE_S = "-s"                  # Search for a solution for the grid
 ARG_SOLVE   = "--solve"
-COMMENT_SOLVE = "Solve (find a solution) for the grid"
+COMMENT_SOLVE = "Solve (find a solution) for the grid saved in {FILE} file"
 
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
-COMMENT_BROWSE_AND_SOLVE = "Browse the folder and solve the choosen grid"
+COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
 
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
-COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku"
+COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
 
 ARG_SEARCH_OBVIOUS_S = "-o"         # Search for obvious values
 ARG_SEARCH_OBVIOUS = "--obvious"
@@ -76,22 +76,17 @@ class options(object):
         self.fileName_ = ""
         self.folderName_ = ""
         self.exportSolution_ = False
-        self.obviousValues = False              # don't search "obvious" values before trying to solve
+        self.obviousValues_ = False             # don't search "obvious" values before trying to solve
         self.multiThreadedProgress_ = False     # Draw the grid during the search process
         self.singleThreadedProgress_ = False    # Draw "slowly" the grid during search process
 
     # Browse the command line
     #   returns True when ok
     def parse(self):
-        if False == self._parse():
-            return False
-        return True
-
-    def _parse(self):
 
         parser = argparse.ArgumentParser(epilog = self.version())
 
-        # Add parameters
+        # Define parameters
         #
          
         # Console display mode ?
@@ -111,19 +106,19 @@ class options(object):
         action = parser.add_mutually_exclusive_group()
 
         # Browse folder
-        action.add_argument(ARG_BROWSE_S, ARG_BROWSE, help = COMMENT_BROWSE, required = False, nargs=1)
+        action.add_argument(ARG_BROWSE_S, ARG_BROWSE, help = COMMENT_BROWSE, metavar = "FOLDER", required = False, nargs=1)
 
         # Edition file
-        action.add_argument(ARG_EDIT_S, ARG_EDIT, help = COMMENT_EDIT, required = False, nargs=1) 
+        action.add_argument(ARG_EDIT_S, ARG_EDIT, help = COMMENT_EDIT, metavar = "FILE", required = False, nargs=1) 
         
         # Solve file
-        action.add_argument(ARG_SOLVE_S, ARG_SOLVE, help = COMMENT_SOLVE, required = False, nargs=1)
+        action.add_argument(ARG_SOLVE_S, ARG_SOLVE, help = COMMENT_SOLVE, metavar = "FILE", required = False, nargs=1)
 
         # Browse folder and edit selected file
-        action.add_argument(ARG_BROWSE_AND_SOLVE_S, ARG_BROWSE_AND_SOLVE, help = COMMENT_BROWSE_AND_SOLVE, required = False, nargs=1)
+        action.add_argument(ARG_BROWSE_AND_SOLVE_S, ARG_BROWSE_AND_SOLVE, help = COMMENT_BROWSE_AND_SOLVE, metavar = "FOLDER", required = False, nargs=1)
 
         # Edit and solve file
-        action.add_argument(ARG_EDIT_AND_SOLVE_S, ARG_EDIT_AND_SOLVE, help = COMMENT_EDIT_AND_SOLVE, required = False, nargs=1)
+        action.add_argument(ARG_EDIT_AND_SOLVE_S, ARG_EDIT_AND_SOLVE, help = COMMENT_EDIT_AND_SOLVE, metavar = "FILE", required = False, nargs=1)
         
         
         # Parse line
@@ -189,11 +184,11 @@ class options(object):
         
         # At least one action !
         ret = True if self.editMode_ or self.solveMode_ or self.browseFolder_ else False
-        if ret :
-            return True
-        else:
+        if not ret :
             parser.print_help()
             return False
+        
+        return True
 
     # Display app version infos
     #
