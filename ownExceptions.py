@@ -8,7 +8,7 @@
 #                       - reachedEndOfList : A solution has been found
 #                       - sudokuError : a bloking error
 #
-#   Remarque    :  
+#   Remarks    :  
 #
 
 #

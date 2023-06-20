@@ -22,14 +22,16 @@ from pointer import pointer
 
 # Positions and dimensions in pixels
 #
-SQUARE_SIDE             = 60   #  Initial external size of a square element
+SQUARE_SIDE             = 60   # Initial external size of a square element
+
+STATS_FRAME_WIDTH       = 100  # Width in pixels of stats'frame
 
 SQUARE_MIN              = 10   # Minimal square size
 
 DELTA_X                 = 10   # Grid offsets
 DELTA_Y                 = 10
 
-EXT_BORDER_WIDTH        = 3    # Width of external border
+EXT_BORDER_THICK        = 3    # Thickness of external border
 
 # Elements'text font sizes (in pixels) and names
 #
@@ -242,7 +244,7 @@ class pygameOutputs(outputs):
         self.width_ = pointer.ROW_COUNT * SQUARE_SIDE + 2 * DELTA_X
         self.height_ = pointer.LINE_COUNT * SQUARE_SIDE + 2 * DELTA_Y
         self.extSquareWidth_ = SQUARE_SIDE
-        self.intSquareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_WIDTH
+        self.intSquareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_THICK
         self.deltaW_ = DELTA_X
         self.deltaH_ = DELTA_Y
         
@@ -381,7 +383,7 @@ class pygameOutputs(outputs):
     # Mouse position
     #
     def mousePosition(self, pos):
-        return (int((pos[0] - EXT_BORDER_WIDTH - self.deltaW_) / self.extSquareWidth_) , int((pos[1] - EXT_BORDER_WIDTH - self.deltaH_) / self.extSquareWidth_))
+        return (int((pos[0] - EXT_BORDER_THICK - self.deltaW_) / self.extSquareWidth_) , int((pos[1] - EXT_BORDER_THICK - self.deltaH_) / self.extSquareWidth_))
     
     # Draw the whole grid
     #
@@ -413,8 +415,8 @@ class pygameOutputs(outputs):
             return
         
         # top-left corner position
-        x = self.deltaW_ + row * self.extSquareWidth_ + EXT_BORDER_WIDTH
-        y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_WIDTH
+        x = self.deltaW_ + row * self.extSquareWidth_ + EXT_BORDER_THICK
+        y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_THICK
         
         # Erase background
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -485,7 +487,7 @@ class pygameOutputs(outputs):
         self.height_ = newHeight
 
         # Compute new square sizes 
-        squareW = math.floor((newWidth - 2 * DELTA_X) / pointer.ROW_COUNT)
+        squareW = math.floor((newWidth - 2 * DELTA_X - STATS_FRAME_WIDTH) / pointer.ROW_COUNT)
         squareH = math.floor((newHeight - 2 * DELTA_Y) / pointer.LINE_COUNT)
 
         if squareW < SQUARE_MIN or squareH < SQUARE_MIN :
@@ -497,7 +499,7 @@ class pygameOutputs(outputs):
         else:
             self.extSquareWidth_ = squareH
 
-        self.intSquareWidth_ = self.extSquareWidth_ - 2 * EXT_BORDER_WIDTH
+        self.intSquareWidth_ = self.extSquareWidth_ - 2 * EXT_BORDER_THICK
         
         # top-left grid position
         self.deltaW_ = math.floor((newWidth - pointer.ROW_COUNT * self.extSquareWidth_) / 2)
@@ -537,10 +539,10 @@ class pygameOutputs(outputs):
                 for row in range(3):
                     x = self.deltaW_ + row * lSquare
                     y = self.deltaH_ + line * lSquare
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_WIDTH)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_WIDTH)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_THICK)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)
+                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_THICK)
 
         self._int_update()
 

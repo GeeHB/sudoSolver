@@ -110,12 +110,11 @@ class tinySquare(object):
 
     # Is the value "in" the square ?
     #
-    #   Check wether the value is in the current tiny-square   
+    #   Check wether the value is already present in the current tiny-square   
     #
     #   return a boolean - True if found
     #
     def inMe(self, elements, value):
-        rets = self.findValue(elements, value)
-        return False if None == rets[0] else True
+        return False if None == self.findValue(elements, value)[0] else True
 
 # EOF
