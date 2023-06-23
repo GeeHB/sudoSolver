@@ -7,7 +7,7 @@
 #   Description :   tinySquare object 
 #
 
-from pointer import pointer
+from pointer import pointer, ROW_COUNT
 
 # Top-left index of tiny-squares
 #
@@ -84,7 +84,7 @@ class tinySquare(object):
                 line.append(index + row)    # Add the index to the line
             
             ids.append(line)                # Add the line to the matrix
-            index+=pointer.ROW_COUNT
+            index+=ROW_COUNT
 
         # Finish !!!
         return ids

@@ -57,9 +57,11 @@ if '__main__' == __name__:
     except:
         print("Unknown error while loading '" + params.fileName_ + "'")
         exitNow = True
+    
     # Exit anyway ...
     if True == exitNow :
-        solver.close()
+        if solver is not None:
+            solver.close()
         exit(0)
     
     # Edition and/or resolution

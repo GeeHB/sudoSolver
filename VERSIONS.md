@@ -22,6 +22,7 @@
       * select direct value (1, ..9)
       * delete a value
 * Bugs correction:
+   * clicks outside de grid are ignored
 
 
 #### Version 1.5.9

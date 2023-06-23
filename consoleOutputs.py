@@ -8,7 +8,7 @@
 #
 
 from outputs import outputs
-from pointer import pointer
+from pointer import LINE_COUNT, ROW_COUNT
 
 #
 # consoleOutputs - Basic display in console mode
@@ -26,10 +26,10 @@ class consoleOutputs(outputs):
 
         # Draw line / line
         #
-        for _ in range(pointer.LINE_COUNT):
+        for _ in range(LINE_COUNT):
             line = ""
             myCol = 0
-            for _ in range(pointer.ROW_COUNT):
+            for _ in range(ROW_COUNT):
                 currentElement = elements[myIndex]
                 line+=" "
                 line+= " " if currentElement.isEmpty() else str(currentElement.value())

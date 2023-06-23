@@ -10,7 +10,8 @@
 
 import os, time, math
 from element import element, elementStatus
-from pointer import pointer
+from pointer import pointer, LINE_COUNT, ROW_COUNT, VALUE_MIN, VALUE_MAX, INDEX_MIN, INDEX_MAX
+
 from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
@@ -79,7 +80,7 @@ class sudoku(object):
             time.sleep(0.1)
 
         # Create the grid
-        for _ in range(pointer.LINE_COUNT * pointer.ROW_COUNT):
+        for _ in range(LINE_COUNT * ROW_COUNT):
             self.elements_.append(element())
 
     # Destructor
@@ -249,7 +250,7 @@ class sudoku(object):
 
                 values = line.split(self.VALUE_SEPARATOR)
 
-                if not pointer.ROW_COUNT == len(values):
+                if not ROW_COUNT == len(values):
                     raise sudokuError("Invalid format for line n° " + str(pt.line()+1)+ " - " + str(len(values)) + " values")
 
                 for val in values:
@@ -257,7 +258,7 @@ class sudoku(object):
 
                         # in [0,9] ?
                         nVal = int(val)
-                        if nVal < 0 or nVal > pointer.LINE_COUNT:
+                        if nVal < 0 or nVal > LINE_COUNT:
                             raise sudokuError("Error : le value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") isn't valid : " + val)
 
                         #  Value "0" for empty element
@@ -275,7 +276,7 @@ class sudoku(object):
                                 raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
                             
                             # add the value
-                            self.elements_[pt.line() * pointer.ROW_COUNT + pt.row()].setValue(nVal, elementStatus.ORIGINAL)
+                            self.elements_[pt.line() * ROW_COUNT + pt.row()].setValue(nVal, elementStatus.ORIGINAL)
                     else:
                         if (len(val)):
                             raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
@@ -312,9 +313,9 @@ class sudoku(object):
             
             # File content
             pt = pointer(gameMode = False)
-            for lIndex in range(pointer.LINE_COUNT) :
+            for lIndex in range(LINE_COUNT) :
                 line = ""
-                for _ in range(pointer.ROW_COUNT):
+                for _ in range(ROW_COUNT):
                     el = self.elements_[pt.index()]
                     line+=str(0 if el.isEmpty() else el.value())
                     line+=self.VALUE_SEPARATOR
@@ -322,7 +323,7 @@ class sudoku(object):
                 
                 # add separator
                 line = line[:len(line) - 1]
-                if lIndex < (pointer.LINE_COUNT -1):
+                if lIndex < (LINE_COUNT -1):
                     line+="\n"
                 
                 file.write(line)
@@ -374,7 +375,7 @@ class sudoku(object):
             if self.outputs_.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self.outputs_.mouseButtonStatus(event)
                 if button == self.outputs_.MOUSE_BUTTON_LEFT:
-                    #print(f"Click en {self.outputs_.mousePosition(pos)}")
+                    print(f"Click en {self.outputs_.mousePosition(pos)}")
                     currentPos.moveTo(pos = self.outputs_.mousePosition(pos))
             else:
                 # With the keyboard
@@ -510,7 +511,7 @@ class sudoku(object):
     def getValues(self, position):
         values = []
 
-        for value in range(pointer.VALUE_MIN, pointer.VALUE_MAX):
+        for value in range(VALUE_MIN, VALUE_MAX):
             if self._checkValue(position, value):
                 # This value can be used
                 values.append(value)
@@ -548,7 +549,7 @@ class sudoku(object):
                 exit(0)
             
             candidate+=1
-            if candidate > pointer.VALUE_MAX:
+            if candidate > VALUE_MAX:
                 
                 # No possible value found at this position
                 # we'll have to go backward, to the last value setted
@@ -587,7 +588,7 @@ class sudoku(object):
         # we'll try to put the "candidate" value at the current position
         while True :
             candidate+=1
-            if candidate > pointer.VALUE_MAX:
+            if candidate > VALUE_MAX:
                 
                 # No possible value found at this position
                 # we'll have to go backward, to the last value setted
@@ -618,8 +619,8 @@ class sudoku(object):
 
     #   => in the line ?
     def _checkLine(self, position, value):
-        idFirst = position.line() * pointer.ROW_COUNT 
-        for tIndex in range(pointer.ROW_COUNT):
+        idFirst = position.line() * ROW_COUNT 
+        for tIndex in range(ROW_COUNT):
             if self.elements_[tIndex + idFirst].value() == value:
                 return False
         # yes
@@ -628,8 +629,8 @@ class sudoku(object):
     #  => in the row ?
     def _checkRow(self, position, value):
         idFirst = position.row()
-        for tIndex in range(pointer.LINE_COUNT):
-            if self.elements_[tIndex * pointer.ROW_COUNT + idFirst].value() == value:
+        for tIndex in range(LINE_COUNT):
+            if self.elements_[tIndex * ROW_COUNT + idFirst].value() == value:
                 return False
         # yes
         return True
@@ -713,7 +714,7 @@ class sudoku(object):
 
         position = pointer()
         
-        for index in range(pointer.INDEX_MAX):
+        for index in range(INDEX_MAX):
             if index == 26:
                 Stop = True
             
@@ -749,7 +750,7 @@ class sudoku(object):
     def _checkObviousValue(self, position):
         value = None
 
-        for test in range(pointer.VALUE_MIN, pointer.VALUE_MAX + 1):
+        for test in range(VALUE_MIN, VALUE_MAX + 1):
             if self._checkValue(position, test):
                 # This value can be used
                 if value :
@@ -801,7 +802,7 @@ class sudoku(object):
             candidate = secondSquare
             candidateLine = 2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
 
-        # Try to pout the value ...
+        # Try to put the value ...
         #
         foundPos = None
         pos = pointer(index = 0)
@@ -885,7 +886,7 @@ class sudoku(object):
                     foundPos = pointer(other = pos) # call the copy constructor !!!
                 
                 # Next line
-                pos+=pos.ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
+                pos+= ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
         except reachedEndOfList:
             pass
 
