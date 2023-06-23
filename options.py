@@ -166,7 +166,7 @@ class options(object):
         # display grid ?
         display = args.details if args.details is not None else 0 
         
-        if display == 2:
+        if display[0] == 2:
             self.multiThreadedProgress_ = True
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):

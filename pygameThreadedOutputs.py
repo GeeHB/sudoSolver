@@ -38,6 +38,7 @@ ACTION_SOLVING_ENDED = 21
 
 ACTION_CHECK_KEYPRESSED = 30  # Sync event
 ACTION_WAIT_EVENT = 31
+ACTION_POLL_EVENT = 32
 
 ACTION_END_THREAD = 999
 
@@ -155,6 +156,16 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
     def close(self):
         self._addAction(id=ACTION_END_THREAD, wait=True)
         # print("no more thread")
+
+    # Check current/last event
+    #
+    def pollEvent(self, elements=None, allEvents=False):
+        # Create the action
+        action = pygameAction(ACTION_POLL_EVENT)
+        action.params_ = (elements, allEvents)
+
+        # Add it as a sync action
+        return self._addAction(action, wait=True)
 
     # Is a key pressed ?
     #
@@ -355,6 +366,8 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
                 self.syncRet_[action.uid_] = self._int_keyPressed(action.params_[0], action.params_[1])
             elif ACTION_WAIT_EVENT == action.actionId_:
                 self.syncRet_[action.uid_] = self._int_waitForEvent(action.params_[0], action.params_[1])
+            elif ACTION_POLL_EVENT == action.actionId_:
+                self.syncRet_[action.uid_] = self._int_pollEvent()
 
             # Should I sync. ? (ie. should I notify the calling thread ?)
             if True == action.sync_:
