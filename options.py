@@ -11,10 +11,12 @@ import sysconfig, argparse
 from sharedTools import colorizer as color
 
 # App informations
-APP_NAME = "sudoSolver.py"
+APP_SHORT_NAME = "sudoSolver"
+APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "1.6.1"
 APP_RELEASE_DATE = "06/14/2023"
-APP_AUTHOR = "GeeHB (j.henrybarnaudiere@gmail.com)"
+APP_AUTHOR_SHORT = "GeeHB"
+APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
 # Command line options
 #
@@ -120,7 +122,6 @@ class options(object):
         # Edit and solve file
         action.add_argument(ARG_EDIT_AND_SOLVE_S, ARG_EDIT_AND_SOLVE, help = COMMENT_EDIT_AND_SOLVE, metavar = "FILE", required = False, nargs=1)
         
-        
         # Parse line
         #
         args = parser.parse_args()
@@ -164,9 +165,8 @@ class options(object):
                             self.solveMode_ = True
         
         # display grid ?
-        display = args.details if args.details is not None else 0 
-        
-        if display[0] == 2:
+        display = args.details[0] if args.details is not None else 0       
+        if display == 2:
             self.multiThreadedProgress_ = True
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
@@ -175,8 +175,9 @@ class options(object):
                 self.singleThreadedProgress_ = True
             else:
                 self.singleThreadedProgress_ = False
-        else :
-            self.singleThreadedProgress_ = True if display == 1 else False
+        else:
+            if display == 1:
+                self.singleThreadedProgress_ = True if display == 1 else False
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:

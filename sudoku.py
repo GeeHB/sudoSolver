@@ -140,7 +140,7 @@ class sudoku(object):
     #
     def browse(self, folderName):
         if not os.path.isdir(folderName):
-            raise sudokuError(folderName + " is not a valid folder")
+            raise sudokuError(f"{folderName} is not a valid folder")
 
         files = []
         
@@ -222,7 +222,7 @@ class sudoku(object):
             raise sudokuError("No valid file name")
 
         if os.path.isdir(fileName):
-            raise sudokuError(fileName + " is not a valid file")
+            raise sudokuError(f"{fileName} is not a valid file")
 
         self.gridFileName_ = fileName
         
@@ -232,9 +232,9 @@ class sudoku(object):
             file = open(fileName)
         except FileNotFoundError:
             if True == mustExist:
-                raise sudokuError("The file '" + fileName + "' doesn't exist")
+                raise sudokuError(f"The file '{fileName}' doesn't exist")
             else:
-                print("Creation of '" + fileName + "'")
+                print(f"New file : '{fileName}'")
                 return
             
         pt = pointer(gameMode = False)
@@ -251,7 +251,7 @@ class sudoku(object):
                 values = line.split(self.VALUE_SEPARATOR)
 
                 if not ROW_COUNT == len(values):
-                    raise sudokuError("Invalid format for line n° " + str(pt.line()+1)+ " - " + str(len(values)) + " values")
+                    raise sudokuError(f"Invalid format for line n° {str(pt.line()+1)} - {str(len(values))} values")
 
                 for val in values:
                     if val.isnumeric():
@@ -259,27 +259,27 @@ class sudoku(object):
                         # in [0,9] ?
                         nVal = int(val)
                         if nVal < 0 or nVal > LINE_COUNT:
-                            raise sudokuError("Error : le value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") isn't valid : " + val)
+                            raise sudokuError(f"Error : the value ({str(pt.line() + 1)},{str(pt.row()+1)}) isn't valid : {val}")
 
                         #  Value "0" for empty element
                         if nVal > 0:
                             # Check the line
                             if False == self._checkLine(pt, nVal):
-                                raise sudokuError("Line value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                                raise sudokuError(f"Line value error : value {val} can't be set in ({str(pt.line() + 1)},{str(pt.row()+1)})")
 
                             # Check the row
                             if False == self._checkRow(pt, nVal):
-                                raise sudokuError("Row value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                                raise sudokuError(f"Row value error : value {val} can't be set in ({str(pt.line() + 1)},{str(pt.row()+1)})")
 
                             # Check the tiny-square
                             if False == self._checkTinySquare(pt, nVal):
-                                raise sudokuError("Square value error : value " + val + " can't be set in (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ")")
+                                raise sudokuError(f"Square value error : value {val} can't be set in ({str(pt.line() + 1)},{str(pt.row()+1)})")
                             
                             # add the value
                             self.elements_[pt.line() * ROW_COUNT + pt.row()].setValue(nVal, elementStatus.ORIGINAL)
                     else:
                         if (len(val)):
-                            raise sudokuError("Error : the value (" + str(pt.line() + 1) + "," + str(pt.row()+1) + ") is not numeric : " + val)
+                            raise sudokuError(f"Error : the value in ({str(pt.line() + 1)},{str(pt.row()+1)}) is not numeric : {val}")
 
                     # Next value
                     pt += 1
@@ -331,7 +331,7 @@ class sudoku(object):
             file.close()
             return True
         except ModuleNotFoundError:
-            raise sudokuError("io error while writing in " + self.gridFileName_)
+            raise sudokuError(f"io error while writing the file '{self.gridFileName_}'")
 
     # Edit / modify the grid
     #
@@ -375,7 +375,7 @@ class sudoku(object):
             if self.outputs_.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self.outputs_.mouseButtonStatus(event)
                 if button == self.outputs_.MOUSE_BUTTON_LEFT:
-                    print(f"Click en {self.outputs_.mousePosition(pos)}")
+                    # print(f"Click en {self.outputs_.mousePosition(pos)}")
                     currentPos.moveTo(pos = self.outputs_.mousePosition(pos))
             else:
                 # With the keyboard

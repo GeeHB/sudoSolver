@@ -21,6 +21,8 @@
    * Enhance keyboard control
       * select direct value (1, ..9)
       * delete a value
+   * Exceptions handling (and associated messages)
+   * Use "fast" strings : f"{xxx}"
 * Bugs correction:
    * clicks outside de grid are ignored
 

@@ -11,7 +11,7 @@
 #
 
 import pygame, math
-
+from options import APP_SHORT_NAME
 from outputs import outputs
 from ownExceptions import sudokuError
 from pointer import pointer, ROW_COUNT, LINE_COUNT
@@ -28,8 +28,8 @@ STATS_FRAME_WIDTH       = 200  # Width in pixels of stats'frame
 
 SQUARE_MIN              = 10   # Minimal square size
 
-DELTA_X                 = 10   # Grid offsets
-DELTA_Y                 = 10
+DELTA_W                 = 10   # Grid offsets
+DELTA_H                 = 10
 
 EXT_BORDER_THICK        = 3    # Thickness of external border
 
@@ -205,9 +205,11 @@ class pygameOutputs(outputs):
     intSquareWidth_ = 0        # Internal dims of an element
     extSquareWidth_ = 0        # Ext. dims 
     
+    """
     deltaW_         = 0        # Grid's offsets
     deltaH_         = 0
-    
+    """
+
     # Elements'values drawing
     sElement_ = None
 
@@ -235,19 +237,21 @@ class pygameOutputs(outputs):
             raise sudokuError("PYGame initialization error - Mayb you should reinstall PYGame")
 
         if 0 != rets[1] :
-            raise sudokuError("PYGame initialization error - PYGame returns " + str(rets[1]) + " error(s)")
+            raise sudokuError(f"PYGame initialization error - PYGame returns {str(rets[1])} error(s)")
 
         # PYGame init. is ok
         self.initDone_ = True
         
         # Default dimensions
-        self.width_ = ROW_COUNT * SQUARE_SIDE + 2 * DELTA_X
-        self.height_ = LINE_COUNT * SQUARE_SIDE + 2 * DELTA_Y
+        self.width_ = ROW_COUNT * SQUARE_SIDE + 2 * DELTA_W + STATS_FRAME_WIDTH
+        self.height_ = LINE_COUNT * SQUARE_SIDE + 2 * DELTA_H
         self.extSquareWidth_ = SQUARE_SIDE
         self.intSquareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_THICK
-        self.deltaW_ = DELTA_X
-        self.deltaH_ = DELTA_Y
-        
+        """
+        self.deltaW_ = DELTA_W
+        self.deltaH_ = DELTA_H
+        """
+
         # font for drawing elements
         self.sElement_ = textSurface(ELT_FONT_NAME, ELT_FONT_SIZE)
         self.sElement_.moveTo((SQUARE_SIDE - ELT_FONT_SIZE) / 2, 0)
@@ -256,7 +260,7 @@ class pygameOutputs(outputs):
         #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
         #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED)
-        pygame.display.set_caption('sudoSolver')
+        pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)
@@ -383,7 +387,10 @@ class pygameOutputs(outputs):
     # Mouse position
     #
     def mousePosition(self, pos):
+        """
         return (-1 if pos[0] < self.deltaW_ else int((pos[0] - EXT_BORDER_THICK - self.deltaW_) / self.extSquareWidth_), -1 if pos[1] < self.deltaH_ else int((pos[1] - EXT_BORDER_THICK - self.deltaH_) / self.extSquareWidth_))
+        """
+        return (-1 if pos[0] < DELTA_W else int((pos[0] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_), -1 if pos[1] < DELTA_H else int((pos[1] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_))
     
     # Draw the whole grid
     #
@@ -415,8 +422,12 @@ class pygameOutputs(outputs):
             return
         
         # top-left corner position
+        """
         x = self.deltaW_ + row * self.extSquareWidth_ + EXT_BORDER_THICK
         y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_THICK
+        """
+        x = DELTA_W + row * self.extSquareWidth_ + EXT_BORDER_THICK
+        y = DELTA_H + line * self.extSquareWidth_ + EXT_BORDER_THICK
         
         # Erase background
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -487,8 +498,8 @@ class pygameOutputs(outputs):
         self.height_ = newHeight
 
         # Compute new square sizes 
-        squareW = math.floor((newWidth - 2 * DELTA_X - STATS_FRAME_WIDTH) / ROW_COUNT)
-        squareH = math.floor((newHeight - 2 * DELTA_Y) / LINE_COUNT)
+        squareW = math.floor((newWidth - 2 * DELTA_W - STATS_FRAME_WIDTH) / ROW_COUNT)
+        squareH = math.floor((newHeight - 2 * DELTA_H) / LINE_COUNT)
 
         if squareW < SQUARE_MIN or squareH < SQUARE_MIN :
             self.extSquareWidth_ = SQUARE_MIN
@@ -502,8 +513,10 @@ class pygameOutputs(outputs):
         self.intSquareWidth_ = self.extSquareWidth_ - 2 * EXT_BORDER_THICK
         
         # top-left grid position
+        """
         self.deltaW_ = math.floor((newWidth - STATS_FRAME_WIDTH - ROW_COUNT * self.extSquareWidth_) / 2)
         self.deltaH_ = math.floor((newHeight - LINE_COUNT * self.extSquareWidth_) / 2)
+        """
 
         # Update elements'font
         fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
@@ -527,8 +540,12 @@ class pygameOutputs(outputs):
             #
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
+                    """
                     x = self.deltaW_ + row * self.extSquareWidth_
                     y = self.deltaH_ + line * self.extSquareWidth_
+                    """
+                    x = DELTA_W + row * self.extSquareWidth_
+                    y = DELTA_H + line * self.extSquareWidth_
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
@@ -537,8 +554,12 @@ class pygameOutputs(outputs):
             lSquare = self.extSquareWidth_ * 3
             for line in range(3):
                 for row in range(3):
+                    """
                     x = self.deltaW_ + row * lSquare
                     y = self.deltaH_ + line * lSquare
+                    """
+                    x = DELTA_W + row * lSquare
+                    y = DELTA_H + line * lSquare
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_THICK)
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)

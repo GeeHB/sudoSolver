@@ -10,7 +10,8 @@
 #
 
 import time
-import options, outputs
+from options import options, APP_AUTHOR_SHORT, APP_NAME
+import outputs
 from sudoku import sudoku
 from ownExceptions import sudokuError
 
@@ -22,7 +23,7 @@ if '__main__' == __name__:
 
     # Parse command line
     #
-    params = options.options()
+    params = options()
     if False == params.parse() :
         exit(1)
 
@@ -54,8 +55,11 @@ if '__main__' == __name__:
     except IndexError:
         print("Too many lines in the file")
         exitNow = True
-    except:
-        print("Unknown error while loading '" + params.fileName_ + "'")
+    except KeyboardInterrupt as kbe:
+        print("Canceled by user")
+        exitNow = True
+    except Exception as e:
+        print(f"Unknown error : {str(e)}")    
         exitNow = True
     
     # Exit anyway ...
@@ -95,7 +99,7 @@ if '__main__' == __name__:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
                 if True == solver.outputs().useGUI() and myStats.obvValues_ > 0:
-                    solver.displayText("Found " + str(myStats.obvValues_) + " obvious values", False)
+                    solver.displayText(f"Found {str(myStats.obvValues_)} obvious values", False)
                     solver.showGrid()   
                     solver.waitForKeyDown()
                     
@@ -117,13 +121,13 @@ if '__main__' == __name__:
                 if params.exportSolution_:
                     comments = []
                     comments.append(" ")
-                    comments.append(" Source file : " + params.fileName_)
+                    comments.append(f" Source file : {params.fileName_}")
                     comments.append(" ")
-                    comments.append("Solved by GeeHB::sudoSolver.py in " + str(round(myStats.bruteDuration_, 2)) + " sec.")
+                    comments.append(f"Solved by {APP_AUTHOR_SHORT}::{APP_NAME} in {str(round(myStats.bruteDuration_, 2))} sec.")
                     comments.append(" ")
                     
                     if True == solver.save(True, comments):
-                        print("Solution successfully saved in ", params.fileName_ + solver.FILE_EXPORT_EXTENSION) 
+                        print(f"Solution successfully saved in {params.fileName_}{solver.FILE_EXPORT_EXTENSION}") 
 
             solver.close()
             
@@ -131,7 +135,7 @@ if '__main__' == __name__:
             if True == found:
                 solver.showStats(params, myStats)
             else:
-                print("No solution found for '" + params.fileName_ + "'")
+                print(f"No solution found for '{params.fileName_}'")
 
     except sudokuError as e:
         # Other error
