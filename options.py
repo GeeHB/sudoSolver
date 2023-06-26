@@ -56,7 +56,7 @@ COMMENT_CONSOLE = "Force displays in console mode (using nCurses if available)"
 # Show grid during the search process
 ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show grids during proces"
+COMMENT_DETAILS = "Show grids during process"
 MIN_DETAILS    = 1 # Slow
 MAX_DETAILS    = 2
 
