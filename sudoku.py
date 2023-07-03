@@ -16,6 +16,8 @@ from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
+from options import FILE_EXPORT_EXTENSION
+
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #
@@ -24,7 +26,6 @@ class sudoku(object):
     # Consts
     #
     VALUE_SEPARATOR =       ","         # Value separator in files
-    FILE_EXPORT_EXTENSION = ".solution" # A solution grid
     FILE_COMMENTS =         "#"         # Comment lines start with
 
     # Members
@@ -152,7 +153,7 @@ class sudoku(object):
         # No solution files in the list !
         for file in files:
             _, fileExt = os.path.splitext(file)
-            if self.FILE_EXPORT_EXTENSION == fileExt:
+            if FILE_EXPORT_EXTENSION == fileExt:
                 # remove the file from the list
                 files.remove(file)
 
@@ -160,6 +161,10 @@ class sudoku(object):
         index = 0
         done = len(files) <= index   # is the folder empty ?
         currentFile = ""
+
+        files.sort()
+
+        # Browse ...
         while not done:
             # update drawings ?
             if  prev != index:
@@ -297,8 +302,7 @@ class sudoku(object):
         
         fileName = self.gridFileName_
         if genName :
-            fileName += self.FILE_EXPORT_EXTENSION
-        
+            fileName += FILE_EXPORT_EXTENSION       
         try:
             file = open(fileName, "w")
             

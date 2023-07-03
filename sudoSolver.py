@@ -10,7 +10,7 @@
 #
 
 import time
-from options import options, APP_AUTHOR_SHORT, APP_NAME
+from options import options, APP_AUTHOR_SHORT, APP_NAME, FILE_EXPORT_EXTENSION
 import outputs
 from sudoku import sudoku
 from ownExceptions import sudokuError
@@ -127,7 +127,7 @@ if '__main__' == __name__:
                     comments.append(" ")
                     
                     if True == solver.save(True, comments):
-                        print(f"Solution successfully saved in {params.fileName_}{solver.FILE_EXPORT_EXTENSION}") 
+                        print(f"Solution successfully saved in {params.fileName_}{FILE_EXPORT_EXTENSION}") 
 
             solver.close()
             

@@ -18,6 +18,14 @@ APP_RELEASE_DATE = "06/14/2023"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
+# GUI
+APP_GUI_TITLE = f"{APP_SHORT_NAME}"
+APP_GUI_WITH = 300
+APP_GUI_HEIGHT = 400
+APP_GUI_TAB_FOLDERS = "Folders"
+APP_GUI_TAB_FILES = "Files"
+APP_GUI_TAB_SOLVE = "Solve"
+
 # Command line options
 #
 
@@ -36,6 +44,9 @@ COMMENT_SOLVE = "Solve (find a solution) for the grid saved in {FILE} file"
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
+DEF_FOLDER = "./grids"
+
+FILE_EXPORT_EXTENSION = ".solution" # A solution grid
 
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"

@@ -23,9 +23,9 @@
       * delete a value
    * Exceptions handling (and associated messages)
    * Use "fast" strings : f"{xxx}"
+   * Files ordered in browse mode
 * Bugs correction:
    * clicks outside de grid are ignored
-
 
 #### Version 1.5.9
 * 10 nov. 2022
