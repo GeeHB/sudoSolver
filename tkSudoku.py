@@ -32,44 +32,65 @@ class paramWindow(tk.Tk):
         # Tab manager ...
         self.tabControl_ = ttk.Notebook(self) 
 
-        # ... with 3 tabs
-        self.foldersTab_ = ttk.Frame(self.tabControl_)
-        self.tabControl_.add(self.foldersTab_, text = opts.APP_GUI_TAB_FOLDERS)
+        # ... with 2 tabs
+        self.gridsTab_ = ttk.Frame(self.tabControl_)
+        self.tabControl_.add(self.gridsTab_, text = opts.APP_GUI_TAB_GRIDS)
         
-        self.fileTab_ = ttk.Frame(self.tabControl_)
-        self.tabControl_.add(self.fileTab_, text = opts.APP_GUI_TAB_FILES)
-
         self.solveTab_ = ttk.Frame(self.tabControl_)
         self.tabControl_.add(self.solveTab_, text = opts.APP_GUI_TAB_SOLVE)
 
         self.tabControl_.pack(expand = 1, fill ="both")
 
-        # "Folders" tab
-        ttk.Label(self.foldersTab_, text = 'Folder name :').grid(column=0, row=0, padx=15, pady=15)
-        
-        self.folderNameEdit_ = ttk.Entry(self.foldersTab_)
-        self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=15)
-        
-        self.folderBrowseButton_ = ttk.Button(self.foldersTab_, text='Browse')
-        self.folderBrowseButton_.grid(column=5, row=0, padx=5, pady=15)
+        # "Grids" tab
+        #
 
-        self.folderPrevButton_ = ttk.Button(self.foldersTab_, text='<<', command = self._prevFile, state = tk.DISABLED)
-        self.folderPrevButton_.grid(column=1, row=1, padx=5, pady=15)
-
-        self.folderNextButton_ = ttk.Button(self.foldersTab_, text='>>', command = self._nextFile, state = tk.DISABLED)
-        self.folderNextButton_.grid(column=3, row=1, padx=5, pady=15)
-
-        # "File" tab
-        ttk.Label(self.fileTab_, text = 'File name :').grid(column=0, row=0, padx=15, pady=15)
+        # Folder name
+        ttk.Label(self.gridsTab_, text = 'Folder name :').grid(column=0, row=0, padx=5, pady=5)
         
-        self.fileNameEdit_ = ttk.Entry(self.fileTab_)
-        self.fileNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=15)
+        self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
+        self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
         
-        self.fileCreateButton_ = ttk.Button(self.fileTab_, text='Create')
-        self.fileCreateButton_.grid(column=5, row=0, padx=5, pady=15)
+        self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text='Browse')
+        self.folderBrowseButton_.grid(column=5, row=0, padx=5, pady=5)
 
-        self.fileEditButton_ = ttk.Button(self.fileTab_, text='Edit', state = tk.DISABLED)
-        self.fileEditButton_.grid(column=3, row=1, padx=5, pady=15)
+        # File name
+        ttk.Label(self.gridsTab_, text = 'File name :').grid(column=0, row=1, padx=5, pady=5)
+        
+        self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
+        self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
+
+        # "walk" buttons
+        self.folderPrevButton_ = ttk.Button(self.gridsTab_, text='<<', command = self._prevFile, state = tk.DISABLED)
+        self.folderPrevButton_.grid(column=1, row=2, padx=5, pady=5)
+
+        self.folderNextButton_ = ttk.Button(self.gridsTab_, text='>>', command = self._nextFile, state = tk.DISABLED)
+        self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
+
+        # File control buttons
+        self.fileCreateButton_ = ttk.Button(self.gridsTab_, text='Create')
+        self.fileCreateButton_.grid(column=0, row=3, padx=5, pady=25)
+
+        self.fileEditButton_ = ttk.Button(self.gridsTab_, text='Edit', state = tk.DISABLED)
+        self.fileEditButton_.grid(column=1, row=3, padx=5, pady=25)
+
+        # "Solve" tab
+        #
+        self.opitmizeBox_ = ttk.Checkbutton(self.solveTab_, text = "Optimize")
+        self.opitmizeBox_.grid(column=0, row=0, padx=5, pady=5)
+
+        ttk.Label(self.solveTab_, text = "Show progress :").grid(column=0, row=1, padx=5, pady=5)
+        self.progressMode_ = tk.StringVar()
+        self.progressCombo_ = ttk.Combobox(self.solveTab_, textvariable=self.progressMode_, state = 'readonly')
+        self.progressCombo_.grid(column=1, row=1, padx=5, pady=5)
+        self.progressCombo_['values'] = ('none', 'slow', 'multithreaded')
+        self.progressCombo_.current(0)
+
+        # Buttons
+        self.solveButton_ = ttk.Button(self.solveTab_, text='Solve', state = tk.DISABLED)
+        self.solveButton_.grid(column=0, row=3, sticky = 'w', padx=5, pady=25)
+
+        self.saveButton_ = ttk.Button(self.solveTab_, text='Save', state = tk.DISABLED)
+        self.saveButton_.grid(column=1, row=3, sticky = 'w', padx=5, pady=25)
 
         # Default values
         self.fileName = ""

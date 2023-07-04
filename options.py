@@ -22,8 +22,7 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 APP_GUI_TITLE = f"{APP_SHORT_NAME}"
 APP_GUI_WITH = 300
 APP_GUI_HEIGHT = 400
-APP_GUI_TAB_FOLDERS = "Folders"
-APP_GUI_TAB_FILES = "Files"
+APP_GUI_TAB_GRIDS = "Grids"
 APP_GUI_TAB_SOLVE = "Solve"
 
 # Command line options
