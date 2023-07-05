@@ -6,7 +6,8 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   Display, edit and solve a sudoku grid
+#   Description :   Display, edit and solve sudokus
+#                   Command line version
 #
 
 import time
@@ -37,7 +38,7 @@ if '__main__' == __name__:
     # Loading ...
     #
     try:
-        solver = sudoku(params.consoleMode_, params.singleThreadedProgress_, params.multiThreadedProgress_)
+        solver = sudoku(params.consoleMode_, params.progressMode_)
         
         if params.browseFolder_:
             if not solver.allowFolderBrowsing():
@@ -104,7 +105,7 @@ if '__main__' == __name__:
                     solver.waitForKeyDown()
                     
             # ... and then try to resolve
-            found, escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve(params.multiThreadedProgress_)
+            found, escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
 
             # Display the solution (if any)
             solver.showGrid()   

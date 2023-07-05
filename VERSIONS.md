@@ -24,8 +24,11 @@
    * Exceptions handling (and associated messages)
    * Use "fast" strings : f"{xxx}"
    * Files ordered in browse mode
+   * Code factorisation
+   * Change progress mode (for GUI)
 * Bugs correction:
    * clicks outside de grid are ignored
+   * singleThreaded and multiThreaded handled by a unique variable
 
 #### Version 1.5.9
 * 10 nov. 2022

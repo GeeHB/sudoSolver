@@ -2,22 +2,30 @@
 #
 # coding=UTF-8
 #
-#   File        :   tkSudoku.py
+#   File        :   tksudoSolver.py
 #
 #   Author      :   GeeHB
 #
-#   Description :   App's GUI using tkinter
+#   Description :   Edit & solve sudokus
+#                   with GUI using tkinter
 #
 
-import tkinter as tk                    
-from tkinter import ttk
-import os
+from ownExceptions import sudokuError
 
+try:
+    import tkinter as tk                    
+    from tkinter import ttk
+    import tkinter.font as tkFont
+except ModuleNotFoundError:
+    raise sudokuError("tkinter module is not installed")
+
+import os
 import options as opts
+from sudoku import sudoku
 
 # Main window handling app's parameters
 # 
-class paramWindow(tk.Tk):
+class sudoParamWindow(tk.Tk):
 
     # Construction
     def __init__(self, *args, **kwargs):
@@ -28,6 +36,11 @@ class paramWindow(tk.Tk):
 
         # members' values
         self.files_ = []
+
+        # Change the default font ...
+        self.ownFont_ = tkFont.nametofont("TkDefaultFont")
+        self.ownFont_.configure(family="Arial", weight="normal", size=11)
+        #root.option_add("*Font", default_font)
 
         # Tab manager ...
         self.tabControl_ = ttk.Notebook(self) 
@@ -40,7 +53,7 @@ class paramWindow(tk.Tk):
         self.tabControl_.add(self.solveTab_, text = opts.APP_GUI_TAB_SOLVE)
 
         self.tabControl_.pack(expand = 1, fill ="both")
-
+        
         # "Grids" tab
         #
 
@@ -49,13 +62,15 @@ class paramWindow(tk.Tk):
         
         self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
         self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
+
+        #self.folderNameEdit_.configure(font=self.ownFont_)
         
         self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text='Browse')
         self.folderBrowseButton_.grid(column=5, row=0, padx=5, pady=5)
 
         # File name
         ttk.Label(self.gridsTab_, text = 'File name :').grid(column=0, row=1, padx=5, pady=5)
-        
+
         self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
         self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
 
@@ -116,24 +131,9 @@ class paramWindow(tk.Tk):
         self.folderNameEdit_.delete(0,tk.END)
         self.folderNameEdit_.insert(0,val)
 
-        self.files_.clear()
         self.fileIndex_ = 0
 
-        # Folder content
-        if len(val) > 0:
-            # Only this folder
-            for (_, _, fileNames) in os.walk(val):
-                self.files_.extend(fileNames)
-                break
-
-        # No solution files in the list !
-        for file in self.files_ :
-            _, fileExt = os.path.splitext(file)
-            if opts.FILE_EXPORT_EXTENSION == fileExt:
-                # remove the file from the list
-                self.files_.remove(file)  
-
-        if len(self.files_) == 0:
+        if False == sudoku.folderContent(value, self.files_) :
             # No files in the list => no browse ...
             self.folderPrevButton_["state"] = tk.DISABLED
             self.folderNextButton_["state"] = tk.DISABLED
@@ -145,6 +145,7 @@ class paramWindow(tk.Tk):
             self.fileName = self.files_[0]
 
     # "Prev" button pressed
+    #   => show previous grid
     def _prevFile(self):
         self.fileIndex_-=1
         if self.fileIndex_ < 0:
@@ -154,6 +155,7 @@ class paramWindow(tk.Tk):
         self.fileName = self.files_[self.fileIndex_]
 
     # "Next" button pressed
+    #   => show next grid
     def _nextFile(self):
         self.fileIndex_+=1
         if self.fileIndex_ >= len(self.files_):
@@ -193,8 +195,14 @@ class paramWindow(tk.Tk):
 #   Entry point
 #
 if '__main__' == __name__:
-
-  main_window = paramWindow()
-  main_window.mainloop()
+    try:
+        # App using GUI
+        main_window = sudoParamWindow()
+        main_window.mainloop()
+    except sudokuError as e:
+        print(e)
+        print(f"You should call {opts.APP_NAME}")
+    except Exception as e:
+        print(f"Unknown error - {str(e)}")   
 
 # EOF

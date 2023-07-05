@@ -75,6 +75,12 @@ MAX_DETAILS    = 2
 #
 class options(object):
 
+    # Progression modes
+    PROGRESS_NONE           = 0      # Don't show progession
+    PROGRESS_SLOW           = 1      # Singlethreaded mode
+    PROGRESS_SINGLETHREADED = PROGRESS_SLOW
+    PROGRESS_MULTITHREADED  = 3      # Use a distinct thread for displaying grids
+
     # Construction
     #
     def __init__(self):
@@ -89,8 +95,7 @@ class options(object):
         self.folderName_ = ""
         self.exportSolution_ = False
         self.obviousValues_ = False             # don't search "obvious" values before trying to solve
-        self.multiThreadedProgress_ = False     # Draw the grid during the search process
-        self.singleThreadedProgress_ = False    # Draw "slowly" the grid during search process
+        self.progressMode_ = self.PROGRESS_NONE
 
     # Browse the command line
     #   returns True when ok
@@ -177,17 +182,13 @@ class options(object):
         # display grid ?
         display = args.details[0] if args.details is not None else 0       
         if display == 2:
-            self.multiThreadedProgress_ = True
+            self.progressMode_ = self.PROGRESS_MULTITHREADED
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")
-                self.multiThreadedProgress_ = False
-                self.singleThreadedProgress_ = True
-            else:
-                self.singleThreadedProgress_ = False
+                self.progressMode_ = self.PROGRESS_SINGLETHREADED
         else:
-            if display == 1:
-                self.singleThreadedProgress_ = True if display == 1 else False
+            self.progressMode_ = self.PROGRESS_SINGLETHREADED if display == 1 else self.PROGRESS_NONE
 
         # Export solution => solverMode should be activated
         if self.exportSolution_ and not self.solveMode_:

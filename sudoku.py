@@ -16,7 +16,7 @@ from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
-from options import FILE_EXPORT_EXTENSION
+from options import FILE_EXPORT_EXTENSION, FILE_EXPORT_EXTENSION, options as opts
 
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid
@@ -42,11 +42,10 @@ class sudoku(object):
 
     # Construction
     #
-    def __init__(self, consoleMode = False, details = False, multiThreaded = False):
+    def __init__(self, consoleMode = False, progressMode = opts.PROGRESS_NONE):
 
-        # Show progression details
-        self.showDetails_ = details
-        self.multiThreaded_ = multiThreaded
+        # Show progression details ?
+        self.progressMode_ = progressMode
         
         # Set display mode
         #
@@ -56,7 +55,7 @@ class sudoku(object):
             try:
                 from pygameOutputs import pygameOutputs
                 from pygameThreadedOutputs import pygameThreadedOutputs
-                self.outputs_ = pygameThreadedOutputs() if self.multiThreaded_ else pygameOutputs()
+                self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed, outputs will be redirected to console or nCurses")
             except sudokuError as e:
@@ -89,7 +88,19 @@ class sudoku(object):
     def __del__(self):
         if not self.outputs_ is None:
             self.outputs_ = None
-        
+
+    # Progress mode (ie. display progression ?)
+    def setProgressMode(self, progressMode):
+        # Changed ?
+        if self.progressMode_ != progressMode:
+            # free previous object
+            self.outputs_ = None
+
+            # Instantiate new one
+            # from pygameOutputs import pygameOutputs
+            from pygameThreadedOutputs import pygameThreadedOutputs
+            self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()      
+
     # Filename (of the source grid)
     #
     def fileName(self):
@@ -144,25 +155,11 @@ class sudoku(object):
             raise sudokuError(f"{folderName} is not a valid folder")
 
         files = []
+        done = (False == self.folderContent(folderName, files))
         
-        # Only this folder
-        for (_, _, fileNames) in os.walk(folderName):
-            files.extend(fileNames)
-            break
-
-        # No solution files in the list !
-        for file in files:
-            _, fileExt = os.path.splitext(file)
-            if FILE_EXPORT_EXTENSION == fileExt:
-                # remove the file from the list
-                files.remove(file)
-
         prev = -1
         index = 0
-        done = len(files) <= index   # is the folder empty ?
         currentFile = ""
-
-        files.sort()
 
         # Browse ...
         while not done:
@@ -172,16 +169,12 @@ class sudoku(object):
 
                 # load the file and update drawings
                 try:
-                    self._emptyGrid()
-                    self.load(currentFile, True)
-                    self.outputs_.setGridName(currentFile)
-                    self.outputs_._drawBackground()
-                    self.outputs_.draw(self.elements_)
-                    self.outputs_.update()
-                    prev = index
+                    self.gridFromFile(currentFile)
                 except:
                     # the file is not valid => remove it from the list
                     files.pop(index)
+
+                prev = index
             
             if 0 == len(files):
                 # Nothing left in the folder
@@ -453,6 +446,24 @@ class sudoku(object):
         # Saves changes or exit
         return (self.save() if True == valid else False) if modified else True
     
+    # Display a grid stored on a file
+    #
+    #   return nothing
+    #
+    def gridFromFile(self, fileName):
+        self.emptyGrid()
+        self.load(fileName, True)
+        self.outputs_.setGridName(fileName)
+        self.outputs_._drawBackground()
+        self.outputs_.draw(self.elements_)
+        self.outputs_.update()
+    
+    # Empties the grid
+    #
+    def emptyGrid(self):
+        for element in self.elements_:
+            element.empty()
+
     # Find all the obvious values
     #
     #   return a tuple (#obvious values, duration in s.)
@@ -474,11 +485,9 @@ class sudoku(object):
         
     # Try to solve the grid
     #
-    #   @multiThreaded : boolean - use multithreaded algo ?
-    #   
     #   return a tuple (found a solution ?, game escaped ?, #attempts, duration in s.)
     #
-    def resolve(self, multiThreaded):
+    def resolve(self):
         
         escaped = False
         found = True        # We assume we'll find a solution !
@@ -492,11 +501,11 @@ class sudoku(object):
         
         # Let's go
         try:
-            if False == multiThreaded:
-                self._resolveSingleThreaded()
-            else:
+            if opts.PROGRESS_MULTITHREADED == self.progressMode_:
                 # multithreading is just for drawings !!!
                 self._resolveMultiThreaded()
+            else:
+                self._resolveSingleThreaded()
         except reachedEndOfList:
             # Find a solution !!!
             endTime = time.time() - self.start_ 
@@ -522,16 +531,34 @@ class sudoku(object):
         
         # return the list
         return values
+    
+    # List of grids in a folder
+    #   fill the {files} with {folder} content
+    #
+    #   return True if the list is not empty, False in all other cases
+    @staticmethod
+    def folderContent(folder, files):
+        files.clear()
+        
+        # Folder content
+        if len(folder) > 0:
+            # Only this folder
+            for (_, _, fileNames) in os.walk(folder):
+                files.extend(fileNames)
+                break
 
+        # No solution files in the list !
+        for file in files :
+            _, fileExt = os.path.splitext(file)
+            if FILE_EXPORT_EXTENSION == fileExt:
+                # remove the file from the list
+                files.remove(file)
+        
+        return len(files) > 0
+    
     #
     # Internal methods
     #
-
-    # Empties the grid
-    #
-    def _emptyGrid(self):
-        for element in self.elements_:
-            element.empty()
 
     #
     # Solve the grid (internal method without exceptions handling)
@@ -571,7 +598,7 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if self.showDetails_:
+                    if self.progressMode_ != opts.PROGRESS_NONE:
                         self.outputs_.draw(self.elements_)
                     
                     # Go to the next "empty" position
