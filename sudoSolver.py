@@ -79,7 +79,7 @@ if '__main__' == __name__:
     
     try:
         # Display starting grid
-        solver.showGrid()
+        solver.displayGrid()
 
         # Edition
         if params.editMode_:
@@ -101,14 +101,14 @@ if '__main__' == __name__:
 
                 if True == solver.outputs().useGUI() and myStats.obvValues_ > 0:
                     solver.displayText(f"Found {str(myStats.obvValues_)} obvious values", False)
-                    solver.showGrid()   
+                    solver.displayGrid()   
                     solver.waitForKeyDown()
                     
             # ... and then try to resolve
             found, escaped, myStats.bruteAttempts_, myStats.bruteDuration_ = solver.resolve()
 
             # Display the solution (if any)
-            solver.showGrid()   
+            solver.displayGrid()   
             solver.displayText("Press a key to quit", False)
 
             time.sleep(1)

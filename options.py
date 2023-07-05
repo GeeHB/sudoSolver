@@ -19,7 +19,7 @@ APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
 # GUI
-APP_GUI_TITLE = f"{APP_SHORT_NAME}"
+APP_GUI_TITLE = f"tk{APP_SHORT_NAME}"
 APP_GUI_WITH = 300
 APP_GUI_HEIGHT = 400
 APP_GUI_TAB_GRIDS = "Grids"
@@ -79,7 +79,7 @@ class options(object):
     PROGRESS_NONE           = 0      # Don't show progession
     PROGRESS_SLOW           = 1      # Singlethreaded mode
     PROGRESS_SINGLETHREADED = PROGRESS_SLOW
-    PROGRESS_MULTITHREADED  = 3      # Use a distinct thread for displaying grids
+    PROGRESS_MULTITHREADED  = 2      # Use a distinct thread for displaying grids
 
     # Construction
     #

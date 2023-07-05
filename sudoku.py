@@ -53,9 +53,7 @@ class sudoku(object):
         # Try PYGame
         if False == consoleMode:
             try:
-                from pygameOutputs import pygameOutputs
-                from pygameThreadedOutputs import pygameThreadedOutputs
-                self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()
+                self._createPYGameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed, outputs will be redirected to console or nCurses")
             except sudokuError as e:
@@ -93,13 +91,7 @@ class sudoku(object):
     def setProgressMode(self, progressMode):
         # Changed ?
         if self.progressMode_ != progressMode:
-            # free previous object
-            self.outputs_ = None
-
-            # Instantiate new one
-            # from pygameOutputs import pygameOutputs
-            from pygameThreadedOutputs import pygameThreadedOutputs
-            self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()      
+            self._createPYGameOutputs()
 
     # Filename (of the source grid)
     #
@@ -145,7 +137,7 @@ class sudoku(object):
             
     # Display the grid and its content
     #
-    def showGrid(self):
+    def displayGrid(self):
         self.outputs_.draw(self.elements_)
 
     # Browse a folder (to find a grid)
@@ -214,7 +206,7 @@ class sudoku(object):
     
     # Read a grid'file
     #
-    def load(self, fileName, mustExist):
+    def load(self, fileName, mustExist, showFileName = True):
         if None == fileName or 0 == len(fileName):
             # ???
             raise sudokuError("No valid file name")
@@ -284,7 +276,8 @@ class sudoku(object):
 
         file.close()
 
-        self.outputs_.setGridName(self.gridFileName_)
+        if showFileName:
+            self.outputs_.setGridName(self.gridFileName_)
 
     # Save the file
     #
@@ -450,10 +443,11 @@ class sudoku(object):
     #
     #   return nothing
     #
-    def gridFromFile(self, fileName):
+    def gridFromFile(self, fileName, nameOnGrid = True):
         self.emptyGrid()
-        self.load(fileName, True)
-        self.outputs_.setGridName(fileName)
+        self.load(fileName, True, False)
+        if nameOnGrid:
+            self.outputs_.setGridName(fileName)
         self.outputs_._drawBackground()
         self.outputs_.draw(self.elements_)
         self.outputs_.update()
@@ -536,8 +530,7 @@ class sudoku(object):
     #   fill the {files} with {folder} content
     #
     #   return True if the list is not empty, False in all other cases
-    @staticmethod
-    def folderContent(folder, files):
+    def folderContent(self, folder, files):
         files.clear()
         
         # Folder content
@@ -929,5 +922,17 @@ class sudoku(object):
 
         # No ...
         return 0
+    
+    def _createPYGameOutputs(self):
+        if self.outputs_ is not None:
+            # free previous object
+            self.outputs_ = None
+
+        # Instantiate new one
+        # from pygameOutputs import pygameOutputs
+        from pygameOutputs import pygameOutputs
+        from pygameThreadedOutputs import pygameThreadedOutputs
+        self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()      
+
 
 # EOF

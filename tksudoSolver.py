@@ -20,6 +20,7 @@ except ModuleNotFoundError:
     raise sudokuError("tkinter module is not installed")
 
 import os
+
 import options as opts
 from sudoku import sudoku
 
@@ -36,6 +37,9 @@ class sudoParamWindow(tk.Tk):
 
         # members' values
         self.files_ = []
+
+        # my sudoku solver
+        self.solver_ = sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
 
         # Change the default font ...
         self.ownFont_ = tkFont.nametofont("TkDefaultFont")
@@ -90,18 +94,18 @@ class sudoParamWindow(tk.Tk):
 
         # "Solve" tab
         #
-        self.opitmizeBox_ = ttk.Checkbutton(self.solveTab_, text = "Optimize")
-        self.opitmizeBox_.grid(column=0, row=0, padx=5, pady=5)
+        self.obviousValuesButton_ = ttk.Button(self.solveTab_, text='Search obvious values', command = self._obviousValues, state = tk.DISABLED)
+        self.obviousValuesButton_.grid(column=0, row=0, columnspan=2, sticky = 'w', padx=5, pady=5)
 
         ttk.Label(self.solveTab_, text = "Show progress :").grid(column=0, row=1, padx=5, pady=5)
         self.progressMode_ = tk.StringVar()
         self.progressCombo_ = ttk.Combobox(self.solveTab_, textvariable=self.progressMode_, state = 'readonly')
         self.progressCombo_.grid(column=1, row=1, padx=5, pady=5)
         self.progressCombo_['values'] = ('none', 'slow', 'multithreaded')
-        self.progressCombo_.current(0)
+        self.progressCombo_.current(1)  # show progress slowly 
 
         # Buttons
-        self.solveButton_ = ttk.Button(self.solveTab_, text='Solve', state = tk.DISABLED)
+        self.solveButton_ = ttk.Button(self.solveTab_, text='Solve', command = self._solve, state = tk.DISABLED)
         self.solveButton_.grid(column=0, row=3, sticky = 'w', padx=5, pady=25)
 
         self.saveButton_ = ttk.Button(self.solveTab_, text='Save', state = tk.DISABLED)
@@ -133,7 +137,7 @@ class sudoParamWindow(tk.Tk):
 
         self.fileIndex_ = 0
 
-        if False == sudoku.folderContent(value, self.files_) :
+        if False == self.solver_.folderContent(value, self.files_) :
             # No files in the list => no browse ...
             self.folderPrevButton_["state"] = tk.DISABLED
             self.folderNextButton_["state"] = tk.DISABLED
@@ -189,7 +193,29 @@ class sudoParamWindow(tk.Tk):
         fullName = os.path.join(self.folderName, value)
         if os.path.exists(fullName):
             # Yes => draw the grid
-            pass
+            self.solver_.gridFromFile(fullName, False)
+
+        # Solving is allowed ?
+        state = tk.NORMAL if os.path.exists(fullName) else tk.DISABLED
+        self.obviousValuesButton_["state"] = state
+        self.solveButton_["state"] = state
+
+    # Search and display obvious values
+    #
+    def _obviousValues(self):
+        found, _ = self.solver_.findObviousValues()
+        if found > 0:
+            self.solver_.displayGrid()
+    
+    # Solve the selected grid
+    #
+    def _solve(self):
+        if self.solver_ is not None:
+            # Display mode
+            self.solver_.setProgressMode(self.progressCombo_.current())           
+
+            # solve ...
+            res = self.solver_.resolve()
 
 # 
 #   Entry point
