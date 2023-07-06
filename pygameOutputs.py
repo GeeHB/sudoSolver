@@ -373,11 +373,11 @@ class pygameOutputs(outputs):
 
     # Set/change the current grid's filename
     #
-    def setGridName(self, fileName):
-        self._int_setGridName(fileName)
+    def setGridName(self, fileName, create = False):
+        self._int_setGridName(fileName, create)
     
-    def _int_setGridName(self, fileName):
-        super().setGridName(fileName)
+    def _int_setGridName(self, fileName, create = False):
+        super().setGridName(fileName, create)
 
         self.sFileName_.setText(fileName, self.TXT_COLOUR, outputs.BK_COLOUR_FILENAME)
         

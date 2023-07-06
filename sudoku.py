@@ -281,10 +281,17 @@ class sudoku(object):
 
     # Save the file
     #
-    def save(self, genName = False, comments = None):
+    #   return the name of the saved file or None if an error occured
+    #
+    def save(self, genName = False, comments = None, newFileName = None):
         
         if None == self.gridFileName_:
-            return False
+            return None
+        
+        # A new name ?
+        if newFileName is not None:
+            self.gridFileName_ = newFileName
+            #self.outputs_.setGridName(newFileName, create=True)
         
         fileName = self.gridFileName_
         if genName :
@@ -319,9 +326,9 @@ class sudoku(object):
                 file.write(line)
             
             file.close()
-            return True
+            return fileName
         except ModuleNotFoundError:
-            raise sudokuError(f"io error while writing the file '{self.gridFileName_}'")
+            raise sudokuError(f"io error while writing the file '{fileName}'")
 
     # Edit / modify the grid
     #
@@ -458,6 +465,13 @@ class sudoku(object):
         for element in self.elements_:
             element.empty()
 
+    # Return to the original state
+    #
+    def revertGrid(self):
+        for element in self.elements_:
+            if not element.isOriginal():
+                element.empty()
+    
     # Find all the obvious values
     #
     #   return a tuple (#obvious values, duration in s.)

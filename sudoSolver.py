@@ -127,7 +127,7 @@ if '__main__' == __name__:
                     comments.append(f"Solved by {APP_AUTHOR_SHORT}::{APP_NAME} in {str(round(myStats.bruteDuration_, 2))} sec.")
                     comments.append(" ")
                     
-                    if True == solver.save(True, comments):
+                    if solver.save(True, comments) is not None:
                         print(f"Solution successfully saved in {params.fileName_}{FILE_EXPORT_EXTENSION}") 
 
             solver.close()

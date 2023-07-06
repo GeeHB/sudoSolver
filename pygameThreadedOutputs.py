@@ -104,7 +104,7 @@ class pygameThreadedOutputs(pygameOutputs, threading.Thread):
 
     # Set/change the current grid's filename
     #   overloaded
-    def setGridName(self, fileName):
+    def setGridName(self, fileName, create = False):
         action = pygameAction(ACTION_GRID_NAME)
         action.params_ = (fileName, "")
 

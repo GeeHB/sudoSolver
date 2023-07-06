@@ -16,7 +16,7 @@ class elementStatus(object):
 
     EMPTY = 0
     SET = 1
-    OBVIOUS = 2         # An obvious value found at runtime (option -o)
+    OBVIOUS = 2         # An obvious value found at runtime (option -o / --obvious)
     ORIGINAL = 4        # Can't be changed (except in edition mode)
 
 
@@ -28,7 +28,7 @@ class element(object):
     # Members
     #
     value_ = None                   # Num. value
-    status_ = elementStatus.EMPTY   # Current state
+    status_ = elementStatus.EMPTY   # Current status
 
     # Construction
     def __init__(self, value = None):
@@ -66,9 +66,11 @@ class element(object):
 
     # The element is empty
     #   returns the previous value
-    def  empty(self):
+    def empty(self):
         self.status_ = elementStatus.EMPTY
-        return self.value_
+        pValue = self.value_
+        self.value_ = None      # Security issue ?
+        return pValue
 
     # Element's status
     #
@@ -83,6 +85,7 @@ class element(object):
 
     # At least can we modifiy this particular value ?
     def isChangeable(self):
-        return self.status_ <= elementStatus.SET    # just SET or EMPTY ?   
+        #return self.status_ <= elementStatus.SET    # just SET or EMPTY ?   
+        return self.status_ in [elementStatus.EMPTY, elementStatus.SET]
 
 # EOF

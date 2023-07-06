@@ -175,9 +175,9 @@ class outputs(object):
 
     # Set/change the current grid's filename
     #   can be overloaded
-    def setGridName(self, fileName):
+    def setGridName(self, fileName, create = False):
         # the file must exists
-        if False == os.path.isfile(fileName):
+        if False == create and False == os.path.isfile(fileName):
             raise sudokuError(fileName +  " is not a file")
         self.gridFileName_ = fileName
 

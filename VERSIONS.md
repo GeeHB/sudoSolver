@@ -26,6 +26,7 @@
    * Files ordered in browse mode
    * Code factorisation
    * Change progress mode (for GUI)
+   * Add icons to GUI (18x18 png files)
 * Bugs correction:
    * clicks outside de grid are ignored
    * singleThreaded and multiThreaded handled by a unique variable
