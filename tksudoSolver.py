@@ -64,75 +64,83 @@ class sudoParamWindow(tk.Tk):
         #
 
         # Folder name
-        ttk.Label(self.gridsTab_, text = 'Folder name :').grid(column=0, row=0, padx=5, pady=5)
+        ttk.Label(self.gridsTab_, text = "Folder name :").grid(column=0, row=0, padx=5, pady=5)
         
         self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
         self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
 
-        self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text='Browse')
+        self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text="Browse", command=self._browseFolder)
         self.folderBrowseButton_.grid(column=5, row=0, padx=5, pady=5)
 
         # File name
-        ttk.Label(self.gridsTab_, text = 'File name :').grid(column=0, row=1, padx=5, pady=5)
+        ttk.Label(self.gridsTab_, text = "File name :").grid(column=0, row=1, padx=5, pady=5)
 
         self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
         self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
 
         # "walk" buttons
-        self.folderPrevButton_ = ttk.Button(self.gridsTab_, text='<<', command = self._prevFile, state = tk.DISABLED)
+        self.folderPrevButton_ = ttk.Button(self.gridsTab_, text="<<", command = self._prevFile, state = tk.DISABLED)
         self.folderPrevButton_.grid(column=1, row=2, padx=5, pady=5)
 
-        self.folderNextButton_ = ttk.Button(self.gridsTab_, text='>>', command = self._nextFile, state = tk.DISABLED)
+        self.folderNextButton_ = ttk.Button(self.gridsTab_, text=">>", command = self._nextFile, state = tk.DISABLED)
         self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
 
         # File control buttons
-        self.newIcon_ = tk.PhotoImage(file='./assets/new.png')
-        self.fileCreateButton_ = ttk.Button(self.gridsTab_, text='Create', 
+        self.newIcon_ = tk.PhotoImage(file="./assets/new.png")
+        self.fileCreateButton_ = ttk.Button(self.gridsTab_, text="Create",
                                     image = self.newIcon_, compound=tk.LEFT,
                                     command = self._createGrid)
         self.fileCreateButton_.grid(column=0, row=3, padx=5, pady=25)
 
-        self.fileEditIcon_ = tk.PhotoImage(file='./assets/edit.png')
-        self.fileEditButton_ = ttk.Button(self.gridsTab_, text='Edit', 
+        self.fileEditIcon_ = tk.PhotoImage(file="./assets/edit.png")
+        self.fileEditButton_ = ttk.Button(self.gridsTab_, text="Edit", 
                                     image = self.fileEditIcon_, compound=tk.LEFT,
+                                    command=self._editGrid,
                                     state = tk.DISABLED)
         self.fileEditButton_.grid(column=1, row=3, padx=5, pady=25)
 
         # "Solve" tab
         #
-        self.obviousValuesButton_ = ttk.Button(self.solveTab_, text='Search obvious values', command = self._obviousValues, state = tk.DISABLED)
-        self.obviousValuesButton_.grid(column=0, row=0, columnspan=2, sticky = 'w', padx=5, pady=5)
+        self.obviousValuesButton_ = ttk.Button(self.solveTab_, text="Obvious values", command = self._obviousValues, state = tk.DISABLED)
+        self.obviousValuesButton_.grid(column=0, row=0, columnspan=2, sticky = "w", padx=5, pady=5)
 
         ttk.Label(self.solveTab_, text = "Show progress :").grid(column=0, row=1, padx=5, pady=5)
-        self.progressMode_ = tk.StringVar()
-        self.progressCombo_ = ttk.Combobox(self.solveTab_, textvariable=self.progressMode_, state = 'readonly')
+        self.progressCombo_ = ttk.Combobox(self.solveTab_, state = "readonly")
         self.progressCombo_.grid(column=1, row=1, padx=5, pady=5)
-        self.progressCombo_['values'] = ('none', 'slow', 'multithreaded')
+        self.progressCombo_["values"] = ("none", "slow", "multithreaded")
         self.progressCombo_.current(opts.options.PROGRESS_SINGLETHREADED)  # show progress slowly 
 
         # Buttons
-        self.solveIcon_ = tk.PhotoImage(file='./assets/solve.png')
-        self.solveButton_ = ttk.Button(self.solveTab_, text='Solve',
+        self.solveIcon_ = tk.PhotoImage(file="./assets/solve.png")
+        self.solveButton_ = ttk.Button(self.solveTab_, text="Solve",
                             image = self.solveIcon_, compound=tk.LEFT,
                             command = self._solve, state = tk.DISABLED)
-        self.solveButton_.grid(column=0, row=3, sticky = 'w', padx=5, pady=25)
+        self.solveButton_.grid(column=0, row=3, sticky = "w", padx=5, pady=25)
 
-        self.revertIcon_ = tk.PhotoImage(file='./assets/undo.png')
-        self.revertButton_ = ttk.Button(self.solveTab_, text='Revert',
+        self.revertIcon_ = tk.PhotoImage(file="./assets/undo.png")
+        self.revertButton_ = ttk.Button(self.solveTab_, text="Revert",
                             image = self.revertIcon_, compound=tk.LEFT, 
-                            command = self._revert, state = tk.DISABLED)
+                            command = self._revertGrid, state = tk.DISABLED)
         self.revertButton_.grid(column=1, row=3, padx=5, pady=25)
         
-        self.saveIcon_ = tk.PhotoImage(file='./assets/save.png')
-        self.saveButton_ = ttk.Button(self.solveTab_, text='Save', 
+        self.saveIcon_ = tk.PhotoImage(file="./assets/save.png")
+        self.saveButton_ = ttk.Button(self.solveTab_, text="Save", 
                             image = self.saveIcon_, compound=tk.LEFT, 
                             command = self._save, state = tk.DISABLED)
-        self.saveButton_.grid(column=2, row=3, sticky = 'w', padx=5, pady=25)
+        self.saveButton_.grid(column=2, row=3, sticky = "w", padx=5, pady=25)
 
         # Default values
         self.fileName = ""
         self.folderName = os.path.abspath(opts.DEF_FOLDER)
 
+    # Change folder
+    #
+    def _browseFolder(self):
+        nFolder = tkDialog.askdirectory(title="Choose grids'folder", initialdir=self.folderName)
+        if nFolder is not None and len(nFolder) > 0 and nFolder != self.folderName:
+            # User choose a new folder
+            self.folderName = nFolder
+    
     # Folder name
     @property
     def folderName(self):
@@ -160,8 +168,9 @@ class sudoParamWindow(tk.Tk):
             self.folderPrevButton_["state"] = tk.DISABLED
             self.folderNextButton_["state"] = tk.DISABLED
             self.fileName = ""
+
+            tkMB.showwarning("Grid folder", f"No grid found in {value}")
         else:
-            self.files_.sort()
             self.folderPrevButton_["state"] = tk.NORMAL
             self.folderNextButton_["state"] = tk.NORMAL
             self.fileName = self.files_[0]
@@ -210,15 +219,21 @@ class sudoParamWindow(tk.Tk):
         self.fileNameEdit_.insert(0, value)
         
         # File exists ?
+        self.validGrid_ = False
         fullName = os.path.join(self.folderName, value)
         if os.path.exists(fullName):
             # Yes => draw the grid
-            self.solver_.gridFromFile(fullName, False)
+            if False == self.solver_.gridFromFile(fullName, False):
+                # the file doesn't contain a valid grid
+                self.solver_.displayGrid()
+            else:
+                self.validGrid_ = True
 
         # Solving is allowed ?
-        state = tk.NORMAL if os.path.exists(fullName) else tk.DISABLED
+        state = tk.NORMAL if self.validGrid_ else tk.DISABLED
         self.obviousValuesButton_["state"] = state
         self.solveButton_["state"] = state
+        self.fileEditButton_["state"] = state
 
     # Search and display obvious values
     #
@@ -252,7 +267,7 @@ class sudoParamWindow(tk.Tk):
         # Get name
         nFileName = tkDialog.asksaveasfilename(title="New grid", 
                             initialdir = self.folderName,
-                            defaultextension='.txt',
+                            defaultextension=".txt",
                             filetypes=[("Text files", "*.txt")])
         if nFileName is not None and len(nFileName) > 0:
             # Changed folder ?
@@ -283,9 +298,18 @@ class sudoParamWindow(tk.Tk):
                 fullName = os.path.join(self.folderName, self.fileName)
                 self.solver_.gridFromFile(fullName, False)
 
+    # Edit the selected gird
+    #
+    def _editGrid(self):
+        tkMB.showinfo(title="Grid edition", message="Press 'Enter' when edition is finished.")
+
+        self.solveTab_["state"] = tk.DISABLED
+        self.solver_.edit()
+        self.solveTab_["state"] = tk.NORMAL
+
     # Revert (ie. return the grid to the previous saved state)
     #
-    def _revert(self):
+    def _revertGrid(self):
         self.solver_.revertGrid()
         self.solver_.displayGrid()
 
@@ -313,7 +337,7 @@ class sudoParamWindow(tk.Tk):
 # 
 #   Entry point
 #
-if '__main__' == __name__:
+if "__main__" == __name__:
     try:
         # App using GUI
         mainWindow = sudoParamWindow()

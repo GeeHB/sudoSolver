@@ -448,16 +448,25 @@ class sudoku(object):
     
     # Display a grid stored on a file
     #
-    #   return nothing
+    #   return True if grid has benne successfully loaded
     #
     def gridFromFile(self, fileName, nameOnGrid = True):
         self.emptyGrid()
-        self.load(fileName, True, False)
+        
+        try:
+            self.load(fileName, True, False)
+        except UnicodeDecodeError:
+            return False
+        except sudokuError as se:
+            print(se)
+            return False
+        
         if nameOnGrid:
             self.outputs_.setGridName(fileName)
         self.outputs_._drawBackground()
         self.outputs_.draw(self.elements_)
         self.outputs_.update()
+        return True
     
     # Empties the grid
     #
@@ -561,6 +570,7 @@ class sudoku(object):
                 # remove the file from the list
                 files.remove(file)
         
+        files.sort()
         return len(files) > 0
     
     #

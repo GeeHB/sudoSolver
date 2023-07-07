@@ -75,17 +75,24 @@ class element(object):
     # Element's status
     #
     def isEmpty(self):
-        return self.status_ == elementStatus.EMPTY
+        return self.status_ == elementStatus.EMPTY  # status is not set !
     
     def isOriginal(self):
         return ((self.status_ & elementStatus.ORIGINAL) == elementStatus.ORIGINAL)
 
     def isObvious(self):
-        return ((self.status_ & elementStatus.OBVIOUS) == elementStatus.OBVIOUS)
-
+        return self.__checkAttribute__(elementStatus.OBVIOUS)
+        
     # At least can we modifiy this particular value ?
     def isChangeable(self):
         #return self.status_ <= elementStatus.SET    # just SET or EMPTY ?   
         return self.status_ in [elementStatus.EMPTY, elementStatus.SET]
+    
+    # Internal meethods
+    #
+    
+    # Check a single attribute
+    def __checkAttribute__(self, attribute):
+        return ((self.status_ & attribute) == attribute)
 
 # EOF
