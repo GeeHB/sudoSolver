@@ -88,10 +88,15 @@ class sudoku(object):
             self.outputs_ = None
 
     # Progress mode (ie. display progression ?)
+    #
+    #   return changed ?
     def setProgressMode(self, progressMode):
         # Changed ?
         if self.progressMode_ != progressMode:
             self._createPYGameOutputs()
+            self.progressMode_ = progressMode
+            return True
+        return False
 
     # Filename (of the source grid)
     #

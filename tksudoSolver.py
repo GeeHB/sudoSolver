@@ -169,7 +169,7 @@ class sudoParamWindow(tk.Tk):
             self.folderNextButton_["state"] = tk.DISABLED
             self.fileName = ""
 
-            tkMB.showwarning("Grid folder", f"No grid found in {value}")
+            tkMB.showwarning("Grid folder", f"No valid grid found in {self._short(value)}")
         else:
             self.folderPrevButton_["state"] = tk.NORMAL
             self.folderNextButton_["state"] = tk.NORMAL
@@ -247,7 +247,9 @@ class sudoParamWindow(tk.Tk):
     def _solve(self):
         if self.solver_ is not None:
             # Display mode
-            self.solver_.setProgressMode(self.progressCombo_.current())           
+            if self.solver_.setProgressMode(self.progressCombo_.current()):
+                # Display mode changed
+                self.solver_.displayGrid()
 
             # Buttons state
             self.obviousValuesButton_["state"] = tk.DISABLED
@@ -256,10 +258,13 @@ class sudoParamWindow(tk.Tk):
 
             # solve ...
             res = self.solver_.resolve()
+            self.solver_.displayGrid()
 
             # A solution ?
             if True == res[0]:
                 self.saveButton_["state"] = tk.NORMAL
+            else:
+                tkMB.showwarning("Solving", f"No solution found for grid in {self._short(self.fileName)}")
 
     # Create a new (empty) grid
     #
@@ -292,7 +297,7 @@ class sudoParamWindow(tk.Tk):
                 self.fileName = res[1]
             except IndexError:
                 # The file is not found in the list
-                tkMB.showwarning("New grid", f"Unable to create {nFileName}")
+                tkMB.showwarning("New grid", f"Unable to create {self._short(nFileName)}")
 
                 # Draw the "old" grid
                 fullName = os.path.join(self.folderName, self.fileName)
@@ -334,6 +339,12 @@ class sudoParamWindow(tk.Tk):
             tkMB.showwarning("Solution", f"Unable to save the soluce in {name}")
 
         self.saveButton_["state"] = tk.DISABLED
+
+    # Get 'short' name
+    #
+    def _short(self, name):
+        res = os.path.split(name)
+        return res[1]
 # 
 #   Entry point
 #
