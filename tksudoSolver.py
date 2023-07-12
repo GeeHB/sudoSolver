@@ -241,6 +241,9 @@ class sudoParamWindow(tk.Tk):
         found, _ = self.solver_.findObviousValues()
         if found > 0:
             self.solver_.displayGrid()
+            tkMB.showinfo(title="Obvious values", message=f"Found {found} obvious values")
+        else:
+            tkMB.showwarning(title="Obvious values", message="No obvious values found")
     
     # Solve the selected grid
     #
@@ -308,9 +311,10 @@ class sudoParamWindow(tk.Tk):
     def _editGrid(self):
         tkMB.showinfo(title="Grid edition", message="Press 'Enter' when edition is finished.")
 
-        self.solveTab_["state"] = tk.DISABLED
+        #self.solveTab_["state"] = tk.DISABLED
+    
         self.solver_.edit()
-        self.solveTab_["state"] = tk.NORMAL
+        #self.solveTab_["state"] = tk.NORMAL
 
     # Revert (ie. return the grid to the previous saved state)
     #
