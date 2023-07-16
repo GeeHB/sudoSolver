@@ -40,9 +40,6 @@ class sudoParamWindow(tk.Tk):
         # members' values
         self.files_ = []
 
-        # my sudoku solver
-        self.solver_ = sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
-
         # Change the default font ...
         self.ownFont_ = tkFont.nametofont("TkDefaultFont")
         self.ownFont_.configure(family="Arial", weight="normal", size=11)
@@ -128,6 +125,11 @@ class sudoParamWindow(tk.Tk):
                             image = self.saveIcon_, compound=tk.LEFT, 
                             command = self._save, state = tk.DISABLED)
         self.saveButton_.grid(column=2, row=3, sticky = "w", padx=5, pady=25)
+
+        #self.tk.update_iddletasks()
+
+        # my sudoku solver
+        self.solver_ = sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
 
         # Default values
         self.fileName = ""
@@ -241,9 +243,9 @@ class sudoParamWindow(tk.Tk):
         found, _ = self.solver_.findObviousValues()
         if found > 0:
             self.solver_.displayGrid()
-            tkMB.showinfo(title="Obvious values", message=f"Found {found} obvious values")
+            tkMB.showinfo(title="Obvious values", message=f"Found {found} obvious value(s)")
         else:
-            tkMB.showwarning(title="Obvious values", message="No obvious values found")
+            tkMB.showwarning(title="Obvious values", message="No obvious value found")
     
     # Solve the selected grid
     #
@@ -283,7 +285,7 @@ class sudoParamWindow(tk.Tk):
             if res[0] != self.folderName:
                 self.folderName = res[0]
 
-            # Create an empty grid
+            # (Create an) empty grid
             self.solver_.emptyGrid()
 
             # Save it

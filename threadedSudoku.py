@@ -1,44 +1,36 @@
 # coding=UTF-8
 #
-#   File        :   sudoku.py
+#   File        :   threadedSudoku.py
 #
 #   Author      :   GeeHB
 #
-#   Description :   sudoku object 
-#                       -  edtion and/or resolution of a sudoku's grid
+#   Description :   sudoku object executed by its own thread 
 #
 
-import os, time, math
+from sudoku import sudoku
+import threading
+
+
 from element import element, elementStatus
 from pointer import pointer, LINE_COUNT, ROW_COUNT, VALUE_MIN, VALUE_MAX, INDEX_MIN, INDEX_MAX
 
-from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError
-from consoleOutputs import consoleOutputs
-
-from options import FILE_EXPORT_EXTENSION, FILE_EXPORT_EXTENSION, options as opts
 
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #
-class sudoku(object):
-
-    # Consts
-    #
-    VALUE_SEPARATOR =       ","         # Value separator in files
-    FILE_COMMENTS =         "#"         # Comment lines start with
-
+class threadedSudoku(sudoku, threading.Thread):
     # Members
     #
-    gridFileName_ = None
-    elements_ = []          # The grid (as a flat list)
-    outputs_ = None
+    ready_ = False  # Am I ready ?
+    actions_ = []  # Actions (to perform)
 
-    attempts_ = 0
-    start_ = 0              # Resolution start-time
+    syncRet_ = {}  # Returns from a sync-action
+    lastId_ = 0
 
-    showDetails_ = False    # Draw the gird during search process ?
-    multiThreaded_ = False  # ... using another thread ?
+    newAction_ = threading.Event()  # Notifies the thread a new action is to be performed
+    accessList_ = threading.Event()  # Is action-list free ?
+    syncThreads_ = threading.Event()  # Event for threads synchronisation
 
     # Construction
     #
