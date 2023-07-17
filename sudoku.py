@@ -42,46 +42,46 @@ class sudoku(object):
 
     # Construction
     #
-    def __init__(self, consoleMode = False, progressMode = opts.PROGRESS_NONE):
+    def __init__(self, consoleMode = False, progressMode = opts.PROGRESS_NONE, initOutputs = True):
 
         # Show progression details ?
         self.progressMode_ = progressMode
         
         # Set display mode
         #
+        if True == initOutputs:
+            # Try with PYGame
+            if False == consoleMode:
+                try:
+                    self._createPYGameOutputs()
+                except ModuleNotFoundError:
+                    print("PYGame isn't installed, outputs will be redirected to console or nCurses")
+                except sudokuError as e:
+                    print(e)
 
-        # Try PYGame
-        if False == consoleMode:
-            try:
-                self._createPYGameOutputs()
-            except ModuleNotFoundError:
-                print("PYGame isn't installed, outputs will be redirected to console or nCurses")
-            except sudokuError as e:
-                print(e)
+            # then try with nCurses
+            if None == self.outputs_:
+                try:
+                    from cursesOutputs import cursesOutputs
+                    self.outputs_ = cursesOutputs()
+                except ModuleNotFoundError:
+                    print("(n)Curses isn't installed, outputs will be redirected to the console")
+                except sudokuError as e:
+                    print(e)
+                
+            # No display mode  => use console
+            if None == self.outputs_:
+                self.outputs_ = consoleOutputs()
 
-        # Try nCurses
-        if None == self.outputs_:
-            try:
-                from cursesOutputs import cursesOutputs
-                self.outputs_ = cursesOutputs()
-            except ModuleNotFoundError:
-                print("(n)Curses isn't installed, outputs will be redirected to the console")
-            except sudokuError as e:
-                print(e)
-             
-        # No display mode  => use console
-        if None == self.outputs_:
-            self.outputs_ = consoleOutputs()
-
-        # Ready ?
-        while not self.outputs_.isReady():
-            time.sleep(0.1)
+            # Ready ?
+            while not self.outputs_.isReady():
+                time.sleep(0.1)
 
         # Create the grid
         for _ in range(LINE_COUNT * ROW_COUNT):
             self.elements_.append(element())
 
-    # Destructor
+    # Destruction
     #
     def __del__(self):
         # Delete display manager
@@ -144,6 +144,9 @@ class sudoku(object):
     # Display the grid and its content
     #
     def displayGrid(self):
+        self._int_displayGrid()
+
+    def _int_displayGrid(self):
         self.outputs_.draw(self.elements_)
 
     # Browse a folder (to find a grid)
@@ -454,9 +457,12 @@ class sudoku(object):
     
     # Display a grid stored on a file
     #
-    #   return True if grid has benne successfully loaded
+    #   return True if grid has been successfully loaded
     #
     def gridFromFile(self, fileName, nameOnGrid = True):
+        return self.gridFromFile(fileName, nameOnGrid)
+    
+    def _int_gridFromFile(self, fileName, nameOnGrid = True):
         self.emptyGrid()
         
         try:

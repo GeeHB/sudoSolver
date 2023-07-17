@@ -24,7 +24,7 @@ except ModuleNotFoundError:
 import os
 
 import options as opts
-from sudoku import sudoku
+import threadedSudoku 
 
 # Main window handling app's parameters
 # 
@@ -129,7 +129,7 @@ class sudoParamWindow(tk.Tk):
         #self.tk.update_iddletasks()
 
         # my sudoku solver
-        self.solver_ = sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
+        self.solver_ = threadedSudoku.threadedSudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
 
         # Default values
         self.fileName = ""
@@ -361,7 +361,9 @@ if "__main__" == __name__:
         mainWindow.mainloop()
     except sudokuError as e:
         print(e)
+    """
     except Exception as e:
         print(f"Unknown error - {str(e)}")   
+    """
 
 # EOF

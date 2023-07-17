@@ -18,23 +18,12 @@ import ownThread
 # pygameThreadedOutputs - Display sudoku's grid using PYGame library
 #
 class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
-    # Members
-    #
-    ready_ = False  # Am I ready ?
-    actions_ = []  # Actions (to perform)
-
-    syncRet_ = {}  # Returns from a sync-action
-    lastId_ = 0
-
-    newAction_ = threading.Event()  # Notifies the thread a new action is to be performed
-    accessList_ = threading.Event()  # Is action-list free ?
-    syncThreads_ = threading.Event()  # Event for threads synchronisation
-
+    
     # Construction
     #
     def __init__(self):
         # Start the current thread
-        super().startThread()
+        super().initiate()
 
     #
     # Methods overloaded from outputs
@@ -200,62 +189,6 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
     # "Internal" methods
     #   
 
-    # Add an action to the internal list
-    # 
-    def _addAction(self, action=None, id=None, wait=False):
-
-        # Action or id must be present
-        if action == None and id == None:
-            return False
-
-        # Valid action id ?
-        if (action != None and action.actionId_ == ownThread.ACTION_NONE) or (
-                action == None and id == ownThread.ACTION_NONE) or False == self.accessList_.wait(ownThread.MAX_LIST_WAIT):
-            return False
-
-        # Take list ownership
-        self.accessList_.clear()
-
-        # Add new action to the list
-        if None == action:
-            action =  ownThread.threadAction(id)
-
-        # Should I think both threads ?
-        action.sync_ = wait
-
-        # Wait for action completion ?
-        if True == wait:
-            self.syncThreads_.clear()  # Should be useless !
-
-        # Add to list (with uid)
-        self.lastId_ = self.lastId_ + 1
-        action.uid_ = self.lastId_
-        self.actions_.append(action)
-
-        # List is now free
-        self.accessList_.set()
-
-        # There's a new action to perform
-        self.newAction_.set()
-
-        # Wait for completion ...
-        if True == wait:
-            if action.actionId_ != ownThread.ACTION_END_THREAD:
-
-                self.syncThreads_.wait()
-
-                # done ...
-                self.syncThreads_.clear()
-
-                # handle return
-                try:
-                    return self.syncRet_[action.uid_]
-                except:
-                    return False
-
-        # Done
-        return True
-
     # "Do" / perform the actions in the internal list
     #
     #   returns the tuple (thread should be ended ?, Grid if solving or None)
@@ -263,7 +196,7 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
     def _handleActions(self, elements):
 
         # Access to the list
-        if False == self.accessList_.wait(ownThread.MAX_LIST_WAIT):
+        if False == self.accessList_.wait(ownThread.MAX_THREAD_LIST_WAIT):
             # Impossible to access the list
             return (False, None)
 

@@ -15,12 +15,17 @@ import threading
 #
 
 # Wait for list availability
-MAX_LIST_WAIT = 5  # in sec.
+MAX_THREAD_LIST_WAIT = 5  # in sec.
 
 # Actions
 #
-ACTION_NONE = 0  # Nothing to do
+ACTION_NONE = 0         # Nothing to do
 
+ACTION_END_THREAD = 999 # End of the current thread
+
+#
+# for PYGame
+#
 
 # Drawing action
 ACTION_DRAW_BKGRND = 1
@@ -28,22 +33,19 @@ ACTION_DRAW_GRID = 2
 ACTION_DRAW_ELEMENT = 3
 ACTION_DRAW_TEXT = 4
 ACTION_GRID_NAME = 5
+ACTION_GRID_FROM_FILE = 6
 
 ACTION_UPDATE = 10
 ACTION_REFRESH = 11
 
+# Solving actions
 ACTION_SOLVING_STARTED = 20
 ACTION_SOLVING_ENDED = 21
 
+# Events management
 ACTION_CHECK_KEYPRESSED = 30  # Sync event
 ACTION_WAIT_EVENT = 31
 ACTION_POLL_EVENT = 32
-
-# Solving action
-
-# End of the current thread
-ACTION_END_THREAD = 999
-
 
 #
 # threadAction : Single action
@@ -73,17 +75,76 @@ class Thread(threading.Thread):
     syncRet_ = {}  # Returns from a sync-action
     lastId_ = 0
 
-    newAction_ = threading.Event()  # Notifies the thread a new action is to be performed
-    accessList_ = threading.Event()  # Is action-list free ?
-    syncThreads_ = threading.Event()  # Event for threads synchronisation
+    newAction_ = threading.Event()      # Notifies the thread a new action is to be performed
+    accessList_ = threading.Event()     # Is action-list free ?
+    syncThreads_ = threading.Event()    # Event for threads synchronisation
 
     # Start the thread 
-    #
-    def startThread(self):
+    def initiate(self):
         threading.Thread.__init__(self)  # Create the new thread
         self.start()  # start the thread (ie. call run() method )
 
-    # End the thread
-    def endThread(self):
+    # Terminate the thread
+    def terminate(self):
         pass
+
+    #
+    # "Internal" methods
+    #   
+
+    # Add an action to the internal list
+    # 
+    def _addAction(self, action=None, id=None, wait=False):
+
+        # Action or id must be present
+        if action == None and id == None:
+            return False
+
+        # Valid action id ?
+        if (action != None and action.actionId_ == ACTION_NONE) or (
+                action == None and id == ACTION_NONE) or False == self.accessList_.wait(MAX_THREAD_LIST_WAIT):
+            return False
+
+        # Take list ownership
+        self.accessList_.clear()
+
+        # Add new action to the list
+        if None == action:
+            action =  threadAction(id)
+
+        # Should I think both threads ?
+        action.sync_ = wait
+
+        # Wait for action completion ?
+        if True == wait:
+            self.syncThreads_.clear()  # Should be useless !
+
+        # Add to list (with uid)
+        self.lastId_ = self.lastId_ + 1
+        action.uid_ = self.lastId_
+        self.actions_.append(action)
+
+        # List is now free
+        self.accessList_.set()
+
+        # There's a new action to perform
+        self.newAction_.set()
+
+        # Wait for completion ...
+        if True == wait:
+            if action.actionId_ != ACTION_END_THREAD:
+
+                self.syncThreads_.wait()
+
+                # done ...
+                self.syncThreads_.clear()
+
+                # handle return
+                try:
+                    return self.syncRet_[action.uid_]
+                except:
+                    return False
+
+        # Done
+        return True
 # EOF
