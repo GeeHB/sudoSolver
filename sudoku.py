@@ -129,12 +129,26 @@ class sudoku(object):
     def allowFolderBrowsing(self):
         return False if None == self.outputs_ else self.outputs_.allowFolderBrowsing()
 
+    #
+    # Events
+    #
+    
     # Waiting for a keyboard event (or exit event)
     #
     def waitForKeyDown(self):
         if not None == self.outputs_:
             self.outputs_.waitForEvent(self.elements_, allEvents = False)
 
+    # Get the list of pending events
+    #
+    def getEvents(self):
+        # No output manager => no event;
+        return [] if self.outputs_ is None else self.outputs_.getEvents()
+
+    #
+    # Outputs
+    #
+    
     # End of outputs
     #
     def close(self):
@@ -148,6 +162,11 @@ class sudoku(object):
 
     def _int_displayGrid(self):
         self.outputs_.draw(self.elements_)
+
+    # Update drawings
+    def flip(self):
+        if self.outputs_ is not None:
+            self.outputs_.flip()
 
     # Browse a folder (to find a grid)
     #
@@ -460,7 +479,7 @@ class sudoku(object):
     #   return True if grid has been successfully loaded
     #
     def gridFromFile(self, fileName, nameOnGrid = True):
-        return self.gridFromFile(fileName, nameOnGrid)
+        return self._int_gridFromFile(fileName, nameOnGrid)
     
     def _int_gridFromFile(self, fileName, nameOnGrid = True):
         self.emptyGrid()

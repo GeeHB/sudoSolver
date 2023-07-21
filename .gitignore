@@ -4,3 +4,4 @@ archives/
 venv/
 .idea/
 *.pyc
+*.solution

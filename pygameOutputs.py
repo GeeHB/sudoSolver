@@ -352,6 +352,11 @@ class pygameOutputs(outputs):
 
         return event
     
+    # All events ...
+    #
+    def getEvents(self):
+        return pygame.event.get()
+
     # Mouse events and status
     #
     #   returns tuple (ButtonID or None, (xPos, yPos))
@@ -461,6 +466,9 @@ class pygameOutputs(outputs):
             self.win_.blit(self.sMessage_.surface(), (x,y))
         
         pygame.display.update()
+
+    def flip(self):
+        pygame.display.flip()
     
     # Close the display
     def close(self):

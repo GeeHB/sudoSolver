@@ -9,9 +9,6 @@
 #   Description :   Edit & solve sudokus
 #                   with GUI using tkinter
 #
-
-from ownExceptions import sudokuError
-
 try:
     import tkinter as tk                    
     from tkinter import ttk
@@ -22,29 +19,31 @@ except ModuleNotFoundError:
     raise sudokuError("tkinter module is not installed")
 
 import os
-
+import sudoku
+from ownExceptions import sudokuError
 import options as opts
-import threadedSudoku 
+from pygameOutputs import pygameOutputs
 
 # Main window handling app's parameters
 # 
-class sudoParamWindow(tk.Tk):
+class sudoParamWindow(tk.Frame):
 
     # Construction
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, master = None):
+    
+        tk.Frame.__init__(self, master)
+        self.grid()
+
         self.fileName_ = None
         self.config(width=opts.APP_GUI_WITH, height=opts.APP_GUI_HEIGHT)
-        self.title(opts.APP_GUI_TITLE)
-
+    
         # members' values
         self.files_ = []
 
         # Change the default font ...
         self.ownFont_ = tkFont.nametofont("TkDefaultFont")
         self.ownFont_.configure(family="Arial", weight="normal", size=11)
-        #root.option_add("*Font", default_font)
-
+        
         # Tab manager ...
         self.tabControl_ = ttk.Notebook(self) 
 
@@ -126,10 +125,8 @@ class sudoParamWindow(tk.Tk):
                             command = self._save, state = tk.DISABLED)
         self.saveButton_.grid(column=2, row=3, sticky = "w", padx=5, pady=25)
 
-        #self.tk.update_iddletasks()
-
         # my sudoku solver
-        self.solver_ = threadedSudoku.threadedSudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
+        self.solver_ = sudoku.sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
 
         # Default values
         self.fileName = ""
@@ -358,7 +355,19 @@ if "__main__" == __name__:
     try:
         # App using GUI
         mainWindow = sudoParamWindow()
-        mainWindow.mainloop()
+        mainWindow.master.title(opts.APP_GUI_TITLE)
+        
+        # App main loop
+        quitLoop = False
+        while not quitLoop:
+            for event in mainWindow.solver_.getEvents():
+                # Quit button on PYGame frame
+                if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children):
+                    quitLoop = True
+            
+            mainWindow.solver_.flip()       # Update pygame
+            mainWindow.master.update()      # handle GUI
+
     except sudokuError as e:
         print(e)
     """

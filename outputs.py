@@ -196,6 +196,10 @@ class outputs(object):
     def update(self):
         pass
 
+    #   can be overloaded
+    def flip(self):
+        pass
+
     # Start of solving process
     #   can be overloaded
     def startedSolving(self, elements):

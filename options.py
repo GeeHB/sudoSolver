@@ -14,7 +14,7 @@ from sharedTools import colorizer as color
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "1.6.1"
-APP_RELEASE_DATE = "06/14/2023"
+APP_RELEASE_DATE = "07/21/2023"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
