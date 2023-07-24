@@ -131,7 +131,7 @@ When the application searches for *obvious values*, the values found are display
 
 In this sample the application start the edition of a grid : 
 
- ![Selected grid](github/newGrid.png) 
+![Selected grid](github/newGrid.png) 
 
 Then the founded obvious values are displayed : 
 
@@ -139,7 +139,7 @@ Then the founded obvious values are displayed :
 
 And last, the solution is displayed : 
 
- ![](github/solved.png)
+![](github/solved.png)
 
 ### Author
 

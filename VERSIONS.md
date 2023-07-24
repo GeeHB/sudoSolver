@@ -13,7 +13,7 @@
 * All OS
    * PyGame 2.1.2
 
-#### Version 1.6.0
+#### Version 1.6.2
 * xxx
 * Added :
    * use argparse for commandline
@@ -27,9 +27,11 @@
    * Code factorisation
    * Change progress mode (for GUI)
    * Add icons to GUI (18x18 png files)
+   * Error messages sent to stderr
 * Bugs correction:
    * clicks outside de grid are ignored
    * singleThreaded and multiThreaded handled by a unique variable
+   * GUI : coredumped when passing from singlethreaded to multithreaded mode
 
 #### Version 1.5.9
 * 10 nov. 2022

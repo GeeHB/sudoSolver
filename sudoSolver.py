@@ -10,7 +10,7 @@
 #                   Command line version
 #
 
-import time
+import sys, time
 from options import options, APP_AUTHOR_SHORT, APP_NAME, FILE_EXPORT_EXTENSION
 import outputs
 from sudoku import sudoku
@@ -54,13 +54,13 @@ if '__main__' == __name__:
         print(e)
         exitNow = True
     except IndexError:
-        print("Too many lines in the file")
+        print("Too many lines in the file", file=sys.stderr)
         exitNow = True
     except KeyboardInterrupt as kbe:
         print("Canceled by user")
         exitNow = True
     except Exception as e:
-        print(f"Unknown error : {str(e)}")    
+        print(f"Unknown error : {str(e)}", file=sys.stderr)    
         exitNow = True
     
     # Exit anyway ...
@@ -140,9 +140,9 @@ if '__main__' == __name__:
 
     except sudokuError as e:
         # Other error
-        print(e)    
+        print(e, file=sys.stderr)    
     """
     except:
-        print("Unknown error")
+        print("Unknown error", file=sys.stderr)
     """
 # EOF

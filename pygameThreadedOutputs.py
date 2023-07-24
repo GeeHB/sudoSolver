@@ -184,6 +184,7 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
                         over, elements = self._handleActions(elements)
 
         # Finished !!!
+        # print("Finished")
 
     #
     # "Internal" methods

@@ -94,8 +94,8 @@ class sudoku(object):
     def setProgressMode(self, progressMode):
         # Changed ?
         if self.progressMode_ != progressMode:
-            self._createPYGameOutputs()
             self.progressMode_ = progressMode
+            self._createPYGameOutputs()
             return True
         return False
 
@@ -980,8 +980,11 @@ class sudoku(object):
     
     def _createPYGameOutputs(self):
         if self.outputs_ is not None:
+            # Stop the thread
+            self.outputs_.close()
+
             # free previous object
-            self.outputs_ = None
+            del self.outputs_
 
         # Instantiate new one
         # from pygameOutputs import pygameOutputs

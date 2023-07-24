@@ -18,7 +18,7 @@ try:
 except ModuleNotFoundError:
     raise sudokuError("tkinter module is not installed")
 
-import os
+import os, sys
 import sudoku
 from ownExceptions import sudokuError
 import options as opts
@@ -168,7 +168,7 @@ class sudoParamWindow(tk.Frame):
             self.folderNextButton_["state"] = tk.DISABLED
             self.fileName = ""
 
-            tkMB.showwarning("Grid folder", f"No valid grid found in {self._short(value)}")
+            tkMB.showwarning("Grid folder", f"No valid grid found in {self._shorter(value)}")
         else:
             self.folderPrevButton_["state"] = tk.NORMAL
             self.folderNextButton_["state"] = tk.NORMAL
@@ -264,9 +264,10 @@ class sudoParamWindow(tk.Frame):
 
             # A solution ?
             if True == res[0]:
+                tkMB.showinfo(title="Solving", message=f"Solved in {round(res[3], 2)} seconds")
                 self.saveButton_["state"] = tk.NORMAL
             else:
-                tkMB.showwarning("Solving", f"No solution found for grid in {self._short(self.fileName)}")
+                tkMB.showwarning("Solving", f"No solution found for grid in {self._shorter(self.fileName)}")
 
     # Create a new (empty) grid
     #
@@ -299,7 +300,7 @@ class sudoParamWindow(tk.Frame):
                 self.fileName = res[1]
             except IndexError:
                 # The file is not found in the list
-                tkMB.showwarning("New grid", f"Unable to create {self._short(nFileName)}")
+                tkMB.showwarning("New grid", f"Unable to create {self._shorter(nFileName)}")
 
                 # Draw the "old" grid
                 fullName = os.path.join(self.folderName, self.fileName)
@@ -345,7 +346,7 @@ class sudoParamWindow(tk.Frame):
 
     # Get 'short' name
     #
-    def _short(self, name):
+    def _shorter(self, name):
         res = os.path.split(name)
         return res[1]
 # 
@@ -353,7 +354,7 @@ class sudoParamWindow(tk.Frame):
 #
 if "__main__" == __name__:
     try:
-        # App using GUI
+        # Window creation
         mainWindow = sudoParamWindow()
         mainWindow.master.title(opts.APP_GUI_TITLE)
         
@@ -361,18 +362,18 @@ if "__main__" == __name__:
         quitLoop = False
         while not quitLoop:
             for event in mainWindow.solver_.getEvents():
-                # Quit button on PYGame frame
+                # Quit button on PYGame frame is pressed or tkFrame is already closed
                 if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children):
                     quitLoop = True
             
             mainWindow.solver_.flip()       # Update pygame
-            mainWindow.master.update()      # handle GUI
+            mainWindow.master.update()      # handle GUI with tkinter
 
     except sudokuError as e:
-        print(e)
+        print(f"Erreur - {e}", file=sys.stderr)
     """
     except Exception as e:
-        print(f"Unknown error - {str(e)}")   
+        print(f"Unknown error - {str(e)}", file=sys.stderr)   
     """
 
 # EOF
