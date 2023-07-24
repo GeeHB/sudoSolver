@@ -39,18 +39,17 @@ Sample grids can be found in the *./grid* subfolder.
 
 *sudoSolver* accepts different parameters :
 
-| **Parameter** | **Description** | Display mode |
-|-----------|-------------|--------------|
-| *\-b FOLDERNAME* | Browse the folder *FOLDERNAME*. All the grids in the folder will be displayed. | *GUI* only |
-| *\-e FILENAME* | Edit the grid saved in *FILENAME*. If the *FILENAME* does not exists, it will be created. | *GUI* only |
-| *\-s FILENAME* | Solve the sudoku saved in FILENAME | all |
-| *\-bs FOLDERNAME* | Browse the folder *FOLDERNAME* and solve the selected grid. The *left* and *right* arrows allows browsing in the folder. When *enter* key is pressed the selected grid is solved. | *GUI* only |
-| *\-es FILENAME* | Edit the grid in *FILENAME* and solve it. If the file does not exist, it will be created. | *GUI* only |
-| *\-c* | Force console mode. If *nCurses* is available, the library will be used. | console |
-| *\-d* | Display grid during the resolution process. This mode is monothreaded, so very slow. |  |
-| *\-dd* | Display grid during the resolution process using a multithreaded algorithm. |  |
-| *\-o* | Search *obvious* values before executing brute-force solution searching. | all |
-| *\-x* | Save the solution, if any, in a *.solution* file. |  |
+| **Parameter** | lLong parameter| **Description** | Display mode |
+|-----------|-------------|--------------|--------------|
+| *\-b FOLDER* | *--browse FOLDER* | Browse the folder *FOLDER*. All the grids in the folder will be displayed. | *GUI* only |
+| *\-e FILENAME* | *--edit FILENAME* | Edit the grid saved in *FILENAME*. If the *FILENAME* does not exists, it will be created. | *GUI* only |
+| *\-s FILENAME* | *--solve FILENAME*|Solve the sudoku saved in FILENAME | all |
+| *\-bs FOLDER* | *--browseSolve*| Browse the folder *FOLDER* and solve the selected grid. The *left* and *right* arrows allows browsing in the folder. When *enter* key is pressed the selected grid is solved. | *GUI* only |
+| *\-es FILENAME* | *--edit FILENAME*|Edit the grid in *FILENAME* and solve it. If the file does not exist, it will be created. | *GUI* only |
+| *\-c* | *--console* | Force console mode. If *nCurses* is available, the library will be used. | console |
+| *\-d {None, 1,2}* | *--display {None, 1, 2} |  grid during the resolution process. 1 is slow, 2 using a multithreaded algorithm and None (by default) for no drawings. | GUI only |
+| *\-o* | *--obvious* | Search *obvious* values before executing brute-force solution searching. | all |
+| *\-x* | *--export* | Export the solution, if any, in a *.solution* file. | all |
 
 ::: warn
 When the application is called without any parameter, usage screen is displayed.
