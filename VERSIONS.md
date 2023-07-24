@@ -14,7 +14,7 @@
    * PyGame 2.1.2
 
 #### Version 1.6.2
-* xxx
+* 24 jul. 2023
 * Added :
    * use argparse for commandline
    * Mouse support for PYGame

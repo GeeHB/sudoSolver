@@ -13,8 +13,8 @@ from sharedTools import colorizer as color
 # App informations
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
-APP_CURRENT_VERSION = "1.6.1"
-APP_RELEASE_DATE = "07/21/2023"
+APP_CURRENT_VERSION = "1.6.2"
+APP_RELEASE_DATE = "07/24/2023"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 

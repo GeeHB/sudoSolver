@@ -24,7 +24,7 @@ from pointer import pointer, ROW_COUNT, LINE_COUNT
 #
 SQUARE_SIDE             = 60   # Initial external size of a square element
 
-STATS_FRAME_WIDTH       = 200  # Width in pixels of stats'frame
+STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
 
 SQUARE_MIN              = 10   # Minimal square size
 
