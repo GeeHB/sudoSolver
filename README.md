@@ -3,7 +3,7 @@
 ## 1 - Edit and Solve *Sudokus*
 ### 1.1 - Presentation
 
-Theses 2 tools allow you to edit, modify ans find a solution for any sudoku grid. 
+Theses 2 tools allow you to edit, modify and find a solution for any sudoku grid. 
 
 * *sudoSolver.py* is a simple command-line application for editing, modifying and solving sudoku.
 * *tksudoSolver.py* use the same 'ngine' as *sudoSolver.py* and display a simple GUI based on *tkInter / TCL-TK*.
@@ -22,7 +22,7 @@ Both are 100% written in *Python 3* and have been tested on various systems :
 |----|---------|--------|---------------|
 | Windows 10 and higher | no | 2\.1.2 | yes |
 | MacOS 12 and higher | no | 2\.1.2 | not functionnal |
-| Linux - tested on Fedora 36 / 64bits | 6\.2.9 | 2\.1.2 | yes |
+| Linux (Fedora and ChromeOS) | 6\.2.9 | 2\.1.2 | yes |
 
 ## 2- *sudoSolver.py* - Command line tool
 ### 2.1 - Presentation
@@ -39,7 +39,7 @@ Sample grids can be found in the *./grid* subfolder.
 
 *sudoSolver* accepts different parameters :
 
-| **Parameter** | lLong parameter| **Description** | Display mode |
+| **Parameter** | **Long parameter**| **Description** | Display mode |
 |-----------|-------------|--------------|--------------|
 | *\-b FOLDER* | *--browse FOLDER* | Browse the folder *FOLDER*. All the grids in the folder will be displayed. | *GUI* only |
 | *\-e FILENAME* | *--edit FILENAME* | Edit the grid saved in *FILENAME*. If the *FILENAME* does not exists, it will be created. | *GUI* only |
@@ -51,10 +51,8 @@ Sample grids can be found in the *./grid* subfolder.
 | *\-o* | *--obvious* | Search *obvious* values before executing brute-force solution searching. | all |
 | *\-x* | *--export* | Export the solution, if any, in a *.solution* file. | all |
 
-::: warn
-When the application is called without any parameter, usage screen is displayed.
-
-:::
+> :warning:  **Attention** 
+> When the application is called without any parameter, usage screen is displayed.
 
 ![App. usage](github/commandLine.png)
 
@@ -90,10 +88,7 @@ sudoSolver.py -bs ./backup -o -dd -x
 
 ### 2.5 - Grid edition
 
-::: info
-The edition mode is only available with *GUI* displays.
-
-:::
+> *The edition mode is only available with *GUI* displays (TCL/Tk or PYGame).*
 
 Whether you edit or create a new grid, the editor allow you to fill the grid with the values of your choice.
 
@@ -109,10 +104,7 @@ You can use the defined keys :
 | **↟** - Page down | First highest possible value |
 | **↲** - Enter | End edition |
 
-::: info
-All the keys can be changed. They are defined in the file *pygameOutputs.py*.
-
-:::
+> All the keys can be changed. They are defined in the file *pygameOutputs.py*.
 
 ### 2.6 - Screenshots
 
@@ -185,6 +177,8 @@ The "solve" tab :
 
 ![Solve](github/tkMainOnMac.png)
 
+Running on ChromeOS :
+![ChromeOS](gitHub/chromeOS.png)
 
 ## 4 - Author
 Developped and maintained by Jérôme Henry-Barnaudière / GeeHB - [j.henrybarnaudiere@gmail.com](mailto:j.henrybarnaudiere@gmail.comj.henrybarnaudiere@gmail.com).

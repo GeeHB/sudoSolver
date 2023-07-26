@@ -10,8 +10,9 @@
 #                   pygameOutputs inherits outputs class
 #
 
-import pygame, math
-from options import APP_SHORT_NAME
+import pygame
+import math, subprocess, platform
+from options import APP_SHORT_NAME, CHROMEOS_WM_NAME
 from outputs import outputs
 from ownExceptions import sudokuError
 from pointer import pointer, ROW_COUNT, LINE_COUNT
@@ -234,7 +235,7 @@ class pygameOutputs(outputs):
         try:
             rets = pygame.init()
         except:
-            raise sudokuError("PYGame initialization error - Mayb you should reinstall PYGame")
+            raise sudokuError("PYGame initialization error - You should have to reinstall PYGame")
 
         if 0 != rets[1] :
             raise sudokuError(f"PYGame initialization error - PYGame returns {str(rets[1])} error(s)")
@@ -258,8 +259,10 @@ class pygameOutputs(outputs):
         
         # window creation
         #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
-        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED)
+        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
+        wm = self._getWMName()
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if wm == CHROMEOS_WM_NAME else pygame.RESIZABLE )
+        
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
@@ -607,5 +610,30 @@ class pygameOutputs(outputs):
 
             # redraw ...
             self._int_refresh(elements)
+
+    # Get the name of the Window manager
+    def _getWMName(self):
+        # What is the current platform ?
+        current = platform.system()
+
+        if current == "windows":
+            # On windows, no window manager ...
+            return "MSWindows"
+
+        # Call the system
+        output = subprocess.run(['wmctrl', '-m'], text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if output.stderr:
+            print("Unable to retreive window manager name")
+            return "Error"
+        
+        # Found it !!
+        lines = output.stdout.split("\n")
+        if lines is not None and len(lines) > 1:
+            line = lines[0]
+            return line[line.rfind(" ")+1:]
+
+        # Invalid format
+        return "Error"
 
  # EOF

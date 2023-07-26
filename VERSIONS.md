@@ -10,8 +10,19 @@
    * fcntl
    * termcolor
    * nCcurses
+* ChromeOS
+   * Linux +
+      * tk (sudo apt-get install python3-tk)
 * All OS
    * PyGame 2.1.2
+
+#### Version 1.6.3
+* xxx jul. 2023
+* Added :
+* Corrections :
+   * BUG : Exception raised when tkInter not found (on ChromeOS)
+   * BUG : PYGame window created in mode 'pygame.SCALED' on ChromeOS
+   * BUG : Unable to close tkWindow on ChromeOS
 
 #### Version 1.6.2
 * 24 jul. 2023

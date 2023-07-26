@@ -13,7 +13,7 @@ from sharedTools import colorizer as color
 # App informations
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
-APP_CURRENT_VERSION = "1.6.2"
+APP_CURRENT_VERSION = "1.6.3"
 APP_RELEASE_DATE = "07/24/2023"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
@@ -24,6 +24,8 @@ APP_GUI_WITH = 300
 APP_GUI_HEIGHT = 400
 APP_GUI_TAB_GRIDS = "Grids"
 APP_GUI_TAB_SOLVE = "Solve"
+
+CHROMEOS_WM_NAME = "Sommelier"      # Window Manager name on ChromeOS
 
 # Command line options
 #

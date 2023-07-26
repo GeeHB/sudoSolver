@@ -9,6 +9,8 @@
 #   Description :   Edit & solve sudokus
 #                   with GUI using tkinter
 #
+from ownExceptions import sudokuError
+
 try:
     import tkinter as tk                    
     from tkinter import ttk
@@ -16,11 +18,11 @@ try:
     import tkinter.messagebox as tkMB
     import tkinter.filedialog as tkDialog
 except ModuleNotFoundError:
-    raise sudokuError("tkinter module is not installed")
+    print("tkinter module is not installed. Call ./sudoSolver.py instead")
+    exit(1)
 
 import os, sys
 import sudoku
-from ownExceptions import sudokuError
 import options as opts
 from pygameOutputs import pygameOutputs
 
@@ -363,11 +365,16 @@ if "__main__" == __name__:
         while not quitLoop:
             for event in mainWindow.solver_.getEvents():
                 # Quit button on PYGame frame is pressed or tkFrame is already closed
-                if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children):
+                if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children) or mainWindow.master is None:
                     quitLoop = True
+                    break
             
-            mainWindow.solver_.flip()       # Update pygame
-            mainWindow.master.update()      # handle GUI with tkinter
+            if not quitLoop:
+                mainWindow.solver_.flip()       # Update pygame
+                mainWindow.master.update()      # handle GUI with tkinter
+
+        # Should be useless be is necessary on ChromeOS !!!
+        mainWindow.solver_.close()
 
     except sudokuError as e:
         print(f"Erreur - {e}", file=sys.stderr)

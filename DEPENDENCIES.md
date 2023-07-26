@@ -1,4 +1,5 @@
 Windows:
 * *msvcrt*
 Linux / MacOS:
-* *tkinter* : dnf install python-tkinter
+* *tkinter* :   (sudo) dnf install python-tkinter
+                (sudo) apt-get install python3-tk
