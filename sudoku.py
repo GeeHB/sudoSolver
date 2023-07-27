@@ -37,15 +37,14 @@ class sudoku(object):
     attempts_ = 0
     start_ = 0              # Resolution start-time
 
-    showDetails_ = False    # Draw the gird during search process ?
-    multiThreaded_ = False  # ... using another thread ?
+    progressMode_ = opts.PROGRESS_NONE  # Draw grid during solving process ?
 
     # Construction
     #
     def __init__(self, consoleMode = False, progressMode = opts.PROGRESS_NONE, initOutputs = True):
 
         # Show progression details ?
-        self.progressMode_ = progressMode
+        self.progressMode = progressMode
         
         # Set display mode
         #
@@ -90,14 +89,16 @@ class sudoku(object):
 
     # Progress mode (ie. display progression ?)
     #
-    #   return changed ?
-    def setProgressMode(self, progressMode):
+    @property
+    def progressMode(self):
+        return self.progressMode_
+    
+    @progressMode.setter
+    def progressMode(self, value):
         # Changed ?
-        if self.progressMode_ != progressMode:
-            self.progressMode_ = progressMode
+        if self.progressMode_ != value:
+            self.progressMode_ = value
             self._createPYGameOutputs()
-            return True
-        return False
 
     # Filename (of the source grid)
     #
@@ -158,9 +159,6 @@ class sudoku(object):
     # Display the grid and its content
     #
     def displayGrid(self):
-        self._int_displayGrid()
-
-    def _int_displayGrid(self):
         self.outputs_.draw(self.elements_)
 
     # Update drawings
@@ -479,9 +477,6 @@ class sudoku(object):
     #   return True if grid has been successfully loaded
     #
     def gridFromFile(self, fileName, nameOnGrid = True):
-        return self._int_gridFromFile(fileName, nameOnGrid)
-    
-    def _int_gridFromFile(self, fileName, nameOnGrid = True):
         self.emptyGrid()
         
         try:
@@ -549,7 +544,7 @@ class sudoku(object):
         
         # Let's go
         try:
-            if opts.PROGRESS_MULTITHREADED == self.progressMode_:
+            if opts.PROGRESS_MULTITHREADED == self.progressMode:
                 # multithreading is just for drawings !!!
                 self._resolveMultiThreaded()
             else:
@@ -646,7 +641,7 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if self.progressMode_ != opts.PROGRESS_NONE:
+                    if self.progressMode != opts.PROGRESS_NONE:
                         self.outputs_.draw(self.elements_)
                     
                     # Go to the next "empty" position
@@ -980,17 +975,13 @@ class sudoku(object):
     
     def _createPYGameOutputs(self):
         if self.outputs_ is not None:
-            # Stop the thread
+            # Stop the thread (if any)
             self.outputs_.close()
 
             # free previous object
             del self.outputs_
 
         # Instantiate new one
-        # from pygameOutputs import pygameOutputs
-        from pygameOutputs import pygameOutputs
-        from pygameThreadedOutputs import pygameThreadedOutputs
-        self.outputs_ = pygameThreadedOutputs() if self.progressMode_ == opts.PROGRESS_MULTITHREADED else pygameOutputs()      
-
+        self.outputs_ = pygameThreadedOutputs() if self.progressMode == opts.PROGRESS_MULTITHREADED else pygameOutputs()
 
 # EOF

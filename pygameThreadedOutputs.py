@@ -10,7 +10,6 @@
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
 
-import threading
 from pygameOutputs import pygameOutputs
 import ownThread
 
@@ -184,7 +183,7 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
                         over, elements = self._handleActions(elements)
 
         # Finished !!!
-        # print("Finished")
+        #print("Finished")
 
     #
     # "Internal" methods

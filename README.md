@@ -178,7 +178,7 @@ The "solve" tab :
 ![Solve](github/tkMainOnMac.png)
 
 Running on ChromeOS :
-![ChromeOS](gitHub/chromeOS.png)
+![ChromeOS](github/chromeOS.png)
 
 ## 4 - Author
 Developped and maintained by Jérôme Henry-Barnaudière / GeeHB - [j.henrybarnaudiere@gmail.com](mailto:j.henrybarnaudiere@gmail.comj.henrybarnaudiere@gmail.com).

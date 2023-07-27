@@ -131,6 +131,7 @@ class sudoParamWindow(tk.Frame):
         self.solver_ = sudoku.sudoku(progressMode=opts.options.PROGRESS_SINGLETHREADED)
 
         # Default values
+        self.backToSingltThreadMode_ = False
         self.fileName = ""
         self.folderName = os.path.abspath(opts.DEF_FOLDER)
 
@@ -224,6 +225,13 @@ class sudoParamWindow(tk.Frame):
         fullName = os.path.join(self.folderName, value)
         if os.path.exists(fullName):
             # Yes => draw the grid
+
+            if self.backToSingltThreadMode_:
+                self.backToSingltThreadMode_ = False
+                self.solver_.progressMode = opts.options.PROGRESS_SINGLETHREADED
+                self.progressCombo_.current(opts.options.PROGRESS_SINGLETHREADED)
+
+            # Load the grid
             if False == self.solver_.gridFromFile(fullName, False):
                 # the file doesn't contain a valid grid
                 self.solver_.displayGrid()
@@ -251,9 +259,10 @@ class sudoParamWindow(tk.Frame):
     def _solve(self):
         if self.solver_ is not None:
             # Display mode
-            if self.solver_.setProgressMode(self.progressCombo_.current()):
-                # Display mode changed
-                self.solver_.displayGrid()
+            self.solver_.progressMode = self.progressCombo_.current()
+            
+            # Display mode changed
+            self.solver_.displayGrid()
 
             # Buttons state
             self.obviousValuesButton_["state"] = tk.DISABLED
@@ -270,6 +279,10 @@ class sudoParamWindow(tk.Frame):
                 self.saveButton_["state"] = tk.NORMAL
             else:
                 tkMB.showwarning("Solving", f"No solution found for grid in {self._shorter(self.fileName)}")
+
+            # Return to "single threaded" 
+            if self.solver_.progressMode == opts.options.PROGRESS_MULTITHREADED:
+                self.backToSingltThreadMode_ = True
 
     # Create a new (empty) grid
     #
@@ -368,7 +381,7 @@ if "__main__" == __name__:
                 if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children) or mainWindow.master is None:
                     quitLoop = True
                     break
-            
+                
             if not quitLoop:
                 mainWindow.solver_.flip()       # Update pygame
                 mainWindow.master.update()      # handle GUI with tkinter
