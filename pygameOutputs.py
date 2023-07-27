@@ -11,7 +11,8 @@
 #
 
 import pygame
-import math, subprocess, platform
+from pygame._sdl2.video import Window
+import os, math, subprocess, platform
 from options import APP_SHORT_NAME, CHROMEOS_WM_NAME
 from outputs import outputs
 from ownExceptions import sudokuError
@@ -222,11 +223,11 @@ class pygameOutputs(outputs):
         
     # Construction
     #
-    def __init__(self):
-        self._start()
+    def __init__(self, position = None):
+        self._start(position)
         self._drawBackground()
 
-    def _start(self, ) :
+    def _start(self, position = None) :
         
         self.initDone_ = False
         self.mode_ = self.MODE_EDIT + self.MODE_BROWSEFOLDER
@@ -263,6 +264,9 @@ class pygameOutputs(outputs):
         wm = self._getWMName()
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if wm == CHROMEOS_WM_NAME else pygame.RESIZABLE )
         
+        if position is not None :
+            Window.from_display_module().position = position
+
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
@@ -472,6 +476,13 @@ class pygameOutputs(outputs):
 
     def flip(self):
         pygame.display.flip()
+
+    # Position of the Window
+    def getWindowInformations(self):
+        try :
+            return Window.from_display_module().position
+        except:
+            return None
     
     # Close the display
     def close(self):

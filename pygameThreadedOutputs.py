@@ -20,7 +20,10 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
     
     # Construction
     #
-    def __init__(self):
+    def __init__(self, position = None):
+        
+        self.position_ = position
+        
         # Start the current thread
         super().initiate()
 
@@ -157,7 +160,7 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
         #  
 
         # Try to init PYGame
-        self._start()
+        self._start(self.position_)
         self._int_drawBackground()  # Show an empty grid
 
         # Action list is free

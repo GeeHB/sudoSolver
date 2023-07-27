@@ -229,7 +229,7 @@ class sudoParamWindow(tk.Frame):
             if self.backToSingltThreadMode_:
                 self.backToSingltThreadMode_ = False
                 self.solver_.progressMode = opts.options.PROGRESS_SINGLETHREADED
-                self.progressCombo_.current(opts.options.PROGRESS_SINGLETHREADED)
+                self.progressCombo_.current(self.solver_.progressMode)
 
             # Load the grid
             if False == self.solver_.gridFromFile(fullName, False):

@@ -20,6 +20,8 @@
 * xxx jul. 2023
 * Added :
    * getters & setters
+   * Keep PYGame window pos
+      * functionnal on Linux
 * Corrections :
    * BUG : Exception raised when tkInter not found (on ChromeOS)
    * BUG : PYGame window created in mode 'pygame.SCALED' on ChromeOS

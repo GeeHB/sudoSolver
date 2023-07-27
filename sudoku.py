@@ -17,6 +17,8 @@ from ownExceptions import reachedEndOfList, sudokuError
 from consoleOutputs import consoleOutputs
 
 from options import FILE_EXPORT_EXTENSION, FILE_EXPORT_EXTENSION, options as opts
+from pygameOutputs import pygameOutputs
+from pygameThreadedOutputs import pygameThreadedOutputs
 
 #
 #   sudoku : Edition and/or resolution of a single sudoku grid
@@ -38,6 +40,7 @@ class sudoku(object):
     start_ = 0              # Resolution start-time
 
     progressMode_ = opts.PROGRESS_NONE  # Draw grid during solving process ?
+    outputs_ = None
 
     # Construction
     #
@@ -96,7 +99,7 @@ class sudoku(object):
     @progressMode.setter
     def progressMode(self, value):
         # Changed ?
-        if self.progressMode_ != value:
+        if self.outputs_ is not None and self.progressMode_ != value:
             self.progressMode_ = value
             self._createPYGameOutputs()
 
@@ -974,7 +977,11 @@ class sudoku(object):
         return 0
     
     def _createPYGameOutputs(self):
+        pos = None
         if self.outputs_ is not None:
+            # Get the position of the window
+            pos = self.outputs_.getWindowInformations()
+
             # Stop the thread (if any)
             self.outputs_.close()
 
@@ -982,6 +989,6 @@ class sudoku(object):
             del self.outputs_
 
         # Instantiate new one
-        self.outputs_ = pygameThreadedOutputs() if self.progressMode == opts.PROGRESS_MULTITHREADED else pygameOutputs()
+        self.outputs_ = pygameThreadedOutputs(position = pos) if self.progressMode == opts.PROGRESS_MULTITHREADED else pygameOutputs()
 
 # EOF
