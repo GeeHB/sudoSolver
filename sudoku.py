@@ -8,7 +8,7 @@
 #                       -  edtion and/or resolution of a sudoku's grid
 #
 
-import os, time, math
+import os, platform, subprocess, time, math
 from element import element, elementStatus
 from pointer import pointer, LINE_COUNT, ROW_COUNT, VALUE_MIN, VALUE_MAX, INDEX_MIN, INDEX_MAX
 
@@ -20,7 +20,6 @@ from options import FILE_EXPORT_EXTENSION, FILE_EXPORT_EXTENSION, options as opt
 from pygameOutputs import pygameOutputs
 from pygameThreadedOutputs import pygameThreadedOutputs
 
-#
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #
 class sudoku(object):
@@ -40,8 +39,9 @@ class sudoku(object):
     start_ = 0              # Resolution start-time
 
     progressMode_ = opts.PROGRESS_NONE  # Draw grid during solving process ?
-    outputs_ = None
 
+    OSInfos_ = {}           # Informations about the OS and the Window manager
+    
     # Construction
     #
     def __init__(self, consoleMode = False, progressMode = opts.PROGRESS_NONE, initOutputs = True):
@@ -976,6 +976,8 @@ class sudoku(object):
         # No ...
         return 0
     
+    # Create PYGameOutputs object (and delete existing if any)
+    #
     def _createPYGameOutputs(self):
         pos = None
         if self.outputs_ is not None:

@@ -26,7 +26,7 @@ import sudoku
 import options as opts
 from pygameOutputs import pygameOutputs
 
-# Main window handling app's parameters
+# Main window
 # 
 class sudoParamWindow(tk.Frame):
 

@@ -12,8 +12,8 @@
 
 import pygame
 from pygame._sdl2.video import Window
-import os, math, subprocess, platform
-from options import APP_SHORT_NAME, CHROMEOS_WM_NAME
+import math, systemInfos
+from options import APP_SHORT_NAME
 from outputs import outputs
 from ownExceptions import sudokuError
 from pointer import pointer, ROW_COUNT, LINE_COUNT
@@ -258,11 +258,9 @@ class pygameOutputs(outputs):
         self.sElement_ = textSurface(ELT_FONT_NAME, ELT_FONT_SIZE)
         self.sElement_.moveTo((SQUARE_SIDE - ELT_FONT_SIZE) / 2, 0)
         
-        # window creation
-        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.NOFRAME)
-        #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
-        wm = self._getWMName()
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if wm == CHROMEOS_WM_NAME else pygame.RESIZABLE )
+        # Main window creation
+        myDict = systemInfos.getSystemInformations()
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict[systemInfos.KEY_WM] == systemInfos.WM_CHROMEOS else pygame.RESIZABLE )
         
         if position is not None :
             Window.from_display_module().position = position
@@ -621,30 +619,5 @@ class pygameOutputs(outputs):
 
             # redraw ...
             self._int_refresh(elements)
-
-    # Get the name of the Window manager
-    def _getWMName(self):
-        # What is the current platform ?
-        current = platform.system()
-
-        if current == "windows":
-            # On windows, no window manager ...
-            return "MSWindows"
-
-        # Call the system
-        output = subprocess.run(['wmctrl', '-m'], text=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if output.stderr:
-            print("Unable to retreive window manager name")
-            return "Error"
-        
-        # Found it !!
-        lines = output.stdout.split("\n")
-        if lines is not None and len(lines) > 1:
-            line = lines[0]
-            return line[line.rfind(" ")+1:]
-
-        # Invalid format
-        return "Error"
-
+ 
  # EOF

@@ -25,8 +25,6 @@ APP_GUI_HEIGHT = 400
 APP_GUI_TAB_GRIDS = "Grids"
 APP_GUI_TAB_SOLVE = "Solve"
 
-CHROMEOS_WM_NAME = "Sommelier"      # Window Manager name on ChromeOS
-
 # Command line options
 #
 
