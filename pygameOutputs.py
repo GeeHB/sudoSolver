@@ -11,7 +11,6 @@
 #
 
 import pygame
-from pygame._sdl2.video import Window
 import math, systemInfos
 from options import APP_SHORT_NAME
 from outputs import outputs
@@ -262,9 +261,7 @@ class pygameOutputs(outputs):
         myDict = systemInfos.getSystemInformations()
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict[systemInfos.KEY_WM] == systemInfos.WM_CHROMEOS else pygame.RESIZABLE )
         
-        if position is not None :
-            Window.from_display_module().position = position
-
+        systemInfos.setMainWindowPosition(position)
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
@@ -476,9 +473,9 @@ class pygameOutputs(outputs):
         pygame.display.flip()
 
     # Position of the Window
-    def getWindowInformations(self):
+    def getWindowPosition(self):
         try :
-            return Window.from_display_module().position
+            return systemInfos.getMainWindowPosition()
         except:
             return None
     

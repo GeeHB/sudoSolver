@@ -982,7 +982,7 @@ class sudoku(object):
         pos = None
         if self.outputs_ is not None:
             # Get the position of the window
-            pos = self.outputs_.getWindowInformations()
+            pos = self.outputs_.getWindowPosition()
 
             # Stop the thread (if any)
             self.outputs_.close()
