@@ -59,7 +59,7 @@ ARG_SAVE_SOLUTION_S = "-x"          # Save / export the solution
 ARG_SAVE_SOLUTION = "--export"
 COMMENT_SAVE_SOLUTION = "Save the solution of the grid"
 
-ARG_CONSOLE_S = "-c"                # Console mode
+ARG_CONSOLE_S = "-c "                # Console mode
 ARG_CONSOLE = "--console"
 COMMENT_CONSOLE = "Force displays in console mode (using nCurses if available)"
 

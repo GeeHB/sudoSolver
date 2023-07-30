@@ -390,10 +390,9 @@ if "__main__" == __name__:
         mainWindow.solver_.close()
 
     except sudokuError as e:
-        print(f"Erreur - {e}", file=sys.stderr)
-    """
+        print(f"Sudoku Error - {e}", file=sys.stderr)
+    
     except Exception as e:
         print(f"Unknown error - {str(e)}", file=sys.stderr)   
-    """
 
 # EOF
