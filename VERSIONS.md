@@ -17,12 +17,12 @@
    * PyGame 2.1.2
 
 #### Version 1.6.3
-* xxx jul. 2023
+* 31 july 2023
 * Added :
    * getters & setters
    * add systemInfos.py for OS specific informations
-   * Keep PYGame window pos
-      * functionnal on Linux, Windows, ChromeOS (no move but no error !)
+   * Keep PYGame window position
+      * functionnal on Linux, Windows, ChromeOS (no move but no error !) & MacOS
       * using win32 API for Windows Systems
 * Corrections :
    * BUG : Exception raised when tkInter not found (on ChromeOS)
@@ -30,7 +30,7 @@
    * BUG : Unable to close tkWindow on ChromeOS
    * BUG : coredump when browsing a folder in multithreaded mode
    * BUG : Grid Window hang after resolution
-   * Output deleted and created in all cases
+   * Output object deleted and created in all cases
 
 #### Version 1.6.2
 * 24 jul. 2023

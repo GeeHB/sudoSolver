@@ -7,7 +7,7 @@ Theses 2 tools allow you to edit, modify and find a solution for any sudoku grid
 
 * *sudoSolver.py* is a simple command-line application for editing, modifying and solving sudoku.
 * *tksudoSolver.py* use the same 'ngine' as *sudoSolver.py* and display a simple GUI based on *tkInter / TCL-TK*.
-
+xxx
 For both, solutions are found using a "brute force" algorithm. Some optimisations, searching for obvious values first, can be performed.
 During the search process, grids can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
 
@@ -16,9 +16,9 @@ Displays are performed, as desired, on the console or on the *GUI* using *PYGame
 Sample grids can be found in the *./grid* subfolder.
 
 ### 1.2 - Compatibility
-Both are 100% written in *Python 3* and have been tested on various systems :
+Both tools are 100% written in *Python 3* and have been tested on various systems :
 
-| OS | *nCurses* | *PYGame* | Multithreaded |
+| OS | *nCurses* | *PYGame* - *SDL* | Multithreaded |
 |----|---------|--------|---------------|
 | Windows 10 and higher | no | 2\.1.2 | yes |
 | MacOS 12 and higher | no | 2\.1.2 | not functionnal |
@@ -86,7 +86,7 @@ Browse the backup folder and solve the choosen grid using optimisation and show 
 
 sudoSolver.py -bs ./backup -o -dd -x
 
-### 2.5 - Grid edition
+### 2.4 - Grid edition
 
 > *The edition mode is only available with *GUI* displays (TCL/Tk or PYGame).*
 
@@ -106,7 +106,7 @@ You can use the defined keys :
 
 > All the keys can be changed. They are defined in the file *pygameOutputs.py*.
 
-### 2.6 - Screenshots
+### 2.5 - Screenshots
 
 In this screenshot the application displays stats in the console :
 
@@ -179,6 +179,9 @@ The "solve" tab :
 
 Running on ChromeOS :
 ![ChromeOS](github/chromeOS.png)
+
+Capture from Windows 10 :
+![Windows](github/windows.png)
 
 ## 4 - Author
 Developped and maintained by Jérôme Henry-Barnaudière / GeeHB - [j.henrybarnaudiere@gmail.com](mailto:j.henrybarnaudiere@gmail.comj.henrybarnaudiere@gmail.com).
