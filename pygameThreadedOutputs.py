@@ -10,6 +10,7 @@
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
 
+import pygame.event
 from pygameOutputs import pygameOutputs
 import ownThread
 
@@ -174,7 +175,7 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
         # Actions !!!
         #
         while not over:
-            if True == self.newAction_.wait():
+            if True == self.newAction_.wait(1):
                 # Do all the "actions"
                 over, elements = self._handleActions(elements)
 
@@ -184,7 +185,10 @@ class pygameThreadedOutputs(pygameOutputs, ownThread.Thread):
                     if True == self.newAction_.wait(0.1):
                         # Do all the "actions"
                         over, elements = self._handleActions(elements)
-
+            else :
+                # Any pygame event ?
+                pygame.event.wait(1)
+                
         # Finished !!!
         #print("Finished")
 

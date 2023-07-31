@@ -23,16 +23,17 @@ KEY_WM = "WindowManager"
 
 # Values
 VAL_UNKOWN = "Unknown"
-VAL_WINDOWS = "windows"
+VAL_WINDOWS = "Windows"
 
 OS_UNKNOWN = VAL_UNKOWN
 OS_WINDOWS = VAL_WINDOWS
 OS_LINUX = "Linux"
+OS_MACOS = "MacOS"
 
 WM_UNKNOWN = VAL_UNKOWN
 WM_WINDOWS = VAL_WINDOWS
 WM_CHROMEOS = "Sommelier"
-
+WM_MACOS = "Cocoa"
 
 #------------------------------------------------------------------------
 #
@@ -63,17 +64,21 @@ def getSystemInformations():
         myDict[KEY_WM] = WM_WINDOWS
     else:
         # Try to get the Windows Manager name
-        output = subprocess.run(['wmctrl', '-m'], text=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if output.stderr:
-            print("Unable to retreive window manager name")
-            return
-        
-        # Found it !!
-        lines = output.stdout.split("\n")
-        if lines is not None and len(lines) > 1:
-            line = lines[0]
-            myDict[KEY_WM] = line[line.rfind(" ")+1:]
+        try:
+            output = subprocess.run(['wmctrl', '-m'], text=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if output.stderr:
+                print("Unable to retreive window manager name")
+                return
+            
+            # Found it !!
+            lines = output.stdout.split("\n")
+            if lines is not None and len(lines) > 1:
+                line = lines[0]
+                myDict[KEY_WM] = line[line.rfind(" ")+1:]
+        except FileNotFoundError:
+            # Unable to load the module
+            pass
 
     # Finished
     return myDict
@@ -137,5 +142,5 @@ def setMainWindowPosition(position):
                 SetWindowPos = windll.user32.SetWindowPos
     
                 # Call the API
-                rect = SetWindowPos(hwnd, -2, position[0], position[1], 0, 0, 1) # No topmost, move | nosize
+                SetWindowPos(hwnd, 0, position[0], position[1], 0, 0, 0x0005) # No topmost, move | nosize
 # EOF

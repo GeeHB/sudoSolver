@@ -100,8 +100,12 @@ class sudoku(object):
     def progressMode(self, value):
         # Changed ?
         if self.outputs_ is not None and self.progressMode_ != value:
+            # create a new output object ?
+            newOutPut = value == opts.PROGRESS_MULTITHREADED or self.progressMode_ == opts.PROGRESS_MULTITHREADED
+            
             self.progressMode_ = value
-            self._createPYGameOutputs()
+            if newOutPut:
+                self._createPYGameOutputs()
 
     # Filename (of the source grid)
     #

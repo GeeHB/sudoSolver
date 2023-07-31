@@ -261,9 +261,11 @@ class pygameOutputs(outputs):
         myDict = systemInfos.getSystemInformations()
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict[systemInfos.KEY_WM] == systemInfos.WM_CHROMEOS else pygame.RESIZABLE )
         
-        systemInfos.setMainWindowPosition(position)
         pygame.display.set_caption(APP_SHORT_NAME)
 
+        # Place the Window
+        systemInfos.setMainWindowPosition(position)
+   
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)
         self.sFileName_.moveTo(FILE_FONT_POS_X, FILE_FONT_POS_Y)
@@ -272,7 +274,7 @@ class pygameOutputs(outputs):
         # Messages
         self.sMessage_ = blinkingText(FILE_FONT_NAME, FILE_FONT_SIZE)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
-   
+
     # Use GUI ?
     #
     def useGUI(self):
