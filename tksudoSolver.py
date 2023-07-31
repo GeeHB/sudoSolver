@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 
 import os, sys
 import sudoku
+import systemInfos
 import options as opts
 from pygameOutputs import pygameOutputs
 
@@ -105,7 +106,14 @@ class sudoParamWindow(tk.Frame):
         ttk.Label(self.solveTab_, text = "Show progress :").grid(column=0, row=1, padx=5, pady=5)
         self.progressCombo_ = ttk.Combobox(self.solveTab_, state = "readonly")
         self.progressCombo_.grid(column=1, row=1, padx=5, pady=5)
-        self.progressCombo_["values"] = ("none", "slow", "multithreaded")
+        
+        mySystem = systemInfos.getSystemInformations()
+        
+        if mySystem[systemInfos.KEY_OS] == systemInfos.OS_MACOS:
+            # No multithread on MacOS
+            self.progressCombo_["values"] = ("none", "slow")
+        else:
+            self.progressCombo_["values"] = ("none", "slow", "multithreaded")
         self.progressCombo_.current(opts.options.PROGRESS_SINGLETHREADED)  # show progress slowly 
 
         # Buttons

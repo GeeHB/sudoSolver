@@ -28,7 +28,7 @@ VAL_WINDOWS = "Windows"
 OS_UNKNOWN = VAL_UNKOWN
 OS_WINDOWS = VAL_WINDOWS
 OS_LINUX = "Linux"
-OS_MACOS = "MacOS"
+OS_MACOS = "Darwin"
 
 WM_UNKNOWN = VAL_UNKOWN
 WM_WINDOWS = VAL_WINDOWS
@@ -59,26 +59,29 @@ def getSystemInformations():
     current = platform.system()
     myDict = {KEY_OS : current, KEY_WM : WM_UNKNOWN}
 
-    if current == VAL_WINDOWS:
+    # Try to get the Windows Manager name
+    if current == OS_WINDOWS:
         # On windows, all is "Windows"
         myDict[KEY_WM] = WM_WINDOWS
     else:
-        # Try to get the Windows Manager name
-        try:
-            output = subprocess.run(['wmctrl', '-m'], text=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if output.stderr:
-                print("Unable to retreive window manager name")
-                return
-            
-            # Found it !!
-            lines = output.stdout.split("\n")
-            if lines is not None and len(lines) > 1:
-                line = lines[0]
-                myDict[KEY_WM] = line[line.rfind(" ")+1:]
-        except FileNotFoundError:
-            # Unable to load the module
-            pass
+        if current == OS_MACOS:
+            myDict[KEY_WM] = WM_MACOS
+        else:
+            try:
+                output = subprocess.run(['wmctrl', '-m'], text=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if output.stderr:
+                    print("Unable to retreive window manager name")
+                    return
+                
+                # Found it !!
+                lines = output.stdout.split("\n")
+                if lines is not None and len(lines) > 1:
+                    line = lines[0]
+                    myDict[KEY_WM] = line[line.rfind(" ")+1:]
+            except FileNotFoundError:
+                # Unable to load the module
+                pass
 
     # Finished
     return myDict
