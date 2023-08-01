@@ -16,6 +16,13 @@
 * All OS
    * PyGame 2.1.2
 
+#### Version 1.6.4
+* aug. 2023
+* Added :
+* Corrections :
+   * Keyboard codes for PYGame outputs
+   * BUG : Unable to cancel edit mode
+
 #### Version 1.6.3
 * 31 july 2023
 * Added :

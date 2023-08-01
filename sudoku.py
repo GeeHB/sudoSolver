@@ -365,7 +365,7 @@ class sudoku(object):
 
     # Edit / modify the grid
     #
-    #   Returns a boolean : grid saved (or successfully edited) ?
+    #   Returns the tuple of booleans : (escaped ?, grid saved (or successfully edited) ?)
     #
     def edit(self):
         # Can we edit this grid
@@ -375,7 +375,7 @@ class sudoku(object):
         # Edition
         #
         modified = False                           # Has this grid been changed ?
-        valid = False
+        escaped = False
         cont = True
         currentPos = pointer(gameMode=False)      # current position
         prevPos = None                            # previous pos (if erase needed)
@@ -464,20 +464,23 @@ class sudoku(object):
                                                     # Cancel
                                                     if self.outputs_.EDIT_CANCEL == event.key:
                                                         cont = False
-                                                        valid = False
-                                                        modified = False
+                                                        escaped = True
                                                     else:
                                                         # Save current grid
                                                         if self.outputs_.EDIT_QUIT_AND_SAVE == event.key:
                                                             cont = False
-                                                            valid = True
                 elif event.type == self.outputs_.EVT_QUIT:
                     # Quits
                     cont = False
-                    valid = False
+                    escaped = True
 
+        # Remove highlighting
+        if not escaped :
+            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.HILITE_COLOUR)            
+            self.outputs_.update()
+        
         # Saves changes or exit
-        return (self.save() if True == valid else False) if modified else True
+        return (escaped, (self.save() if modified else True) if False == escaped else False)
     
     # Display a grid stored on a file
     #

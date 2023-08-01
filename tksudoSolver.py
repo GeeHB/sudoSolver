@@ -217,9 +217,11 @@ class sudoParamWindow(tk.Frame):
             value = ""
 
         # Value changed ?
+        """
         if self.fileName == value : 
             # Nothing to do
             return
+        """
         
         state = tk.DISABLED if 0 == len(value) else tk.NORMAL
         self.fileEditButton_["state"] = state
@@ -332,11 +334,16 @@ class sudoParamWindow(tk.Frame):
     # Edit the selected gird
     #
     def _editGrid(self):
-        tkMB.showinfo(title="Grid edition", message="Press 'Enter' when edition is finished.")
+        tkMB.showinfo(title="Grid edition", message="Press 'Enter' or 'Esc' to leave eidtion mode.")
 
         #self.solveTab_["state"] = tk.DISABLED
     
-        self.solver_.edit()
+        done = self.solver_.edit()
+        if done[0]:
+            # Escaped => reload
+            file = self.fileName
+            self.fileName = file
+
         #self.solveTab_["state"] = tk.NORMAL
 
     # Revert (ie. return the grid to the previous saved state)

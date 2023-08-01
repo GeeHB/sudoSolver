@@ -84,8 +84,10 @@ if '__main__' == __name__:
         # Edition
         if params.editMode_:
             # Succefully edited ?
-            if False == solver.edit():
-                solveMode = False
+            done = solver.edit()
+            if done[0] == True or done[1] == False:
+                # Escaped or error while saving 
+                params.solveMode_ = False
         
         # Search for the solution
         #

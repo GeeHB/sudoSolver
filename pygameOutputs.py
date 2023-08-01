@@ -183,6 +183,8 @@ class pygameOutputs(outputs):
     
     # Change element value
     REMOVE_VALUE        = pygame.K_DELETE
+    REMOVE_VALUE_BIS    = pygame.K_BACKSPACE
+
     VALUE_DEC           = pygame.K_PAGEDOWN
     VALUE_INC           = pygame.K_PAGEUP
 
@@ -190,8 +192,8 @@ class pygameOutputs(outputs):
     VALUE_1             = pygame.K_1
     VALUE_9             = pygame.K_9
 
-    VALUE_KB_1          = pygame.K_KP0  # from keypad
-    VALUE_KB_9          = pygame.K_KP9
+    VALUE_KPAD_1          = pygame.K_KP1  # from keypad
+    VALUE_KPAD_9          = pygame.K_KP9
 
     EDIT_CANCEL         = pygame.K_ESCAPE
     EDIT_QUIT_AND_SAVE  = pygame.K_RETURN
@@ -350,9 +352,15 @@ class pygameOutputs(outputs):
     def _int_pollEvent(self):
         event = pygame.event.poll()
 
-        # turn keypad num keys into num keys
-        if event.type == pygame.KEYDOWN and event.key >= pygame.K_KP1 and event.key <= pygame.K_KP9:
-            event.key = pygame.K_1 + event.key - pygame.K_KP1
+        # Keyboard translations
+        if event.type == pygame.KEYDOWN:
+            # turn keypad num keys into num keys
+            if  event.key >= self.VALUE_KPAD_1 and event.key <= self.VALUE_KPAD_9:
+                event.key = self.VALUE_1 + event.key - self.VALUE_KPAD_1
+            # DEL == Backspace
+            else : 
+                if event.key == self.REMOVE_VALUE_BIS:
+                    event.key = self.REMOVE_VALUE
 
         return event
     
