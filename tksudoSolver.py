@@ -23,7 +23,7 @@ except ModuleNotFoundError:
 
 import os, sys
 import sudoku
-import systemInfos
+from sharedTools import systemInfos
 import options as opts
 from pygameOutputs import pygameOutputs
 

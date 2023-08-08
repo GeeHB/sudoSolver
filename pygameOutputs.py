@@ -11,7 +11,8 @@
 #
 
 import pygame
-import math, systemInfos
+import math
+from sharedTools import systemInfos
 from options import APP_SHORT_NAME
 from outputs import outputs
 from ownExceptions import sudokuError
