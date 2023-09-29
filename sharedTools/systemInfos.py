@@ -156,18 +156,26 @@ def setMainWindowPosition(position):
 #   return a tuple (width, height) or None if error
 #
 def getDesktopSize(desktopIndex = None):
+   
+    info = getSystemInformations()
+    
     try:
-        import tkinter
+        if info[KEY_OS] != OS_MACOS:
+            import tkinter
+              
+            app = tkinter.Tk()
+            return (app.winfo_screenwidth(), app.winfo_screenheight())
+        else:
+            # MacOS - BUG : tkinter mainwindow always visible
+            import pyautogui
+            a = pyautogui.size()
+            return (a.width, a.height)
+
     except ModuleNotFoundError:
         # no tkinter
         return None
-    
-    app = tkinter.Tk()
-    size = (app.winfo_screenwidth(), app.winfo_screenheight())
 
-    # MacOS - Force garbage collection
-    del app
-    
-    return size
+    # ???
+    return None
 
 # EOF

@@ -19,10 +19,10 @@
 #### Version 1.6.4
 * aug. 2023
 * Added :
+   * systemInfos.py -> sharedTools/systemInfos.py
 * Corrections :
    * Keyboard codes for PYGame outputs
    * BUG : Unable to cancel edit mode
-   * systemInfos.py -> sharedTools/systemInfos.py
 
 #### Version 1.6.3
 * 31 july 2023
