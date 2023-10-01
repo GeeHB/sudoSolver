@@ -6,8 +6,7 @@
 Theses 2 tools allow you to edit, modify and find a solution for any sudoku grid. 
 
 * *sudoSolver.py* is a simple command-line application for editing, modifying and solving sudoku.
-* *tksudoSolver.py* use the same 'ngine' as *sudoSolver.py* and display a simple GUI based on *tkInter / TCL-TK*.
-xxx
+* *tksudoSolver.py* uses the same 'engine' as *sudoSolver.py* and displays a simple GUI based on *tkInter / TCL-TK*.
 For both, solutions are found using a "brute force" algorithm. Some optimisations, searching for obvious values first, can be performed.
 During the search process, grids can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
 
@@ -47,7 +46,7 @@ Sample grids can be found in the *./grid* subfolder.
 | *\-bs FOLDER* | *--browseSolve*| Browse the folder *FOLDER* and solve the selected grid. The *left* and *right* arrows allows browsing in the folder. When *enter* key is pressed the selected grid is solved. | *GUI* only |
 | *\-es FILENAME* | *--edit FILENAME*|Edit the grid in *FILENAME* and solve it. If the file does not exist, it will be created. | *GUI* only |
 | *\-c* | *--console* | Force console mode. If *nCurses* is available, the library will be used. | console |
-| *\-d {None, 1,2}* | *--display {None, 1, 2} |  grid during the resolution process. 1 is slow, 2 using a multithreaded algorithm and None (by default) for no drawings. | GUI only |
+| *\-d {None, 1,2}* | *--display {None, 1, 2}* |  Show grid during the resolution process. 1 is slow, 2 using a multithreaded algorithm and None (by default) for no drawings. | GUI only |
 | *\-o* | *--obvious* | Search *obvious* values before executing brute-force solution searching. | all |
 | *\-x* | *--export* | Export the solution, if any, in a *.solution* file. | all |
 
