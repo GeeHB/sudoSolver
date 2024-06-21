@@ -9,10 +9,6 @@
 #                   
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
-#
 
 import threading
 from pygameOutputs import pygameOutputs

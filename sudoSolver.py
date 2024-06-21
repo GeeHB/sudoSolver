@@ -124,7 +124,7 @@ if '__main__' == __name__:
                     comments.append(" ")
                     comments.append(" Source file : " + params.fileName_)
                     comments.append(" ")
-                    comments.append("Solved by JHB::sudoSolver.py in " + str(round(myStats.bruteDuration_, 2)) + " sec.")
+                    comments.append("Solved by GeeHB::sudoSolver.py in " + str(round(myStats.bruteDuration_, 2)) + " sec.")
                     comments.append(" ")
                     
                     if True == solver.save(True, comments):

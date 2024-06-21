@@ -7,10 +7,6 @@
 #   Description :   outputs object
 #                   Abstract class, base for all drawings
 #
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
-#
 
 import os
 from ownExceptions import sudokuError

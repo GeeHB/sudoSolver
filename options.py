@@ -6,15 +6,12 @@
 #
 #   Description :   Handle command-line & shared consts.
 #
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
-#
+
 import sysconfig
 from sharedTools import cmdLineParser as parser
 from sharedTools import colorizer as color
 
-CURRENT_VERSION = "1.5.7"
+CURRENT_VERSION = "1.6.0"
 
 # Command line options
 #
@@ -154,7 +151,7 @@ class options(object):
             # ???
             return
 
-        print(self.color_.colored("\nsudoSolver.py", formatAttr=[color.textAttribute.BOLD]), "by JHB - release", CURRENT_VERSION, "\n")
+        print(self.color_.colored("\nsudoSolver.py", formatAttr=[color.textAttribute.BOLD]), "by GeeHB - release", CURRENT_VERSION, "\n")
             
         # Show all commands ?
         if True == fullUsage:

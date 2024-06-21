@@ -8,11 +8,7 @@
 #                       - reachedEndOfList : A solution has been found
 #                       - sudokuError : a bloking error
 #
-#   Remarque    :  
-#
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
+#   Remarks    :  
 #
 
 #

@@ -6,10 +6,6 @@
 #
 #   Description :   posixKeyoard : handle keyboard
 #
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
-#
 
 import os, sys, termios, fcntl
 import keyboard

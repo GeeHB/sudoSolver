@@ -6,13 +6,6 @@
 #
 #   Description :   element object definition - a single sudoku element
 #
-#   Version     :   1.5.7
-#
-#   Date        :   2022-11-02
-#
-
-#from enum import IntFlag
-
 
 #
 # elementStatus - Element's status
