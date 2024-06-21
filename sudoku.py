@@ -627,7 +627,8 @@ class sudoku(object):
         # All the elements "before" the current position are set with possible/allowed values
         # we'll try to put the "candidate" value at the current position
         while True :
-           # Stopped ?
+
+            # Stopped ?
             status = self.outputs_.keyPressed()
             if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
                 exit(0)
@@ -672,6 +673,7 @@ class sudoku(object):
         # we'll try to put the "candidate" value at the current position
         while True :
             candidate+=1
+
             if candidate > VALUE_MAX:
                 
                 # No possible value found at this position

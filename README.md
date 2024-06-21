@@ -3,7 +3,7 @@
 ## 1 - Edit and Solve *Sudokus*
 ### 1.1 - Presentation
 
-Theses 2 tools allow you to edit, modify and find a solution for any sudoku grid. 
+Theses 2 *python3* tools allow you to edit, modify and find a solution for any sudoku grid. 
 
 * *sudoSolver.py* is a simple command-line application for editing, modifying and solving sudoku.
 * *tksudoSolver.py* uses the same 'engine' as *sudoSolver.py* and displays a simple GUI based on *tkInter / TCL-TK*.
@@ -167,13 +167,11 @@ Display-mode can be choosen with the combo 'Show progress' :
 * *Multithreaded* - Multi threaded solution : one thread for the search process and a second thread dedicated to displays.
 
 ### 3.2 - Screenshots
-The "Grid" tab :
-
+The "Grid" tab on GNU/Linux Fedora:
 ![Grid](github/tkMain.png)
 
 
-The "solve" tab :
-
+The "solve" tab on MacOS :
 ![Solve](github/tkMainOnMac.png)
 
 Running on ChromeOS :

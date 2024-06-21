@@ -24,6 +24,7 @@ from pointer import pointer, ROW_COUNT, LINE_COUNT
 
 # Positions and dimensions in pixels
 #
+SQUARE_SIDE_BASE        = 60
 SQUARE_SIDE             = 60   # Initial external size of a square element
 
 STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
@@ -257,8 +258,9 @@ class pygameOutputs(outputs):
         """
 
         # font for drawing elements
-        self.sElement_ = textSurface(ELT_FONT_NAME, ELT_FONT_SIZE)
-        self.sElement_.moveTo((SQUARE_SIDE - ELT_FONT_SIZE) / 2, 0)
+        fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE_BASE)
+        self.sElement_ = textSurface(ELT_FONT_NAME, fontSize)
+        self.sElement_.moveTo((self.extSquareWidth_ - fontSize) / 2, 0)
         
         # Main window creation
         myDict = systemInfos.getSystemInformations()
