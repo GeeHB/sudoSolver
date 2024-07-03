@@ -8,8 +8,6 @@
 #                       - reachedEndOfList : A solution has been found
 #                       - sudokuError : a bloking error
 #
-#   Remarks    :  
-#
 
 #
 # reachedEndOfList : End of resolution mode

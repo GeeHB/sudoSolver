@@ -9,21 +9,15 @@
 
 import sysconfig, argparse
 from sharedTools import colorizer as color
+#from pointer import ROW_COUNT, LINE_COUNT
 
 # App informations
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
-APP_CURRENT_VERSION = "1.6.4"
-APP_RELEASE_DATE = "07/31/2023"
+APP_CURRENT_VERSION = "2.0.1"
+APP_RELEASE_DATE = "07/xxx/2024"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
-
-# GUI
-APP_GUI_TITLE = f"tk{APP_SHORT_NAME}"
-APP_GUI_WITH = 300
-APP_GUI_HEIGHT = 400
-APP_GUI_TAB_GRIDS = "Grids"
-APP_GUI_TAB_SOLVE = "Solve"
 
 # Command line options
 #
@@ -51,6 +45,22 @@ ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
 
+ARG_NEW_S = "-n" # New grid
+ARG_NEW = "--new"
+COMMENT_NEW = "Create a new grid"
+
+# Types of new grids and count of empty elements
+NEW_EMPTY = 0
+NEW_EASY = 33
+NEW_MEDIUM = 26
+NEW_HARD = 22
+
+# Count of filled elements
+NEW_EMPTY_VAL = 0
+NEW_EASY_VAL = 33
+NEW_MEDIUM_VAL = 26
+NEW_HARD_VAL = 22
+
 ARG_SEARCH_OBVIOUS_S = "-o"         # Search for obvious values
 ARG_SEARCH_OBVIOUS = "--obvious"
 COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution searching"
@@ -67,8 +77,6 @@ COMMENT_CONSOLE = "Force displays in console mode (using nCurses if available)"
 ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show grids during process"
-MIN_DETAILS    = 1 # Slow
-MAX_DETAILS    = 2
 
 #
 #   options object : command-line parsing and parameters management
@@ -182,7 +190,7 @@ class options(object):
         # display grid ?
         display = args.details[0] if args.details is not None else 0       
         if display == 2:
-            self.progressMode_ = self.PROGRESS_MULTITHREADED
+            self.progressMode_ = PROGRESS_MULTITHREADED_VAL
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")

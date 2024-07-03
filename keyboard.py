@@ -5,7 +5,7 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   posixKeyoard : handle keyboard
+#   Description :   handle keyboard
 #
 
 class keyboard(object):

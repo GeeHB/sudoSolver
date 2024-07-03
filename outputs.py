@@ -11,7 +11,6 @@
 import os
 from ownExceptions import sudokuError
 
-
 #
 # stats - Informations about a solution
 #

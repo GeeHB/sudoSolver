@@ -8,9 +8,9 @@
 #                       -  edtion and/or resolution of a sudoku's grid
 #
 
-import os, platform, subprocess, time, math
+import os, time, math
 from element import element, elementStatus
-from pointer import pointer, LINE_COUNT, ROW_COUNT, VALUE_MIN, VALUE_MAX, INDEX_MIN, INDEX_MAX
+from pointer import pointer, LINE_COUNT, ROW_COUNT, VALUE_MIN, VALUE_MAX, INDEX_MAX
 
 from tinySquare import tinySquare
 from ownExceptions import reachedEndOfList, sudokuError

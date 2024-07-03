@@ -16,6 +16,11 @@
 * All OS
    * PyGame 2.1.2
 
+#### Version 2.0.1
+* july 2024
+* Added :
+   * Generate new grid (to be solved)
+
 #### Version 1.6.4
 * aug. 2023
 * Added :
