@@ -9,7 +9,6 @@
 
 import sysconfig, argparse
 from sharedTools import colorizer as color
-#from pointer import ROW_COUNT, LINE_COUNT
 
 # App informations
 APP_SHORT_NAME = "sudoSolver"
@@ -78,9 +77,6 @@ ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show grids during process"
 
-MIN_DETAILS    = 1 # Slow
-MAX_DETAILS    = 2
-
 #
 #   options object : command-line parsing and parameters management
 #
@@ -90,7 +86,8 @@ class options(object):
     PROGRESS_NONE           = 0      # Don't show progession
     PROGRESS_SLOW           = 1      # Singlethreaded mode
     PROGRESS_SINGLETHREADED = PROGRESS_SLOW
-    PROGRESS_MULTITHREADED  = 2      # Use a distinct thread for displaying grids
+    PROGRESS_SPEED          = 2     # Use a distinct thread for displaying grids
+    PROGRESS_MULTITHREADED  = PROGRESS_SPEED      
 
     # Construction
     #
@@ -127,7 +124,7 @@ class options(object):
         parser.add_argument(ARG_SEARCH_OBVIOUS_S, ARG_SEARCH_OBVIOUS, action='store_true', help = COMMENT_SEARCH_OBVIOUS, required = False)
         
         # display progression?
-        parser.add_argument(ARG_DETAILS_S, ARG_DETAILS, help = COMMENT_DETAILS, required = False, nargs=1, type=int, choices=range(MIN_DETAILS, MAX_DETAILS + 1))
+        parser.add_argument(ARG_DETAILS_S, ARG_DETAILS, help = COMMENT_DETAILS, required = False, nargs=1, type=int, choices=range(self.PROGRESS_SLOW, self.PROGRESS_SPEED + 1))
         
         # Mutually exclusive actions
         #
