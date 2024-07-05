@@ -68,37 +68,44 @@ class sudoParamWindow(tk.Frame):
         ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FOLDERNAME} :").grid(column=0, row=0, padx=5, pady=5)
         
         self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
-        self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
+        self.folderNameEdit_.grid(column=0, row=0, columnspan=3, padx=5, pady=5)
 
         self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE, command=self._browseFolder)
-        self.folderBrowseButton_.grid(column=5, row=0, padx=5, pady=5)
+        self.folderBrowseButton_.grid(column=4, row=0, padx=5, pady=5)
 
         # File name
         ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FILENAME} :").grid(column=0, row=1, padx=5, pady=5)
 
         self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
-        self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
+        self.fileNameEdit_.grid(column=0, row=1, columnspan=3, padx=5, pady=5)
 
         # "walk" buttons
         self.folderPrevButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_PREV, command = self._prevFile, state = tk.DISABLED)
-        self.folderPrevButton_.grid(column=1, row=2, padx=5, pady=5)
+        self.folderPrevButton_.grid(column=0, row=2, padx=5, pady=5)
 
         self.folderNextButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_NEXT, command = self._nextFile, state = tk.DISABLED)
-        self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
+        self.folderNextButton_.grid(column=1, row=2, padx=5, pady=5)
 
-        # File control buttons
+        # New grids
+        self.newCombo_ = ttk.Combobox(self.gridsTab_, state = "readonly")
+        self.newCombo_.grid(column=0, row=3, padx=5, pady=5)
+        self.newCombo_["values"] = (tkopts.TK_NEW_EMPTY, tkopts.TK_NEW_EASY, tkopts.TK_NEW_MEDIUM, tkopts.TK_NEW_HARD)
+        self.newCombo_.current(0)
+        
         self.newIcon_ = tk.PhotoImage(file="./assets/new.png")
         self.fileCreateButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_NEW,
                                     image = self.newIcon_, compound=tk.LEFT,
                                     command = self._createGrid)
-        self.fileCreateButton_.grid(column=0, row=3, padx=5, pady=25)
+        self.fileCreateButton_.grid(column=1, row=3, padx=5, pady=25)
 
+        
+        # File control buttons
         self.fileEditIcon_ = tk.PhotoImage(file="./assets/edit.png")
         self.fileEditButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_EDIT, 
                                     image = self.fileEditIcon_, compound=tk.LEFT,
                                     command=self._editGrid,
                                     state = tk.DISABLED)
-        self.fileEditButton_.grid(column=1, row=3, padx=5, pady=25)
+        self.fileEditButton_.grid(column=2, row=3, padx=5, pady=25)
 
         # "Solve" tab
         #
@@ -116,7 +123,7 @@ class sudoParamWindow(tk.Frame):
             self.progressCombo_["values"] = (tkopts.TK_PROGRESS_NONE, tkopts.TK_PROGRESS_SINGLETHREADED)
         else:
             self.progressCombo_["values"] = (tkopts.TK_PROGRESS_NONE, tkopts.TK_PROGRESS_SINGLETHREADED, tkopts.TK_PROGRESS_MULTITHREADED)
-        self.progressCombo_.current(opts.options.PROGRESS_SLOW)  # show progress slowly 
+        self.progressCombo_.current(opts.options.PROGRESS_SLOW)  # show progress slowly by default 
 
         # Buttons
         self.solveIcon_ = tk.PhotoImage(file="./assets/solve.png")
