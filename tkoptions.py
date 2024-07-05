@@ -7,7 +7,7 @@
 #   Description :   Options specific to GUI
 #
 
-from options import APP_SHORT_NAME
+from options import APP_SHORT_NAME, NEW_EASY, NEW_EMPTY, NEW_HARD, NEW_MEDIUM
 
 # GUI
 TK_TITLE = f"tk{APP_SHORT_NAME}"
@@ -47,9 +47,9 @@ TK_PROGRESS_SINGLETHREADED  = TK_PROGRESS_SLOW
 TK_PROGRESS_MULTITHREADED   = "multithreaded"
 
 # Types of new grids and count of empty elements
-TK_NEW_EMPTY = "Empty"
-TK_NEW_EASY = "Easy"
-TK_NEW_MEDIUM = "Medium"
-TK_NEW_HARD = "Hard"
+TK_NEW_EMPTY = NEW_EMPTY
+TK_NEW_EASY = NEW_EASY
+TK_NEW_MEDIUM = NEW_MEDIUM
+TK_NEW_HARD = NEW_HARD
 
 #EOF

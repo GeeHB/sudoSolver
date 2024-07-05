@@ -47,13 +47,13 @@ COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
 
 ARG_NEW_S = "-n" # New grid
 ARG_NEW = "--new"
-COMMENT_NEW = "Create a new grid"
+COMMENT_NEW = "Create a new grid of {COMPLEXITY} complexity"
 
 # Types of new grids and count of empty elements
-NEW_EMPTY = 0
-NEW_EASY = 33
-NEW_MEDIUM = 26
-NEW_HARD = 22
+NEW_EMPTY = "Empty"
+NEW_EASY = "Easy"
+NEW_MEDIUM = "Medium"
+NEW_HARD = "Hard"
 
 # Count of filled elements
 NEW_EMPTY_VAL = 0
@@ -77,6 +77,9 @@ COMMENT_CONSOLE = "Force displays in console mode (using nCurses if available)"
 ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show grids during process"
+
+MIN_DETAILS    = 1 # Slow
+MAX_DETAILS    = 2
 
 #
 #   options object : command-line parsing and parameters management
@@ -145,6 +148,15 @@ class options(object):
         # Edit and solve file
         action.add_argument(ARG_EDIT_AND_SOLVE_S, ARG_EDIT_AND_SOLVE, help = COMMENT_EDIT_AND_SOLVE, metavar = "FILE", required = False, nargs=1)
         
+        # Create a new grid
+        action.add_argument(ARG_NEW_S, ARG_NEW, help = COMMENT_NEW, metavar = "COMPLEXITY", 
+                choices = [NEW_EMPTY, NEW_EASY, NEW_MEDIUM, NEW_HARD], required = False)
+        
+        
+        # Default values
+        #
+        self.newGrid_ = NEW_EMPTY_VAL
+        
         # Parse line
         #
         args = parser.parse_args()
@@ -187,7 +199,19 @@ class options(object):
                             self.editMode_ = True
                             self.solveMode_ = True
         
-        # display grid ?
+        # Generate a new grid ?
+        if True == self.editMode_ :
+            if args.new is not None:
+                mode = args.new[0]
+
+                if mode == NEW_EASY:
+                    self.newGrid_ = NEW_EASY_VAL
+                elif mode == NEW_MEDIUM:
+                    self.newGrid_ = NEW_MEDIUM_VAL
+                elif mode == NEW_HARD:
+                    self.newGrid_ = NEW_HARD_VAL
+        
+        # Display grid during the search process ?
         display = args.details[0] if args.details is not None else 0       
         if display == 2:
             self.progressMode_ = PROGRESS_MULTITHREADED_VAL
