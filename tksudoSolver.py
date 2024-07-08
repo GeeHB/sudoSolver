@@ -68,7 +68,7 @@ class sudoParamWindow(tk.Frame):
         ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FOLDERNAME} :").grid(column=0, row=0, padx=5, pady=5)
         
         self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
-        self.folderNameEdit_.grid(column=0, row=0, columnspan=3, padx=5, pady=5)
+        self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
 
         self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE, command=self._browseFolder)
         self.folderBrowseButton_.grid(column=4, row=0, padx=5, pady=5)
@@ -77,27 +77,34 @@ class sudoParamWindow(tk.Frame):
         ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FILENAME} :").grid(column=0, row=1, padx=5, pady=5)
 
         self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
-        self.fileNameEdit_.grid(column=0, row=1, columnspan=3, padx=5, pady=5)
+        self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
 
         # "walk" buttons
         self.folderPrevButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_PREV, command = self._prevFile, state = tk.DISABLED)
-        self.folderPrevButton_.grid(column=0, row=2, padx=5, pady=5)
+        self.folderPrevButton_.grid(column=1, row=2, padx=5, pady=5)
 
         self.folderNextButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_NEXT, command = self._nextFile, state = tk.DISABLED)
-        self.folderNextButton_.grid(column=1, row=2, padx=5, pady=5)
+        self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
 
         # New grids
+        """"
         self.newCombo_ = ttk.Combobox(self.gridsTab_, state = "readonly")
-        self.newCombo_.grid(column=0, row=3, padx=5, pady=5)
+        self.newCombo_.grid(column=0, row=3, padx=5, pady=5, columnspan=1)
         self.newCombo_["values"] = (tkopts.TK_NEW_EMPTY, tkopts.TK_NEW_EASY, tkopts.TK_NEW_MEDIUM, tkopts.TK_NEW_HARD)
         self.newCombo_.current(0)
-        
-        self.newIcon_ = tk.PhotoImage(file="./assets/new.png")
-        self.fileCreateButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_NEW,
-                                    image = self.newIcon_, compound=tk.LEFT,
-                                    command = self._createGrid)
-        self.fileCreateButton_.grid(column=1, row=3, padx=5, pady=25)
+        """
 
+        self.newCombo_ = ttk.Menubutton(self.gridsTab_, text=tkopts.TK_NEW)
+        self.newCombo_.menu = tk.Menu(self.newCombo_, tearoff=0)
+        self.newCombo_["menu"] = self.newCombo_.menu
+
+        # choices in dropdown menu
+        self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_EMPTY)
+        self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_EASY)
+        self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_MEDIUM)
+        self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_HARD)
+        self.newCombo_.grid(column=1, row=3, padx=5, pady=5, sticky="e")
+        
         
         # File control buttons
         self.fileEditIcon_ = tk.PhotoImage(file="./assets/edit.png")
