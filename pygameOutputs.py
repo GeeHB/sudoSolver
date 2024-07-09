@@ -210,11 +210,6 @@ class pygameOutputs(outputs):
     intSquareWidth_ = 0        # Internal dims of an element
     extSquareWidth_ = 0        # Ext. dims 
     
-    """
-    deltaW_         = 0        # Grid's offsets
-    deltaH_         = 0
-    """
-
     # Elements'values drawing
     sElement_ = None
 
@@ -252,11 +247,7 @@ class pygameOutputs(outputs):
         self.height_ = LINE_COUNT * SQUARE_SIDE + 2 * DELTA_H
         self.extSquareWidth_ = SQUARE_SIDE
         self.intSquareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_THICK
-        """
-        self.deltaW_ = DELTA_W
-        self.deltaH_ = DELTA_H
-        """
-
+        
         # font for drawing elements
         fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE_BASE)
         self.sElement_ = textSurface(ELT_FONT_NAME, fontSize)
@@ -407,9 +398,6 @@ class pygameOutputs(outputs):
     # Mouse position
     #
     def mousePosition(self, pos):
-        """
-        return (-1 if pos[0] < self.deltaW_ else int((pos[0] - EXT_BORDER_THICK - self.deltaW_) / self.extSquareWidth_), -1 if pos[1] < self.deltaH_ else int((pos[1] - EXT_BORDER_THICK - self.deltaH_) / self.extSquareWidth_))
-        """
         return (-1 if pos[0] < DELTA_W else int((pos[0] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_), -1 if pos[1] < DELTA_H else int((pos[1] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_))
     
     # Draw the whole grid
@@ -442,10 +430,6 @@ class pygameOutputs(outputs):
             return
         
         # top-left corner position
-        """
-        x = self.deltaW_ + row * self.extSquareWidth_ + EXT_BORDER_THICK
-        y = self.deltaH_ + line * self.extSquareWidth_ + EXT_BORDER_THICK
-        """
         x = DELTA_W + row * self.extSquareWidth_ + EXT_BORDER_THICK
         y = DELTA_H + line * self.extSquareWidth_ + EXT_BORDER_THICK
         
@@ -483,7 +467,10 @@ class pygameOutputs(outputs):
         pygame.display.update()
 
     def flip(self):
-        pygame.display.flip()
+        try:
+            pygame.display.flip()
+        except:
+            pass
 
     # Position of the Window
     def getWindowPosition(self):
@@ -542,12 +529,6 @@ class pygameOutputs(outputs):
 
         self.intSquareWidth_ = self.extSquareWidth_ - 2 * EXT_BORDER_THICK
         
-        # top-left grid position
-        """
-        self.deltaW_ = math.floor((newWidth - STATS_FRAME_WIDTH - ROW_COUNT * self.extSquareWidth_) / 2)
-        self.deltaH_ = math.floor((newHeight - LINE_COUNT * self.extSquareWidth_) / 2)
-        """
-
         # Update elements'font
         fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
         self.sElement_.setFont(ELT_FONT_NAME, fontSize)
@@ -570,10 +551,6 @@ class pygameOutputs(outputs):
             #
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
-                    """
-                    x = self.deltaW_ + row * self.extSquareWidth_
-                    y = self.deltaH_ + line * self.extSquareWidth_
-                    """
                     x = DELTA_W + row * self.extSquareWidth_
                     y = DELTA_H + line * self.extSquareWidth_
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
@@ -584,10 +561,6 @@ class pygameOutputs(outputs):
             lSquare = self.extSquareWidth_ * 3
             for line in range(3):
                 for row in range(3):
-                    """
-                    x = self.deltaW_ + row * lSquare
-                    y = self.deltaH_ + line * lSquare
-                    """
                     x = DELTA_W + row * lSquare
                     y = DELTA_H + line * lSquare
                     pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)

@@ -86,19 +86,12 @@ class sudoParamWindow(tk.Frame):
         self.folderNextButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_NEXT, command = self._nextFile, state = tk.DISABLED)
         self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
 
-        # New grids
-        """"
-        self.newCombo_ = ttk.Combobox(self.gridsTab_, state = "readonly")
-        self.newCombo_.grid(column=0, row=3, padx=5, pady=5, columnspan=1)
-        self.newCombo_["values"] = (tkopts.TK_NEW_EMPTY, tkopts.TK_NEW_EASY, tkopts.TK_NEW_MEDIUM, tkopts.TK_NEW_HARD)
-        self.newCombo_.current(0)
-        """
-
+        # New grids (as a popup menu)
         self.newCombo_ = ttk.Menubutton(self.gridsTab_, text=tkopts.TK_NEW)
         self.newCombo_.menu = tk.Menu(self.newCombo_, tearoff=0)
         self.newCombo_["menu"] = self.newCombo_.menu
 
-        # choices in dropdown menu
+        # Choices in dropdown menu
         self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_EMPTY)
         self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_EASY)
         self.newCombo_.menu.add_cascade(label=tkopts.TK_NEW_MEDIUM)
@@ -232,13 +225,6 @@ class sudoParamWindow(tk.Frame):
         if value is None:
             value = ""
 
-        # Value changed ?
-        """
-        if self.fileName == value : 
-            # Nothing to do
-            return
-        """
-        
         state = tk.DISABLED if 0 == len(value) else tk.NORMAL
         self.fileEditButton_["state"] = state
         self.revertButton_["state"] = state

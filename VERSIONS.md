@@ -5,7 +5,7 @@
 * No multithread on MacOS
 
 #### Dependencies
-* Linux - Fedora 36
+* Linux - Fedora >= 36
    * termios
    * fcntl
    * termcolor
@@ -17,13 +17,15 @@
    * PyGame 2.1.2
 
 #### todo
-* Resize "new grid" combo : https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
+* Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
 
 
 #### Version 2.0.1
 * july 2024
 * Added :
    * Generate new grid (to be solved)
+* Corrections :
+   * SDL error when closing window
 
 #### Version 1.6.4
 * aug. 2023
