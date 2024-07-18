@@ -32,7 +32,7 @@ class element(object):
 
     # Construction
     def __init__(self, value = None):
-        if not None == value:
+        if not value is None:
             # value is 'original'
             self.value_ = value
             self.status_ = elementStatus.ORIGINAL | elementStatus.SET
@@ -47,7 +47,7 @@ class element(object):
             # The element can't be "original"
             if not self.status_ and elementStatus.ORIGINAL:
                 # Update the value
-                if not value == None:
+                if not value is None:
                     self.value_ = value
                     self.status_ = elementStatus.SET
 
@@ -76,21 +76,21 @@ class element(object):
     #
     def isEmpty(self):
         return self.status_ == elementStatus.EMPTY  # status is not set !
-    
+
     def isOriginal(self):
         return ((self.status_ & elementStatus.ORIGINAL) == elementStatus.ORIGINAL)
 
     def isObvious(self):
         return self.__checkAttribute__(elementStatus.OBVIOUS)
-        
+
     # At least can we modifiy this particular value ?
     def isChangeable(self):
-        #return self.status_ <= elementStatus.SET    # just SET or EMPTY ?   
+        #return self.status_ <= elementStatus.SET    # just SET or EMPTY ?
         return self.status_ in [elementStatus.EMPTY, elementStatus.SET]
-    
+
     # Internal meethods
     #
-    
+
     # Check a single attribute
     def __checkAttribute__(self, attribute):
         return ((self.status_ & attribute) == attribute)

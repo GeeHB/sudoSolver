@@ -6,7 +6,7 @@
 #
 #   Description :   Définition of Thread and threadAction objects
 #                   Atomic action to perform by a thread
-#                   
+#
 
 import threading
 
@@ -79,7 +79,7 @@ class Thread(threading.Thread):
     accessList_ = threading.Event()     # Is action-list free ?
     syncThreads_ = threading.Event()    # Event for threads synchronisation
 
-    # Start the thread 
+    # Start the thread
     def initiate(self):
         threading.Thread.__init__(self)  # Create the new thread
         self.start()  # start the thread (ie. call run() method )
@@ -90,30 +90,31 @@ class Thread(threading.Thread):
 
     #
     # "Internal" methods
-    #   
+    #
 
     # Add an action to the internal list
-    # 
+    #
     def _addAction(self, action=None, id=None, wait=False):
 
         # Action or id must be present
-        if action == None and id == None:
+        if action is None and id is None:
             return False
 
         # Valid action id ?
         if (action != None and action.actionId_ == ACTION_NONE) or (
-                action == None and id == ACTION_NONE) or False == self.accessList_.wait(MAX_THREAD_LIST_WAIT):
+                action is None and id == ACTION_NONE) or False == self.accessList_.wait(MAX_THREAD_LIST_WAIT):
             return False
 
         # Take list ownership
         self.accessList_.clear()
 
         # Add new action to the list
-        if None == action:
-            action =  threadAction(id)
+        if action is None:
+            action =  threadAction(id if id is not None else ACTION_NONE)
 
-        # Should I think both threads ?
-        action.sync_ = wait
+        # Should I sync both threads ?
+        if action is not None:
+            action.sync_ = wait
 
         # Wait for action completion ?
         if True == wait:
@@ -121,7 +122,8 @@ class Thread(threading.Thread):
 
         # Add to list (with uid)
         self.lastId_ = self.lastId_ + 1
-        action.uid_ = self.lastId_
+        if action is not None :
+            action.uid_ = self.lastId_
         self.actions_.append(action)
 
         # List is now free
@@ -141,7 +143,7 @@ class Thread(threading.Thread):
 
                 # handle return
                 try:
-                    return self.syncRet_[action.uid_]
+                    return self.syncRet_[action.uid_] if action is not None else False
                 except:
                     return False
 

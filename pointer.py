@@ -30,10 +30,10 @@ class pointer(object):
     # Members
     #
     index_      =   INDEX_MIN       # Current index
-    
+
     row_ = 0                        # Position in the "matrix"
     line_ = 0
-    
+
     squareID_ = 0                   # tiny-square ID
 
     gameMode_ = False               # In game mode when the end of the matrix is reached, the sudoku is solved !
@@ -41,13 +41,14 @@ class pointer(object):
     # Construction
     #
     def __init__(self, other = None, index = None, gameMode = True):
+
         # Copy ?
         #
-        if not None == other:
+        if not other is None:
             self.set(other)
         else:
-            self.index_ = 0 if None == index else index
-            self.gameMode_ = gameMode 
+            self.index_ = 0 if index is None else index
+            self.gameMode_ = gameMode
 
             self._whereAmI()
 
@@ -73,20 +74,20 @@ class pointer(object):
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
                 # Outside the grid => ignore the click
                 return
-            
+
             self.row_ = pos[0]
             self.line_ = pos[1]
-            
+
         self.index_ = self.row_ + self.line_ * ROW_COUNT
 
         self._whereAmI(False)
-        
+
     # Access
     #
 
     def index(self):
         return self.index_
-    
+
     # Position
     def row(self):
         return self.row_
@@ -129,7 +130,7 @@ class pointer(object):
     def decRow(self, dec = 1):
         row = self.row_ - dec
         if row < 0:
-            self.index_ = (1 + self.line_ ) * ROW_COUNT + row 
+            self.index_ = (1 + self.line_ ) * ROW_COUNT + row
         else:
             self.index_ -= dec
         self._whereAmI()
@@ -137,11 +138,11 @@ class pointer(object):
     def incRow(self, inc = 1):
         row = self.row_ + inc
         if row >= ROW_COUNT:
-            self.index_ = (self.line_ - 1) * ROW_COUNT + row 
+            self.index_ = (self.line_ - 1) * ROW_COUNT + row
         else:
             self.index_ += inc
         self._whereAmI()
-    
+
     # Change "line"
     #
     def decLine(self, dec = 1):
@@ -164,7 +165,7 @@ class pointer(object):
         newVal = value + 1
         return (VALUE_MIN - 1) if newVal > VALUE_MAX else newVal
 
-    def decValue(self, value):  
+    def decValue(self, value):
         newVal = value - 1
         return VALUE_MAX if newVal < (VALUE_MIN - 1) else newVal
 
@@ -175,12 +176,12 @@ class pointer(object):
     # Updating coordinates
     #
     def _whereAmI(self, all = True):
-        
+
         if True == all:
             # V. math
             self.line_ = math.floor(self.index_ / ROW_COUNT)
             self.row_ = self.index_ - ROW_COUNT * self.line_
-        
+
         # Small square ID
         self.squareID_ = 3 * math.floor(self.line_ / 3) + math.floor(self.row_ / 3)
 
@@ -188,7 +189,7 @@ class pointer(object):
     #
     def _inRange(self, value, min = 0, max = ROW_COUNT - 1):
         return False if value < min or value > max else True
-    
+
     def _setInRange(self, value):
         return 0 if value < 0 else (ROW_COUNT - 1) if value >= ROW_COUNT else value
 

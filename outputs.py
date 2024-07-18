@@ -23,7 +23,7 @@ class stats(object):
 
 
 #
-# outputs - abstract class containing all drawing methods 
+# outputs - abstract class containing all drawing methods
 #
 class outputs(object):
 
@@ -48,7 +48,7 @@ class outputs(object):
     MOVE_RIGHT          = "f"
     MOVE_UP             = "e"
     MOVE_DOWN           = "x"
-    
+
     REMOVE_VALUE        = " "
 
     VALUE_DEC_OLD       = "+"     # Change element value (edition mode)
@@ -77,7 +77,7 @@ class outputs(object):
 
     # Display modes
     #
-    MODE_DEFAULT        = 0 
+    MODE_DEFAULT        = 0
     MODE_EDIT           = 1
     MODE_BROWSEFOLDER   = 2
 
@@ -111,7 +111,7 @@ class outputs(object):
         print(text)
 
     # Show resolution stats
-    #   
+    #
     #   Print stats on console (by default)
     #
     # can be overloaded
@@ -126,7 +126,7 @@ class outputs(object):
                 print("\t- No obvious value found")
 
         print("\t- Solved in " + str(round(sStats.bruteDuration_, 2)) + " second(s)")
-        print("\t- " + str(sStats.bruteAttempts_) + " attempt(s)\n") 
+        print("\t- " + str(sStats.bruteAttempts_) + " attempt(s)\n")
 
     # Waiting for an event
     #   @allEvents : returns when any event occurs (by default only keyboard and exit events)
@@ -137,20 +137,20 @@ class outputs(object):
         wait = True
         while wait:
             c = self._readKeyboard()
-            wait = (len(c) == 0)    
+            wait = (len(c) == 0)
 
     # Check current/last event
     #
     def pollEvent(self):
         return self.waitForEvent()
-    
+
     # Mouse events and status
     #
     #   returns tuple (ButtonID or None, (xPos, yPos))
     #
     def mouseButtonStatus(self, event):
         return self.MOUSE_BUTTON_NONE, (0, 0)
-    
+
     # Mouse position
     #
     def mousePosition(self, pos):
@@ -162,7 +162,7 @@ class outputs(object):
     #
     #  can be overloaded
     def keyPressed(self, elements = None, allEvents = False):
-        return (False, None)    
+        return (False, None)
 
     # Is this display mode compatible with edition ?
     def allowEdition(self):
@@ -213,7 +213,7 @@ class outputs(object):
     #
     def updateGrid(self, elements, limit):
         self._updateGrid(elements, limit)
-        
+
     # End of the object (no more drawings at all)
     #   can be overloaded
     def close(self):
@@ -226,13 +226,13 @@ class outputs(object):
     # Update display from beginning to 'limit' (if not None)
     # can be overloaded
     def _updateGrid(self, elements, limit):
-      pass  
+      pass
 
     # Read the keyboard
     # returns  a  char
     def _readKeyboard(self):
         # Loaded ?
-        if None == self.keyHandler_:
+        if self.keyHandler_ is None:
             try:
                 import posixKeyboard
                 self.keyHandler_ = posixKeyboard.posixKeyboard()
@@ -242,5 +242,5 @@ class outputs(object):
 
         # handle the key
         return self.keyHandler_.getChar()
-        
+
  # EOF

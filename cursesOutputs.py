@@ -14,7 +14,7 @@ from pointer import pointer
 
 import curses
 
-# 
+#
 # Internal consts
 #
 
@@ -25,7 +25,7 @@ ORIGIN_X = 5
 ORIGIN_Y = 5
 
 #
-# cursesOutputs - Display a Sudoku grid using (n)Curses 
+# cursesOutputs - Display a Sudoku grid using (n)Curses
 #
 class cursesOutputs(outputs):
 
@@ -52,9 +52,9 @@ class cursesOutputs(outputs):
     #
     def displayText(self, text, information, elements):
         # no text with curses. Except when curses is not launched ...
-        if None == self.term_:
-           super().displayText(text) 
-    
+        if self.term_ is None:
+           super().displayText(text)
+
     # Draw the whole matrix
     #
     def draw(self, elements):
@@ -62,21 +62,21 @@ class cursesOutputs(outputs):
 
         for line in range(pointer.LINE_COUNT):
             for row in range(pointer.ROW_COUNT):
-                
+
                 currentElement = elements[position.index()]
 
                 attr = curses.color_pair(COLOUR_EVEN_ID) if 0 == (position.squareID() % 2) else curses.color_pair(COLOUR_ODD_ID)
                 if currentElement.isOriginal():
                     attr |= curses.A_BOLD # "original" elements are bold
 
-                self.term_.addstr(ORIGIN_Y + line, ORIGIN_X + 3 * row, " " + (" " if currentElement.isEmpty() else str(currentElement.value())) +  " ", attr) 
-                
+                self.term_.addstr(ORIGIN_Y + line, ORIGIN_X + 3 * row, " " + (" " if currentElement.isEmpty() else str(currentElement.value())) +  " ", attr)
+
                 # next element ...
                 position+=1
-        
+
         # don't forget to refresh the console !
         self.term_.refresh()
-    
+
     # Finish ...
     #
     def close(self):
