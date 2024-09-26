@@ -123,12 +123,14 @@ class sudoku(object):
     #
     def displayText(self, text, information = True):
         # call display's method
-        self.outputs_.displayText(text, information, self.elements_)
+        if self.outputs_ is not None:
+            self.outputs_.displayText(text, information, self.elements_)
 
     # Show resolution stats
     #
     def showStats(self, params, sStats):
-        self.outputs_.showStats(params, sStats)
+        if self.outputs_ is not None:
+            self.outputs_.showStats(params, sStats)
 
     # What can we do ?
     #
