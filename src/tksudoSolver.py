@@ -99,7 +99,7 @@ class sudoParamWindow(tk.Frame):
 
 
         # File control buttons
-        self.fileEditIcon_ = tk.PhotoImage(file="./assets/edit.png")
+        self.fileEditIcon_ = tk.PhotoImage(file="../assets/edit.png")
         self.fileEditButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_EDIT,
                                     image = self.fileEditIcon_, compound=tk.LEFT,
                                     command=self._editGrid,
@@ -125,19 +125,19 @@ class sudoParamWindow(tk.Frame):
         self.progressCombo_.current(options.options.PROGRESS_SLOW)  # show progress slowly by default
 
         # Buttons
-        self.solveIcon_ = tk.PhotoImage(file="./assets/solve.png")
+        self.solveIcon_ = tk.PhotoImage(file="../assets/solve.png")
         self.solveButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_SOLVE,
                             image = self.solveIcon_, compound=tk.LEFT,
                             command = self._solve, state = tk.DISABLED)
         self.solveButton_.grid(column=0, row=3, sticky = "w", padx=5, pady=25)
 
-        self.revertIcon_ = tk.PhotoImage(file="./assets/undo.png")
+        self.revertIcon_ = tk.PhotoImage(file="../assets/undo.png")
         self.revertButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_REVERT,
                             image = self.revertIcon_, compound=tk.LEFT,
                             command = self._revertGrid, state = tk.DISABLED)
         self.revertButton_.grid(column=1, row=3, padx=5, pady=25)
 
-        self.saveIcon_ = tk.PhotoImage(file="./assets/save.png")
+        self.saveIcon_ = tk.PhotoImage(file="../assets/save.png")
         self.saveButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_SAVE,
                             image = self.saveIcon_, compound=tk.LEFT,
                             command = self._save, state = tk.DISABLED)
