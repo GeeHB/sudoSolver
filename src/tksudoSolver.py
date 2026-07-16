@@ -149,9 +149,9 @@ class sudoParamWindow(tk.Frame):
         # Default values
         self.backToSingltThreadMode_ = False
         self.fileName = ""
-        self.folderName = os.path.abspath(options.DEF_FOLDER)
+        self.folderName = os.path.abspath(options.DEF_GRID_FOLDER)
 
-    # Change folder
+    # Change foldergenName
     #
     def _browseFolder(self):
         nFolder = tkDialog.askdirectory(title=tkopts.TK_CHOOSE_FOLDER, initialdir=self.folderName)

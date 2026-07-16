@@ -394,8 +394,10 @@ class sudoku(object):
 
             file.close()
             return fileName
-        except ModuleNotFoundError:
-            raise sudokuError(f"io error while writing the file '{fileName}'")
+        except FileNotFoundError:
+            # raise sudokuError(f"io error while writing the file '{fileName}'")
+            print (f"io error while writing the file '{fileName}'")
+            return None
 
     # Edit / modify the grid
     #

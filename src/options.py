@@ -46,7 +46,6 @@ COMMENT_USER = "User mode"
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
-DEF_FOLDER = "./grids"
 
 FILE_EXPORT_EXTENSION = ".solution" # A solution grid file
 
@@ -70,6 +69,13 @@ COMMENT_SAVE_SOLUTION = "Save the solution of the grid"
 ARG_DETAILS_S = "-d"           # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show grids during process"
+
+#
+# App. folders
+#
+DEF_GRID_FOLDER = "../grids"
+DEF_ASSETS_FOLDER = "../assets"
+
 
 #
 #   options object : command-line parsing and parameters management

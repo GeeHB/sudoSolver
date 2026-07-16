@@ -52,4 +52,11 @@ TK_NEW_EASY = options.options.NEW_EASY
 TK_NEW_MEDIUM = options.options.NEW_MEDIUM
 TK_NEW_HARD = options.options.NEW_HARD
 
+# Images (for buttons)
+#
+TK_IMG_EDIT     = "edit.png"
+TK_IMG_SOLVE    = "solve.png"
+TK_IMG_SAVE     = "save.png"
+TK_IMG_UNDO     = "undo.png"
+
 #EOF
