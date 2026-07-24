@@ -492,7 +492,7 @@ if "__main__" == __name__:
 
             if not quitLoop:
                 mainWindow.solver_.flip()  # Update pygame
-                mainWindow.master.update()  # handle GUI with tkinter
+                # mainWindow.master.update()  # handle GUI with tkinter
 
         # Should be useless be is necessary on ChromeOS !!!
         mainWindow.solver_.close()

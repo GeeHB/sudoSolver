@@ -261,8 +261,9 @@ class sudoku:
                     self.gridFromFile(currentFile)
                 except sudokuError as e:
                     print(f"Sudoku Error : {e.message}")
-                except:
+                except Exception as other:
                     # the file is not valid => remove it from the list
+                    print(f"Invalid file : {other}")
                     files.pop(index)
                     maxIndex -= 1
 
@@ -328,7 +329,29 @@ class sudoku:
         # Open and read the file
         #
         try:
-            file = open(fileName)
+            with open(fileName) as file:
+                pt = pointer(gameMode=False)
+
+                # Read the lines
+                for line in file:
+                    # Not a comment !
+                    if line[0] != self.FILE_COMMENTS:
+                        # remove EOL
+                        if line[len(line) - 1] == "\n":
+                            line = line[: len(line) - 1]
+
+                        values = line.split(self.VALUE_SEPARATOR)
+
+                        if not ROW_COUNT == len(values):
+                            raise sudokuError(
+                                f"Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                            )
+
+                        for val in values:
+                            self._setAt(pt, val)
+
+                            # Next value
+                            pt += 1
         except FileNotFoundError:
             if True == mustExist:
                 raise sudokuError(f"The file '{fileName}' doesn't exist")
@@ -336,30 +359,7 @@ class sudoku:
                 print(f"New file : '{fileName}'")
                 return
 
-        pt = pointer(gameMode=False)
-
-        # Read the lines
-        for line in file:
-            # Not a comment !
-            if line[0] != self.FILE_COMMENTS:
-                # remove EOL
-                if line[len(line) - 1] == "\n":
-                    line = line[: len(line) - 1]
-
-                values = line.split(self.VALUE_SEPARATOR)
-
-                if not ROW_COUNT == len(values):
-                    raise sudokuError(
-                        f"Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
-                    )
-
-                for val in values:
-                    self._setAt(pt, val)
-
-                    # Next value
-                    pt += 1
-
-        file.close()
+        # file.close()
 
         if self.outputs_ is not None and showFileName:
             self.outputs_.setGridName(self.gridFileName_)
@@ -382,35 +382,34 @@ class sudoku:
         if genName:
             fileName += FILE_EXPORT_EXTENSION
         try:
-            file = open(fileName, "w")
+            with open(fileName, "w") as file:
+                # a few comments ?
+                if comments and len(comments):
+                    for comment in comments:
+                        line = self.FILE_COMMENTS
+                        line += " "
+                        line += comment
+                        line += "\n"
+                        file.write(line)
 
-            # a few comments ?
-            if comments and len(comments):
-                for comment in comments:
-                    line = self.FILE_COMMENTS
-                    line += " "
-                    line += comment
-                    line += "\n"
+                # File content
+                pt = pointer(gameMode=False)
+                for lIndex in range(LINE_COUNT):
+                    line = ""
+                    for _ in range(ROW_COUNT):
+                        el = self.elements_[pt.index()]
+                        line += str(0 if el.isEmpty() else el.value())
+                        line += self.VALUE_SEPARATOR
+                        pt += 1
+
+                    # add separator
+                    line = line[: len(line) - 1]
+                    if lIndex < (LINE_COUNT - 1):
+                        line += "\n"
+
                     file.write(line)
 
-            # File content
-            pt = pointer(gameMode=False)
-            for lIndex in range(LINE_COUNT):
-                line = ""
-                for _ in range(ROW_COUNT):
-                    el = self.elements_[pt.index()]
-                    line += str(0 if el.isEmpty() else el.value())
-                    line += self.VALUE_SEPARATOR
-                    pt += 1
-
-                # add separator
-                line = line[: len(line) - 1]
-                if lIndex < (LINE_COUNT - 1):
-                    line += "\n"
-
-                file.write(line)
-
-            file.close()
+            # file.close()
             return fileName
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
@@ -589,8 +588,8 @@ class sudoku:
         except IndexError:
             # No solution found
             found = False
-        except:
-            escaped = True
+        # except:
+        # escaped = True
 
         # Finished (anyway)
         return (found, escaped, self.attempts_, endTime)
