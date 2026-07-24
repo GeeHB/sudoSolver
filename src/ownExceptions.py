@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   ownExceptions.py
@@ -15,6 +17,7 @@
 class reachedEndOfList(Exception):
     pass
 
+
 #
 # sudokuError : An error ...
 #
@@ -25,8 +28,9 @@ class sudokuError(Exception):
 
     def __str__(self):
         return self.message
-        
+
     def __repr__(self):
         return f"Sudo Error : {self.message}"
+
 
 # EOF

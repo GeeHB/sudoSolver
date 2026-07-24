@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
+#
 #
 # coding=UTF-8
 #
@@ -11,16 +12,10 @@
 #                       -  edit and/or resolve of a sudoku's grid
 #
 
-import os, time, math
-
-from element import element
-from pointer import pointer, LINE_COUNT, ROW_COUNT, GRID_SIZE, VALUE_MIN, VALUE_MAX, INDEX_MAX
-from tinySquare import tinySquare
-from ownExceptions import reachedEndOfList, sudokuError
-from options import FILE_EXPORT_EXTENSION, options as opts
-from pygameOutputs import pygameOutputs
-from pygameThreadedOutputs import pygameThreadedOutputs
-from sharedTools import statusBits
+import math
+import os
+import sys
+import time
 
 #
 # OCR
@@ -29,46 +24,63 @@ import cv2
 import pytesseract
 from pytesseract import Output
 
-TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"       # OCR parameters
+from element import element
+from options import FILE_EXPORT_EXTENSION
+from options import options as opts
+from ownExceptions import reachedEndOfList, sudokuError
+from pointer import (
+    GRID_SIZE,
+    INDEX_MAX,
+    LINE_COUNT,
+    ROW_COUNT,
+    VALUE_MAX,
+    VALUE_MIN,
+    pointer,
+)
+from pygameOutputs import pygameOutputs
+from pygameThreadedOutputs import pygameThreadedOutputs
+from sharedTools import statusBits
+from tinySquare import tinySquare
+
+TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"  # OCR parameters
 TESSERACT_BOX_THICKNESS = 1
-TESSERACT_BOX_COLOR = (0,255,0)
+TESSERACT_BOX_COLOR = (0, 255, 0)
+
 
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #
-class sudoku(object):
-
+class sudoku:
     # Edition status
     #
-    EDIT_CONTINUE   = statusBits.STATUS_NONE
-    EDIT_MODIFIED   = 1         # Grid has been modified (at least once)
-    EDIT_STOP       = 2         # Stop edition
-    EDIT_ESCAPE     = 4         # Escape edition
-    EDIT_ESCAPED    = (EDIT_STOP|EDIT_ESCAPE)
-    EDIT_NOREDRAW   = 8         # don't redraw at previous pos value
+    EDIT_CONTINUE = statusBits.STATUS_NONE
+    EDIT_MODIFIED = 1  # Grid has been modified (at least once)
+    EDIT_STOP = 2  # Stop edition
+    EDIT_ESCAPE = 4  # Escape edition
+    EDIT_ESCAPED = EDIT_STOP | EDIT_ESCAPE
+    EDIT_NOREDRAW = 8  # don't redraw at previous pos value
 
     # Consts
     #
-    VALUE_SEPARATOR = ","       # Value separator in files
-    FILE_COMMENTS = "#"         # Comment lines start with
+    VALUE_SEPARATOR = ","  # Value separator in files
+    FILE_COMMENTS = "#"  # Comment lines start with
 
     # Members
     #
     gridFileName_ = None
-    elements_ = []          # The grid (as a flat list)
     outputs_ = None
 
     attempts_ = 0
-    start_ = 0              # Resolution start-time
+    start_ = 0  # Resolution start-time
 
     progressMode_ = opts.PROGRESS_NONE  # Draw grid during solving process ?
-
-    OSInfos_ = {}           # Informations about the OS and the Window manager
-
     editStatus_ = statusBits.statusBits(EDIT_CONTINUE)
 
     # Construction
     #
-    def __init__(self, progressMode = opts.PROGRESS_NONE, initOutputs = True):
+    def __init__(self, progressMode=opts.PROGRESS_NONE, initOutputs=True):
+
+        self.elements_ = []
+        self.OSInfos_ = {}  # Informations about the OS and the Window manager
 
         # Show progression details ?
         self.progressMode = progressMode
@@ -81,12 +93,12 @@ class sudoku(object):
                 self._createPYGameOutputs()
             except ModuleNotFoundError:
                 print("PYGame isn't installed. Try pip install pygame")
-                exit()
+                sys.exit()
             except sudokuError as e:
                 print(e)
 
             if self.outputs_ is None:
-                exit()
+                sys.exit()
 
             # Ready ?
             while not self.outputs_.isReady():
@@ -127,7 +139,10 @@ class sudoku(object):
         # Changed ?
         if self.outputs_ is not None and self.progressMode_ != value:
             # create a new output object ?
-            newOutPut = value == opts.PROGRESS_MULTITHREADED or self.progressMode_ == opts.PROGRESS_MULTITHREADED
+            newOutPut = (
+                value == opts.PROGRESS_MULTITHREADED
+                or self.progressMode_ == opts.PROGRESS_MULTITHREADED
+            )
 
             self.progressMode_ = value
             if newOutPut:
@@ -142,12 +157,13 @@ class sudoku(object):
     #
     def outputs(self):
         return self.outputs_
+
     def grid(self):
         return self.elements_
 
     # Display text
     #
-    def displayText(self, text, information = True):
+    def displayText(self, text, information=True):
         # call display's method
         if self.outputs_ is not None:
             self.outputs_.displayText(text, information, self.elements_)
@@ -162,6 +178,7 @@ class sudoku(object):
     #
     def allowEdition(self):
         return False if self.outputs_ is None else self.outputs_.allowEdition()
+
     def allowFolderBrowsing(self):
         return False if self.outputs_ is None else self.outputs_.allowFolderBrowsing()
 
@@ -173,7 +190,7 @@ class sudoku(object):
     #
     def waitForKeyDown(self):
         if not self.outputs_ is None:
-            self.outputs_.waitForEvent(self.elements_, allEvents = False)
+            self.outputs_.waitForEvent(self.elements_, allEvents=False)
 
     # Get the list of pending events
     #
@@ -188,16 +205,16 @@ class sudoku(object):
     # Convert current grid to a printable string
     #
     def __str__(self):
-        output = "";
+        output = ""
         if len(self.elements_) == GRID_SIZE:
-            position = pointer(gameMode = False)
+            position = pointer(gameMode=False)
             for line in range(LINE_COUNT):
-                output+="\n"
+                output += "\n"
                 for row in range(ROW_COUNT):
                     currentElement = self.elements_[position.index()]
-                    output+=f" {' ' if currentElement.isEmpty() else str(currentElement.value())} "
-                    position+=1
-            output+="\n"
+                    output += f" {' ' if currentElement.isEmpty() else str(currentElement.value())} "
+                    position += 1
+            output += "\n"
 
         return output
 
@@ -220,12 +237,12 @@ class sudoku(object):
 
     # Browse a folder (to find a grid)
     #
-    def browse(self, folderName): # noqa
+    def browse(self, folderName):
         if not os.path.isdir(folderName) or self.outputs_ is None:
             raise sudokuError(f"{folderName} is not a valid folder")
 
         files = []
-        done = (False == self.folderContent(folderName, files))
+        done = False == self.folderContent(folderName, files)
 
         prev = -1
         index = 0
@@ -236,7 +253,7 @@ class sudoku(object):
         # Browse ...
         while not done:
             # update drawings ?
-            if  prev != index:
+            if prev != index:
                 currentFile = os.path.join(folderName, files[index])
 
                 # load the file and update drawings
@@ -247,13 +264,13 @@ class sudoku(object):
                 except:
                     # the file is not valid => remove it from the list
                     files.pop(index)
-                    maxIndex-=1
+                    maxIndex -= 1
 
                 prev = index
 
             if 0 == maxIndex or self.outputs_ is None:
                 # Nothing left in the folder
-                #return currentFile
+                # return currentFile
                 done = True
 
             index, done, clearFile = self._browseFolder_handleKeyBoard(index, maxIndex)
@@ -268,16 +285,16 @@ class sudoku(object):
         done = False
 
         if self.outputs_ is not None:
-            event = self.outputs_.waitForEvent(self.elements_, allEvents = True)
+            event = self.outputs_.waitForEvent(self.elements_, allEvents=True)
 
             if event.type == self.outputs_.EVT_KEYDOWN:
                 if self.outputs_.MOVE_RIGHT == event.key:
-                    index+=1
+                    index += 1
                     if index >= maxIndex:
                         index = 0
                 else:
                     if self.outputs_.MOVE_LEFT == event.key:
-                        index-=1
+                        index -= 1
                         if index < 0:
                             index = maxIndex - 1
                     else:
@@ -291,14 +308,14 @@ class sudoku(object):
                                 done = True
 
             elif event.type == self.outputs_.EVT_QUIT:
-                    done = True
-                    clearFile = True
+                done = True
+                clearFile = True
 
         return (index, done, clearFile)
 
     # Read a grid'file
     #
-    def load(self, fileName, mustExist, showFileName = True):
+    def load(self, fileName, mustExist, showFileName=True):
         if fileName is None or 0 == len(fileName):
             # ???
             raise sudokuError("No valid file name")
@@ -319,21 +336,22 @@ class sudoku(object):
                 print(f"New file : '{fileName}'")
                 return
 
-        pt = pointer(gameMode = False)
+        pt = pointer(gameMode=False)
 
         # Read the lines
         for line in file:
-
             # Not a comment !
-            if line[0] != self.FILE_COMMENTS :
+            if line[0] != self.FILE_COMMENTS:
                 # remove EOL
                 if line[len(line) - 1] == "\n":
-                    line = line[:len(line) - 1]
+                    line = line[: len(line) - 1]
 
                 values = line.split(self.VALUE_SEPARATOR)
 
                 if not ROW_COUNT == len(values):
-                    raise sudokuError(f"Invalid format for line n° {str(pt.line()+1)} - {str(len(values))} values")
+                    raise sudokuError(
+                        f"Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                    )
 
                 for val in values:
                     self._setAt(pt, val)
@@ -350,7 +368,7 @@ class sudoku(object):
     #
     #   return the name of the saved file or None if an error occured
     #
-    def save(self, genName = False, comments = None, newFileName = None):
+    def save(self, genName=False, comments=None, newFileName=None):
 
         if self.gridFileName_ is None:
             return None
@@ -358,10 +376,10 @@ class sudoku(object):
         # A new name ?
         if newFileName is not None:
             self.gridFileName_ = newFileName
-            #self.outputs_.setGridName(newFileName, create=True)
+            # self.outputs_.setGridName(newFileName, create=True)
 
         fileName = self.gridFileName_
-        if genName :
+        if genName:
             fileName += FILE_EXPORT_EXTENSION
         try:
             file = open(fileName, "w")
@@ -370,25 +388,25 @@ class sudoku(object):
             if comments and len(comments):
                 for comment in comments:
                     line = self.FILE_COMMENTS
-                    line+=" "
-                    line+=comment
-                    line+="\n"
+                    line += " "
+                    line += comment
+                    line += "\n"
                     file.write(line)
 
             # File content
-            pt = pointer(gameMode = False)
-            for lIndex in range(LINE_COUNT) :
+            pt = pointer(gameMode=False)
+            for lIndex in range(LINE_COUNT):
                 line = ""
                 for _ in range(ROW_COUNT):
                     el = self.elements_[pt.index()]
-                    line+=str(0 if el.isEmpty() else el.value())
-                    line+=self.VALUE_SEPARATOR
-                    pt+=1
+                    line += str(0 if el.isEmpty() else el.value())
+                    line += self.VALUE_SEPARATOR
+                    pt += 1
 
                 # add separator
-                line = line[:len(line) - 1]
-                if lIndex < (LINE_COUNT -1):
-                    line+="\n"
+                line = line[: len(line) - 1]
+                if lIndex < (LINE_COUNT - 1):
+                    line += "\n"
 
                 file.write(line)
 
@@ -396,7 +414,7 @@ class sudoku(object):
             return fileName
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
-            print (f"io error while writing the file '{fileName}'")
+            print(f"io error while writing the file '{fileName}'")
             return None
 
     # Edit / modify the grid
@@ -410,14 +428,17 @@ class sudoku(object):
 
         # Edition
         #
-        currentPos = pointer(gameMode=False)      # current position
-        prevPos = None                            # previous pos (if erase needed)
+        currentPos = pointer(gameMode=False)  # current position
+        prevPos = None  # previous pos (if erase needed)
 
         self.editStatus_.value = self.EDIT_CONTINUE
 
         while not self.editStatus_.isSet(self.EDIT_STOP):
             # if sel. changed, erase previously selected element
-            self._edit_updatePos(None if self.editStatus_.isSet(self.EDIT_NOREDRAW) else prevPos, currentPos)
+            self._edit_updatePos(
+                None if self.editStatus_.isSet(self.EDIT_NOREDRAW) else prevPos,
+                currentPos,
+            )
             prevPos = pointer(currentPos)
             self.editStatus_.remove(self.EDIT_NOREDRAW)
 
@@ -428,50 +449,65 @@ class sudoku(object):
             if self.outputs_.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self.outputs_.mouseButtonStatus(event)
                 if button == self.outputs_.MOUSE_BUTTON_LEFT:
-                    currentPos.moveTo(pos = self.outputs_.mousePosition(pos))
+                    currentPos.moveTo(pos=self.outputs_.mousePosition(pos))
             else:
                 # With the keyboard
                 if self.outputs_.EVT_KEYDOWN == event.type:
                     match event.key:
-                        case self.outputs_.MOVE_LEFT :
+                        case self.outputs_.MOVE_LEFT:
                             currentPos.decRow()
-                        case self.outputs_.MOVE_RIGHT :
+                        case self.outputs_.MOVE_RIGHT:
                             currentPos.incRow()
-                        case self.outputs_.MOVE_UP :
+                        case self.outputs_.MOVE_UP:
                             currentPos.decLine()
-                        case self.outputs_.MOVE_DOWN :
+                        case self.outputs_.MOVE_DOWN:
                             currentPos.incLine()
-                        case key if key in range(self.outputs_.VALUE_1 , self.outputs_.VALUE_9+1) :
-                            self._edit_setValue(currentPos, key - self.outputs_.VALUE_1 + 1)
-                        case self.outputs_.VALUE_DEC :
+                        case key if key in range(
+                            self.outputs_.VALUE_1, self.outputs_.VALUE_9 + 1
+                        ):
+                            self._edit_setValue(
+                                currentPos, key - self.outputs_.VALUE_1 + 1
+                            )
+                        case self.outputs_.VALUE_DEC:
                             self._edit_decValue(currentPos)
-                        case self.outputs_.VALUE_INC :
+                        case self.outputs_.VALUE_INC:
                             self._edit_incValue(currentPos)
-                        case self.outputs_.REMOVE_VALUE :
+                        case self.outputs_.REMOVE_VALUE:
                             self._edit_removeValue(currentPos)
-                        case self.outputs_.EDIT_CANCEL :
-                           self.editStatus_.set(self.EDIT_ESCAPED)
-                        case self.outputs_.EDIT_QUIT_AND_SAVE :
+                        case self.outputs_.EDIT_CANCEL:
+                            self.editStatus_.set(self.EDIT_ESCAPED)
+                        case self.outputs_.EDIT_QUIT_AND_SAVE:
                             self.editStatus_.set(self.EDIT_STOP)
-                        case _ :
+                        case _:
                             pass
 
                 elif event.type == self.outputs_.EVT_QUIT:
                     self.editStatus_.set(self.EDIT_ESCAPED)
 
         escaped = self.editStatus_.isSet(self.EDIT_ESCAPE)
-        if not escaped :
-            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.HILITE_COLOUR)
+        if not escaped:
+            self.outputs_.drawSingleElement(
+                currentPos.row(),
+                currentPos.line(),
+                self.elements_[currentPos.index()].value(),
+                self.outputs_.BK_COLOUR,
+                self.outputs_.HILITE_COLOUR,
+            )
             self.outputs_.update()
 
         # Saves changes or exit
-        return (escaped, (self.save() if self.editStatus_.isSet(self.EDIT_MODIFIED) else True) if not escaped else False)
+        return (
+            escaped,
+            (self.save() if self.editStatus_.isSet(self.EDIT_MODIFIED) else True)
+            if not escaped
+            else False,
+        )
 
     # Load a grid stored in a file
     #
     #   return True if grid has been successfully loaded
     #
-    def gridFromFile(self, fileName, nameOnGrid = True) -> bool:
+    def gridFromFile(self, fileName, nameOnGrid=True) -> bool:
         self.emptyGrid()
 
         try:
@@ -521,7 +557,6 @@ class sudoku(object):
         # Find a solution !!!
         return found, time.time() - self.start_
 
-
     # Try to solve the grid
     #
     #   return a tuple (found a solution ?, game escaped ?, #attempts, duration in s.)
@@ -532,7 +567,7 @@ class sudoku(object):
             return False, False, 0, 0.0
 
         escaped = False
-        found = True        # We assume we'll find a solution !
+        found = True  # We assume we'll find a solution !
 
         # for stats
         self.attempts_ = 0
@@ -583,12 +618,12 @@ class sudoku(object):
         # Folder content
         if len(folder) > 0:
             # Only this folder
-            for (_, _, fileNames) in os.walk(folder):
+            for _, _, fileNames in os.walk(folder):
                 files.extend(fileNames)
                 break
 
         # No solution files in the list !
-        for file in files :
+        for file in files:
             _, fileExt = os.path.splitext(file)
             if FILE_EXPORT_EXTENSION == fileExt:
                 # remove the file from the list
@@ -612,28 +647,26 @@ class sudoku(object):
             return
 
         candidate = 0
-        position = pointer(gameMode = True)
+        position = pointer(gameMode=True)
         position = self._findFirstEmptyPos(position)
 
         # All the elements "before" the current position are set with possible/allowed values
         # we'll try to put the "candidate" value at the current position
-        while True :
-
+        while True:
             # Stopped ?
             status = self.outputs_.keyPressed()
             if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
-                exit(0)
+                sys.exit(0)
 
-            candidate+=1
+            candidate += 1
             if candidate > VALUE_MAX:
-
                 # No possible value found at this position
                 # we'll have to go backward, to the last value setted
                 position = self._previousPos(position)
 
                 # candidate value = prev. value (incremented at next occurence)
                 candidate = self.elements_[position.index()].empty()
-            else :
+            else:
                 # Try to put the "candidate" value at current position
                 #
                 if True == self._checkValue(position, candidate):
@@ -643,7 +676,10 @@ class sudoku(object):
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if self.progressMode != opts.PROGRESS_NONE and self.outputs_ is not None:
+                    if (
+                        self.progressMode != opts.PROGRESS_NONE
+                        and self.outputs_ is not None
+                    ):
                         self.outputs_.draw(self.elements_)
 
                     # Go to the next "empty" position
@@ -652,28 +688,26 @@ class sudoku(object):
                     # At the next pos., we alawyas try the lowest possible value
                     candidate = 0
 
-
     # Multithreaded mode
     def _resolveMultiThreaded(self):
 
         candidate = 0
-        position = pointer(gameMode = True)
+        position = pointer(gameMode=True)
         position = self._findFirstEmptyPos(position)
 
         # All the elements "before" the current position are set with possible/allowed values
         # we'll try to put the "candidate" value at the current position
-        while True :
-            candidate+=1
+        while True:
+            candidate += 1
 
             if candidate > VALUE_MAX:
-
                 # No possible value found at this position
                 # we'll have to go backward, to the last value setted
                 position = self._previousPos(position)
 
                 # candidate value = prev. value (incremented at next occurence)
                 candidate = self.elements_[position.index()].empty()
-            else :
+            else:
                 # Try to put the "candidate" value at current position
                 #
                 if True == self._checkValue(position, candidate):
@@ -688,11 +722,14 @@ class sudoku(object):
                     # At the next pos., we alawyas try the lowest possible value
                     candidate = 0
 
-
     # Can we put the value at the current position ?
     #
     def _checkValue(self, position, value):
-        return self._checkLine(position, value) and self._checkRow(position, value) and self._checkTinySquare(position, value)
+        return (
+            self._checkLine(position, value)
+            and self._checkRow(position, value)
+            and self._checkTinySquare(position, value)
+        )
 
     #   => in the line ?
     def _checkLine(self, position, value):
@@ -719,49 +756,61 @@ class sudoku(object):
         return False == mySquare.inMe(self.elements_, value)
 
     # (try to) set a value at current position
-    def _setAt(self, position, val, warn = True) -> bool:
+    def _setAt(self, position, val, warn=True) -> bool:
         # Check the value
-        if isinstance(val, int) :
+        if isinstance(val, int):
             value = val
         else:
             if not val.isnumeric():
                 if warn:
-                    raise sudokuError(f"Error : the value in ({str(position.line() + 1)},{str(position.row()+1)}) is not numeric")
+                    raise sudokuError(
+                        f"Error : the value in ({(position.line() + 1)!r},{(position.row() + 1)!r}) is not numeric"
+                    )
                 return False
 
             value = int(val)
 
         # in [0,9] ?
         value = int(val)
-        if (value < 0 or value > 9):
+        if value < 0 or value > 9:
             if warn:
-                raise sudokuError(f"Value Error : {value} is not in the valid range in ({str(position.line() + 1)},{str(position.row()+1)})")
+                raise sudokuError(
+                    f"Value Error : {value} is not in the valid range in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                )
             return False
 
         if value > 0:
             # Check the line
             if False == self._checkLine(position, value):
                 if warn:
-                    raise sudokuError(f"Line value error : value {value} can't be set in ({str(position.line() + 1)},{str(position.row()+1)})")
-                return False;
+                    raise sudokuError(
+                        f"Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
+                return False
 
             # Check the row
             if False == self._checkRow(position, value):
                 if warn:
-                    raise sudokuError(f"Row value error : value {value} can't be set in ({str(position.line() + 1)},{str(position.row()+1)})")
+                    raise sudokuError(
+                        f"Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
                 return False
 
             # Check the tiny-square
             if False == self._checkTinySquare(position, value):
                 if warn:
-                    raise sudokuError(f"Square value error : value {value} can't be set in ({str(position.line() + 1)},{str(position.row()+1)})")
+                    raise sudokuError(
+                        f"Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
                 return False
 
             # Set the value
-            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(value, element.STATUS_ORIGINAL)
+            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(
+                value, element.STATUS_ORIGINAL
+            )
             return True
 
-        return False    # Value not set
+        return False  # Value not set
 
     # Find the next empty pos.
     #
@@ -801,7 +850,7 @@ class sudoku(object):
     #
     def _findNextValue(self, position, val):
         nextVal = position.incValue(val)
-        while not val == nextVal:
+        while val != nextVal:
             if self._checkValue(position, nextVal):
                 return nextVal
             # try the next value
@@ -813,7 +862,7 @@ class sudoku(object):
     #
     def _findPreviousValue(self, position, val):
         nextVal = position.decValue(val)
-        while not val == nextVal:
+        while val != nextVal:
             if self._checkValue(position, nextVal):
                 # found it
                 return nextVal
@@ -843,10 +892,11 @@ class sudoku(object):
 
                 if not value is None:
                     # One more obvious value !!!!
-                    self.elements_[position.index()].setValue(value, element.STATUS_OBVIOUS)
+                    self.elements_[position.index()].setValue(
+                        value, element.STATUS_OBVIOUS
+                    )
                     found += 1
             else:
-
                 value = self.elements_[position.index()].value()
 
                 # Can we put this value on another line ?
@@ -856,11 +906,10 @@ class sudoku(object):
                 found += self._setObviousValueInRows(position, value)
 
             # Next pos.
-            position+=1
+            position += 1
 
         # End of search loop
         return found
-
 
     # Is there an obvious value for the given position ?
     #
@@ -872,7 +921,7 @@ class sudoku(object):
         for test in range(VALUE_MIN, VALUE_MAX + 1):
             if self._checkValue(position, test):
                 # This value can be used
-                if value :
+                if value:
                     # already a possible value at this pos.
                     # => not a unique value
                     return None
@@ -888,7 +937,7 @@ class sudoku(object):
     def _setObviousValueInLines(self, position, value):
         # "little" squares IDs for this line
         modID = position.squareID() % 3
-        if 0 ==  modID:
+        if 0 == modID:
             # At the left pos
             firstSquare = tinySquare(position.squareID() + 1)
             secondSquare = tinySquare(position.squareID() + 2)
@@ -907,7 +956,9 @@ class sudoku(object):
         secondPos = secondSquare.findValue(self.elements_, value)
 
         # None of them or both of them
-        if (firstPos[0] is None and secondPos[0] is None) or (not firstPos[0] is None and  not secondPos[0] is None) :
+        if (firstPos[0] is None and secondPos[0] is None) or (
+            not firstPos[0] is None and not secondPos[0] is None
+        ):
             return 0
 
         # Just one square misses the value => we'll try to put this value in the correct line
@@ -916,28 +967,36 @@ class sudoku(object):
         #
         if firstPos[0] is None:
             candidate = firstSquare
-            candidateLine = 2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1
+            candidateLine = (
+                2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1
+            )
         else:
             candidate = secondSquare
-            candidateLine = 2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
+            candidateLine = (
+                2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
+            )
 
         # Try to put the value ...
         #
         foundPos = None
-        pos = pointer(index = 0)
+        pos = pointer(index=0)
         pos.moveTo(candidateLine, candidate.topRow())
 
         try:
             for _ in range(tinySquare.TINY_ROW_COUNT):
-                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                if self.elements_[pos.index()].isEmpty() and self._checkValue(
+                    pos, value
+                ):
                     if None != foundPos:
                         # Already a candiate => not obvious
                         return 0
-                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                    foundPos = pointer(other=pos)  # call the copy constructor !!!
 
                 # Next row
-                pos+=1
-        except reachedEndOfList:      # Might go out of range and raise reachedEndOfList exception
+                pos += 1
+        except (
+            reachedEndOfList
+        ):  # Might go out of range and raise reachedEndOfList exception
             pass
 
         # Did we find a position ?
@@ -956,26 +1015,38 @@ class sudoku(object):
     def _setObviousValueInRows(self, position, value):
         # "little" squares IDs for this line
         modID = math.floor(position.squareID() / 3)
-        if 0 ==  modID:
+        if 0 == modID:
             # At the top pos
             firstSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
-            secondSquare = tinySquare(position.squareID() + 2 * tinySquare.TINY_ROW_COUNT)
+            secondSquare = tinySquare(
+                position.squareID() + 2 * tinySquare.TINY_ROW_COUNT
+            )
         else:
             if 1 == modID:
                 # centered
-                firstSquare = tinySquare(position.squareID() - tinySquare.TINY_ROW_COUNT)
-                secondSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
+                firstSquare = tinySquare(
+                    position.squareID() - tinySquare.TINY_ROW_COUNT
+                )
+                secondSquare = tinySquare(
+                    position.squareID() + tinySquare.TINY_ROW_COUNT
+                )
             else:
                 # on the bottom
-                firstSquare = tinySquare(position.squareID() - 2 * tinySquare.TINY_ROW_COUNT)
-                secondSquare = tinySquare(position.squareID() - 1 * tinySquare.TINY_ROW_COUNT)
+                firstSquare = tinySquare(
+                    position.squareID() - 2 * tinySquare.TINY_ROW_COUNT
+                )
+                secondSquare = tinySquare(
+                    position.squareID() - 1 * tinySquare.TINY_ROW_COUNT
+                )
 
         # Is the value already in theses squares ?
         firstPos = firstSquare.findValue(self.elements_, value)
         secondPos = secondSquare.findValue(self.elements_, value)
 
         # None of them or both of them
-        if (firstPos[0] is None and secondPos[0] is None) or (not firstPos[0] is None and not secondPos[0] is None) :
+        if (firstPos[0] is None and secondPos[0] is None) or (
+            not firstPos[0] is None and not secondPos[0] is None
+        ):
             return 0
 
         # Just one square misses the value => we'll try to put this value in the correct line
@@ -984,28 +1055,34 @@ class sudoku(object):
         #
         if firstPos[0] is None:
             candidate = firstSquare
-            candidateRow = 2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1
+            candidateRow = (
+                2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1
+            )
         else:
             candidate = secondSquare
-            candidateRow = 2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
+            candidateRow = (
+                2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
+            )
 
         # Try to put the value ...
         #
         foundPos = None
-        pos = pointer(index = 0)
+        pos = pointer(index=0)
         pos.moveTo(candidate.topLine(), candidateRow)
 
         try:
             for _ in range(tinySquare.TINY_LINE_COUNT):
-                if  self.elements_[pos.index()].isEmpty() and self._checkValue(pos, value):
+                if self.elements_[pos.index()].isEmpty() and self._checkValue(
+                    pos, value
+                ):
                     if None != foundPos:
                         # Already a candiate => not obvious
                         return 0
 
-                    foundPos = pointer(other = pos) # call the copy constructor !!!
+                    foundPos = pointer(other=pos)  # call the copy constructor !!!
 
                 # Next line
-                pos+= ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
+                pos += ROW_COUNT  # Might go out of range and raise reachedEndOfList exception
         except reachedEndOfList:
             pass
 
@@ -1033,35 +1110,51 @@ class sudoku(object):
             del self.outputs_
 
         # Instantiate new one
-        self.outputs_ = pygameThreadedOutputs(position = pos) if self.progressMode == opts.PROGRESS_MULTITHREADED else pygameOutputs()
+        self.outputs_ = (
+            pygameThreadedOutputs(position=pos)
+            if self.progressMode == opts.PROGRESS_MULTITHREADED
+            else pygameOutputs()
+        )
 
     # Update grid during edition
     def _edit_updatePos(self, prevPos, currentPos):
         if self.outputs_ is not None:
             # if sel. changed, erase previously selected element
             if prevPos is not None:
-                self.outputs_.drawSingleElement(prevPos.row(), prevPos.line(), self.elements_[prevPos.index()].value(), self.outputs_.BK_COLOUR, self.outputs_.HILITE_COLOUR)
+                self.outputs_.drawSingleElement(
+                    prevPos.row(),
+                    prevPos.line(),
+                    self.elements_[prevPos.index()].value(),
+                    self.outputs_.BK_COLOUR,
+                    self.outputs_.HILITE_COLOUR,
+                )
 
             # Hilight the new value
-            self.outputs_.drawSingleElement(currentPos.row(), currentPos.line(), self.elements_[currentPos.index()].value(), self.outputs_.SEL_BK_COLOUR, self.outputs_.HILITE_COLOUR)
+            self.outputs_.drawSingleElement(
+                currentPos.row(),
+                currentPos.line(),
+                self.elements_[currentPos.index()].value(),
+                self.outputs_.SEL_BK_COLOUR,
+                self.outputs_.HILITE_COLOUR,
+            )
             self.outputs_.update()
 
     # (try to) set a value
-    def _edit_setValue(self, pos : pointer, val : int):
+    def _edit_setValue(self, pos: pointer, val: int):
         """
         if self.outputs_ is not None:
             if val == 0:
                 self._edit_removeValue(pos)
                 #print(f"Val : {val}")
-            elif """
+            elif"""
         if self._checkValue(pos, val):
             self.elements_[pos.index()].setValue(val, element.STATUS_ORIGINAL, True)
             self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
 
     # Decrease value
-    def _edit_decValue(self, pos : pointer):
+    def _edit_decValue(self, pos: pointer):
         val = self.elements_[pos.index()].value()
-        if val is None :
+        if val is None:
             val = 0
 
         newVal = self._findPreviousValue(pos, val)
@@ -1070,9 +1163,9 @@ class sudoku(object):
             self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
 
     # Inc value
-    def _edit_incValue(self, pos : pointer):
+    def _edit_incValue(self, pos: pointer):
         val = self.elements_[pos.index()].value()
-        if val is None :
+        if val is None:
             val = 0
 
         newVal = self._findNextValue(pos, val)
@@ -1080,7 +1173,7 @@ class sudoku(object):
             self.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
             self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
 
-    def _edit_removeValue(self, pos : pointer):
+    def _edit_removeValue(self, pos: pointer):
         self.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
         self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
 
@@ -1090,7 +1183,7 @@ class sudoku(object):
 
     # Parse an image file
     #
-    def gridFromImage(self, fileName, removeFrames = False, genBoxes = False) -> bool:
+    def gridFromImage(self, fileName, removeFrames=False, genBoxes=False) -> bool:
         if fileName is None:
             return False
 
@@ -1106,8 +1199,10 @@ class sudoku(object):
             boxHeight = dims[0] / 9
             boxWidth = dims[1] / 9
 
-            data = pytesseract.image_to_data(img, output_type=Output.DICT, config = TESSERACT_CONFIG)
-            position = pointer(gameMode = False)
+            data = pytesseract.image_to_data(
+                img, output_type=Output.DICT, config=TESSERACT_CONFIG
+            )
+            position = pointer(gameMode=False)
 
             for i in range(len(data["text"])):
                 if data["conf"][i] != -1:
@@ -1127,20 +1222,28 @@ class sudoku(object):
                     for index in range(tLen):
                         value = text[index]
                         position.moveTo(line, index + row)
-                        self._setAt(position, ord(value) - ord('0'), False)     # Try to set the value in the grid
+                        self._setAt(
+                            position, ord(value) - ord("0"), False
+                        )  # Try to set the value in the grid
 
                         bottom_right = (top_left[0] + sWidth, top_left[1] + h)
 
                         if genBoxes:
-                            cv2.rectangle(img, top_left, bottom_right, TESSERACT_BOX_COLOR, TESSERACT_BOX_THICKNESS)
+                            cv2.rectangle(
+                                img,
+                                top_left,
+                                bottom_right,
+                                TESSERACT_BOX_COLOR,
+                                TESSERACT_BOX_THICKNESS,
+                            )
 
                         top_left = (bottom_right[0], top_left[1])
 
-            if genBoxes :
+            if genBoxes:
                 # Save the image with boxes
                 full = os.path.splitext(fileName)
                 dst = os.path.join(full[0] + "_boxes")
-                dst+= full[1]
+                dst += full[1]
                 cv2.imwrite(dst, img)
 
             return True
@@ -1156,21 +1259,30 @@ class sudoku(object):
         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
         # Remove horizontal lines
-        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40,1))
-        remove_horizontal = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
-        cnts = cv2.findContours(remove_horizontal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+        remove_horizontal = cv2.morphologyEx(
+            thresh, cv2.MORPH_OPEN, horizontal_kernel, iterations=2
+        )
+        cnts = cv2.findContours(
+            remove_horizontal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         for c in cnts:
-            cv2.drawContours(result, [c], -1, (255,255,255), 5)
+            cv2.drawContours(result, [c], -1, (255, 255, 255), 5)
 
         # Remove vertical lines
-        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1,40))
-        remove_vertical = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
-        cnts = cv2.findContours(remove_vertical, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
+        remove_vertical = cv2.morphologyEx(
+            thresh, cv2.MORPH_OPEN, vertical_kernel, iterations=2
+        )
+        cnts = cv2.findContours(
+            remove_vertical, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         for c in cnts:
-            cv2.drawContours(result, [c], -1, (255,255,255), 5)
+            cv2.drawContours(result, [c], -1, (255, 255, 255), 5)
 
         return result
+
 
 # EOF

@@ -9,31 +9,35 @@
 #   Description :   Edit & solve sudokus
 #                   with GUI using tkinter
 #
-from ownExceptions import sudokuError
-import tkoptions as tkopts
+import sys
+
 import options
+import tkoptions as tkopts
+from ownExceptions import sudokuError
 
 try:
     import tkinter as tk
-    from tkinter import ttk
+    import tkinter.filedialog as tkDialog
     import tkinter.font as tkFont
     import tkinter.messagebox as tkMB
-    import tkinter.filedialog as tkDialog
+    from tkinter import ttk
 except ModuleNotFoundError:
     print("tkinter module is not installed. Call ./sudoSolver.py instead")
-    exit(1)
+    sys.exit(1)
 
-import os, sys
+import os
+import sys
+
 import sudoku
-from sharedTools import systemInfos
 from pygameOutputs import pygameOutputs
+from sharedTools import systemInfos
+
 
 # Main window
 #
 class sudoParamWindow(tk.Frame):
-
     # Construction
-    def __init__(self, master = None):
+    def __init__(self, master=None):
 
         tk.Frame.__init__(self, master)
         self.grid()
@@ -53,36 +57,52 @@ class sudoParamWindow(tk.Frame):
 
         # ... with 2 tabs
         self.gridsTab_ = ttk.Frame(self.tabControl_)
-        self.tabControl_.add(self.gridsTab_, text = tkopts.TK_TAB_GRIDS)
+        self.tabControl_.add(self.gridsTab_, text=tkopts.TK_TAB_GRIDS)
 
         self.solveTab_ = ttk.Frame(self.tabControl_)
-        self.tabControl_.add(self.solveTab_, text = tkopts.TK_TAB_SOLVE)
+        self.tabControl_.add(self.solveTab_, text=tkopts.TK_TAB_SOLVE)
 
-        self.tabControl_.pack(expand = 1, fill ="both")
+        self.tabControl_.pack(expand=1, fill="both")
 
         # "Grids" tab
         #
 
         # Folder name
-        ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FOLDERNAME} :").grid(column=0, row=0, padx=5, pady=5)
+        ttk.Label(self.gridsTab_, text=f"{tkopts.TK_FOLDERNAME} :").grid(
+            column=0, row=0, padx=5, pady=5
+        )
 
         self.folderNameEdit_ = ttk.Entry(self.gridsTab_)
         self.folderNameEdit_.grid(column=1, row=0, columnspan=3, padx=5, pady=5)
 
-        self.folderBrowseButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE, command=self._browseFolder)
+        self.folderBrowseButton_ = ttk.Button(
+            self.gridsTab_, text=tkopts.TK_BROWSE, command=self._browseFolder
+        )
         self.folderBrowseButton_.grid(column=4, row=0, padx=5, pady=5)
 
         # File name
-        ttk.Label(self.gridsTab_, text = f"{tkopts.TK_FILENAME} :").grid(column=0, row=1, padx=5, pady=5)
+        ttk.Label(self.gridsTab_, text=f"{tkopts.TK_FILENAME} :").grid(
+            column=0, row=1, padx=5, pady=5
+        )
 
         self.fileNameEdit_ = ttk.Entry(self.gridsTab_)
         self.fileNameEdit_.grid(column=1, row=1, columnspan=3, padx=5, pady=5)
 
         # "walk" buttons
-        self.folderPrevButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_PREV, command = self._prevFile, state = tk.DISABLED)
+        self.folderPrevButton_ = ttk.Button(
+            self.gridsTab_,
+            text=tkopts.TK_BROWSE_PREV,
+            command=self._prevFile,
+            state=tk.DISABLED,
+        )
         self.folderPrevButton_.grid(column=1, row=2, padx=5, pady=5)
 
-        self.folderNextButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_BROWSE_NEXT, command = self._nextFile, state = tk.DISABLED)
+        self.folderNextButton_ = ttk.Button(
+            self.gridsTab_,
+            text=tkopts.TK_BROWSE_NEXT,
+            command=self._nextFile,
+            state=tk.DISABLED,
+        )
         self.folderNextButton_.grid(column=2, row=2, padx=5, pady=5)
 
         # New grids (as a popup menu)
@@ -97,54 +117,95 @@ class sudoParamWindow(tk.Frame):
         menu.add_cascade(label=tkopts.TK_NEW_HARD)
         self.newCombo_.grid(column=1, row=3, padx=5, pady=5, sticky="e")
 
-
         # File control buttons
         self.fileEditIcon_ = tk.PhotoImage(file="../assets/edit.png")
-        self.fileEditButton_ = ttk.Button(self.gridsTab_, text=tkopts.TK_EDIT,
-                                    image = self.fileEditIcon_, compound=tk.LEFT,
-                                    command=self._editGrid,
-                                    state = tk.DISABLED)
+        self.fileEditButton_ = ttk.Button(
+            self.gridsTab_,
+            text=tkopts.TK_EDIT,
+            image=self.fileEditIcon_,
+            compound=tk.LEFT,
+            command=self._editGrid,
+            state=tk.DISABLED,
+        )
         self.fileEditButton_.grid(column=2, row=3, padx=5, pady=25)
 
         # "Solve" tab
         #
-        self.obviousValuesButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_OBVIOUS_VALUES, command = self._obviousValues, state = tk.DISABLED)
-        self.obviousValuesButton_.grid(column=0, row=0, columnspan=2, sticky = "w", padx=5, pady=5)
+        self.obviousValuesButton_ = ttk.Button(
+            self.solveTab_,
+            text=tkopts.TK_OBVIOUS_VALUES,
+            command=self._obviousValues,
+            state=tk.DISABLED,
+        )
+        self.obviousValuesButton_.grid(
+            column=0, row=0, columnspan=2, sticky="w", padx=5, pady=5
+        )
 
-        ttk.Label(self.solveTab_, text = f"{tkopts.TK_SHOW_PROGRESS} :").grid(column=0, row=1, padx=5, pady=5)
-        self.progressCombo_ = ttk.Combobox(self.solveTab_, state = "readonly")
+        ttk.Label(self.solveTab_, text=f"{tkopts.TK_SHOW_PROGRESS} :").grid(
+            column=0, row=1, padx=5, pady=5
+        )
+        self.progressCombo_ = ttk.Combobox(self.solveTab_, state="readonly")
         self.progressCombo_.grid(column=1, row=1, padx=5, pady=5)
 
         mySystem = systemInfos.getSystemInformations()
 
-        if mySystem is not None and mySystem[systemInfos.KEY_OS] == systemInfos.OS_MACOS:
+        if (
+            mySystem is not None
+            and mySystem[systemInfos.KEY_OS] == systemInfos.OS_MACOS
+        ):
             # No multithread on MacOS
-            self.progressCombo_["values"] = (tkopts.TK_PROGRESS_NONE, tkopts.TK_PROGRESS_SINGLETHREADED)
+            self.progressCombo_["values"] = (
+                tkopts.TK_PROGRESS_NONE,
+                tkopts.TK_PROGRESS_SINGLETHREADED,
+            )
         else:
-            self.progressCombo_["values"] = (tkopts.TK_PROGRESS_NONE, tkopts.TK_PROGRESS_SINGLETHREADED, tkopts.TK_PROGRESS_MULTITHREADED)
-        self.progressCombo_.current(options.options.PROGRESS_SLOW)  # show progress slowly by default
+            self.progressCombo_["values"] = (
+                tkopts.TK_PROGRESS_NONE,
+                tkopts.TK_PROGRESS_SINGLETHREADED,
+                tkopts.TK_PROGRESS_MULTITHREADED,
+            )
+        self.progressCombo_.current(
+            options.options.PROGRESS_SLOW
+        )  # show progress slowly by default
 
         # Buttons
         self.solveIcon_ = tk.PhotoImage(file="../assets/solve.png")
-        self.solveButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_SOLVE,
-                            image = self.solveIcon_, compound=tk.LEFT,
-                            command = self._solve, state = tk.DISABLED)
-        self.solveButton_.grid(column=0, row=3, sticky = "w", padx=5, pady=25)
+        self.solveButton_ = ttk.Button(
+            self.solveTab_,
+            text=tkopts.TK_SOLVE,
+            image=self.solveIcon_,
+            compound=tk.LEFT,
+            command=self._solve,
+            state=tk.DISABLED,
+        )
+        self.solveButton_.grid(column=0, row=3, sticky="w", padx=5, pady=25)
 
         self.revertIcon_ = tk.PhotoImage(file="../assets/undo.png")
-        self.revertButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_REVERT,
-                            image = self.revertIcon_, compound=tk.LEFT,
-                            command = self._revertGrid, state = tk.DISABLED)
+        self.revertButton_ = ttk.Button(
+            self.solveTab_,
+            text=tkopts.TK_REVERT,
+            image=self.revertIcon_,
+            compound=tk.LEFT,
+            command=self._revertGrid,
+            state=tk.DISABLED,
+        )
         self.revertButton_.grid(column=1, row=3, padx=5, pady=25)
 
         self.saveIcon_ = tk.PhotoImage(file="../assets/save.png")
-        self.saveButton_ = ttk.Button(self.solveTab_, text=tkopts.TK_SAVE,
-                            image = self.saveIcon_, compound=tk.LEFT,
-                            command = self._save, state = tk.DISABLED)
-        self.saveButton_.grid(column=2, row=3, sticky = "w", padx=5, pady=25)
+        self.saveButton_ = ttk.Button(
+            self.solveTab_,
+            text=tkopts.TK_SAVE,
+            image=self.saveIcon_,
+            compound=tk.LEFT,
+            command=self._save,
+            state=tk.DISABLED,
+        )
+        self.saveButton_.grid(column=2, row=3, sticky="w", padx=5, pady=25)
 
         # my sudoku solver
-        self.solver_ = sudoku.sudoku(progressMode=options.options.PROGRESS_SINGLETHREADED)
+        self.solver_ = sudoku.sudoku(
+            progressMode=options.options.PROGRESS_SINGLETHREADED
+        )
 
         # Default values
         self.backToSingltThreadMode_ = False
@@ -154,7 +215,9 @@ class sudoParamWindow(tk.Frame):
     # Change foldergenName
     #
     def _browseFolder(self):
-        nFolder = tkDialog.askdirectory(title=tkopts.TK_CHOOSE_FOLDER, initialdir=self.folderName)
+        nFolder = tkDialog.askdirectory(
+            title=tkopts.TK_CHOOSE_FOLDER, initialdir=self.folderName
+        )
         if nFolder is not None and len(nFolder) > 0 and nFolder != self.folderName:
             # User choose a new folder
             self.folderName = nFolder
@@ -166,28 +229,30 @@ class sudoParamWindow(tk.Frame):
 
     @folderName.setter
     def folderName(self, value):
-        if value is None :
+        if value is None:
             value = ""
 
         # Value changed ?
-        if self.folderName == value :
+        if self.folderName == value:
             # Nothing to do
             return
 
         # The folder exists ?
         val = "" if value is None or False == os.path.isdir(value) else value
-        self.folderNameEdit_.delete(0,tk.END)
-        self.folderNameEdit_.insert(0,val)
+        self.folderNameEdit_.delete(0, tk.END)
+        self.folderNameEdit_.insert(0, val)
 
         self.fileIndex_ = 0
 
-        if False == self.solver_.folderContent(value, self.files_) :
+        if False == self.solver_.folderContent(value, self.files_):
             # No files in the list => no browse ...
             self.folderPrevButton_["state"] = tk.DISABLED
             self.folderNextButton_["state"] = tk.DISABLED
             self.fileName = ""
 
-            tkMB.showwarning(tkopts.TK_GRID_FOLDER, f"No valid grid found in {self._shorter(value)}")
+            tkMB.showwarning(
+                tkopts.TK_GRID_FOLDER, f"No valid grid found in {self._shorter(value)}"
+            )
         else:
             self.folderPrevButton_["state"] = tk.NORMAL
             self.folderNextButton_["state"] = tk.NORMAL
@@ -196,7 +261,7 @@ class sudoParamWindow(tk.Frame):
     # "Prev" button pressed
     #   => show previous grid
     def _prevFile(self):
-        self.fileIndex_-=1
+        self.fileIndex_ -= 1
         if self.fileIndex_ < 0:
             self.fileIndex_ = len(self.files_) - 1
 
@@ -206,7 +271,7 @@ class sudoParamWindow(tk.Frame):
     # "Next" button pressed
     #   => show next grid
     def _nextFile(self):
-        self.fileIndex_+=1
+        self.fileIndex_ += 1
         if self.fileIndex_ >= len(self.files_):
             self.fileIndex_ = 0
 
@@ -261,9 +326,14 @@ class sudoParamWindow(tk.Frame):
         found, _ = self.solver_.findObviousValues()
         if found > 0:
             self.solver_.displayGrid()
-            tkMB.showinfo(title=tkopts.TK_OBVIOUS_VALUES, message=f"Found {found} obvious value(s)")
+            tkMB.showinfo(
+                title=tkopts.TK_OBVIOUS_VALUES,
+                message=f"Found {found} obvious value(s)",
+            )
         else:
-            tkMB.showwarning(title=tkopts.TK_OBVIOUS_VALUES, message="No obvious value found")
+            tkMB.showwarning(
+                title=tkopts.TK_OBVIOUS_VALUES, message="No obvious value found"
+            )
 
     # Solve the selected grid
     #
@@ -286,10 +356,16 @@ class sudoParamWindow(tk.Frame):
 
             # A solution ?
             if True == res[0]:
-                tkMB.showinfo(title=tkopts.TK_SOLVING, message=f"Solved in {round(res[3], 2)} seconds")
+                tkMB.showinfo(
+                    title=tkopts.TK_SOLVING,
+                    message=f"Solved in {round(res[3], 2)} seconds",
+                )
                 self.saveButton_["state"] = tk.NORMAL
             else:
-                tkMB.showwarning(tkopts.TK_SOLVING, f"No solution found for grid in {self._shorter(self.fileName)}")
+                tkMB.showwarning(
+                    tkopts.TK_SOLVING,
+                    f"No solution found for grid in {self._shorter(self.fileName)}",
+                )
 
             # Return to "single threaded"
             if self.solver_.progressMode == options.options.PROGRESS_MULTITHREADED:
@@ -299,10 +375,12 @@ class sudoParamWindow(tk.Frame):
     #
     def _createGrid(self):
         # Get name
-        nFileName = tkDialog.asksaveasfilename(title=tkopts.TK_NEW_GRID,
-                            initialdir = self.folderName,
-                            defaultextension=".txt",
-                            filetypes=[("Text files", "*.txt")])
+        nFileName = tkDialog.asksaveasfilename(
+            title=tkopts.TK_NEW_GRID,
+            initialdir=self.folderName,
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt")],
+        )
         if nFileName is not None and len(nFileName) > 0:
             # Changed folder ?
             res = os.path.split(nFileName)
@@ -326,7 +404,9 @@ class sudoParamWindow(tk.Frame):
                 self.fileName = res[1]
             except IndexError:
                 # The file is not found in the list
-                tkMB.showwarning(tkopts.TK_NEW_GRID, f"Unable to create {self._shorter(nFileName)}")
+                tkMB.showwarning(
+                    tkopts.TK_NEW_GRID, f"Unable to create {self._shorter(nFileName)}"
+                )
 
                 # Draw the "old" grid
                 fullName = os.path.join(self.folderName, self.fileName)
@@ -335,9 +415,12 @@ class sudoParamWindow(tk.Frame):
     # Edit the selected gird
     #
     def _editGrid(self):
-        tkMB.showinfo(title=tkopts.TK_GRID_EDITION, message="Press 'Enter' or 'Esc' to leave eidtion mode.")
+        tkMB.showinfo(
+            title=tkopts.TK_GRID_EDITION,
+            message="Press 'Enter' or 'Esc' to leave eidtion mode.",
+        )
 
-        #self.solveTab_["state"] = tk.DISABLED
+        # self.solveTab_["state"] = tk.DISABLED
 
         done = self.solver_.edit()
         if done[0]:
@@ -345,7 +428,7 @@ class sudoParamWindow(tk.Frame):
             file = self.fileName
             self.fileName = file
 
-        #self.solveTab_["state"] = tk.NORMAL
+        # self.solveTab_["state"] = tk.NORMAL
 
     # Revert (ie. return the grid to the previous saved state)
     #
@@ -365,7 +448,9 @@ class sudoParamWindow(tk.Frame):
         try:
             name = self.solver_.save(True)
             if name is not None:
-                tkMB.showinfo(tkopts.TK_SOLUTION, f"Soluce successfully saved in {name}")
+                tkMB.showinfo(
+                    tkopts.TK_SOLUTION, f"Soluce successfully saved in {name}"
+                )
             else:
                 done = False
         except sudokuError:
@@ -381,6 +466,8 @@ class sudoParamWindow(tk.Frame):
     def _shorter(self, name):
         res = os.path.split(name)
         return res[1]
+
+
 #
 #   Entry point
 #
@@ -388,20 +475,24 @@ if "__main__" == __name__:
     try:
         # Window creation
         mainWindow = sudoParamWindow()
-        ttk.Label(mainWindow, text = tkopts.TK_TITLE)
+        ttk.Label(mainWindow, text=tkopts.TK_TITLE)
 
         # App main loop
         quitLoop = False
         while not quitLoop:
             for event in mainWindow.solver_.getEvents():
                 # Quit button on PYGame frame is pressed or tkFrame is already closed
-                if event.type == pygameOutputs.EVT_QUIT or 0 == len(mainWindow.children) or mainWindow.master is None:
+                if (
+                    event.type == pygameOutputs.EVT_QUIT
+                    or 0 == len(mainWindow.children)
+                    or mainWindow.master is None
+                ):
                     quitLoop = True
                     break
 
             if not quitLoop:
-                mainWindow.solver_.flip()       # Update pygame
-                mainWindow.master.update()      # handle GUI with tkinter
+                mainWindow.solver_.flip()  # Update pygame
+                mainWindow.master.update()  # handle GUI with tkinter
 
         # Should be useless be is necessary on ChromeOS !!!
         mainWindow.solver_.close()
