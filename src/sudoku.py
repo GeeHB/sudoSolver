@@ -261,7 +261,7 @@ class sudoku:
                     self.gridFromFile(currentFile)
                 except sudokuError as e:
                     print(f"Sudoku Error : {e.message}")
-                except Exception as other:
+                except OSError as other:
                     # the file is not valid => remove it from the list
                     print(f"Invalid file : {other}")
                     files.pop(index)
