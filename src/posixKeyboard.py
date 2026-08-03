@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   posixKeyboard.py
@@ -7,8 +9,13 @@
 #   Description :   posixKeyoard : handle keyboard
 #
 
-import os, sys, termios, fcntl
+import fcntl
+import os
+import sys
+import termios
+
 import keyboard
+
 
 class posixKeyboard(keyboard.keyboard):
 
@@ -30,7 +37,7 @@ class posixKeyboard(keyboard.keyboard):
                 try:
                     c = sys.stdin.read(1)
                     break
-                except IOError:
+                except OSError:
                     pass
         finally:
             termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)

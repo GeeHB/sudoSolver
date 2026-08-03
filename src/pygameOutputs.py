@@ -13,9 +13,11 @@ try :
     import pygame
 except ModuleNotFoundError:
     print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
-    exit(0)
+    sys.exit(0)
 
-import math, os
+import math
+import os
+import sys
 from options import APP_SHORT_NAME
 from ownExceptions import sudokuError
 from pointer import pointer, ROW_COUNT, LINE_COUNT
@@ -59,7 +61,7 @@ DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
 #
 # stats - Informations about a solution
 #
-class stats(object):
+class stats:
     obvValues_ = 0          # Count of obvious values found
     obvDuration_ = 0.0      # Duration in sec. of obvious-values search process
 
@@ -69,7 +71,7 @@ class stats(object):
 #
 # textSurface - "subsurface" containig a single line of text
 #
-class textSurface(object):
+class textSurface:
 
     # Construction
     def __init__(self, fontName, fontSize):
@@ -83,7 +85,7 @@ class textSurface(object):
 
     # Valid ?
     def isValid(self):
-        return True if self.surface_ else False
+        return bool(self.surface_)
 
     # Visible ?
     def isVisible(self):
@@ -186,7 +188,7 @@ class blinkingText(textSurface):
 #
 # pygameOutputs - Display sudoku's grid using PYGame library
 #
-class pygameOutputs(object):
+class pygameOutputs:
 
     EVT_KEYDOWN         = pygame.KEYDOWN
     EVT_QUIT            = pygame.QUIT
@@ -402,7 +404,7 @@ class pygameOutputs(object):
                     if True == allEvents:
                         finished = True
 
-                        pass
+                        #pass
                 # New filename to display
                 elif self.sFileName_ is not None and event.type == self.sFileName_.eventID():
                     # Erase the name
@@ -565,7 +567,8 @@ class pygameOutputs(object):
         try:
             pygame.display.flip()
         except:
-            pass
+            #pass
+            print("Unknown error")
 
     # Position of the Window
     def getWindowPosition(self):
@@ -643,7 +646,7 @@ class pygameOutputs(object):
         # background ...
         self.win_.fill(self.BK_COLOUR)
 
-        if not 0 == self.extSquareWidth_ :
+        if 0 != self.extSquareWidth_ :
 
             # thin borders ...
             #

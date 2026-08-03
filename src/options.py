@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   options.py
@@ -78,7 +79,6 @@ COMMENT_DETAILS = "Show grids during process"
 #
 DEF_GRID_FOLDER = "../grids"
 DEF_ASSETS_FOLDER = "../assets"
-
 
 #
 #   options object : command-line parsing and parameters management

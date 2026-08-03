@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   element.py
@@ -9,10 +11,11 @@
 
 from sharedTools import statusBits
 
+
 #
 # element - a single sudoku element
 #
-class element(object):
+class element:
 
     STATUS_EMPTY = 0
     STATUS_SET = 1

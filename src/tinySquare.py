@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   tinySquare.py
@@ -6,19 +8,15 @@
 #
 #   Description :   tinySquare object
 #
+from pointer import ROW_COUNT, pointer
 
-from pointer import pointer, ROW_COUNT
 
 #
 # tinySquare object
 #
 #   A tiny-square is one of the 9 3x3 matrix composing the whole grid
 #
-class tinySquare(object):
-
-    # Top-left index of tiny-squares
-    #
-    TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
+class tinySquare:
 
     # Dimensions
     TINY_LINE_COUNT = 3
@@ -30,6 +28,10 @@ class tinySquare(object):
     # Construction
     #
     def __init__(self, index = None, other = None):
+        # Top-left index of tiny-squares
+        #
+        self.TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
+
         # Copy ?
         #
         if other is not None:
@@ -118,6 +120,6 @@ class tinySquare(object):
     #   return a boolean - True if found
     #
     def inMe(self, elements, value):
-        return False if self.findValue(elements, value)[0] == -1 else True
+        return not bool(self.findValue(elements, value)[0] == -1)
 
 # EOF

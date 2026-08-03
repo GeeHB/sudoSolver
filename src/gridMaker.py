@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 #   File        :   gridMaker.py
 #
@@ -8,13 +9,15 @@
 
 import random
 
-from pointer import pointer as position, VALUE_MIN, VALUE_MAX, INDEX_MIN, INDEX_MAX, GRID_SIZE
-from sudoku import sudoku
 from options import options as opts
+from pointer import GRID_SIZE, INDEX_MAX, INDEX_MIN, VALUE_MAX, VALUE_MIN
+from pointer import pointer as position
+from sudoku import sudoku
+
 
 #   gridMaker : Creation of a new sudoku grid
 #
-class gridMaker(object):
+class gridMaker:
 
     # Construction
     def __init__(self, grid = None, complexity = opts.COMPLEXITY_EASY):
@@ -112,7 +115,7 @@ class gridMaker(object):
     #  @second : value to replace by @first
     #
     def _swapValues(self, first, second):
-        if not first == second:
+        if first != second:
             for index in range(INDEX_MIN, INDEX_MAX):
                 value = self.grid_.elements_[index].num
                 if value == first:
@@ -134,7 +137,7 @@ class gridMaker(object):
             first.moveTo(0, fCol);
             second.moveTo(0, sCol);
 
-            for line in range(0, VALUE_MAX):
+            for line in range(VALUE_MAX):
                 oValue = self.grid_.elements_[first.index()].num;
                 self.grid_.elements_[first.index()].num = self.grid_.elements_[second.index()].num
                 self.grid_.elements_[second.index()].num = oValue

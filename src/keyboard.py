@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   keyboard.py
@@ -8,7 +9,7 @@
 #   Description :   handle keyboard
 #
 
-class keyboard(object):
+class keyboard:
 
     # Read the keyboard
     # returns  a  char
