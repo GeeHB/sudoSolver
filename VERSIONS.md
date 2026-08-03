@@ -21,8 +21,8 @@
 #### todo
 * Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
 
-#### Version 3.1.2
-* june 2026
+#### Version 3.1.4
+* aug. 2026
 * Added :
    * User mode
    * add statusBits class
@@ -34,6 +34,7 @@
     * remove outputs.py, consoleOutputs.py, cursesOutputs.py
   * pyRight & mccabe corrections
   * BUG : no window resizing on Linux (except embeded Linux by ChromeOS)
+  * syntaxic corrections with Ruff
 
 #### Version 2.0.2
 * 3 dec. 2024
