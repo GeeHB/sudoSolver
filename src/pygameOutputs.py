@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   pygameOutputs.py
@@ -8,21 +10,28 @@
 #                   Displays the grid using PYGame
 #
 
+import math
+import os
+import sys
 
 try :
     import pygame
 except ModuleNotFoundError:
     print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
-
-import math
-import os
-import sys
 from options import APP_SHORT_NAME
 from ownExceptions import sudokuError
-from pointer import pointer, ROW_COUNT, LINE_COUNT
-from sharedTools import statusBits, systemInfos
+from pointer import (
+    LINE_COUNT,
+    ROW_COUNT,
+    pointer,
+)
+from sharedTools import (
+    statusBits,
+    systemInfos,
+)
 
+#
 #
 # Internal constants
 #
@@ -279,13 +288,10 @@ class pygameOutputs:
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
         # Init. the lib.
-        try:
-            rets = pygame.init()
-        except:
-            raise sudokuError("PYGame initialization error - You should have to reinstall PYGame")
+        rets = pygame.init()
 
         if 0 != rets[1] :
-            raise sudokuError(f"PYGame initialization error - PYGame returns {str(rets[1])} error(s)")
+            raise sudokuError(f"PYGame initialization error - PYGame returns {rets[1]!r} error(s)")
 
         # PYGame init. is ok
         self.initDone_ = True
@@ -564,19 +570,11 @@ class pygameOutputs:
             pygame.display.update()
 
     def flip(self):
-        try:
-            pygame.display.flip()
-        except:
-            #pass
-            print("Unknown error")
+        pygame.display.flip()
 
     # Position of the Window
     def getWindowPosition(self):
-        try :
-            return systemInfos.getMainWindowPosition()
-        except:
-            return None
-
+        return systemInfos.getMainWindowPosition()
     # Close the display
     def close(self):
         if self.initDone_ and self.sFileName_ is not None and self.sMessage_ is not None:

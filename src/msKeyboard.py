@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   keyboard.py
@@ -6,7 +8,7 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
-
+import ownKeyboard
 from ownExceptions import sudokuError
 
 try:
@@ -14,14 +16,11 @@ try:
 except ModuleNotFoundError:
     raise sudokuError("msvcrt module is not installed")
 
-import keyboard
-
-
-class msKeyboard(keyboard.keyboard):
+class msKeyboard(ownKeyboard.myKeyboard):
 
     # Read the keyboard
     # returns  a  char
-    def getChar(self):
-         return msvcrt.getch()
+    def getChar(self) -> str:
+         return f"{msvcrt.getch()!r}"
 
 #EOF

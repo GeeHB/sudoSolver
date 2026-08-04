@@ -2,14 +2,14 @@
 #
 # coding=UTF-8
 #
-#   File        :   keyboard.py
+#   File        :   ownKeyboard.py
 #
 #   Author      :   GeeHB
 #
 #   Description :   handle keyboard
 #
 
-class keyboard:
+class myKeyboard:
 
     # Read the keyboard
     # returns  a  char

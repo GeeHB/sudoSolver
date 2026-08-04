@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # coding=UTF-8
 #
 #   File        :   pygameThreadedOutputs.py
@@ -9,10 +11,15 @@
 #
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
-
 import pygame.event
+
+from ownThread import (
+    MAX_THREAD_LIST_WAIT,
+    Thread,
+    threadAction,
+)
 from pygameOutputs import pygameOutputs
-from ownThread import threadAction, Thread, MAX_THREAD_LIST_WAIT
+
 
 #
 # pygameThreadedOutputs - Display sudoku's grid using PYGame library

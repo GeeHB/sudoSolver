@@ -12,7 +12,7 @@ During the search process, grids can be displayed in monothreaded mode (very slo
 
 Displays are performed, as desired, on the console or on the *GUI* using *PYGame*. When *nCurses* is available, console displays uses colors.
 
-Sample grids can be found in the *./grid* subfolder.
+Sample grids can be found in the *./grids* subfolder.
 
 ### 1.2 - Compatibility
 Both tools are 100% written in *Python 3* and have been tested on various systems :

@@ -14,14 +14,14 @@ import os
 import sys
 import termios
 
-import keyboard
+import ownKeyboard
 
 
-class posixKeyboard(keyboard.keyboard):
+class posixKeyboard(ownKeyboard.myKeyboard):
 
     # Read the keyboard
     # returns  a  char
-    def getChar(self):
+    def getChar(self) -> str:
         c = ''
         fd = sys.stdin.fileno()
         oldterm = termios.tcgetattr(fd)

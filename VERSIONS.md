@@ -30,6 +30,7 @@
    * Creation of new grids - gridMaker.py
    * folder org.
 * Corrections :
+  * check destination folder
   * Remove console and curses mode
     * remove outputs.py, consoleOutputs.py, cursesOutputs.py
   * pyRight & mccabe corrections
