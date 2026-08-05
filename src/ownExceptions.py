@@ -17,7 +17,6 @@
 class reachedEndOfList(Exception):
     pass
 
-
 #
 # sudokuError : An error ...
 #
@@ -30,7 +29,6 @@ class sudokuError(Exception):
         return self.message
 
     def __repr__(self):
-        return f"Sudo Error : {self.message}"
-
+        return f"sudokuError : {self.message}"
 
 # EOF

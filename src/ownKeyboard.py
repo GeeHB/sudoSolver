@@ -10,7 +10,6 @@
 #
 
 class myKeyboard:
-
     # Read the keyboard
     # returns  a  char
     def getChar(self) -> str :

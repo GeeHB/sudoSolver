@@ -156,14 +156,11 @@ def _sudoku(solver):
                 solver.showStats(params, myStats)
             else:
                 print(f"No solution found for '{params.fileName_}'")
-
     except sudokuError as e:
         # Other error
-        print(e, file=sys.stderr)
-
+        print(e)
     # except:
     #   print("Unknown error", file=sys.stderr)
-
 
 # Entry point
 if "__main__" == __name__:
@@ -183,7 +180,7 @@ if "__main__" == __name__:
     # Parse command line
     #
     params = options()
-    if False == params.parse():
+    if not params.parse():
         sys.exit(1)
 
     # Let's start the game

@@ -19,7 +19,7 @@ from sharedTools import statusBits
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "3.1.4"
-APP_RELEASE_DATE = "03/08/2026"
+APP_RELEASE_DATE = "05/08/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -129,7 +129,6 @@ class options:
     # Browse the command line
     #   returns True when ok
     def parse(self):
-
         parser = argparse.ArgumentParser(epilog=self.version())
 
         # User mode
@@ -262,7 +261,6 @@ class options:
                     if args.editSolve is not None
                     else 0
                 )
-
             else:
                 # Parse/browse folder ?
                 if args.browse is not None or args.browseSolve is not None:

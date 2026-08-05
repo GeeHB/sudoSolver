@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/python
 #
 # coding=UTF-8
 #
@@ -12,9 +12,8 @@
 #
 #   Commentaire :  le module termcolor doit être installé (pip install termcolor)
 #
-#import sys
 
-COLORIZER_VERSION = "1.2.1"
+COLORIZER_VERSION = "1.2.2"
 
 try :
     # Pour la coloration des sorties terminal
@@ -23,9 +22,9 @@ try :
 except ModuleNotFoundError:
     packageTermColor__ = False
 
-# Pour l'ajout de la date et de l'heure en mode "logs
+# Pour l'ajout de la date et de l'heure en mode "logs"
+import datetime
 import os
-from datetime import datetime
 
 # Format de la date (pour les logs)
 LOG_DATE_FORMAT = "%d/%m/%Y-%H:%M:%S"
@@ -42,7 +41,6 @@ MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est p
 # backColor - Couleurs de fond
 #
 class backColor:
-
     GREY = GRIS = "on_grey"
     RED = ROUGE = "on_red"
     GREEN = VERT = "on_green"
@@ -56,7 +54,6 @@ class backColor:
 # textkColor - Couleurs du texte
 #
 class textColor:
-
     GREY = GRIS = "grey"
     RED = ROUGE = "red"
     GREEN = VERT = "green"
@@ -81,7 +78,6 @@ class textAttribute:
 #   colorizer  - Colorisation du texte
 #
 class colorizer:
-
     colored_ = False       # Doit-on coloriser ?
 
     # Construction
@@ -100,11 +96,10 @@ class colorizer:
     # Formatage d'une ligne de texte
     #   Retourne la chaine complète
     def colored(self, text, txtColor = None, bkColor = None, formatAttr = None, datePrefix = False, addPID = False):
-
         prefix = ""
         if datePrefix:
             # En mode log. on ajoute la date et l'heure
-            today = datetime.now()
+            today = datetime.datetime.now(tz=datetime.timezone.utc)
             prefix = today.strftime(LOG_DATE_FORMAT_PID if addPID else LOG_DATE_FORMAT)
 
         # On colorise ou pas ...
