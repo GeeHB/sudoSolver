@@ -16,21 +16,16 @@ from sharedTools import statusBits
 # element - a single sudoku element
 #
 class element:
-
-    STATUS_EMPTY = 0
-    STATUS_SET = 1
-    STATUS_OBVIOUS = 2         # An obvious value found at runtime (option -o / --obvious)
-    STATUS_ORIGINAL = 4        # Can't be changed (except in edition mode)
-
-    # Members
-    #
-    value_ = None
+    STATUS_EMPTY: int = 0
+    STATUS_SET: int  = 1
+    STATUS_OBVIOUS: int  = 2         # An obvious value found at runtime (option -o / --obvious)
+    STATUS_ORIGINAL: int  = 4        # Can't be changed (except in edition mode)
 
     # Construction
     def __init__(self, value = None):
         if not value is None:
-            self.value_ = value
-            self.status_ = statusBits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
+            self.value_: int = value
+            self.status_:int = statusBits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
 
         self.status_ = statusBits.statusBits(self.STATUS_EMPTY)   # Current status
 

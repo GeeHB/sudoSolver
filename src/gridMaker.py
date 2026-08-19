@@ -32,7 +32,7 @@ class gridMaker:
             self.grid_.clear()
             self.grid_.resolve()
 
-            # Step 2 : shuffles elements
+            # Step 2 : shuffle elements
             self._shuffleValues()
 
             # Step 3 : rearrange columns
