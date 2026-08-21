@@ -1,4 +1,5 @@
 #!/bin/python
+# pyright: reportPossiblyUnboundVariable= none
 #
 # coding=UTF-8
 #
@@ -13,24 +14,16 @@
 #   Commentaire :  le module termcolor doit être installé (pip install termcolor)
 #
 
-COLORIZER_VERSION = "1.2.2"
+from collections.abc import Iterable
+
+COLORIZER_VERSION = "2.1.1"
 
 try :
     # Pour la coloration des sorties terminal
-    from termcolor import colored
+    import termcolor
     packageTermColor__ = True
 except ModuleNotFoundError:
     packageTermColor__ = False
-
-# Pour l'ajout de la date et de l'heure en mode "logs"
-import datetime
-import os
-
-# Format de la date (pour les logs)
-LOG_DATE_FORMAT = "%d/%m/%Y-%H:%M:%S"
-
-# Avec le PID
-LOG_DATE_FORMAT_PID = f"{LOG_DATE_FORMAT}[{os.getpid()}] "
 
 # Messages d'erreur
 #
@@ -41,77 +34,108 @@ MSG_NO_TERM_COLOR = "Attention - le package termcolor (python-termcolor) n'est p
 # backColor - Couleurs de fond
 #
 class backColor:
-    GREY = GRIS = "on_grey"
-    RED = ROUGE = "on_red"
-    GREEN = VERT = "on_green"
-    YELLOW = JAUNE = "on_yellow"
-    BLUE = BLEU = "on_blue"
-    MAGENTA = "on_magenta"
-    CYAN = "on_cyan"
-    WHITE = BLANC = "on_white"
+    GREY:str = "on_grey"
+    GRIS:str = GREY
+
+    RED:str = "on_red"
+    ROUGE:str = RED
+
+    GREEN:str = "on_green"
+    VERT:str = GREEN
+
+    YELLOW:str = "on_yellow"
+    JAUNE:str = YELLOW
+
+    BLUE:str = "on_blue"
+    BLEU:str = BLUE
+
+    MAGENTA:str = "on_magenta"
+
+    CYAN:str = "on_cyan"
+
+    WHITE:str = "on_white"
+    BLANC:str = WHITE
 
 #
 # textkColor - Couleurs du texte
 #
 class textColor:
-    GREY = GRIS = "grey"
-    RED = ROUGE = "red"
-    GREEN = VERT = "green"
-    YELLOW = JAUNE = "yellow"
-    BLUE = BLEU = "blue"
-    MAGENTA = "magenta"
-    CYAN = "cyan"
-    WHITE = BLANC = "white"
+    GREY:str = "grey"
+    GRIS:str = GREY
+
+    RED:str = "red"
+    ROUGE:str = RED
+
+    GREEN:str = "green"
+    VERT:str = GREEN
+
+    YELLOW:str = "yellow"
+    JAUNE:str = YELLOW
+
+    BLUE:str = "blue"
+    BLEU:str = BLUE
+
+    MAGENTA:str = "magenta"
+
+    CYAN:str = "cyan"
+
+    WHITE:str = "white"
+    BLANC:str = WHITE
 
 #
 # colorAttribute - Attributs d'affichage
 #
 class textAttribute:
-    BOLD = GRAS = "bold"
-    DARK = FONCE = "dark"
-    UNDERLINE = SOULIGNE = "underline"
-    BLINK = CLIGNOTANT = "blink"
-    REVERSE = INVERSE = "reverse"
-    CONCEALED = CACHE = "concealed"
+    BOLD:str = "bold"
+    GRAS:str = BOLD
+
+    DARK:str = "dark"
+    FONCE:str = DARK
+
+    UNDERLINE:str = "underline"
+    SOULIGNE:str = UNDERLINE
+
+    BLINK:str = "blink"
+    CLIGNOTANT:str = BLINK
+
+    REVERSE:str = "reverse"
+    INVERSE:str = REVERSE
+
+    CONCEALED:str = "concealed"
+    CACHE:str = CONCEALED
 
 #
 #   colorizer  - Colorisation du texte
 #
 class colorizer:
-    colored_ = False       # Doit-on coloriser ?
-
     # Construction
-    def __init__(self, colored = True, message = True):
-        self.setColorized(packageTermColor__ if colored is None else colored, message)
+    def __init__(self, colored:bool | None = True, _message:bool = True):
+        self.colored_:bool = False       # Doit-on coloriser ?
+        self.setColorized(packageTermColor__ if colored is None else colored)
 
     # Mise en place de la colorisation
-    def setColorized(self, colored = True, message = None):
+    def setColorized(self, colored:bool = True, message:str | None = None):
         self.colored_ = colored
 
         if True == colored and False == packageTermColor__:
             self.colored_ = False
-            if message is not None:
-                print(MSG_NO_TERM_COLOR)
+            print(MSG_NO_TERM_COLOR if message is None else message)
 
     # Formatage d'une ligne de texte
     #   Retourne la chaine complète
-    def colored(self, text, txtColor = None, bkColor = None, formatAttr = None, datePrefix = False, addPID = False):
-        prefix = ""
-        if datePrefix:
-            # En mode log. on ajoute la date et l'heure
-            today = datetime.datetime.now(tz=datetime.timezone.utc)
-            prefix = today.strftime(LOG_DATE_FORMAT_PID if addPID else LOG_DATE_FORMAT)
-
-        # On colorise ou pas ...
-        return prefix + (colored(text, color=txtColor, on_color = bkColor, attrs = formatAttr) if True == self.colored_ else text)  # type: ignore
+    def colored(self, content:str, txtColor:str | None = None, bkColor: str | None = None, formatAttr :  Iterable[str] | None = None) -> str:
+        retour:str = content
+        if self.colored_:
+            retour = termcolor.colored(text=content, color=txtColor, on_color = bkColor, attrs = formatAttr)
+        return retour
 
     # Début de ligne en mode [OK] / [KO]
-    def checkBoxLine(self, checked = True, text = "", color = None, prefix = ""):
-        box=prefix + "["
+    def checkBoxLine(self, checked:bool = True, text:str = "", color: str | None = None):
+        box:str = "["
         if True == checked:
             box+=self.colored("OK", textColor.VERT)
         else:
-            box+=self.colored("KO", textColor.ROUGE if color is None else color)
+            box+=self.colored("KO", txtColor = textColor.ROUGE if color is None else color)
         box+="]"
         if len(text) > 0 :
             box+=" "

@@ -19,15 +19,15 @@ from pointer import ROW_COUNT, pointer
 class tinySquare:
 
     # Dimensions
-    TINY_LINE_COUNT = 3
-    TINY_ROW_COUNT = 3
-
-    topLine_ = 0
-    topRow_ = 0
+    TINY_LINE_COUNT:int = 3
+    TINY_ROW_COUNT:int = 3
 
     # Construction
     #
-    def __init__(self, index = None, other = None):
+    def __init__(self, index:int | None = None, other:tinySquare | None = None):
+        self.topLine_:int = 0
+        self.topRow_:int = 0
+
         # Top-left index of tiny-squares
         #
         self.TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
@@ -49,7 +49,7 @@ class tinySquare:
 
     # Get index from positionnal index (of an element)
     #
-    def IdFromIndex(self, index):
+    def IdFromIndex(self, index:int):
         if type(index) is int:
             if index < 0 or index >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
                 raise IndexError

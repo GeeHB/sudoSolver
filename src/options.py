@@ -85,46 +85,44 @@ DEF_ASSETS_FOLDER = "../assets"
 #
 class options:
     # Progression modes
-    PROGRESS_NONE = 0  # Don't show progession
-    PROGRESS_SLOW = 1  # Singlethreaded mode
-    PROGRESS_SINGLETHREADED = PROGRESS_SLOW
-    PROGRESS_SPEED = 2  # Use a distinct thread for displaying grids
-    PROGRESS_MULTITHREADED = PROGRESS_SPEED
+    PROGRESS_NONE:int = 0  # Don't show progession
+    PROGRESS_SLOW:int = 1  # Singlethreaded mode
+    PROGRESS_SINGLETHREADED:int = PROGRESS_SLOW
+    PROGRESS_SPEED:int = 2  # Use a distinct thread for displaying grids
+    PROGRESS_MULTITHREADED:int = PROGRESS_SPEED
 
     # Exec modes
-    EXEC_NONE = statusBits.STATUS_NONE
-    EXEC_CREATE = 1
-    EXEC_EDIT = EXEC_CREATE
-    EXEC_USER = 2
-    EXEC_SOLVE = 4
+    EXEC_NONE:int = statusBits.STATUS_NONE
+    EXEC_CREATE:int = 1
+    EXEC_EDIT:int = EXEC_CREATE
+    EXEC_USER:int = 2
+    EXEC_SOLVE:int = 4
 
     # Types of new grids and count of empty elements
-    NEW_EMPTY = "Empty"
-    NEW_EASY = "Easy"
-    NEW_MEDIUM = "Medium"
-    NEW_HARD = "Hard"
+    NEW_EMPTY:str = "Empty"
+    NEW_EASY:str = "Easy"
+    NEW_MEDIUM:str = "Medium"
+    NEW_HARD:str = "Hard"
 
     # Grid complexity - ie. count of filled elements
-    COMPLEXITY_EMPTY = 0
-    COMPLEXITY_EASY = 33
-    COMPLEXITY_MEDIUM = 26
-    COMPLEXITY_HARD = 22
+    COMPLEXITY_EMPTY:int = 0
+    COMPLEXITY_EASY:int = 33
+    COMPLEXITY_MEDIUM:int = 26
+    COMPLEXITY_HARD:int = 22
 
     # Construction
     #
     def __init__(self):
-
         # Default values
-        self.color_ = color.colorizer(True, False)
-        self.browseFolder_ = False
-        self.fileName_ = ""
-        self.folderName_ = ""
-        self.exportSolution_ = False
-        self.obviousValues_ = (
-            False  # don't search "obvious" values before trying to solve
-        )
-        self.progressMode_ = self.PROGRESS_NONE
-        self.execMode_ = statusBits.statusBits(self.EXEC_NONE)
+        self.color_:color.colorizer = color.colorizer(True, False)
+        self.browseFolder_:bool = False
+        self.fileName_:str = ""
+        self.folderName_:str = ""
+        self.exportSolution_:bool = False
+        self.obviousValues_:bool = False
+        self.progressMode_:int = self.PROGRESS_NONE
+        self.execMode_:statusBits.statusBits = statusBits.statusBits(self.EXEC_NONE)
+        self.newGrid_:int = self.COMPLEXITY_EMPTY
 
     # Browse the command line
     #   returns True when ok
@@ -132,12 +130,12 @@ class options:
         parser = argparse.ArgumentParser(epilog=self.version())
 
         # User mode
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_USER_S, ARG_USER, action="store_true", help=COMMENT_USER, required=False
         )
 
         # Export the solution ?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_SAVE_SOLUTION_S,
             ARG_SAVE_SOLUTION,
             action="store_true",
@@ -146,7 +144,7 @@ class options:
         )
 
         # Search obvious values ?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_SEARCH_OBVIOUS_S,
             ARG_SEARCH_OBVIOUS,
             action="store_true",
@@ -155,7 +153,7 @@ class options:
         )
 
         # display progression?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_DETAILS_S,
             ARG_DETAILS,
             help=COMMENT_DETAILS,
@@ -170,7 +168,7 @@ class options:
         action = parser.add_mutually_exclusive_group()
 
         # Browse folder
-        action.add_argument(
+        _ = action.add_argument(
             ARG_BROWSE_S,
             ARG_BROWSE,
             help=COMMENT_BROWSE,
@@ -180,7 +178,7 @@ class options:
         )
 
         # Edition file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_EDIT_S,
             ARG_EDIT,
             help=COMMENT_EDIT,
@@ -190,7 +188,7 @@ class options:
         )
 
         # Solve file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_SOLVE_S,
             ARG_SOLVE,
             help=COMMENT_SOLVE,
@@ -200,7 +198,7 @@ class options:
         )
 
         # Browse folder and edit selected file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_BROWSE_AND_SOLVE_S,
             ARG_BROWSE_AND_SOLVE,
             help=COMMENT_BROWSE_AND_SOLVE,
@@ -210,7 +208,7 @@ class options:
         )
 
         # Edit and solve file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_EDIT_AND_SOLVE_S,
             ARG_EDIT_AND_SOLVE,
             help=COMMENT_EDIT_AND_SOLVE,
@@ -220,7 +218,7 @@ class options:
         )
 
         # Create a new grid
-        action.add_argument(
+        _ = action.add_argument(
             ARG_NEW_S,
             ARG_NEW,
             help=COMMENT_NEW,
@@ -228,10 +226,6 @@ class options:
             choices=[self.NEW_EMPTY, self.NEW_EASY, self.NEW_MEDIUM, self.NEW_HARD],
             required=False,
         )
-
-        # Default values
-        #
-        self.newGrid_ = self.COMPLEXITY_EMPTY
 
         # Parse line
         #
@@ -325,11 +319,9 @@ class options:
     #
     #   return a string
     #
-    def version(self, verbose=True):
-        if self.color_ is None:
-            self.color_ = color.colorizer(True)
-
-        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD], datePrefix=(False == verbose))} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
+    def version(self):
+        self.color_ = color.colorizer(True)
+        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD])} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
 
 
 # EOF

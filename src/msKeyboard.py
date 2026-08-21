@@ -8,6 +8,8 @@
 #
 #   Description :   msKeyoard : handle keyboard (ms way)
 #
+from typing import override
+
 import ownKeyboard
 from ownExceptions import sudokuError
 
@@ -20,6 +22,7 @@ class msKeyboard(ownKeyboard.myKeyboard):
 
     # Read the keyboard
     # returns  a  char
+    @override
     def getChar(self) -> str:
          return f"{msvcrt.getch()!r}"
 
