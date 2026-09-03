@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   options.py
@@ -123,6 +121,7 @@ class options:
         self.progressMode_:int = self.PROGRESS_NONE
         self.execMode_:statusBits.statusBits = statusBits.statusBits(self.EXEC_NONE)
         self.newGrid_:int = self.COMPLEXITY_EMPTY
+        self.userMode_:bool = False
 
     # Browse the command line
     #   returns True when ok
@@ -232,7 +231,7 @@ class options:
         args = parser.parse_args()
 
         # User mode ?
-        self.userMode_ = args.user
+        self.userMode_ = args.user  # pyright: ignore[reportAny]
 
         # Export / save the solution
         self.exportSolution_ = args.export
@@ -319,7 +318,7 @@ class options:
     #
     #   return a string
     #
-    def version(self):
+    def version(self)->str:
         self.color_ = color.colorizer(True)
         return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD])} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
 

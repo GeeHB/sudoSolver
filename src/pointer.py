@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   pointer.py
@@ -166,7 +164,7 @@ class pointer:
     # Check position
     #
     def _inRange(self, value:int, min:int = 0, max:int = ROW_COUNT - 1)->bool:
-        return False if value < min or value > max else True
+        return not (value < min or value > max)
 
     def _setInRange(self, value:int):
         return 0 if value < 0 else (ROW_COUNT - 1) if value >= ROW_COUNT else value

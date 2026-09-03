@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   tinySquare.py
@@ -8,6 +6,7 @@
 #
 #   Description :   tinySquare object
 #
+from element import element
 from pointer import ROW_COUNT, pointer
 
 
@@ -24,53 +23,40 @@ class tinySquare:
 
     # Construction
     #
-    def __init__(self, index:int | None = None, other:tinySquare | None = None):
+    def __init__(self, index:int | None = None):
+        if index is not None:
+            self.Id_ : int = self.IdFromIndex(index)
         self.topLine_:int = 0
         self.topRow_:int = 0
 
         # Top-left index of tiny-squares
         #
-        self.TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
-
-        # Copy ?
-        #
-        if other is not None:
-            self.set(other)
-        else:
-            self.IdFromIndex(index)
-
-    # Copy constrcutor
-    #
-    def set(self, other):
-        if type(other) is tinySquare:
-            self.Id_ = other.Id_
-            self.topLine_ = other.topLine_
-            self.topRow_ = other.topRow_
+        self.SquaresIndexes : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
     # Get index from positionnal index (of an element)
     #
-    def IdFromIndex(self, index:int):
-        if type(index) is int:
-            if index < 0 or index >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
-                raise IndexError
+    def IdFromIndex(self, id:int)->int:
 
-            self.Id_ = index
+        if id < 0 or id >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
+            raise IndexError
 
-            # "top" values
-            position = pointer(index = self.TINY_SQUARES_INDEXES[index])
-            self.topLine_ = position.line_
-            self.topRow_ = position.row_
+        # "top" values
+        position = pointer(index = self.SquaresIndexes[id])
+        self.topLine_ = position.line_
+        self.topRow_ = position.row_
+
+        return id
 
     # Access
     #
-    def Id(self):
+    def Id(self)->int:
         return self.Id_
 
     # Top indexes
-    def topLine(self):
+    def topLine(self)->int:
         return self.topLine_
 
-    def topRow(self):
+    def topRow(self)->int:
         return self.topRow_
 
     # Indexes by line
@@ -78,13 +64,12 @@ class tinySquare:
     #   returns a 3x3 matrix : line[0] / line[1] / line[2]
     #
     def indexes(self):
-
-        ids = []
+        ids :list[list[int]]= []
 
         # Start index
-        index = self.TINY_SQUARES_INDEXES[self.Id_]
+        index = self.SquaresIndexes[self.Id_]
         for _ in range (self.TINY_LINE_COUNT):
-            line = []
+            line : list[int]= []
             for row in range(self.TINY_ROW_COUNT):
                 line.append(index + row)    # Add the index to the line
 
@@ -98,10 +83,9 @@ class tinySquare:
     #
     #   returns the tuple (line, row) if found or (None, None)
     #
-    def findValue(self, elements, value):
-
+    def findValue(self, elements:list[element], value:int)->(tuple[int,int]):
         # All my positions
-        positions = self.indexes()
+        positions:list[list[int]] = self.indexes()
 
         # Check all the positions
         for line in range (tinySquare.TINY_LINE_COUNT):
@@ -119,7 +103,7 @@ class tinySquare:
     #
     #   return a boolean - True if found
     #
-    def inMe(self, elements, value):
+    def inMe(self, elements:list[element], value:int)->bool:
         return not bool(self.findValue(elements, value)[0] == -1)
 
 # EOF

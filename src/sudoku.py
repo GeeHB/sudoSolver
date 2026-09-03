@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-#
 # coding=UTF-8
 #
 #   File        :   sudoku.py
@@ -16,6 +13,7 @@ import math
 import os
 import sys
 import time
+from typing import override
 
 #
 # OCR
@@ -52,34 +50,32 @@ TESSERACT_BOX_COLOR = (0, 255, 0)
 class sudoku:
     # Edition status
     #
-    EDIT_CONTINUE = statusBits.STATUS_NONE
-    EDIT_MODIFIED = 1  # Grid has been modified (at least once)
-    EDIT_STOP = 2  # Stop edition
-    EDIT_ESCAPE = 4  # Escape edition
-    EDIT_ESCAPED = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NOREDRAW = 8  # don't redraw at previous pos value
+    EDIT_CONTINUE:int = statusBits.STATUS_NONE
+    EDIT_MODIFIED:int = 1  # Grid has been modified (at least once)
+    EDIT_STOP:int = 2  # Stop edition
+    EDIT_ESCAPE:int = 4  # Escape edition
+    EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
+    EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
 
     # Consts
     #
-    VALUE_SEPARATOR = ","  # Value separator in files
-    FILE_COMMENTS = "#"  # Comment lines start with
-
-    # Members
-    #
-    gridFileName_ = None
-    outputs_ = None
-
-    attempts_ = 0
-    start_ = 0  # Resolution start-time
-
-    progressMode_ = opts.PROGRESS_NONE  # Draw grid during solving process ?
-    editStatus_ = statusBits.statusBits(EDIT_CONTINUE)
+    VALUE_SEPARATOR:str = ","  # Value separator in files
+    FILE_COMMENTS:str = "#"  # Comment lines start with
 
     # Construction
     #
-    def __init__(self, progressMode=opts.PROGRESS_NONE, initOutputs=True):
+    def __init__(self, progressMode=opts.PROGRESS_NONE, initOutputs:bool = True):
 
-        self.elements_ = []
+        self.gridFileName_ : str | None = None
+        self.outputs_ = None
+
+        self.attempts_:int = 0
+        self.start_:int = 0  # Resolution start-time
+
+        self.progressMode_:int = opts.PROGRESS_NONE  # Draw grid during solving process ?
+        self.editStatus_:statusBits.statusBits = statusBits.statusBits(self.EDIT_CONTINUE)
+
+        self.elements_ : list[element] = []
         self.OSInfos_ = {}  # Informations about the OS and the Window manager
 
         # Show progression details ?
@@ -135,7 +131,7 @@ class sudoku:
         return self.progressMode_
 
     @progressMode.setter
-    def progressMode(self, value):
+    def progressMode(self, value:int):
         # Changed ?
         if self.outputs_ is not None and self.progressMode_ != value:
             # create a new output object ?
@@ -150,7 +146,7 @@ class sudoku:
 
     # Filename (of the source grid)
     #
-    def fileName(self):
+    def fileName(self)->str | None:
         return self.gridFileName_
 
     # Access
@@ -163,7 +159,7 @@ class sudoku:
 
     # Display text
     #
-    def displayText(self, text, information=True):
+    def displayText(self, text:str, information:bool = True):
         # call display's method
         if self.outputs_ is not None:
             self.outputs_.displayText(text, information, self.elements_)
@@ -176,10 +172,10 @@ class sudoku:
 
     # What can we do ?
     #
-    def allowEdition(self):
+    def allowEdition(self) -> bool :
         return False if self.outputs_ is None else self.outputs_.allowEdition()
 
-    def allowFolderBrowsing(self):
+    def allowFolderBrowsing(self)->bool :
         return False if self.outputs_ is None else self.outputs_.allowFolderBrowsing()
 
     #
@@ -204,7 +200,8 @@ class sudoku:
 
     # Convert current grid to a printable string
     #
-    def __str__(self):
+    @override
+    def __str__(self)->str:
         output = ""
         if len(self.elements_) == GRID_SIZE:
             position = pointer(gameMode=False)
@@ -237,12 +234,12 @@ class sudoku:
 
     # Browse a folder (to find a grid)
     #
-    def browse(self, folderName):
+    def browse(self, folderName:str)->str:
         if not os.path.isdir(folderName) or self.outputs_ is None:
             raise sudokuError(f"{folderName} is not a valid folder")
 
         files = []
-        done = False == self.folderContent(folderName, files)
+        done:bool = !self.folderContent(folderName, files)
 
         prev = -1
         index = 0

@@ -13,6 +13,7 @@
 import math
 import os
 import sys
+from typing import override
 
 try :
     import pygame
@@ -71,11 +72,11 @@ DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
 # stats - Informations about a solution
 #
 class stats:
-    obvValues_ = 0          # Count of obvious values found
-    obvDuration_ = 0.0      # Duration in sec. of obvious-values search process
+    obvValues_ : int = 0          # Count of obvious values found
+    obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
 
-    bruteDuration_ = 0.0    # Duration in sec. of brute-force search process
-    bruteAttempts_  = 0     # Brute-force attempts counter
+    bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
+    bruteAttempts_ : int  = 0     # Brute-force attempts counter
 
 #
 # textSurface - "subsurface" containig a single line of text
@@ -83,35 +84,35 @@ class stats:
 class textSurface:
 
     # Construction
-    def __init__(self, fontName, fontSize):
+    def __init__(self, fontName:str, fontSize:int):
         # Members
-        self.surface_    = None
-        self.position_   = (0,0)
-        self.font_       = None      # Font used for drawing the text
-        self.eventID_    = 0         # Event ID - optionnal
-        self.eventFreq_  = 0
+        self.surface_ : pygame.Surface | None   = None
+        self.position_ : tuple[int,int]  = (0,0)
+        self.font_ : pygame.font | None       = None      # Font used for drawing the text
+        self.eventID_ : int    = 0         # Event ID - optionnal
+        self.eventFreq_ : int  = 0
         self.setFont(fontName, fontSize)
 
     # Valid ?
-    def isValid(self):
+    def isValid(self)->bool:
         return bool(self.surface_)
 
     # Visible ?
-    def isVisible(self):
+    def isVisible(self)->bool:
         return self.isValid()
 
     # My surface
-    def surface(self):
+    def surface(self)->pygame.Surface | None:
         return self.surface_
 
     # Create / change the font
-    def setFont(self, fontName, fontSize):
+    def setFont(self, fontName:str, fontSize:int):
         if self.font_:
             del self.font_
         self.font_ = pygame.font.SysFont(fontName, fontSize)
 
     # Create a surface with the associated text
-    def setText(self, text, txtColour, bkColour = None):
+    def setText(self, text : str, txtColour : pygame.ColorValue, bkColour = None):
         self.erase()
 
         if self.font_ is not None:
@@ -133,35 +134,35 @@ class textSurface:
     #
 
     # Bounding rectangle
-    def rect(self):
+    def rect(self)->tuple[int,int,int,int]:
         if self.surface_ is not None :
             return (self.position_[0], self.position_[1], self.surface_.get_width(), self.surface_.get_height())
         return (0,0,0,0)
 
     # Current position
-    def position(self):
+    def position(self)->tuple[int,int]:
         return self.position_
 
     # Change position
-    def moveTo(self, x, y):
+    def moveTo(self, x:int, y:int):
         self.position_ = (x,y)
 
     # Dimensions
     #
-    def getWidth(self):
+    def getWidth(self)->int:
         if self.surface_ is not None :
             return 0 if not self.isVisible() else self.surface_.get_width()
         return 0
-    def getHeight(self):
+    def getHeight(self)->int:
         if self.surface_ is not None :
             return 0 if not self.isVisible() else self.surface_.get_height()
         return 0
 
     # Event ID
     #
-    def eventID(self):
+    def eventID(self)->int:
         return self.eventID_
-    def setEventID(self, id, freq):
+    def setEventID(self, id:int, freq:int):
         self.eventID_ = id
         self.eventFreq_ = freq
 
@@ -171,26 +172,27 @@ class textSurface:
         pygame.time.set_timer(self.eventID(), self.eventFreq_)
     def killTimer(self):
         pygame.time.set_timer(self.eventID(), 0)
-    def frequency(self):
+    def frequency(self)->int:
         return self.eventFreq_
 
 #
 # blinkingText - "subsurface" containig a single line of blinking text
 #
 class blinkingText(textSurface):
-    visible_        = True
-
     # Construction
-    def __init__(self, fontName, fontSize):
+    def __init__(self, fontName : str, fontSize : int):
         super().__init__(fontName, fontSize)
+        self.visible_ : bool = True
+
 
     # Text visibility
     #
-    def isVisible(self):
+    @override
+    def isVisible(self)->bool:
         return self.visible_ if self.isValid() else False
-    def setVisible(self, visible = True):
+    def setVisible(self, visible:bool = True):
         self.visible_ = visible
-    def changeVisibility(self):
+    def changeVisibility(self)->bool:
         self.visible_ = not self.visible_
         return self.visible_
 
@@ -199,45 +201,45 @@ class blinkingText(textSurface):
 #
 class pygameOutputs:
 
-    EVT_KEYDOWN         = pygame.KEYDOWN
-    EVT_QUIT            = pygame.QUIT
+    EVT_KEYDOWN:int         = pygame.KEYDOWN
+    EVT_QUIT:int            = pygame.QUIT
 
     # PYGame keys
     #
-    MOVE_LEFT           = pygame.K_LEFT
-    MOVE_RIGHT          = pygame.K_RIGHT
-    MOVE_UP             = pygame.K_UP
-    MOVE_DOWN           = pygame.K_DOWN
+    MOVE_LEFT:int           = pygame.K_LEFT
+    MOVE_RIGHT:int          = pygame.K_RIGHT
+    MOVE_UP:int             = pygame.K_UP
+    MOVE_DOWN:int           = pygame.K_DOWN
 
     # Mouse click
-    EVT_MOUSEBUTTONDOWN = pygame.MOUSEBUTTONDOWN
+    EVT_MOUSEBUTTONDOWN:int = pygame.MOUSEBUTTONDOWN
 
     # Mouse button ID
-    MOUSE_BUTTON_NONE   = 0
-    MOUSE_BUTTON_LEFT   = 1
-    MOUSE_BUTTON_MIDDLE = 2 # ???
-    MOUSE_BUTTON_RIGHT  = 3
+    MOUSE_BUTTON_NONE:int   = 0
+    MOUSE_BUTTON_LEFT:int   = 1
+    MOUSE_BUTTON_MIDDLE:int = 2 # ???
+    MOUSE_BUTTON_RIGHT:int  = 3
 
     # Change element value
-    REMOVE_VALUE        = pygame.K_DELETE
-    REMOVE_VALUE_BIS    = pygame.K_BACKSPACE
+    REMOVE_VALUE:int        = pygame.K_DELETE
+    REMOVE_VALUE_BIS:int    = pygame.K_BACKSPACE
 
-    VALUE_DEC           = pygame.K_PAGEDOWN
-    VALUE_INC           = pygame.K_PAGEUP
+    VALUE_DEC:int           = pygame.K_PAGEDOWN
+    VALUE_INC:int           = pygame.K_PAGEUP
 
     # Set value
-    VALUE_1             = pygame.K_1
-    VALUE_9             = pygame.K_9
+    VALUE_1:int             = pygame.K_1
+    VALUE_9:int             = pygame.K_9
 
-    VALUE_KPAD_1         = pygame.K_KP1  # from keypad
-    VALUE_KPAD_9         = pygame.K_KP9
+    VALUE_KPAD_1:int         = pygame.K_KP1  # from keypad
+    VALUE_KPAD_9:int         = pygame.K_KP9
 
-    EDIT_CANCEL         = pygame.K_ESCAPE
-    EDIT_QUIT_AND_SAVE  = pygame.K_RETURN
+    EDIT_CANCEL:int         = pygame.K_ESCAPE
+    EDIT_QUIT_AND_SAVE:int  = pygame.K_RETURN
 
     #  App colours
     #
-    BORDER_COLOUR       = (81, 154, 186)
+    BORDER_COLOUR:pygame.Color = (81, 154, 186)
     BK_COLOUR           = (230, 230, 255)
     BK_COLOUR_FILENAME  = (220, 220, 245)
     TXT_COLOUR          = (64, 64, 64)
@@ -249,9 +251,9 @@ class pygameOutputs:
 
     # Display modes
     #
-    MODE_DEFAULT        = statusBits.STATUS_NONE
-    MODE_EDIT           = 1
-    MODE_BROWSEFOLDER   = 2
+    MODE_DEFAULT:int        = statusBits.STATUS_NONE
+    MODE_EDIT:int           = 1
+    MODE_BROWSEFOLDER:int   = 2
 
     # Members
     #

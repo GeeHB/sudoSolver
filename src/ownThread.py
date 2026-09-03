@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   ownThread.py
@@ -67,15 +65,15 @@ class threadAction:
 class Thread(threading.Thread):
     # Construction
     def __init__(self):
-        super.__init__()
+        super().__init__()
 
         self.ready_:bool = False  # Am I ready ?
-        self.actions_ = []  # Actions (to perform)
+        self.actions_ : list[threadAction] = []  # Actions (to perform)
         self.syncRet_ = {}  # Returns from a sync-action
         self.lastId_:int = 0
-        self.newAction_ = threading.Event()      # Notifies the thread a new action is to be performed
-        self.accessList_ = threading.Event()     # Is action-list free ?
-        self.syncThreads_ = threading.Event()    # Event for threads synchronisation
+        self.newAction_ : threading.Event = threading.Event()      # Notifies the thread a new action is to be performed
+        self.accessList_ : threading.Event = threading.Event()     # Is action-list free ?
+        self.syncThreads_ : threading.Event = threading.Event()    # Event for threads synchronisation
 
     # Start the thread
     def initiate(self):
@@ -129,7 +127,7 @@ class Thread(threading.Thread):
 
         # Wait for completion ...
         if wait and action.actionId_ != threadAction.ACTION_END_THREAD:
-            self.syncThreads_.wait()
+            _ = self.syncThreads_.wait()
 
             # done ...
             self.syncThreads_.clear()
@@ -137,7 +135,7 @@ class Thread(threading.Thread):
             # handle return
             try:
                 return self.syncRet_[action.uid_] if action is not None else False
-            except:
+            except:  # noqa: E722
                 return False
 
         # Done

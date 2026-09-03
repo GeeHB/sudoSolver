@@ -11,6 +11,8 @@
 #
 #                   pygameThreadedOutputs inherits pygameOutputs class
 #
+from typing import override
+
 import pygame.event
 
 from ownThread import (
@@ -40,11 +42,13 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
     #
 
     # Ready to go ?
+    @override
     def isReady(self) -> bool:
         return self.ready_
 
     # Display text
     #
+    @override
     def displayText(self, text, information, elements):
         if information:
             super().displayText(text, True, elements)
@@ -86,6 +90,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Update the window
     #
+    @override
     def update(self):
         self._addAction(id=threadAction.ACTION_UPDATE)
 

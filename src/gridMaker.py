@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# coding=UTF-8
 #
 #   File        :   gridMaker.py
 #
@@ -20,17 +20,17 @@ from sudoku import sudoku
 class gridMaker:
 
     # Construction
-    def __init__(self, grid = None, complexity = opts.COMPLEXITY_EASY):
+    def __init__(self, grid :sudoku | None = None, complexity:int = opts.COMPLEXITY_EASY):
         random.seed()
-        self.complexity_ = complexity
-        self.grid_ = grid if grid is not None else sudoku(initOutputs = False);
+        self.complexity_ :int = complexity
+        self.grid_ : sudoku | None = grid if grid is not None else sudoku(initOutputs = False);
 
     # Create a new full grid
     def newGrid(self):
         if self.grid_ is not None:
             # Step 1 - Start from a complete (new) grid
             self.grid_.clear()
-            self.grid_.resolve()
+            _ = self.grid_.resolve()
 
             # Step 2 : shuffle elements
             self._shuffleValues()
@@ -53,7 +53,7 @@ class gridMaker:
 
     # Remove elements according to complexity
     #
-    def removeElements(self, complexity = opts.COMPLEXITY_EASY):
+    def removeElements(self, complexity:int = opts.COMPLEXITY_EASY):
         if self.grid_ is not None:
             if complexity != opts.COMPLEXITY_EASY:
                 self.complexity_ = complexity
@@ -64,7 +64,7 @@ class gridMaker:
                 index = random.randint(0, GRID_SIZE - 1)
 
                 if not self.grid_.elements_[index].isEmpty() :
-                    self.grid_.elements_[index].empty()
+                    _ = self.grid_.elements_[index].empty()
                     clues-=1
 
             return clues
@@ -81,7 +81,7 @@ class gridMaker:
     #
     def _shuffleColumns(self):
         colOff = 0
-        for block in range(3):
+        for _ in range(3):
             for colID in range(3):
                 self._swapColumns(colID + colOff, colOff + random.randint(0, 2))
 
@@ -91,7 +91,7 @@ class gridMaker:
     #
     def _shuffleRows(self):
         rowOff =0
-        for block in range(3):
+        for _ in range(3):
             for rowID in range(3):
                 self._swapRows(rowID + rowOff, random.randint(0, 2) + rowOff);
 
@@ -114,8 +114,8 @@ class gridMaker:
     #  @first : value to replace by @second
     #  @second : value to replace by @first
     #
-    def _swapValues(self, first, second):
-        if first != second:
+    def _swapValues(self, first:int, second:int):
+        if self.grid_ is not None and first != second:
             for index in range(INDEX_MIN, INDEX_MAX):
                 value = self.grid_.elements_[index].num
                 if value == first:
@@ -129,16 +129,16 @@ class gridMaker:
     #  @fCol : col ID to swap with @sCol
     #  @sCol : col ID to swap with @fcol
     #
-    def _swapColumns(self, fCol, sCol):
-        if fCol != sCol:
+    def _swapColumns(self, fCol:int, sCol:int):
+        if self.grid_ is not None and fCol != sCol:
             first = position()
             second = position()
 
             first.moveTo(0, fCol);
             second.moveTo(0, sCol);
 
-            for line in range(VALUE_MAX):
-                oValue = self.grid_.elements_[first.index()].num;
+            for _ in range(VALUE_MAX):
+                oValue : int | None = self.grid_.elements_[first.index()].num;
                 self.grid_.elements_[first.index()].num = self.grid_.elements_[second.index()].num
                 self.grid_.elements_[second.index()].num = oValue
 
@@ -151,15 +151,15 @@ class gridMaker:
     #  @fRow : row ID to swap with @sRow
     #  @sRow : row ID to swap with @fRow
     #
-    def _swapRows(self, fRow, sRow):
-        if fRow != sRow:
+    def _swapRows(self, fRow:int, sRow:int):
+        if self.grid_ is not None and fRow != sRow:
             first = position()
             second = position()
 
             first.moveTo(fRow, 0);
             second.moveTo(sRow, 0);
 
-            for row in range(VALUE_MAX):
+            for _ in range(VALUE_MAX):
                 oValue = self.grid_.elements_[first.index()].num
                 self.grid_.elements_[first.index()].num = self.grid_.elements_[second.index()].num
                 self.grid_.elements_[second.index()].num = oValue
@@ -170,14 +170,14 @@ class gridMaker:
 
     # _swapColumnBlocks() : Swap blocks of 3 contiguous columns
     #
-    def _swapColumnBlocks(self, fColBlock, sColBlock):
+    def _swapColumnBlocks(self, fColBlock:int, sColBlock:int):
         if fColBlock != sColBlock:
              for colID in range(3):
                 self._swapColumns(fColBlock * 3 + colID, sColBlock * 3 + colID);
 
     # _swapRowBlocks() : Swap blocks of 3 contiguous rows
     #
-    def _swapRowBlocks(self, fRowBlock, sRowBlock):
+    def _swapRowBlocks(self, fRowBlock:int, sRowBlock:int):
         if fRowBlock != sRowBlock:
              for rowID in range(3):
                 self._swapRows(fRowBlock * 3 + rowID, sRowBlock * 3 + rowID);

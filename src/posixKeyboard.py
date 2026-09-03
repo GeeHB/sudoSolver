@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   posixKeyboard.py
@@ -13,6 +11,7 @@ import fcntl
 import os
 import sys
 import termios
+from typing import override
 
 import ownKeyboard
 
@@ -21,6 +20,7 @@ class posixKeyboard(ownKeyboard.myKeyboard):
 
     # Read the keyboard
     # returns  a  char
+    @override
     def getChar(self) -> str:
         c = ''
         fd = sys.stdin.fileno()
@@ -30,7 +30,7 @@ class posixKeyboard(ownKeyboard.myKeyboard):
         termios.tcsetattr(fd, termios.TCSANOW, newattr)
 
         oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+        _ = fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
         try:
             while True:
@@ -41,6 +41,6 @@ class posixKeyboard(ownKeyboard.myKeyboard):
                     pass
         finally:
             termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+            _ = fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
         return c
 # EOF

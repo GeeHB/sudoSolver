@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   ownExceptions.py
@@ -11,6 +9,9 @@
 #                       - sudokuError : a bloking error
 #
 
+from typing import override
+
+
 #
 # reachedEndOfList : End of resolution mode
 #
@@ -21,14 +22,16 @@ class reachedEndOfList(Exception):
 # sudokuError : An error ...
 #
 class sudokuError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self, message:str):
+        self.message_ : str = message
+        super().__init__(self.message_)
 
-    def __str__(self):
-        return self.message
+    @override
+    def __str__(self)->str:
+        return self.message_
 
-    def __repr__(self):
-        return f"sudokuError : {self.message}"
+    @override
+    def __repr__(self)->str:
+        return f"sudokuError : {self.message_}"
 
 # EOF

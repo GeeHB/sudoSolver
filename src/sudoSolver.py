@@ -83,7 +83,7 @@ def _create():
 
 # Start the solver/editor
 #
-def _sudoku(solver):
+def _sudoku(solver : sudoku):
     # Edition and/or resolution
     #
     try:

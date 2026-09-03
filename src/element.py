@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   element.py
@@ -36,8 +34,11 @@ class element:
     def num(self)->int | None:
         return self.value_ if self.status_.isSet(self.STATUS_SET) else None
     @num.setter
-    def num(self, newVal : int):
-        self.value_ = newVal
+    def num(self, newVal : int | None):
+        if newVal is not None:
+            self.value_ = newVal
+        else:
+            self.status_.assign(self.STATUS_EMPTY)
 
     # Set/modify the value
     #
