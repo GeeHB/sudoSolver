@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   pygameOutputs.py
@@ -20,6 +18,7 @@ try :
 except ModuleNotFoundError:
     print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
+from element import element
 from options import APP_SHORT_NAME
 from ownExceptions import sudokuError
 from pointer import (
@@ -88,7 +87,7 @@ class textSurface:
         # Members
         self.surface_ : pygame.Surface | None   = None
         self.position_ : tuple[int,int]  = (0,0)
-        self.font_ : pygame.font | None       = None      # Font used for drawing the text
+        self.font_ : pygame.font.Font | None       = None      # Font used for drawing the text
         self.eventID_ : int    = 0         # Event ID - optionnal
         self.eventFreq_ : int  = 0
         self.setFont(fontName, fontSize)
@@ -112,7 +111,7 @@ class textSurface:
         self.font_ = pygame.font.SysFont(fontName, fontSize)
 
     # Create a surface with the associated text
-    def setText(self, text : str, txtColour : pygame.ColorValue, bkColour = None):
+    def setText(self, text : str, txtColour : pygame.Color, bkColour = None):
         self.erase()
 
         if self.font_ is not None:
@@ -239,11 +238,11 @@ class pygameOutputs:
 
     #  App colours
     #
-    BORDER_COLOUR:pygame.Color = (81, 154, 186)
-    BK_COLOUR           = (230, 230, 255)
-    BK_COLOUR_FILENAME  = (220, 220, 245)
-    TXT_COLOUR          = (64, 64, 64)
-    HILITE_COLOUR       = (248, 128, 112)
+    BORDER_COLOUR:pygame.Color = pygame.Color(81, 154, 186)
+    BK_COLOUR:pygame.Color     = pygame.Color(230, 230, 255)
+    BK_COLOUR_FILENAME:pygame.Color  = pygame.Color(220, 220, 245)
+    TXT_COLOUR:pygame.Color = pygame.Color(64, 64, 64)
+    HILITE_COLOUR:pygame.Color = pygame.Color(248, 128, 112)
     OBVIOUS_COLOUR      = BORDER_COLOUR
 
     SEL_BK_COLOUR       = (50, 50, 255)
@@ -285,7 +284,7 @@ class pygameOutputs:
         self._start(position)
         self._drawBackground()
 
-    def _start(self, position = None) :
+    def _start(self, position : tuple[int,int] | None = None) :
         self.initDone_ = False
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
@@ -307,7 +306,7 @@ class pygameOutputs:
         # font for drawing elements
         fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE_BASE)
         self.sElement_ = textSurface(ELT_FONT_NAME, fontSize)
-        self.sElement_.moveTo((self.extSquareWidth_ - fontSize) / 2, 0)
+        self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
 
         # Main window creation
         myDict = systemInfos.getSystemInformations()
@@ -335,11 +334,11 @@ class pygameOutputs:
         return True
 
      # Is this display mode compatible with edition ?
-    def allowEdition(self):
+    def allowEdition(self)->bool:
         return self.mode_.isSet(self.MODE_EDIT)
 
     # Is this display mode compatible with forlder browsing ?
-    def allowFolderBrowsing(self):
+    def allowFolderBrowsing(self)->bool:
         return self.mode_ .isSet(self.MODE_BROWSEFOLDER)
 
     # Show resolution stats
@@ -362,29 +361,29 @@ class pygameOutputs:
 
     # Display text
     #
-    def displayText(self, text, information, elements):
+    def displayText(self, text:str, information:bool, elements:list[element]):
         if True == information:
             # By default, text is displayed on the console
             print(text)
         else:
             self._int_displayText(text, elements)
 
-    def _int_displayText(self, text, elements):
+    def _int_displayText(self, text:str, elements:list[element]):
         # Display text on top of the board
         self._showMessage(text, elements)
         self._int_refresh(elements)
 
     # Start of solving process
     #   can be overloaded
-    def startedSolving(self, elements):
+    def startedSolving(self, elements:list[element]):
         pass
 
     # Wait for an event
     #
-    def waitForEvent(self, elements, allEvents) -> pygame.event.Event:
+    def waitForEvent(self, elements:list[element], allEvents:bool) -> pygame.event.Event:
         return self._int_waitForEvent(elements, allEvents)
 
-    def _int_waitForEvent(self, elements, allEvents)  -> pygame.event.Event:
+    def _int_waitForEvent(self, elements:list[element], allEvents:bool)  -> pygame.event.Event:
         event = pygame.event.Event(0)
         if self.win_ is not None:
             finished = False
@@ -454,34 +453,34 @@ class pygameOutputs:
 
     # All events ...
     #
-    def getEvents(self):
+    def getEvents(self)->list[pygame.event.Event]:
         return pygame.event.get()
 
     # Mouse events and status
     #
     #   returns tuple (ButtonID or None, (xPos, yPos))
     #
-    def mouseButtonStatus(self, event):
+    def mouseButtonStatus(self, event : pygame.event.Event | None)->tuple[int|None, tuple[int, int]]:
         return (self.MOUSE_BUTTON_NONE, (0,0)) if event is None else (event.button, event.pos)
 
     # Is a key pressed ?
     #
-    #   returns the list [pressed?, key or None if not pressed]
+    #   returns the tuple(pressed?, key or None if not pressed)
     #
-    def keyPressed(self, elements = None, allEvents = False):
+    def keyPressed(self, elements : list[element] | None = None, allEvents : bool = False) -> tuple[bool,pygame.event.Event | None]:
         return self._int_keyPressed(elements, allEvents)
 
-    def _int_keyPressed(self, elements = None, allEvents = False):
+    def _int_keyPressed(self, elements : list[element] | None = None, allEvents : bool = False) -> tuple[bool,pygame.event.Event | None]:
         evt = pygame.event.poll()
         valid = (evt.type == pygame.QUIT or evt.type == pygame.KEYDOWN)
-        return [True, evt] if valid else [False, None]
+        return (True, evt) if valid else (False, None)
 
     # Set/change the current grid's filename
     #
-    def setGridName(self, fileName, create = False):
+    def setGridName(self, fileName:str, create:bool = False):
         self._int_setGridName(fileName, create)
 
-    def _int_setGridName(self, fileName, create = False):
+    def _int_setGridName(self, fileName:str, create:bool = False):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
             raise sudokuError(fileName +  " is not a file")

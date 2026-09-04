@@ -42,7 +42,7 @@ class pointer:
 
     # Absolute position
     #
-    def moveTo(self, line:int = 0, row:int = 0, pos:list[int] | None = None):
+    def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None):
         if pos is None:
             # Ensure position is in the grid
             self.row_ = self._setInRange(row)

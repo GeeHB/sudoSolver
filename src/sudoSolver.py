@@ -135,7 +135,7 @@ def _sudoku(solver : sudoku):
             else:
                 # Export the solution ?
                 if params.exportSolution_:
-                    comments = []
+                    comments : list[str] = []
                     comments.append(" ")
                     comments.append(f" Source file : {params.fileName_}")
                     comments.append(" ")

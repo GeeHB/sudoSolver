@@ -9,6 +9,7 @@
 #                       -  edit and/or resolve of a sudoku's grid
 #
 
+import copy
 import math
 import os
 import sys
@@ -70,7 +71,7 @@ class sudoku:
         self.outputs_ = None
 
         self.attempts_:int = 0
-        self.start_:int = 0  # Resolution start-time
+        self.start_:float = 0.0  # Resolution start-time
 
         self.progressMode_:int = opts.PROGRESS_NONE  # Draw grid during solving process ?
         self.editStatus_:statusBits.statusBits = statusBits.statusBits(self.EDIT_CONTINUE)
@@ -238,8 +239,8 @@ class sudoku:
         if not os.path.isdir(folderName) or self.outputs_ is None:
             raise sudokuError(f"{folderName} is not a valid folder")
 
-        files = []
-        done:bool = !self.folderContent(folderName, files)
+        files : list[str] = []
+        done:bool = not self.folderContent(folderName, files)
 
         prev = -1
         index = 0
@@ -257,7 +258,7 @@ class sudoku:
                 try:
                     self.gridFromFile(currentFile)
                 except sudokuError as e:
-                    print(f"Sudoku Error : {e.message}")
+                    print(f"Sudoku Error : {e.message_}")
                 except OSError as other:
                     # the file is not valid => remove it from the list
                     print(f"Invalid file : {other}")
@@ -313,7 +314,7 @@ class sudoku:
 
     # Read a grid'file
     #
-    def load(self, fileName, mustExist, showFileName=True):
+    def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
         if fileName is None or 0 == len(fileName):
             # ???
             raise sudokuError("No valid file name")
@@ -365,7 +366,7 @@ class sudoku:
     #
     #   return the name of the saved file or None if an error occured
     #
-    def save(self, genName=False, comments=None, newFileName=None):
+    def save(self, genName:bool = False, comments:list[str] | None = None, newFileName:str | None = None):
 
         if self.gridFileName_ is None:
             return None
@@ -417,15 +418,15 @@ class sudoku:
     #
     #   Returns the tuple of booleans : (escaped ?, grid saved (or successfully edited) ?)
     #
-    def edit(self):
+    def edit(self) -> tuple[bool, bool]:
         # Can we edit this grid
         if self.outputs_ is None or False == self.outputs_.allowEdition():
-            return False, False
+            return (False, False)
 
         # Edition
         #
-        currentPos = pointer(gameMode=False)  # current position
-        prevPos = None  # previous pos (if erase needed)
+        currentPos : pointer = pointer(gameMode=False)  # current position
+        prevPos : pointer | None =  None  # previous pos (if erase needed)
 
         self.editStatus_.value = self.EDIT_CONTINUE
 
@@ -435,7 +436,7 @@ class sudoku:
                 None if self.editStatus_.isSet(self.EDIT_NOREDRAW) else prevPos,
                 currentPos,
             )
-            prevPos = pointer(currentPos)
+            prevPos = copy.deepcopy(currentPos)   # // copy constructor
             self.editStatus_.remove(self.EDIT_NOREDRAW)
 
             # Wait for an event
@@ -494,7 +495,7 @@ class sudoku:
         # Saves changes or exit
         return (
             escaped,
-            (self.save() if self.editStatus_.isSet(self.EDIT_MODIFIED) else True)
+            ((self.save() is not None) if self.editStatus_.isSet(self.EDIT_MODIFIED) else True)
             if not escaped
             else False,
         )
@@ -511,7 +512,7 @@ class sudoku:
         except UnicodeDecodeError:
             return False
         except sudokuError as se:
-            print(f"Sudoku Error : {se.message}")
+            print(f"Sudoku Error : {se.message_}")
             return False
 
         if self.outputs_ is not None:
@@ -608,7 +609,7 @@ class sudoku:
     #   fill the {files} with {folder} content
     #
     #   return True if the list is not empty, False in all other cases
-    def folderContent(self, folder, files):
+    def folderContent(self, folder:str, files:list[str])->bool:
         files.clear()
 
         # Folder content
@@ -651,7 +652,7 @@ class sudoku:
         while True:
             # Stopped ?
             status = self.outputs_.keyPressed()
-            if True == status[0] and self.outputs_.EDIT_CANCEL == status[1].key:
+            if True == status[0] and status[1] is not None and self.outputs_.EDIT_CANCEL == status[1].key:
                 sys.exit(0)
 
             candidate += 1
@@ -986,7 +987,7 @@ class sudoku:
                     if None != foundPos:
                         # Already a candiate => not obvious
                         return 0
-                    foundPos = pointer(other=pos)  # call the copy constructor !!!
+                    foundPos = copy.deepcopy(pos)  # // copy constructor
 
                 # Next row
                 pos += 1
@@ -1075,7 +1076,7 @@ class sudoku:
                         # Already a candiate => not obvious
                         return 0
 
-                    foundPos = pointer(other=pos)  # call the copy constructor !!!
+                    foundPos = copy.deepcopy(pos)
 
                 # Next line
                 pos += ROW_COUNT  # Might go out of range and raise reachedEndOfList exception

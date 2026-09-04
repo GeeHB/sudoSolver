@@ -9,6 +9,7 @@
 #
 
 import threading
+from typing import Any
 
 #
 # Internal constants
@@ -57,7 +58,7 @@ class threadAction:
         self.uid_:int = 0
         self.actionId_:int = id
         self.sync_:bool = False  # Synchronized with the calling thread ?
-        self.params_:list[int] = []  # Optionnal parameters (depends on action)
+        self.params_:list[Any] = []  # Optionnal parameters (depends on action)
 
 #
 # Thread object
