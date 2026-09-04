@@ -228,7 +228,7 @@ class sudoParamWindow(tk.Frame):
         return self.folderNameEdit_.get()
 
     @folderName.setter
-    def folderName(self, value):
+    def folderName(self, value : str | None):
         if value is None:
             value = ""
 

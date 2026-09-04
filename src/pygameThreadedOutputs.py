@@ -29,7 +29,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Construction
     #
-    def __init__(self, position = None):
+    def __init__(self, position : tuple[int,int] | None = None):
 
         self.position_ = position
 
@@ -48,14 +48,13 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
     # Display text
     #
     @override
-    def displayText(self, text, information, elements):
+    def displayText(self, text : str, information : bool, elements : list[element]):
         if information:
             super().displayText(text, True, elements)
         else:
             action = threadAction(threadAction.ACTION_DRAW_TEXT)
-            if action is not None:
-                action.params_ = [text, elements]
-                self._addAction(action)
+            action.params_ = [text, elements]
+            self._addAction(action)
 
     # Set/change the current grid's filename
     #   overloaded
@@ -67,14 +66,14 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Draw the whole grid
     #
-    def draw(self, elements):
+    def draw(self, elements:list[element]):
         action = threadAction(threadAction.ACTION_DRAW_GRID)
         action.params_ = [elements, ""]
         self._addAction(action)
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row, line, value, bkColour, txtColour):
+    def drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
 
         # too small to be drawn ?
         if 0 == self.extSquareWidth_:
@@ -95,7 +94,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Start of solving process
     #   can be overloaded
-    def startedSolving(self, elements):
+    def startedSolving(self, elements:list[element]):
         # Create the action
         action = threadAction(threadAction.ACTION_SOLVING_STARTED)
         action.params_ = [elements, ""]
@@ -115,7 +114,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Check current/last event
     #
-    def pollEvent(self, elements=None, allEvents=False)  -> pygame.event.Event:
+    def pollEvent(self, elements:list[element] | None =None, allEvents:bool = False)  -> pygame.event.Event:
         # Create the action
         action = threadAction(threadAction.ACTION_POLL_EVENT)
         action.params_ = [elements, allEvents]
@@ -129,7 +128,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
     #   returns the tuple (pressed?, key or None if not pressed)
     #
     @override
-    def keyPressed(self, elements : list[element] | None = None, allEvents=False)->tuple[bool,pygame.event.Event | None]:
+    def keyPressed(self, elements : list[element] | None = None, allEvents:bool=False)->tuple[bool,pygame.event.Event | None]:
         # Create the action
         action = threadAction(threadAction.ACTION_CHECK_KEYPRESSED)
         action.params_ = [elements, allEvents]
@@ -162,7 +161,8 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Refresh the whole window
     #
-    def _refresh(self, elements : list[element]):
+    @override
+    def _refresh(self, elements : list[element] | None):
         action = threadAction(threadAction.ACTION_REFRESH)
         action.params_ = [elements, ""]
         self._addAction(action)

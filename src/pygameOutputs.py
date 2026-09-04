@@ -19,7 +19,7 @@ except ModuleNotFoundError:
     print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
 from element import element
-from options import APP_SHORT_NAME
+from options import APP_SHORT_NAME, options, stats
 from ownExceptions import sudokuError
 from pointer import (
     LINE_COUNT,
@@ -68,20 +68,9 @@ DEF_MSG_HIDING_FREQ     = 2000  # Hide the filename
 DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
 
 #
-# stats - Informations about a solution
-#
-class stats:
-    obvValues_ : int = 0          # Count of obvious values found
-    obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
-
-    bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
-    bruteAttempts_ : int  = 0     # Brute-force attempts counter
-
-#
 # textSurface - "subsurface" containig a single line of text
 #
 class textSurface:
-
     # Construction
     def __init__(self, fontName:str, fontSize:int):
         # Members
@@ -111,7 +100,7 @@ class textSurface:
         self.font_ = pygame.font.SysFont(fontName, fontSize)
 
     # Create a surface with the associated text
-    def setText(self, text : str, txtColour : pygame.Color, bkColour = None):
+    def setText(self, text : str, txtColour : pygame.Color, bkColour : pygame.Color | None = None):
         self.erase()
 
         if self.font_ is not None:
@@ -254,33 +243,31 @@ class pygameOutputs:
     MODE_EDIT:int           = 1
     MODE_BROWSEFOLDER:int   = 2
 
-    # Members
-    #
-    win_            = None     # My window
-
-    width_          = 0        # Window's dimensions
-    height_         = 0
-
-    intSquareWidth_ = 0        # Internal dims of an element
-    extSquareWidth_ = 0        # Ext. dims
-
-    # Elements'values drawing
-    sElement_ = None
-
-    mode_ = statusBits.statusBits()       # Display mode
-    gridFileName_ = None
-
-    keyHandler_ = None
-
-    # Display the grid name
-    sFileName_       = None
-
-    # Text message
-    sMessage_ = None
-
     # Construction
     #
-    def __init__(self, position = None):
+    def __init__(self, position : tuple[int, int] | None = None):
+        self.win_            = None     # My window
+
+        self.width_ :int = 0        # Window's dimensions
+        self.height_ : int = 0
+
+        self.intSquareWidth_ :int = 0        # Internal dims of an element
+        self.extSquareWidth_ :int = 0        # Ext. dims
+
+        # Elements'values drawing
+        self.sElement_ : textSurface | None = None
+
+        self.mode_ :statusBits.statusBits = statusBits.statusBits()       # Display mode
+        self.gridFileName_ : str | None = None
+
+        self.keyHandler_ = None
+
+        # Display the grid name
+        self.sFileName_ : textSurface | None       = None
+
+        # Text message
+        self.sMessage_ : blinkingText | None = None
+
         self._start(position)
         self._drawBackground()
 
@@ -346,7 +333,7 @@ class pygameOutputs:
     #   Print stats on console (by default)
     #
     # can be overloaded
-    def showStats(self, params, sStats):
+    def showStats(self, params: options, sStats : stats):
         print("\t- " + params.fileName_)
 
         # Found obvious values ?
@@ -383,7 +370,7 @@ class pygameOutputs:
     def waitForEvent(self, elements:list[element], allEvents:bool) -> pygame.event.Event:
         return self._int_waitForEvent(elements, allEvents)
 
-    def _int_waitForEvent(self, elements:list[element], allEvents:bool)  -> pygame.event.Event:
+    def _int_waitForEvent(self, elements:list[element] | None, allEvents:bool)  -> pygame.event.Event:
         event = pygame.event.Event(0)
         if self.win_ is not None:
             finished = False
@@ -404,7 +391,7 @@ class pygameOutputs:
                     self._int_drawBackground()
 
                     # ... and the grid's content
-                    if not elements is None:
+                    if elements is not None:
                         self._int_draw(elements)
 
                     # returns all events ?
@@ -494,21 +481,22 @@ class pygameOutputs:
 
     # Mouse position
     #
-    def mousePosition(self, pos):
+    def mousePosition(self, pos : tuple[int,int]):
         return (-1 if pos[0] < DELTA_W else int((pos[0] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_), -1 if pos[1] < (MENUBAR_HEIGHT + DELTA_H) else int((pos[1] - MENUBAR_HEIGHT - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_))
 
     # Draw the whole grid
     #
-    def draw(self, elements):
+    def draw(self, elements : list[element]):
         self._int_draw(elements)
 
-    def _int_draw(self, elements):
+    def _int_draw(self, elements : list[element]):
         position = pointer(gameMode = False)
-
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
                 currentElement = elements[position.index()]
-                self._int_drawSingleElement(row, line, currentElement.value(), self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
+                value : int | None = currentElement.value()
+                if value is not None:
+                    self._int_drawSingleElement(row, line, value, self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
 
                 # next element ...
                 position+=1
@@ -517,10 +505,10 @@ class pygameOutputs:
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row, line, value, bkColour, txtColour):
+    def drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
         self._int_drawSingleElement(row, line, value, bkColour, txtColour)
 
-    def _int_drawSingleElement(self, row, line, value, bkColour, txtColour):
+    def _int_drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
 
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
@@ -534,7 +522,7 @@ class pygameOutputs:
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # The value (if valid)
-        if value is not None and self.sElement_ is not None:
+        if self.sElement_ is not None:
             self.sElement_.setText(str(value), txtColour)
 
             # Center the text
@@ -594,19 +582,20 @@ class pygameOutputs:
     #
     # can be overloaded
     #
-    def _refresh(self, elements):
+    def _refresh(self, elements : list[element] | None):
         self._int_refresh(elements)
 
-    def _int_refresh(self, elements):
-        self._int_drawBackground()
-        if elements:
-            self._int_draw(elements)
-        else:
-            self._int_update()
+    def _int_refresh(self, elements : list[element] | None):
+        if elements is not None :
+            self._int_drawBackground()
+            if elements:
+                self._int_draw(elements)
+            else:
+                self._int_update()
 
     # Handle window's resize
     #
-    def _onResizeWindow(self, newWidth, newHeight):
+    def _onResizeWindow(self, newWidth:int, newHeight:int):
 
         self.width_ = newWidth
         self.height_ = newHeight
@@ -630,15 +619,15 @@ class pygameOutputs:
         if self.sElement_ is not None:
             fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
             self.sElement_.setFont(ELT_FONT_NAME, fontSize)
-            self.sElement_.moveTo((self.extSquareWidth_ - fontSize) / 2, 0)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(fontSize))/2), 0)
 
     # Draw window's background and grid's borders
     #
     def _drawBackground(self):
         self._int_drawBackground()
 
-    def _int_drawBackground(self, a = None, b= None, c= None, d = None, e = None):
-
+    #def _int_drawBackground(self, a = None, b= None, c= None, d = None, e = None):
+    def _int_drawBackground(self):
         if self.win_ is None :
             return (False, False, None, None)
 
@@ -672,13 +661,13 @@ class pygameOutputs:
 
     # Mise à jour de l'affichage (affichage jusqu'au pointeur 'limit')
     #
-    def _updateGrid(self, elements, limit):
+    def _updateGrid(self, elements : list[element], limit : pointer):
         # On réaffiche toute la grille ...
         self._int_draw(elements)
 
     # Show text message (on top of the grid)
     #
-    def _showMessage(self, message, elements):
+    def _showMessage(self, message : str, elements : list[element]):
         if self.sMessage_:
             # Remove previous message (if any)
             self._clearMessage(elements)
@@ -692,7 +681,7 @@ class pygameOutputs:
 
     # Clear the current text message
     #
-    def _clearMessage(self, elements):
+    def _clearMessage(self, elements : list[element]):
         if self.sMessage_:
             # Remove events
             pygame.event.get(self.sMessage_.eventID())

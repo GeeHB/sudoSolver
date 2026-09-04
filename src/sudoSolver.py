@@ -202,7 +202,6 @@ if "__main__" == __name__:
         sys.exit(1)
 
     # ... action
-    if solver is not None:
-        _sudoku(solver)
+    _sudoku(solver)
 
 # EOF

@@ -275,14 +275,15 @@ class options:
         # Generate a new grid ?
         # if True == self.editMode_ :
         if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
-            mode = args.new[0]
-
+            mode : str = args.new[0]
             match mode:
                 case self.NEW_MEDIUM:
                     self.newGrid_ = self.COMPLEXITY_MEDIUM
                 case self.NEW_HARD:
                     self.newGrid_ = self.COMPLEXITY_HARD
-                case self.NEW_EASY, _:
+                case self.NEW_EASY:
+                    self.newGrid_ = self.COMPLEXITY_EASY
+                case _:
                     self.newGrid_ = self.COMPLEXITY_EASY
 
         # Display grid during the search process ?
@@ -322,5 +323,15 @@ class options:
         self.color_ = color.colorizer(True)
         return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD])} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
 
+
+#
+# stats - Informations about a solution
+#
+class stats:
+    def __init__(self) -> None:
+        self.obvValues_ : int = 0          # Count of obvious values found
+        self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
+        self.bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
+        self.bruteAttempts_ : int  = 0     # Brute-force attempts counter
 
 # EOF

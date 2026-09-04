@@ -24,7 +24,7 @@ import pytesseract
 from pytesseract import Output
 
 from element import element
-from options import FILE_EXPORT_EXTENSION
+from options import FILE_EXPORT_EXTENSION, options, stats
 from options import options as opts
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
@@ -65,7 +65,7 @@ class sudoku:
 
     # Construction
     #
-    def __init__(self, progressMode=opts.PROGRESS_NONE, initOutputs:bool = True):
+    def __init__(self, progressMode:int = options.PROGRESS_NONE, initOutputs:bool = True):
 
         self.gridFileName_ : str | None = None
         self.outputs_ = None
@@ -167,7 +167,7 @@ class sudoku:
 
     # Show resolution stats
     #
-    def showStats(self, params, sStats):
+    def showStats(self, params : opts, sStats : stats ):
         if self.outputs_ is not None:
             self.outputs_.showStats(params, sStats)
 
@@ -206,9 +206,9 @@ class sudoku:
         output = ""
         if len(self.elements_) == GRID_SIZE:
             position = pointer(gameMode=False)
-            for line in range(LINE_COUNT):
+            for _ in range(LINE_COUNT):
                 output += "\n"
-                for row in range(ROW_COUNT):
+                for _ in range(ROW_COUNT):
                     currentElement = self.elements_[position.index()]
                     output += f" {' ' if currentElement.isEmpty() else str(currentElement.value())} "
                     position += 1
@@ -241,12 +241,11 @@ class sudoku:
 
         files : list[str] = []
         done:bool = not self.folderContent(folderName, files)
-
-        prev = -1
-        index = 0
-        currentFile = ""
-        maxIndex = len(files)
-        clearFile = False
+        prev:int = -1
+        index:int = 0
+        currentFile:str = ""
+        maxIndex:int = len(files)
+        clearFile:bool = False
 
         # Browse ...
         while not done:
@@ -262,12 +261,12 @@ class sudoku:
                 except OSError as other:
                     # the file is not valid => remove it from the list
                     print(f"Invalid file : {other}")
-                    files.pop(index)
+                    _ = files.pop(index)
                     maxIndex -= 1
 
                 prev = index
 
-            if 0 == maxIndex or self.outputs_ is None:
+            if 0 == maxIndex:
                 # Nothing left in the folder
                 # return currentFile
                 done = True
@@ -278,10 +277,9 @@ class sudoku:
 
     # Wait for keyboard event while browsing a folder
     #
-    def _browseFolder_handleKeyBoard(self, index, maxIndex):
-
-        clearFile = False
-        done = False
+    def _browseFolder_handleKeyBoard(self, index:int, maxIndex:int):
+        clearFile : bool = False
+        done : bool = False
 
         if self.outputs_ is not None:
             event = self.outputs_.waitForEvent(self.elements_, allEvents=True)
@@ -504,7 +502,7 @@ class sudoku:
     #
     #   return True if grid has been successfully loaded
     #
-    def gridFromFile(self, fileName, nameOnGrid=True) -> bool:
+    def gridFromFile(self, fileName : str, nameOnGrid:bool=True) -> bool:
         self.emptyGrid()
 
         try:
@@ -721,7 +719,7 @@ class sudoku:
 
     # Can we put the value at the current position ?
     #
-    def _checkValue(self, position, value):
+    def _checkValue(self, position:pointer, value:int):
         return (
             self._checkLine(position, value)
             and self._checkRow(position, value)
@@ -729,7 +727,7 @@ class sudoku:
         )
 
     #   => in the line ?
-    def _checkLine(self, position, value):
+    def _checkLine(self, position:pointer, value:int):
         idFirst = position.line() * ROW_COUNT
         for tIndex in range(ROW_COUNT):
             if self.elements_[tIndex + idFirst].value() == value:
@@ -738,7 +736,7 @@ class sudoku:
         return True
 
     #  => in the row ?
-    def _checkRow(self, position, value):
+    def _checkRow(self, position:pointer, value:int):
         idFirst = position.row()
         for tIndex in range(LINE_COUNT):
             if self.elements_[tIndex * ROW_COUNT + idFirst].value() == value:
@@ -747,25 +745,14 @@ class sudoku:
         return True
 
     #  => in the tiny-square ?
-    def _checkTinySquare(self, position, value):
+    def _checkTinySquare(self, position:pointer, value:int):
         # Search in my tiny-square
         mySquare = tinySquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
 
     # (try to) set a value at current position
-    def _setAt(self, position, val, warn=True) -> bool:
-        # Check the value
-        if isinstance(val, int):
-            value = val
-        else:
-            if not val.isnumeric():
-                if warn:
-                    raise sudokuError(
-                        f"Error : the value in ({(position.line() + 1)!r},{(position.row() + 1)!r}) is not numeric"
-                    )
-                return False
-
-            value = int(val)
+    def _setAt(self, position : pointer, val:int, warn:bool=True) -> bool:
+        value = int(val)
 
         # in [0,9] ?
         value = int(val)
@@ -814,8 +801,8 @@ class sudoku:
     #   Returns a pointer to the found position
     #   An exception reachedEndOfList is raised when the grid is full (the game is over and a solution has been found)
     #
-    def _findFirstEmptyPos(self, start):
-        newPos = pointer(start)
+    def _findFirstEmptyPos(self, start:pointer)->pointer:
+        newPos : pointer = copy.deepcopy(start)
         while not self.elements_[newPos.index()].isEmpty():
             newPos += 1
 
@@ -828,8 +815,8 @@ class sudoku:
     #   An IndexError exception is raised when the pointer is out of the grid (index -1)
     #   No solution for the grid
     #
-    def _previousPos(self, current):
-        newPos = pointer(current)
+    def _previousPos(self, current:pointer)->pointer:
+        newPos : pointer = copy.deepcopy(current)
 
         self.elements_[newPos.index()].empty()
         newPos -= 1
@@ -845,7 +832,7 @@ class sudoku:
 
     # Find the next possible value for an element (greater than the current one)
     #
-    def _findNextValue(self, position, val):
+    def _findNextValue(self, position : pointer, val : int)->int:
         nextVal = position.incValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
@@ -857,7 +844,7 @@ class sudoku:
 
     # Find the lowest possible value for an element
     #
-    def _findPreviousValue(self, position, val):
+    def _findPreviousValue(self, position : pointer, val : int)->int:
         nextVal = position.decValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
@@ -877,7 +864,7 @@ class sudoku:
     # Search and set all the possible obvious values in the grid
     #   returns the # of values found (and set)
     #
-    def _findObviousValues(self):
+    def _findObviousValues(self)->int:
         found = 0
 
         position = pointer()
@@ -912,9 +899,8 @@ class sudoku:
     #
     #      returns the value (if just one possible) or None
     #
-    def _checkObviousValue(self, position):
+    def _checkObviousValue(self, position:pointer)-> int | None:
         value = None
-
         for test in range(VALUE_MIN, VALUE_MAX + 1):
             if self._checkValue(position, test):
                 # This value can be used
@@ -931,7 +917,7 @@ class sudoku:
     #
     #   return the count (0 or 1) of value set
     #
-    def _setObviousValueInLines(self, position, value):
+    def _setObviousValueInLines(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
         modID = position.squareID() % 3
         if 0 == modID:
@@ -1009,7 +995,7 @@ class sudoku:
     #
     #   return the count (0 or 1) of value set
     #
-    def _setObviousValueInRows(self, position, value):
+    def _setObviousValueInRows(self, position:pointer, value:int) -> int:
         # "little" squares IDs for this line
         modID = math.floor(position.squareID() / 3)
         if 0 == modID:
@@ -1114,7 +1100,7 @@ class sudoku:
         )
 
     # Update grid during edition
-    def _edit_updatePos(self, prevPos, currentPos):
+    def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         if self.outputs_ is not None:
             # if sel. changed, erase previously selected element
             if prevPos is not None:
@@ -1180,7 +1166,7 @@ class sudoku:
 
     # Parse an image file
     #
-    def gridFromImage(self, fileName, removeFrames=False, genBoxes=False) -> bool:
+    def gridFromImage(self, fileName:str | None, removeFrames:bool=False, genBoxes:bool=False) -> bool:
         if fileName is None:
             return False
 
