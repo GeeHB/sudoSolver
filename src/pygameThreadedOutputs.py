@@ -73,7 +73,8 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
+    @override
+    def drawSingleElement(self, row:int, line:int, value:int|None, bkColour:pygame.Color, txtColour:pygame.Color):
 
         # too small to be drawn ?
         if 0 == self.extSquareWidth_:

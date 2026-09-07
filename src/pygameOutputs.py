@@ -507,11 +507,10 @@ class pygameOutputs:
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
+    def drawSingleElement(self, row:int, line:int, value:int | None, bkColour:pygame.Color, txtColour:pygame.Color):
         self._int_drawSingleElement(row, line, value, bkColour, txtColour)
 
-    def _int_drawSingleElement(self, row:int, line:int, value:int, bkColour:pygame.Color, txtColour:pygame.Color):
-
+    def _int_drawSingleElement(self, row:int, line:int, value:int | None, bkColour:pygame.Color, txtColour:pygame.Color):
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
             return
@@ -524,7 +523,7 @@ class pygameOutputs:
         pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # The value (if valid)
-        if self.sElement_ is not None:
+        if value is not None and self.sElement_ is not None:
             self.sElement_.setText(str(value), txtColour)
 
             # Center the text

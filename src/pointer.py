@@ -32,13 +32,17 @@ class pointer:
     # Construction
     #
     def __init__(self, index:int | None = None, gameMode:bool = True):
-        self.index_:int  = 0 if index is None else index
+        self.index_:int  = INDEX_MIN if index is None else index
         self.row_:int = 0                        # Position in the "matrix"
         self.line_:int = 0
         self.squareID_:int = 0                   # tiny-square ID
         self.gameMode_:bool = gameMode
 
         self._whereAmI()
+
+    def __repr__(self)->str:
+        out : str = f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}"
+        return out
 
     # Absolute position
     #
@@ -55,6 +59,7 @@ class pointer:
 
             self.row_ = pos[0]
             self.line_ = pos[1]
+            #print(f"row : {self.row_} - line : {self.line_}")
 
         self.index_ = self.row_ + self.line_ * ROW_COUNT
 

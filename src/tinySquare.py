@@ -24,24 +24,25 @@ class tinySquare:
     # Construction
     #
     def __init__(self, index:int | None = None):
-        if index is not None:
-            self.Id_ : int = self.IdFromIndex(index)
+        self.squaresIndexes_ : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]    # Top-left index of tiny-squares
         self.topLine_:int = 0
         self.topRow_:int = 0
+        self.Id_ : int = 0
 
-        # Top-left index of tiny-squares
-        #
-        self.SquaresIndexes : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]
+        if index is not None:
+            self.Id_ = self.IdFromIndex(index)
+
+    def __repr__(self)->str:
+        return f"SquareID - id : {self.Id_}"
 
     # Get index from positionnal index (of an element)
     #
     def IdFromIndex(self, id:int)->int:
-
         if id < 0 or id >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
             raise IndexError
 
         # "top" values
-        position = pointer(index = self.SquaresIndexes[id])
+        position = pointer(index = self.squaresIndexes_[id])
         self.topLine_ = position.line_
         self.topRow_ = position.row_
 
@@ -67,7 +68,7 @@ class tinySquare:
         ids :list[list[int]]= []
 
         # Start index
-        index = self.SquaresIndexes[self.Id_]
+        index = self.squaresIndexes_[self.Id_]
         for _ in range (self.TINY_LINE_COUNT):
             line : list[int]= []
             for row in range(self.TINY_ROW_COUNT):
@@ -104,6 +105,6 @@ class tinySquare:
     #   return a boolean - True if found
     #
     def inMe(self, elements:list[element], value:int)->bool:
-        return not bool(self.findValue(elements, value)[0] == -1)
+        return not bool(self.findValue(elements, value)[0] == None)
 
 # EOF

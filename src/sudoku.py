@@ -196,7 +196,7 @@ class sudoku:
     #
     @override
     def __str__(self)->str:
-        output = ""
+        output : str = " "
         if len(self.elements_) == GRID_SIZE:
             position = pointer(gameMode=False)
             for _ in range(LINE_COUNT):
@@ -207,7 +207,7 @@ class sudoku:
                     position += 1
             output += "\n"
 
-        return output
+        return output[1:]
 
     # End of outputs
     #
@@ -418,7 +418,6 @@ class sudoku:
         #
         currentPos : pointer = pointer(gameMode=False)  # current position
         prevPos : pointer | None =  None  # previous pos (if erase needed)
-
         self.editStatus_.value = self.EDIT_CONTINUE
 
         while not self.editStatus_.isSet(self.EDIT_STOP):
@@ -738,7 +737,7 @@ class sudoku:
     #  => in the tiny-square ?
     def _checkTinySquare(self, position:pointer, value:int):
         # Search in my tiny-square
-        mySquare = tinySquare(position.squareID())
+        mySquare : tinySquare = tinySquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
 
     # (try to) set a value at current position
@@ -1099,27 +1098,23 @@ class sudoku:
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         if self.outputs_ is not None and prevPos is not None:
             # if sel. changed, erase previously selected element
-            value : int | None = self.elements_[prevPos.index()].num
-            if value is not None:
-                self.outputs_.drawSingleElement(
-                    prevPos.row(),
-                    prevPos.line(),
-                    value,
-                    self.outputs_.BK_COLOUR,
-                    self.outputs_.HILITE_COLOUR,
-                )
+            self.outputs_.drawSingleElement(
+                prevPos.row(),
+                prevPos.line(),
+                self.elements_[prevPos.index()].num,
+                self.outputs_.BK_COLOUR,
+                self.outputs_.HILITE_COLOUR,
+            )
 
             # Hilight the new value
-            value = self.elements_[currentPos.index()].num
-            if value is not None :
-                self.outputs_.drawSingleElement(
-                    currentPos.row(),
-                    currentPos.line(),
-                    value,
-                    self.outputs_.SEL_BK_COLOUR,
-                    self.outputs_.HILITE_COLOUR,
-                )
-                self.outputs_.update()
+            self.outputs_.drawSingleElement(
+                currentPos.row(),
+                currentPos.line(),
+                self.elements_[currentPos.index()].num,
+                self.outputs_.SEL_BK_COLOUR,
+                self.outputs_.HILITE_COLOUR,
+            )
+            self.outputs_.update()
 
     # (try to) set a value
     def _edit_setValue(self, pos: pointer, val: int):
