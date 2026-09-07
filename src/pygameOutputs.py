@@ -234,8 +234,8 @@ class pygameOutputs:
     HILITE_COLOUR:pygame.Color = pygame.Color(248, 128, 112)
     OBVIOUS_COLOUR      = BORDER_COLOUR
 
-    SEL_BK_COLOUR       = (50, 50, 255)
-    SEL_TXT_COLOUR      = (255, 255, 255)
+    SEL_BK_COLOUR : pygame.Color = pygame.Color(50, 50, 255)
+    SEL_TXT_COLOUR : pygame.Color = pygame.Color(255, 255, 255)
 
     # Display modes
     #
@@ -269,7 +269,7 @@ class pygameOutputs:
         self.sMessage_ : blinkingText | None = None
 
         self._start(position)
-        self._drawBackground()
+        self.drawBackground()
 
     def _start(self, position : tuple[int,int] | None = None) :
         self.initDone_ = False
@@ -562,8 +562,9 @@ class pygameOutputs:
         pygame.display.flip()
 
     # Position of the Window
-    def getWindowPosition(self):
+    def getWindowPosition(self)->tuple[int,int]:
         return systemInfos.getMainWindowPosition()
+
     # Close the display
     def close(self):
         if self.initDone_ and self.sFileName_ is not None and self.sMessage_ is not None:
@@ -623,7 +624,7 @@ class pygameOutputs:
 
     # Draw window's background and grid's borders
     #
-    def _drawBackground(self):
+    def drawBackground(self):
         self._int_drawBackground()
 
     #def _int_drawBackground(self, a = None, b= None, c= None, d = None, e = None):

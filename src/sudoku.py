@@ -481,14 +481,16 @@ class sudoku:
 
         escaped = self.editStatus_.isSet(self.EDIT_ESCAPE)
         if not escaped:
-            self.outputs_.drawSingleElement(
-                currentPos.row(),
-                currentPos.line(),
-                self.elements_[currentPos.index()].value(),
-                self.outputs_.BK_COLOUR,
-                self.outputs_.HILITE_COLOUR,
-            )
-            self.outputs_.update()
+            value : int | None = self.elements_[currentPos.index()].value()
+            if value is not None:
+                self.outputs_.drawSingleElement(
+                    currentPos.row(),
+                    currentPos.line(),
+                    value,
+                    self.outputs_.BK_COLOUR,
+                    self.outputs_.HILITE_COLOUR,
+                )
+                self.outputs_.update()
 
         # Saves changes or exit
         return (
@@ -516,7 +518,7 @@ class sudoku:
         if self.outputs_ is not None:
             if nameOnGrid:
                 self.outputs_.setGridName(fileName)
-            self.outputs_._drawBackground()
+            self.outputs_.drawBackground()
             self.outputs_.draw(self.elements_)
             self.outputs_.update()
         return True
@@ -556,9 +558,8 @@ class sudoku:
     #
     #   return a tuple (found a solution ?, game escaped ?, #attempts, duration in s.)
     #
-    def resolve(self):
-
-        if self.outputs_ is None or self.elements_ is None:
+    def resolve(self)->tuple[bool, bool, int, float]:
+        if self.outputs_ is None:
             return False, False, 0, 0.0
 
         escaped = False
@@ -592,8 +593,8 @@ class sudoku:
 
     # Get the list of possible values at a given position
     #
-    def getValues(self, position):
-        values = []
+    def getValues(self, position:pointer)->list[int]:
+        values : list[int] = []
 
         for value in range(VALUE_MIN, VALUE_MAX):
             if self._checkValue(position, value):
@@ -671,10 +672,7 @@ class sudoku:
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if (
-                        self.progressMode != opts.PROGRESS_NONE
-                        and self.outputs_ is not None
-                    ):
+                    if self.progressMode != opts.PROGRESS_NONE :
                         self.outputs_.draw(self.elements_)
 
                     # Go to the next "empty" position
@@ -751,7 +749,7 @@ class sudoku:
         return False == mySquare.inMe(self.elements_, value)
 
     # (try to) set a value at current position
-    def _setAt(self, position : pointer, val:int, warn:bool=True) -> bool:
+    def _setAt(self, position : pointer, val:str, warn:bool=True) -> bool:
         value = int(val)
 
         # in [0,9] ?
@@ -833,7 +831,7 @@ class sudoku:
     # Find the next possible value for an element (greater than the current one)
     #
     def _findNextValue(self, position : pointer, val : int)->int:
-        nextVal = position.incValue(val)
+        nextVal : int = position.incValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
                 return nextVal
@@ -845,7 +843,7 @@ class sudoku:
     # Find the lowest possible value for an element
     #
     def _findPreviousValue(self, position : pointer, val : int)->int:
-        nextVal = position.decValue(val)
+        nextVal : int = position.decValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
                 # found it
@@ -865,11 +863,10 @@ class sudoku:
     #   returns the # of values found (and set)
     #
     def _findObviousValues(self)->int:
-        found = 0
+        found : int = 0
+        position : pointer = pointer()
 
-        position = pointer()
-
-        for index in range(INDEX_MAX):
+        for _ in range(INDEX_MAX):
             if self.elements_[position.index()].isEmpty():
                 # Try to set a single value at this empty place
                 value = self._checkObviousValue(position)
@@ -883,11 +880,12 @@ class sudoku:
             else:
                 value = self.elements_[position.index()].value()
 
-                # Can we put this value on another line ?
-                found += self._setObviousValueInLines(position, value)
+                if value is not None :
+                    # Can we put this value on another line ?
+                    found += self._setObviousValueInLines(position, value)
 
-                # ... or/and put it in another col ?
-                found += self._setObviousValueInRows(position, value)
+                    # ... or/and put it in another col ?
+                    found += self._setObviousValueInRows(position, value)
 
             # Next pos.
             position += 1
@@ -900,7 +898,7 @@ class sudoku:
     #      returns the value (if just one possible) or None
     #
     def _checkObviousValue(self, position:pointer)-> int | None:
-        value = None
+        value : int | None = None
         for test in range(VALUE_MIN, VALUE_MAX + 1):
             if self._checkValue(position, test):
                 # This value can be used
@@ -919,7 +917,7 @@ class sudoku:
     #
     def _setObviousValueInLines(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
-        modID = position.squareID() % 3
+        modID : int = position.squareID() % 3
         if 0 == modID:
             # At the left pos
             firstSquare = tinySquare(position.squareID() + 1)
@@ -935,8 +933,8 @@ class sudoku:
                 secondSquare = tinySquare(position.squareID() - 1)
 
         # Is the value already in theses squares ?
-        firstPos = firstSquare.findValue(self.elements_, value)
-        secondPos = secondSquare.findValue(self.elements_, value)
+        firstPos : tuple[int | None ,int | None] = firstSquare.findValue(self.elements_, value)
+        secondPos : tuple[int | None, int | None] = secondSquare.findValue(self.elements_, value)
 
         # None of them or both of them
         if (firstPos[0] is None and secondPos[0] is None) or (
@@ -948,11 +946,13 @@ class sudoku:
         #
         #   The sum of the 3 lineID is a consts and we know 2 oh them
         #
+        candidateLine : int = 0
+        candidate : tinySquare = firstSquare
         if firstPos[0] is None:
-            candidate = firstSquare
-            candidateLine = (
-                2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1
-            )
+            if secondPos[0] is not None :
+                candidateLine = (
+                    2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1
+                )
         else:
             candidate = secondSquare
             candidateLine = (
@@ -1036,16 +1036,19 @@ class sudoku:
         #
         #   The sum of the 3 lineID is a consts and we know 2 of them
         #
+        candidateRow : int = 0
+        candidate : tinySquare = firstSquare
         if firstPos[0] is None:
-            candidate = firstSquare
-            candidateRow = (
-                2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1
-            )
+            if secondPos[1] is not None:
+                candidateRow = (
+                    2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1
+                )
         else:
-            candidate = secondSquare
-            candidateRow = (
-                2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
-            )
+            if firstPos[1] is not None:
+                candidate = secondSquare
+                candidateRow = (
+                    2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
+                )
 
         # Try to put the value ...
         #
@@ -1101,26 +1104,29 @@ class sudoku:
 
     # Update grid during edition
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
-        if self.outputs_ is not None:
+        if self.outputs_ is not None and prevPos is not None:
             # if sel. changed, erase previously selected element
-            if prevPos is not None:
+            value : int | None = self.elements_[prevPos.index()].value()
+            if value is not None:
                 self.outputs_.drawSingleElement(
                     prevPos.row(),
                     prevPos.line(),
-                    self.elements_[prevPos.index()].value(),
+                    value,
                     self.outputs_.BK_COLOUR,
                     self.outputs_.HILITE_COLOUR,
                 )
 
             # Hilight the new value
-            self.outputs_.drawSingleElement(
-                currentPos.row(),
-                currentPos.line(),
-                self.elements_[currentPos.index()].value(),
-                self.outputs_.SEL_BK_COLOUR,
-                self.outputs_.HILITE_COLOUR,
-            )
-            self.outputs_.update()
+            value = self.elements_[currentPos.index()].value()
+            if value is not None :
+                self.outputs_.drawSingleElement(
+                    currentPos.row(),
+                    currentPos.line(),
+                    value,
+                    self.outputs_.SEL_BK_COLOUR,
+                    self.outputs_.HILITE_COLOUR,
+                )
+                self.outputs_.update()
 
     # (try to) set a value
     def _edit_setValue(self, pos: pointer, val: int):

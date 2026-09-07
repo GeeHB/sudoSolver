@@ -83,7 +83,7 @@ class tinySquare:
     #
     #   returns the tuple (line, row) if found or (None, None)
     #
-    def findValue(self, elements:list[element], value:int)->(tuple[int,int]):
+    def findValue(self, elements:list[element], value:int)->(tuple[int | None,int | None]):
         # All my positions
         positions:list[list[int]] = self.indexes()
 
@@ -95,7 +95,7 @@ class tinySquare:
                     return (line, row)
 
         # No, this value is not in this square
-        return (-1, -1)
+        return (None, None)
 
     # Is the value "in" the square ?
     #

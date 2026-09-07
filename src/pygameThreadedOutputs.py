@@ -156,7 +156,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Draw window's background and grid's borders
     #
-    def _drawBackground(self):
+    def drawBackground(self):
         self._addAction(id=threadAction.ACTION_DRAW_BKGRND)
 
     # Refresh the whole window
