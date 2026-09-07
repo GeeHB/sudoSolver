@@ -276,15 +276,18 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
                         retElements = False
 
                     case threadAction.ACTION_CHECK_KEYPRESSED :
-                        ret = self._int_keyPressed(action.params_[0], action.params_[1])
-                        if ret[0] :
-                            self.syncRet_[action.uid_] = ret[1]
+                        #ret = self._int_keyPressed(action.params_[0], action.params_[1])
+                        #if ret[0] :
+                        #    self.syncRet_[action.uid_] = ret[1]
+                        _ = self._int_keyPressed(action.params_[0], action.params_[1])
 
                     case threadAction.ACTION_WAIT_EVENT :
-                        self.syncRet_[action.uid_] = self._int_waitForEvent(action.params_[0], action.params_[1])
+                        #self.syncRet_[action.uid_] = self._int_waitForEvent(action.params_[0], action.params_[1])
+                        _ = self._int_waitForEvent(action.params_[0], action.params_[1])
 
                     case threadAction.ACTION_POLL_EVENT :
-                        self.syncRet_[action.uid_] = self._int_pollEvent()
+                        #self.syncRet_[action.uid_] = self._int_pollEvent()
+                        _ = self._int_pollEvent()
 
                     case _ :
                         pass

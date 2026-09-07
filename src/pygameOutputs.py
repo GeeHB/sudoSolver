@@ -18,6 +18,8 @@ try :
 except ModuleNotFoundError:
     print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
+import pygame.event
+
 from element import element
 from options import APP_SHORT_NAME, options, stats
 from ownExceptions import sudokuError
@@ -494,7 +496,7 @@ class pygameOutputs:
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
                 currentElement = elements[position.index()]
-                value : int | None = currentElement.value()
+                value : int | None = currentElement.num
                 if value is not None:
                     self._int_drawSingleElement(row, line, value, self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
 
@@ -563,7 +565,7 @@ class pygameOutputs:
 
     # Position of the Window
     def getWindowPosition(self)->tuple[int,int]:
-        return systemInfos.getMainWindowPosition()
+        return systemInfos.getMainWindowPosition()  # pyright: ignore[reportReturnType]
 
     # Close the display
     def close(self):

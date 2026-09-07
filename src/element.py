@@ -22,6 +22,7 @@ class element:
     # Construction
     def __init__(self, value:int | None = None):
         self.value_: int = 0;
+        self.solution_ : int | None = None
         if not value is None:
             self.value_ = value
             self.status_:statusBits.statusBits = statusBits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
@@ -40,12 +41,21 @@ class element:
         else:
             self.status_.assign(self.STATUS_EMPTY)
 
+    # element's "valid" value as a property
+    #
+    @property
+    def solution(self)->int | None:
+        return self.solution_
+    @solution.setter
+    def solution(self, newVal : int | None):
+        self.solution_ = newVal
+
     # Set/modify the value
     #
     #           value : num. value (at this state the integrity is not checked)
     #           original : "original" value ? An "original" value won't be modified
     #
-    def setValue(self, value:int | None = None, status:int = 0, editMode:bool = False):
+    def setValue(self, value:int | None = None, status:int = STATUS_EMPTY, editMode:bool = False):
         if not editMode :
             # The element can't be "original"
             if not self.status_.isSet(self.STATUS_ORIGINAL):
@@ -66,10 +76,8 @@ class element:
                 self.status_.assign(self.STATUS_EMPTY)
             else :
                 self.value_ = value
+                self.solution_ = value
                 self.status_.assign(self.STATUS_SET | self.STATUS_ORIGINAL)
-
-    def value(self):
-        return self.value_ if self.status_.isSet(self.STATUS_SET) else None
 
     # The element is empty
     #   returns the previous value

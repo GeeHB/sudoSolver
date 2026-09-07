@@ -90,7 +90,7 @@ class tinySquare:
         # Check all the positions
         for line in range (tinySquare.TINY_LINE_COUNT):
             for row in range(tinySquare.TINY_ROW_COUNT):
-                if value == elements[positions[line][row]].value():
+                if value == elements[positions[line][row]].num:
                     # This value is in the square
                     return (line, row)
 

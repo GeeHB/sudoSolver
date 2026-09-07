@@ -70,7 +70,7 @@ class Thread(threading.Thread):
 
         self.ready_:bool = False  # Am I ready ?
         self.actions_ : list[threadAction] = []  # Actions (to perform)
-        self.syncRet_ = {}  # Returns from a sync-action
+        #self.syncRet_ : list [tuple[bool, Any | None]]= []  # Returns from a sync-action
         self.lastId_:int = 0
         self.newAction_ : threading.Event = threading.Event()      # Notifies the thread a new action is to be performed
         self.accessList_ : threading.Event = threading.Event()     # Is action-list free ?
@@ -135,7 +135,7 @@ class Thread(threading.Thread):
 
             # handle return
             try:
-                return self.syncRet_[action.uid_] if action is not None else False
+                return True
             except:  # noqa: E722
                 return False
 
