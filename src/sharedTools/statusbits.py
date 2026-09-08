@@ -7,6 +7,8 @@
 #   Description : Utilisation de bits d'états
 #
 
+STATUS_VERSION = "1.3.1"
+
 STATUS_NONE:int = 0
 
 # Bitwise operator wrapper

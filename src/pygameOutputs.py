@@ -30,7 +30,7 @@ from pointer import (
 )
 from sharedTools import (
     statusbits,
-    systemInfos,
+    systeminfos,
 )
 
 #
@@ -247,7 +247,7 @@ class pygameOutputs:
 
     # Construction
     #
-    def __init__(self, position : tuple[int, int] | None = None):
+    def __init__(self):
         self.win_            = None     # My window
 
         self.width_ :int = 0        # Window's dimensions
@@ -270,10 +270,10 @@ class pygameOutputs:
         # Text message
         self.sMessage_ : blinkingText | None = None
 
-        self._start(position)
+        self._start()
         self.drawBackground()
 
-    def _start(self, position : tuple[int,int] | None = None) :
+    def _start(self) :
         self.initDone_ = False
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
@@ -298,15 +298,15 @@ class pygameOutputs:
         self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
 
         # Main window creation
-        myDict = systemInfos.getSystemInformations()
+        myDict = systeminfos.getSystemInformations()
         #myDict = None
-        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict is not None and myDict[systemInfos.KEY_WM] == systemInfos.WM_CHROMEOS else pygame.RESIZABLE )
+        self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict is not None and myDict[systeminfos.KEY_WM] == systeminfos.WM_CHROMEOS else pygame.RESIZABLE )
 
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # Place the Window
-        if position is not None:
-            systemInfos.setMainWindowPosition(position)
+        #if position is not None:
+        #    systemInfos.setMainWindowPosition(position)
 
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)
@@ -562,10 +562,6 @@ class pygameOutputs:
 
     def flip(self):
         pygame.display.flip()
-
-    # Position of the Window
-    def getWindowPosition(self)->tuple[int,int]:
-        return systemInfos.getMainWindowPosition()  # pyright: ignore[reportReturnType]
 
     # Close the display
     def close(self):

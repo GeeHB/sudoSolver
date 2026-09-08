@@ -29,9 +29,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
     # Construction
     #
-    def __init__(self, position : tuple[int,int] | None = None):
-
-        self.position_ = position
+    def __init__(self):
 
         # Parents' instantications
         Thread.__init__(self)
@@ -61,7 +59,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
             self._addAction(action)
 
     # Set/change the current grid's filename
-    #   overloaded
+    @override
     def setGridName(self, fileName:str, create:bool = False):
         action = threadAction(threadAction.ACTION_GRID_NAME)
         action.params_ = [fileName, ""]
@@ -183,7 +181,7 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
         #
 
         # Try to init PYGame
-        self._start(self.position_)
+        self._start()
         self._int_drawBackground()  # Show an empty grid
 
         # Action list is free

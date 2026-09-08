@@ -11,14 +11,10 @@
 import platform
 import subprocess
 
-import pygame
-from pygame._sdl2.video import Window
+#import pygame
+#from pygame._sdl2.video import Window
 
-#------------------------------------------------------------------------
-#
-# Constants
-#
-#------------------------------------------------------------------------
+SI_VERSION = "1.0.2"
 
 # Keys
 KEY_OS = "Platform"
@@ -38,18 +34,6 @@ WM_UNKNOWN = VAL_UNKOWN
 WM_WINDOWS = VAL_WINDOWS
 WM_CHROMEOS = "Sommelier"
 WM_MACOS = "Cocoa"
-
-#------------------------------------------------------------------------
-#
-# Global variables
-#
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-#
-# Functions
-#
-#------------------------------------------------------------------------
 
 # System Informations
 #
@@ -88,6 +72,9 @@ def getSystemInformations() -> dict[str,str] | None:
 
     # Finished
     return myDict
+
+
+"""
 
 # Get the position of current Window
 #
@@ -179,5 +166,7 @@ def getDesktopSize(desktopIndex : int | None = None)->tuple[int,int] | None:
 
     # ???
     return None
+
+"""
 
 # EOF

@@ -1078,21 +1078,13 @@ class sudoku:
     # Create PYGameOutputs object (and delete existing if any)
     #
     def _createPYGameOutputs(self):
-        pos = None
         if self.outputs_ is not None:
-            # Get the position of the window
-            pos = self.outputs_.getWindowPosition()
-
-            # Stop the thread (if any)
             self.outputs_.close()
-
-            # free previous object
             del self.outputs_
 
         # Instantiate new one
-        print(self.progressMode_)
         self.outputs_ = (
-            pygameThreadedOutputs(position=pos)
+            pygameThreadedOutputs()
             if self.progressMode == opts.PROGRESS_MULTITHREADED
             else pygameOutputs()
         )
