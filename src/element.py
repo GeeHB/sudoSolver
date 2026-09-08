@@ -9,7 +9,7 @@
 
 from typing_extensions import override
 
-from sharedTools import statusBits
+from sharedTools import statusbits
 
 
 #
@@ -27,14 +27,18 @@ class element:
         self.solution_ : int | None = None
         if not value is None:
             self.value_ = value
-            self.status_:statusBits.statusBits = statusBits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
+            self.status_:statusbits.statusBits = statusbits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
         else:
-            self.status_ = statusBits.statusBits(self.STATUS_EMPTY)   # Current status
+            self.status_ = statusbits.statusBits(self.STATUS_EMPTY)   # Current status
 
     # Representation
     @override
     def __repr__(self) -> str:
-        out : str = f"Value : {"vide" if self.status_.isSet(self.STATUS_EMPTY) else self.value_}"
+        out : str = "Element:"
+        out += f"\t\n- Status : {self.status_}"
+        out += f"\n\t- Value : {"empty" if self.status_.isSet(self.STATUS_EMPTY) else self.value_}"
+        if self.solution_ is not None:
+            out += f"\n\t- Solution : {self.solution_}"
         return out
 
     # element's value as a property

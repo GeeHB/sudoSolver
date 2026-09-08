@@ -31,7 +31,7 @@ from pointer import (
 )
 from pygameOutputs import pygameOutputs
 from pygameThreadedOutputs import pygameThreadedOutputs
-from sharedTools import statusBits
+from sharedTools import statusbits
 from tinySquare import tinySquare
 
 TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"  # OCR parameters
@@ -44,7 +44,7 @@ TESSERACT_BOX_COLOR = (0, 255, 0)
 class sudoku:
     # Edition status
     #
-    EDIT_CONTINUE:int = statusBits.STATUS_NONE
+    EDIT_CONTINUE:int = statusbits.STATUS_NONE
     EDIT_MODIFIED:int = 1  # Grid has been modified (at least once)
     EDIT_STOP:int = 2  # Stop edition
     EDIT_ESCAPE:int = 4  # Escape edition
@@ -67,7 +67,7 @@ class sudoku:
         self.start_:float = 0.0  # Resolution start-time
 
         self.progressMode_:int = opts.PROGRESS_NONE  # Draw grid during solving process ?
-        self.editStatus_:statusBits.statusBits = statusBits.statusBits(self.EDIT_CONTINUE)
+        self.editStatus_:statusbits.statusBits = statusbits.statusBits(self.EDIT_CONTINUE)
 
         self.elements_ : list[element] = []
         self.OSInfos_ = {}  # Informations about the OS and the Window manager

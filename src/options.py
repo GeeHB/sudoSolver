@@ -11,7 +11,7 @@ import argparse
 import sysconfig
 
 from sharedTools import colorizer as color
-from sharedTools import statusBits
+from sharedTools import statusbits
 
 # App informations
 APP_SHORT_NAME = "sudoSolver"
@@ -90,7 +90,7 @@ class options:
     PROGRESS_MULTITHREADED:int = PROGRESS_SPEED
 
     # Exec modes
-    EXEC_NONE:int = statusBits.STATUS_NONE
+    EXEC_NONE:int = statusbits.STATUS_NONE
     EXEC_CREATE:int = 1
     EXEC_EDIT:int = EXEC_CREATE
     EXEC_USER:int = 2
@@ -119,7 +119,7 @@ class options:
         self.exportSolution_:bool = False
         self.obviousValues_:bool = False
         self.progressMode_:int = self.PROGRESS_NONE
-        self.execMode_:statusBits.statusBits = statusBits.statusBits(self.EXEC_NONE)
+        self.execMode_:statusbits.statusBits = statusbits.statusBits(self.EXEC_NONE)
         self.newGrid_:int = self.COMPLEXITY_EMPTY
         self.userMode_:bool = False
 

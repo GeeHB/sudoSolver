@@ -1,6 +1,6 @@
 # coding=UTF-8
 #
-#   File        :   statusBits.py
+#   File        :   statusbits.py
 #
 #   Author      :   GeeHB
 #

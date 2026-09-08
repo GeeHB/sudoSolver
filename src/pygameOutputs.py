@@ -29,7 +29,7 @@ from pointer import (
     pointer,
 )
 from sharedTools import (
-    statusBits,
+    statusbits,
     systemInfos,
 )
 
@@ -241,7 +241,7 @@ class pygameOutputs:
 
     # Display modes
     #
-    MODE_DEFAULT:int        = statusBits.STATUS_NONE
+    MODE_DEFAULT:int        = statusbits.STATUS_NONE
     MODE_EDIT:int           = 1
     MODE_BROWSEFOLDER:int   = 2
 
@@ -259,7 +259,7 @@ class pygameOutputs:
         # Elements'values drawing
         self.sElement_ : textSurface | None = None
 
-        self.mode_ :statusBits.statusBits = statusBits.statusBits()       # Display mode
+        self.mode_ :statusbits.statusBits = statusbits.statusBits()       # Display mode
         self.gridFileName_ : str | None = None
 
         self.keyHandler_ = None
