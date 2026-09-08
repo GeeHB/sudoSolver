@@ -65,14 +65,13 @@ class sudoku:
 
         self.attempts_:int = 0
         self.start_:float = 0.0  # Resolution start-time
-
-        self.progressMode_:int = opts.PROGRESS_NONE  # Draw grid during solving process ?
         self.editStatus_:statusbits.statusBits = statusbits.statusBits(self.EDIT_CONTINUE)
 
         self.elements_ : list[element] = []
         self.OSInfos_ = {}  # Informations about the OS and the Window manager
 
         # Show progression details ?
+        self.progressMode_:int = opts.PROGRESS_NONE
         self.progressMode = progressMode
 
         # Set display mode
@@ -127,9 +126,9 @@ class sudoku:
     @progressMode.setter
     def progressMode(self, value:int):
         # Changed ?
-        if self.outputs_ is not None and self.progressMode_ != value:
+        if self.progressMode_ != value:
             # create a new output object ?
-            newOutPut = (
+            newOutPut : bool = (
                 value == opts.PROGRESS_MULTITHREADED
                 or self.progressMode_ == opts.PROGRESS_MULTITHREADED
             )
@@ -1091,6 +1090,7 @@ class sudoku:
             del self.outputs_
 
         # Instantiate new one
+        print(self.progressMode_)
         self.outputs_ = (
             pygameThreadedOutputs(position=pos)
             if self.progressMode == opts.PROGRESS_MULTITHREADED

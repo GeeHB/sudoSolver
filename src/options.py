@@ -37,7 +37,7 @@ ARG_EDIT_S = "-e"  # Edit (and modify or create) a grid
 ARG_EDIT = "--edit"
 COMMENT_EDIT = "Edit or create the {FILE} file"
 
-ARG_SOLVE_S = "-s"  # Search for a solution for the grid
+ARG_SOLVE_S = "-s"  # Search a solution for the grid
 ARG_SOLVE = "--solve"
 COMMENT_SOLVE = "Solve (find a solution) for the grid saved in {FILE} file"
 
@@ -159,7 +159,7 @@ class options:
             required=False,
             nargs=1,
             type=int,
-            choices=range(self.PROGRESS_SLOW, self.PROGRESS_SPEED + 1),
+            choices=range(self.PROGRESS_NONE, self.PROGRESS_SPEED + 1),
         )
 
         # Mutually exclusive actions
@@ -288,8 +288,9 @@ class options:
 
         # Display grid during the search process ?
         display = args.details[0] if args.details is not None else 0
-        if display == 2:
+        if display == self.PROGRESS_MULTITHREADED:
             self.progressMode_ = self.PROGRESS_MULTITHREADED
+
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")

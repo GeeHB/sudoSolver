@@ -33,6 +33,10 @@ class pygameThreadedOutputs(pygameOutputs, Thread):
 
         self.position_ = position
 
+        # Parents' instantications
+        Thread.__init__(self)
+        pygameOutputs.__init__(self)
+
         # Start the current thread
         super().initiate()
 

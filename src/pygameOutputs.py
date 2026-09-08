@@ -305,7 +305,8 @@ class pygameOutputs:
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # Place the Window
-        systemInfos.setMainWindowPosition(position)
+        if position is not None:
+            systemInfos.setMainWindowPosition(position)
 
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)

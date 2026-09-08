@@ -98,7 +98,8 @@ def getMainWindowPosition()->tuple[int,int] | None:
 
     # On linux ?
     if myDict[KEY_OS] == OS_LINUX:  # pyright: ignore[reportOptionalSubscript]
-        return Window.from_display_module().position
+        #return Window.from_display_module().position
+        return None
     else:
         # Windows ?
         if myDict[KEY_OS] == OS_WINDOWS:  # pyright: ignore[reportOptionalSubscript]
