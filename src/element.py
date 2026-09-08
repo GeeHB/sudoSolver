@@ -7,6 +7,8 @@
 #   Description :   element object definition - a single sudoku element
 #
 
+from typing_extensions import override
+
 from sharedTools import statusBits
 
 
@@ -28,6 +30,12 @@ class element:
             self.status_:statusBits.statusBits = statusBits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
         else:
             self.status_ = statusBits.statusBits(self.STATUS_EMPTY)   # Current status
+
+    # Representation
+    @override
+    def __repr__(self) -> str:
+        out : str = f"Value : {"vide" if self.status_.isSet(self.STATUS_EMPTY) else self.value_}"
+        return out
 
     # element's value as a property
     #

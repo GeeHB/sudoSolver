@@ -64,7 +64,7 @@ class tinySquare:
     #
     #   returns a 3x3 matrix : line[0] / line[1] / line[2]
     #
-    def indexes(self):
+    def indexes(self)->list[list[int]]:
         ids :list[list[int]]= []
 
         # Start index

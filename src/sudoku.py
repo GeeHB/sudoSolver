@@ -863,11 +863,12 @@ class sudoku:
                 # Try to set a single value at this empty place
                 value = self._checkObviousValue(position)
 
-                if not value is None:
+                if value is not None:
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(
                         value, element.STATUS_OBVIOUS
                     )
+                    #print(self.elements_[position.index()])
                     found += 1
             else:
                 value = self.elements_[position.index()].num
@@ -978,6 +979,7 @@ class sudoku:
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS)
+            #print(f"Line - Position : {foundPos} - {self.elements_[foundPos.index()]}")
             return 1
 
         # No ...
@@ -1068,6 +1070,7 @@ class sudoku:
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS)
+            #print(f"Row - Position : {foundPos} - {self.elements_[foundPos.index()]}")
             return 1
 
         # No ...
