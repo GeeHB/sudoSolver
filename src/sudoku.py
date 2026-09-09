@@ -58,7 +58,7 @@ class sudoku:
 
     # Construction
     #
-    def __init__(self, progressMode:int = options.PROGRESS_NONE, initOutputs:bool = True):
+    def __init__(self, progressMode:int = options.PROGRESS_NONE):
 
         self.gridFileName_ : str | None = None
         self.outputs_ = None
@@ -71,30 +71,29 @@ class sudoku:
         self.OSInfos_ = {}  # Informations about the OS and the Window manager
 
         # Show progression details ?
-        self.progressMode_:int = opts.PROGRESS_NONE
-        self.progressMode = progressMode
+        self.progressMode_:int = progressMode
 
-        # Set display mode
-        #
-        if True == initOutputs:
-            # Try with PYGame
-            try:
-                self._createPYGameOutputs()
-            except ModuleNotFoundError:
-                print("PYGame isn't installed. Try pip install pygame")
-                sys.exit()
-            except sudokuError as e:
-                print(e)
+        # Try with PYGame
+        try:
+            self._createOutputsGUI()
+        except ModuleNotFoundError:
+            print("PYGame isn't installed. Try pip install pygame")
+            sys.exit()
+        except sudokuError as e:
+            print(e)
 
-            if self.outputs_ is None:
-                sys.exit()
+        if self.outputs_ is None:
+            sys.exit()
 
-            # Ready ?
-            while not self.outputs_.isReady():
-                time.sleep(0.1)
+        # Ready ?
+        while not self.outputs_.isReady():
+            time.sleep(0.1)
+
+        #print("GUI Ok")
 
         # Create the grid
         self._emptyGrid()
+        #print("Empty GRID")
 
     # Destruction
     #
@@ -122,20 +121,6 @@ class sudoku:
     @property
     def progressMode(self):
         return self.progressMode_
-
-    @progressMode.setter
-    def progressMode(self, value:int):
-        # Changed ?
-        if self.progressMode_ != value:
-            # create a new output object ?
-            newOutPut : bool = (
-                value == opts.PROGRESS_MULTITHREADED
-                or self.progressMode_ == opts.PROGRESS_MULTITHREADED
-            )
-
-            self.progressMode_ = value
-            if newOutPut:
-                self._createPYGameOutputs()
 
     # Filename (of the source grid)
     #
@@ -275,6 +260,7 @@ class sudoku:
 
         if self.outputs_ is not None:
             event = self.outputs_.waitForEvent(self.elements_, allEvents=True)
+            print("3")
 
             if event.type == self.outputs_.EVT_KEYDOWN:
                 if self.outputs_.MOVE_RIGHT == event.key:
@@ -1075,19 +1061,20 @@ class sudoku:
         # No ...
         return 0
 
-    # Create PYGameOutputs object (and delete existing if any)
+    # Create outputs object (and delete existing if any)
     #
-    def _createPYGameOutputs(self):
+    def _createOutputsGUI(self):
         if self.outputs_ is not None:
             self.outputs_.close()
             del self.outputs_
 
-        # Instantiate new one
-        self.outputs_ = (
-            pygameThreadedOutputs()
-            if self.progressMode == opts.PROGRESS_MULTITHREADED
-            else pygameOutputs()
-        )
+        # Create a new one
+        if self.progressMode == opts.PROGRESS_MULTITHREADED:
+            self.outputs_ = pygameThreadedOutputs()
+        else:
+            self.outputs_ = pygameOutputs()
+
+        self.outputs_.startUI()   # Let's go
 
     # Update grid during edition
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):

@@ -71,6 +71,7 @@ class Thread(threading.Thread):
         self.ready_:bool = False  # Am I ready ?
         self.actions_ : list[threadAction] = []  # Actions (to perform)
         #self.syncRet_ : list [tuple[bool, Any | None]]= []  # Returns from a sync-action
+        #self.syncRet_ : dict[int,pygame.event.Event | None] = {}
         self.lastId_:int = 0
         self.newAction_ : threading.Event = threading.Event()      # Notifies the thread a new action is to be performed
         self.accessList_ : threading.Event = threading.Event()     # Is action-list free ?
@@ -91,16 +92,16 @@ class Thread(threading.Thread):
 
     # Add an action to the internal list
     #
-    def _addAction(self, action:threadAction | None = None, id:int | None=None, wait:bool=False) -> bool:
+    def _addAction(self, action:threadAction | None = None, id:int | None=None, wait:bool=False):
 
         # Action or id must be present
         if action is None and id is None:
-            return False
+            return
 
         # Valid action id ?
         if (action is not None and action.actionId_ == threadAction.ACTION_NONE) or (
                 action is None and id == threadAction.ACTION_NONE) or False == self.accessList_.wait(MAX_THREAD_LIST_WAIT):
-            return False
+            return
 
         # Take list ownership
         self.accessList_.clear()
@@ -132,13 +133,4 @@ class Thread(threading.Thread):
 
             # done ...
             self.syncThreads_.clear()
-
-            # handle return
-            try:
-                return True
-            except:  # noqa: E722
-                return False
-
-        # Done
-        return True
 # EOF

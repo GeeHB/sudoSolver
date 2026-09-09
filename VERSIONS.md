@@ -22,6 +22,11 @@
 * Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
 * add getters and setters : pygameOutputs.py
 
+#### Version 4.0.1
+* sept. 2026
+* Added :
+  * 
+
 #### Version 3.1.4
 * aug. 2026
 * Added :

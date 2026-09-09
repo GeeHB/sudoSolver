@@ -270,6 +270,7 @@ class pygameOutputs:
         # Text message
         self.sMessage_ : blinkingText | None = None
 
+    def startUI(self):
         self._start()
         self.drawBackground()
 
@@ -299,14 +300,9 @@ class pygameOutputs:
 
         # Main window creation
         myDict = systeminfos.getSystemInformations()
-        #myDict = None
         self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.SCALED if myDict is not None and myDict[systeminfos.KEY_WM] == systeminfos.WM_CHROMEOS else pygame.RESIZABLE )
 
         pygame.display.set_caption(APP_SHORT_NAME)
-
-        # Place the Window
-        #if position is not None:
-        #    systemInfos.setMainWindowPosition(position)
 
         # fileName displays
         self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)

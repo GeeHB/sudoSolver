@@ -48,6 +48,7 @@ def _create():
                 raise sudokuError(
                     "This display mode is not compatible with folder browsing"
                 )
+
             params.fileName_ = solver.browse(params.folderName_)
             if 0 == len(params.fileName_):
                 # Cancelled by user
