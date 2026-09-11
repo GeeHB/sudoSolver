@@ -195,6 +195,7 @@ if "__main__" == __name__:
     if True == exitNow or solver is None:
         if solver is not None:
             solver.close()
+            del solver
         sys.exit(0)
 
     if not params.execMode_.isSet(options.EXEC_EDIT) and False == solver.allowEdition():

@@ -58,7 +58,7 @@ class sudoku:
 
     # Construction
     #
-    def __init__(self, progressMode:int = options.PROGRESS_NONE):
+    def __init__(self, progress:int = options.PROGRESS_NONE):
 
         self.gridFileName_ : str | None = None
         self.outputs_ = None
@@ -71,7 +71,7 @@ class sudoku:
         self.OSInfos_ = {}  # Informations about the OS and the Window manager
 
         # Show progression details ?
-        self.progressMode_:int = progressMode
+        self.progressMode_:int = progress
 
         # Try with PYGame
         try:
@@ -118,8 +118,7 @@ class sudoku:
 
     # Progress mode (ie. display progression ?)
     #
-    @property
-    def progressMode(self):
+    def progressMode(self) -> int:
         return self.progressMode_
 
     # Filename (of the source grid)
@@ -164,7 +163,7 @@ class sudoku:
     #
     def waitForKeyDown(self):
         if not self.outputs_ is None:
-            self.outputs_.waitForEvent(self.elements_, allEvents=False)
+            self.outputs_.waitForEvent(self.elements_, allEvents=True)
 
     # Get the list of pending events
     #
@@ -180,7 +179,7 @@ class sudoku:
     #
     @override
     def __str__(self)->str:
-        output : str = " "
+        output : str = "_"  # to stop warnings !!!!
         if len(self.elements_) == GRID_SIZE:
             position = pointer(gameMode=False)
             for _ in range(LINE_COUNT):
@@ -260,7 +259,6 @@ class sudoku:
 
         if self.outputs_ is not None:
             event = self.outputs_.waitForEvent(self.elements_, allEvents=True)
-            print("3")
 
             if event.type == self.outputs_.EVT_KEYDOWN:
                 if self.outputs_.MOVE_RIGHT == event.key:
@@ -551,7 +549,7 @@ class sudoku:
 
         # Let's go
         try:
-            if opts.PROGRESS_MULTITHREADED == self.progressMode:
+            if opts.PROGRESS_MULTITHREADED == self.progressMode():
                 # multithreading is just for drawings !!!
                 self._resolveMultiThreaded()
             else:
@@ -649,7 +647,7 @@ class sudoku:
                     self.elements_[position.index()].setValue(candidate)
 
                     # Update drawings
-                    if self.progressMode != opts.PROGRESS_NONE :
+                    if self.progressMode() != opts.PROGRESS_NONE :
                         self.outputs_.draw(self.elements_)
 
                     # Go to the next "empty" position
@@ -1069,9 +1067,11 @@ class sudoku:
             del self.outputs_
 
         # Create a new one
-        if self.progressMode == opts.PROGRESS_MULTITHREADED:
+        if self.progressMode() == opts.PROGRESS_MULTITHREADED:
+            #print("Create threaded outputs handklr")
             self.outputs_ = pygameThreadedOutputs()
         else:
+            #print("Create unthreaded outputs handklr")
             self.outputs_ = pygameOutputs()
 
         self.outputs_.startUI()   # Let's go
