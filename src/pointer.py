@@ -15,13 +15,13 @@ from ownExceptions import reachedEndOfList
 #
 ROW_COUNT = LINE_COUNT = 9
 
-GRID_SIZE = ROW_COUNT * LINE_COUNT
+ARRAY_SIZE = ROW_COUNT * LINE_COUNT
 
 VALUE_MIN = 1
 VALUE_MAX = LINE_COUNT
 
 INDEX_MIN = 0
-INDEX_MAX = (GRID_SIZE - 1)
+INDEX_MAX = (ARRAY_SIZE - 1)
 
 #
 # pointer - "ID" of an element in the sudoku's grid

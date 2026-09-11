@@ -21,7 +21,7 @@ from options import FILE_EXPORT_EXTENSION, options, stats
 from options import options as opts
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
-    GRID_SIZE,
+    ARRAY_SIZE,
     INDEX_MAX,
     LINE_COUNT,
     ROW_COUNT,
@@ -50,11 +50,6 @@ class sudoku:
     EDIT_ESCAPE:int = 4  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
     EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
-
-    # Consts
-    #
-    VALUE_SEPARATOR:str = ","  # Value separator in files
-    FILE_COMMENTS:str = "#"  # Comment lines start with
 
     # Construction
     #
@@ -113,7 +108,7 @@ class sudoku:
         if len(self.elements_) > 0:
             self.elements_.clear()
 
-        for _ in range(GRID_SIZE):
+        for _ in range(ARRAY_SIZE):
             self.elements_.append(element())
 
     # Progress mode (ie. display progression ?)
@@ -175,22 +170,6 @@ class sudoku:
     # Outputs
     #
 
-    # Convert current grid to a printable string
-    #
-    @override
-    def __str__(self)->str:
-        output : str = "_"  # to stop warnings !!!!
-        if len(self.elements_) == GRID_SIZE:
-            position = pointer(gameMode=False)
-            for _ in range(LINE_COUNT):
-                output += "\n"
-                for _ in range(ROW_COUNT):
-                    currentElement = self.elements_[position.index()]
-                    output += f" {' ' if currentElement.isEmpty() else str(currentElement.num)} "
-                    position += 1
-            output += "\n"
-
-        return output[1:]
 
     # End of outputs
     #
@@ -504,30 +483,6 @@ class sudoku:
         for el in self.elements_:
             el.empty()
 
-    # Return to the original state
-    #
-    def revertGrid(self):
-        for el in self.elements_:
-            if not el.isOriginal():
-                el.empty()
-
-    # Find all the obvious values
-    #
-    #   return a tuple (#obvious values, duration in s.)
-    #
-    def findObviousValues(self):
-
-        # for stats
-        found = 0
-        self.start_ = time.time()
-
-        values = 1
-        while 0 < values:
-            values = self._findObviousValues()
-            found += values
-
-        # Find a solution !!!
-        return found, time.time() - self.start_
 
     # Try to solve the grid
     #

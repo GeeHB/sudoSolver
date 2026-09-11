@@ -93,10 +93,12 @@ class element:
 
     # The element is empty
     #   returns the previous value
-    def empty(self):
+    def empty(self, deep : bool):
         self.status_.assign(self.STATUS_EMPTY)
         pValue = self.value_
         self.value_ = 0
+        if deep:
+            self.solution_ = 0
         return pValue
 
     # Element's status
@@ -108,6 +110,7 @@ class element:
         return self.status_.isSet(self.STATUS_ORIGINAL)
     def setOriginal(self):
         self.status_.assign(self.STATUS_SET | self.STATUS_ORIGINAL)
+        self.solution_ = self.value_
 
     def isObvious(self)->bool:
         return self.status_.isSet(self.STATUS_OBVIOUS)

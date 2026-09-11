@@ -25,6 +25,7 @@
 #### Version 4.0.1
 * sept. 2026
 * Added :
+  * sArray <- gridMaker + sudoku
   * 
 
 #### Version 3.1.4

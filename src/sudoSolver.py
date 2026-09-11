@@ -15,7 +15,6 @@
 import sys
 import time
 
-import pygameOutputs
 from options import (
     APP_AUTHOR_SHORT,
     APP_NAME,
@@ -23,6 +22,7 @@ from options import (
     PYTHON_VER_MAJ,
     PYTHON_VER_MIN,
     options,
+    stats,
 )
 
 # from gridMaker import gridMaker
@@ -101,7 +101,7 @@ def _sudoku(solver : sudoku):
 
         # Search for the solution
         #
-        myStats = pygameOutputs.stats()
+        myStats = stats()
         if params.execMode_.isSet(options.EXEC_SOLVE):
             if False == params.execMode_.isSet(options.EXEC_EDIT):
                 solver.displayText("Press a key to start the solver", False)

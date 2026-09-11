@@ -49,7 +49,11 @@ ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
 
-FILE_EXPORT_EXTENSION = ".solution"  # A solution grid file
+# File management
+#
+FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
+FILE_COMMENTS:str = "#"  # Comment lines start with
+FILE_EXPORT_EXTENSION:str = ".solution"  # A solution grid file
 
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
@@ -78,6 +82,13 @@ COMMENT_DETAILS = "Show grids during process"
 DEF_GRID_FOLDER = "../grids"
 DEF_ASSETS_FOLDER = "../assets"
 
+# Array complexity - ie. count of filled elements
+class arrayComplexity:
+   COMPLEXITY_EMPTY:int = 0         # the grid has no def. element
+   COMPLEXITY_EASY:int = 33
+   COMPLEXITY_MEDIUM:int = 26
+   COMPLEXITY_HARD:int = 22
+
 #
 #   options object : command-line parsing and parameters management
 #
@@ -102,12 +113,6 @@ class options:
     NEW_MEDIUM:str = "Medium"
     NEW_HARD:str = "Hard"
 
-    # Grid complexity - ie. count of filled elements
-    COMPLEXITY_EMPTY:int = 0
-    COMPLEXITY_EASY:int = 33
-    COMPLEXITY_MEDIUM:int = 26
-    COMPLEXITY_HARD:int = 22
-
     # Construction
     #
     def __init__(self):
@@ -120,7 +125,7 @@ class options:
         self.obviousValues_:bool = False
         self.progressMode_:int = self.PROGRESS_NONE
         self.execMode_:statusbits.statusBits = statusbits.statusBits(self.EXEC_NONE)
-        self.newGrid_:int = self.COMPLEXITY_EMPTY
+        self.newGrid_:int = arrayComplexity.COMPLEXITY_EMPTY
         self.userMode_:bool = False
 
     # Browse the command line
@@ -278,13 +283,13 @@ class options:
             mode : str = args.new[0]
             match mode:
                 case self.NEW_MEDIUM:
-                    self.newGrid_ = self.COMPLEXITY_MEDIUM
+                    self.newGrid_ = arrayComplexity.COMPLEXITY_MEDIUM
                 case self.NEW_HARD:
-                    self.newGrid_ = self.COMPLEXITY_HARD
+                    self.newGrid_ = arrayComplexity.COMPLEXITY_HARD
                 case self.NEW_EASY:
-                    self.newGrid_ = self.COMPLEXITY_EASY
+                    self.newGrid_ = arrayComplexity.COMPLEXITY_EASY
                 case _:
-                    self.newGrid_ = self.COMPLEXITY_EASY
+                    self.newGrid_ = arrayComplexity.COMPLEXITY_EASY
 
         # Display grid during the search process ?
         display = args.details[0] if args.details is not None else 0
