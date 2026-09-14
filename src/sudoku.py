@@ -34,10 +34,6 @@ from pygameThreadedOutputs import pygameThreadedOutputs
 from sharedTools import statusbits
 from tinySquare import tinySquare
 
-TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"  # OCR parameters
-TESSERACT_BOX_THICKNESS = 1
-TESSERACT_BOX_COLOR = (0, 255, 0)
-
 
 #   sudoku : Edition and/or resolution of a single sudoku grid
 #

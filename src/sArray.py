@@ -44,7 +44,7 @@ class sArray:
         self.attempts_:int = 0
         self.start_:float = 0.0  # Resolution start-time
         self.elements_ : list[element] = []
-        self.complexity_ : int = arrayComplexity.COMPLEXITY_EMPTY
+        self.complexity_ : int = arrayComplexity.Empty.value
 
         random.seed()
 
@@ -53,7 +53,7 @@ class sArray:
     def filename(self)->str|None:
         return self.fileName_
 
-    # complexity
+    # Complexity (for new arrays created from scratch)
     @property
     def complexity(self)->int:
         return self.complexity_
@@ -94,8 +94,8 @@ class sArray:
     def new(self, compl : int | None):
         self.empty()
 
-        if compl is None or compl == arrayComplexity.COMPLEXITY_EMPTY:
-            self.complexity_ = arrayComplexity.COMPLEXITY_EMPTY
+        if compl is None or compl == arrayComplexity.Empty.value:
+            self.complexity_ = arrayComplexity.Empty.value
             return  # returns an empty array
 
         self.complexity = compl

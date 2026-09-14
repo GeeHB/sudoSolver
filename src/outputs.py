@@ -96,7 +96,7 @@ class outputs:
         print("\t- " + params.fileName_)
 
         # Found obvious values ?
-        if True == params.obviousValues_:
+        if params.obviousValues:
             if sStats.obvValues_:
                 print("\t- Found " + str(sStats.obvValues_) + " obvious value(s) in " + str(round(sStats.obvDuration_, 2)) + " second(s)")
             else:

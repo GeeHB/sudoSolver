@@ -42,7 +42,7 @@ def _create():
 
     try:
         solver = sudoku(params.progressMode_)
-        if params.browseFolder_:
+        if params.browseFolder:
             if not solver.allowFolderBrowsing():
                 solver.close()
                 raise sudokuError(
@@ -58,7 +58,7 @@ def _create():
             # Generate a new grid
             maker = gridMaker(grid = solver)
             maker.newGrid()
-            maker.removeElements(options.COMPLEXITY_HARD)
+            maker.removeElements(options.VAL_HARD)
 
             solver.displayGrid()
             """
@@ -108,7 +108,7 @@ def _sudoku(solver : sudoku):
                 solver.waitForKeyDown()
 
             # Obvious values first ...
-            if True == params.obviousValues_:
+            if params.obviousValues:
                 myStats.obvValues_, myStats.obvDuration_ = solver.findObviousValues()
 
                 if myStats.obvValues_ > 0:
@@ -135,7 +135,7 @@ def _sudoku(solver : sudoku):
                 print("Resolution process canceled")
             else:
                 # Export the solution ?
-                if params.exportSolution_:
+                if params.exportSolution:
                     comments : list[str] = []
                     comments.append(" ")
                     comments.append(f" Source file : {params.fileName_}")

@@ -9,6 +9,8 @@
 from element import element
 from pointer import ROW_COUNT, pointer
 
+# Top-left index of tiny-squares in the global array
+SQUARES_INDEXES : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
 #
 # tinySquare object
@@ -16,7 +18,6 @@ from pointer import ROW_COUNT, pointer
 #   A tiny-square is one of the 9 3x3 matrix composing the whole grid
 #
 class tinySquare:
-
     # Dimensions
     TINY_LINE_COUNT:int = 3
     TINY_ROW_COUNT:int = 3
@@ -24,7 +25,6 @@ class tinySquare:
     # Construction
     #
     def __init__(self, index:int | None = None):
-        self.squaresIndexes_ : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]    # Top-left index of tiny-squares
         self.topLine_:int = 0
         self.topRow_:int = 0
         self.Id_ : int = 0
@@ -35,14 +35,14 @@ class tinySquare:
     def __repr__(self)->str:
         return f"SquareID - id : {self.Id_}"
 
-    # Get index from positionnal index (of an element)
+    # Get ID from positionnal index (of an element)
     #
     def IdFromIndex(self, id:int)->int:
         if id < 0 or id >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
             raise IndexError
 
         # "top" values
-        position = pointer(index = self.squaresIndexes_[id])
+        position = pointer(index = SQUARES_INDEXES[id])
         self.topLine_ = position.line_
         self.topRow_ = position.row_
 
@@ -68,7 +68,7 @@ class tinySquare:
         ids :list[list[int]]= []
 
         # Start index
-        index = self.squaresIndexes_[self.Id_]
+        index = SQUARES_INDEXES[self.Id_]
         for _ in range (self.TINY_LINE_COUNT):
             line : list[int]= []
             for row in range(self.TINY_ROW_COUNT):
@@ -84,7 +84,7 @@ class tinySquare:
     #
     #   returns the tuple (line, row) if found or (None, None)
     #
-    def findValue(self, elements:list[element], value:int)->(tuple[int | None,int | None]):
+    def findValue(self, elements:list[element], value:int)->tuple[int | None,int | None]:
         # All my positions
         positions:list[list[int]] = self.indexes()
 

@@ -9,11 +9,13 @@
 
 import argparse
 import sysconfig
+from enum import IntEnum
 
 from sharedTools import colorizer as color
 from sharedTools import statusbits
 
 # App informations
+#
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "4.0.1"
@@ -83,11 +85,11 @@ DEF_GRID_FOLDER = "../grids"
 DEF_ASSETS_FOLDER = "../assets"
 
 # Array complexity - ie. count of filled elements
-class arrayComplexity:
-   COMPLEXITY_EMPTY:int = 0         # the grid has no def. element
-   COMPLEXITY_EASY:int = 33
-   COMPLEXITY_MEDIUM:int = 26
-   COMPLEXITY_HARD:int = 22
+class arrayComplexity(IntEnum):
+    Empty = 0
+    Easy = 33
+    Medium = 26
+    Hard = 22
 
 #
 #   options object : command-line parsing and parameters management
@@ -107,26 +109,56 @@ class options:
     EXEC_USER:int = 2
     EXEC_SOLVE:int = 4
 
-    # Types of new grids and count of empty elements
-    NEW_EMPTY:str = "Empty"
-    NEW_EASY:str = "Easy"
-    NEW_MEDIUM:str = "Medium"
-    NEW_HARD:str = "Hard"
+    # App. options
+    OPTIONS_NONE:int = 0
+    OPTIONS_EXPORT:int = 1      # Export solution
+    OPTIONS_SEARCH_OBVIOUS = 2  # Search opbious values
+    OPTIONS_BROWSE_FOLDER = 4
+    OPTIONS_USER_MODE = 8
 
     # Construction
     #
     def __init__(self):
         # Default values
         self.color_:color.colorizer = color.colorizer(True, False)
-        self.browseFolder_:bool = False
         self.fileName_:str = ""
         self.folderName_:str = ""
-        self.exportSolution_:bool = False
-        self.obviousValues_:bool = False
         self.progressMode_:int = self.PROGRESS_NONE
         self.execMode_:statusbits.statusBits = statusbits.statusBits(self.EXEC_NONE)
-        self.newGrid_:int = arrayComplexity.COMPLEXITY_EMPTY
-        self.userMode_:bool = False
+        self.complexity_:int = arrayComplexity.Empty.value
+        self.runOptions_ : statusbits.statusBits =statusbits.statusBits(self.OPTIONS_NONE)
+
+
+    # Access to cmdline options
+    #
+
+    @property
+    def exportSolution(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_EXPORT)
+    @exportSolution.setter
+    def exportSolution(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_EXPORT, newVal)
+
+    @property
+    def obviousValues(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_SEARCH_OBVIOUS)
+    @obviousValues.setter
+    def obviousValues(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_SEARCH_OBVIOUS, newVal)
+
+    @property
+    def browseFolder(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_BROWSE_FOLDER)
+    @browseFolder.setter
+    def browseFolder(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_BROWSE_FOLDER, newVal)
+
+    @property
+    def userMode(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_USER_MODE)
+    @userMode.setter
+    def userMode(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_USER_MODE, newVal)
 
     # Browse the command line
     #   returns True when ok
@@ -221,13 +253,13 @@ class options:
             nargs=1,
         )
 
-        # Create a new grid
+        # Create a new array
         _ = action.add_argument(
             ARG_NEW_S,
             ARG_NEW,
             help=COMMENT_NEW,
             metavar="COMPLEXITY",
-            choices=[self.NEW_EMPTY, self.NEW_EASY, self.NEW_MEDIUM, self.NEW_HARD],
+            choices=[arrayComplexity.Empty.name, arrayComplexity.Easy.name, arrayComplexity.Medium.name, arrayComplexity.Hard.name],
             required=False,
         )
 
@@ -236,13 +268,13 @@ class options:
         args = parser.parse_args()
 
         # User mode ?
-        self.userMode_ = args.user  # pyright: ignore[reportAny]
+        self.userMode = args.user  # pyright: ignore[reportAny]
 
         # Export / save the solution
-        self.exportSolution_ = args.export
+        self.exportSolution = args.export
 
         # Search obvious values ?
-        self.obviousValues_ = args.obvious
+        self.obviousValues = args.obvious
 
         # Solve ?
         if args.solve is not None:
@@ -267,14 +299,14 @@ class options:
                         if args.browse is not None
                         else args.browseSolve[0]
                     )
-                    self.browseFolder_ = True
+                    self.browseFolder = True
                     self.execMode_.set(
                         self.EXEC_EDIT | self.EXEC_SOLVE
                         if args.browseSolve is not None
                         else 0
                     )
 
-        if self.userMode_ == False and args.editSolve is not None:
+        if not self.userMode and args.editSolve is not None:
             self.execMode_.set(self.EXEC_SOLVE)
 
         # Generate a new grid ?
@@ -282,14 +314,14 @@ class options:
         if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
             mode : str = args.new[0]
             match mode:
-                case self.NEW_MEDIUM:
-                    self.newGrid_ = arrayComplexity.COMPLEXITY_MEDIUM
-                case self.NEW_HARD:
-                    self.newGrid_ = arrayComplexity.COMPLEXITY_HARD
-                case self.NEW_EASY:
-                    self.newGrid_ = arrayComplexity.COMPLEXITY_EASY
+                case arrayComplexity.Medium.name:
+                    self.complexity_ = arrayComplexity.Medium.value
+                case arrayComplexity.Hard.name:
+                    self.complexity_ = arrayComplexity.Hard.value
+                case arrayComplexity.Easy.name:
+                    self.complexity_ = arrayComplexity.Easy.value
                 case _:
-                    self.newGrid_ = arrayComplexity.COMPLEXITY_EASY
+                    self.complexity_ = arrayComplexity.Easy.value
 
         # Display grid during the search process ?
         display = args.details[0] if args.details is not None else 0
@@ -306,14 +338,14 @@ class options:
             )
 
         # Export solution => solverMode should be activated
-        if self.exportSolution_ and not self.execMode_.isSet(self.EXEC_SOLVE):
+        if self.exportSolution and not self.execMode_.isSet(self.EXEC_SOLVE):
             return False
 
         # At least one action !
         ret = bool(
             self.execMode_.isSet(self.EXEC_EDIT)
             or self.execMode_.isSet(self.EXEC_SOLVE)
-            or self.browseFolder_
+            or self.browseFolder
         )
         if not ret:
             parser.print_help()
@@ -328,7 +360,6 @@ class options:
     def version(self)->str:
         self.color_ = color.colorizer(True)
         return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD])} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
-
 
 #
 # stats - Informations about a solution

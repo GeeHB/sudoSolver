@@ -14,6 +14,11 @@ from pytesseract import Output
 #
 #   OCR
 #
+#
+
+TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"  # OCR parameters
+TESSERACT_BOX_THICKNESS = 1
+TESSERACT_BOX_COLOR = (0, 255, 0)
 
 # Parse an image file
 #
