@@ -10,7 +10,8 @@ import copy
 import math
 import os
 import sys
-from typing import SupportsIndex, override
+import time
+from typing import override
 
 try :
     import pygame
@@ -21,14 +22,19 @@ import pygame.event
 
 import solver
 from element import element
-from options import APP_SHORT_NAME, FILE_EXPORT_EXTENSION, options, stats
+from options import (
+    APP_AUTHOR_SHORT,
+    APP_NAME,
+    APP_SHORT_NAME,
+    FILE_EXPORT_EXTENSION,
+    options,
+)
 from ownExceptions import sudokuError
 from pointer import (
     LINE_COUNT,
     ROW_COUNT,
     pointer,
 )
-from sArray import sArray
 from sharedTools import (
     statusbits,
     systeminfos,
@@ -326,11 +332,92 @@ class pygameSolver(solver.solver):
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
         self._drawBackground()
 
-    # Start drawings
+    # Start the sudoku (browsing, editing or solving)
     #
     @override
     def start(self):
-        pass
+        try:
+            if self.params_.browseFolder:
+                self.params_.fileName_ = self._browse(self.params_.folderName_)
+                if 0 == len(self.params_.fileName_):
+                    return
+            else:
+                self.sudoku_.load(
+                    self.params_.fileName_, not self.params_.execMode_.isSet(options.EXEC_EDIT)
+                )
+
+            self._draw()
+
+            # Edition
+            if self.params_.execMode_.isSet(options.EXEC_EDIT):
+                # Succefully edited ?
+                escape, saved = self._edit()
+                if escape == True or saved == False:
+                    # Escaped or error while saving
+                    self.params_.execMode_.remove(options.EXEC_SOLVE)
+
+            # Search for the solution
+            #
+            if self.params_.execMode_.isSet(options.EXEC_SOLVE):
+                if not self.params_.execMode_.isSet(options.EXEC_EDIT):
+                    self._displayText("Press a key to start the solver", False)
+                    self._waitForEvent(allEvents=True)
+
+                # Obvious values first ...
+                if self.params_.obviousValues:
+                    self.stats_.obvValues_, self.stats_.obvDuration_ = self.sudoku_.findObviousValues()
+
+                    if self.stats_.obvValues_ > 0:
+                        self._displayText(
+                            f"Found {self.stats_.obvValues_!r} obvious values", False
+                        )
+                        self._draw()
+                        self._waitForEvent(allEvents=True)
+
+                # ... and then try to resolve
+                found, escaped, self.stats_.bruteAttempts_, self.stats_.bruteDuration_ = (
+                    self.sudoku_.resolve()
+                )
+
+                # Display the solution (if any)
+                self._draw()
+                self._displayText("Press a key to quit", False)
+
+                time.sleep(1)
+                self._waitForEvent(allEvents=True)
+
+                if escaped:
+                    print("Resolution process canceled")
+                else:
+                    # Export the solution ?
+                    if self.params_.exportSolution:
+                        comments : list[str] = []
+                        comments.append(" ")
+                        comments.append(f" Source file : {self.params_.fileName_}")
+                        comments.append(" ")
+                        comments.append(
+                            f"Solved by {APP_AUTHOR_SHORT}::{APP_NAME} in {round(self.stats_.bruteDuration_, 2)!r} sec."
+                        )
+                        comments.append(" ")
+
+                        if self.sudoku_.save(True, comments) is not None:
+                            print(
+                                f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
+                            )
+
+                self.end()
+
+                # A few stats.
+                if found:
+                    self.showStats()
+                else:
+                    print(f"No solution found for '{self.params_.fileName_}'")
+        except sudokuError as e:
+            print(e)
+        except IndexError:
+            print("Too many lines in the file", file=sys.stderr)
+        except KeyboardInterrupt:
+            print("Canceled by user")
 
     # End drawings
     #

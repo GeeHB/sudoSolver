@@ -217,19 +217,6 @@ class sudoku:
         # Finished (anyway)
         return (found, escaped, self.attempts_, endTime)
 
-    # Get the list of possible values at a given position
-    #
-    def getValues(self, position:pointer)->list[int]:
-        values : list[int] = []
-
-        for value in range(VALUE_MIN, VALUE_MAX):
-            if self._checkValue(position, value):
-                # This value can be used
-                values.append(value)
-
-        # return the list
-        return values
-
     #
     # Internal methods
     #

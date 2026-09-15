@@ -4,7 +4,7 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   A sudoku array
+#   Description :   A sudoku array and the associated methods
 #
 
 import copy
@@ -425,6 +425,18 @@ class sArray:
                     # At the next pos., we alawyas try the lowest possible value
                     candidate = 0
 
+    # Get the list of possible values at a given position
+    #
+    def getValues(self, position:pointer)->list[int]:
+        values : list[int] = []
+        for value in range(VALUE_MIN, VALUE_MAX):
+            if self.checkValue(position, value):
+                # This value can be used
+                values.append(value)
+
+        # return the list
+        return values
+
     # Can we put the value at the current position ?
     #
     def checkValue(self, position:pointer, value:int)->bool:
@@ -543,7 +555,7 @@ class sArray:
     def findNextValue(self, position : pointer, val : int)->int:
         nextVal : int = position.incValue(val)
         while val != nextVal:
-            if self._checkValue(position, nextVal):
+            if self.checkValue(position, nextVal):
                 return nextVal
             # try the next value
             nextVal = position.incValue(nextVal)
@@ -555,7 +567,7 @@ class sArray:
     def findPreviousValue(self, position : pointer, val : int)->int:
         nextVal : int = position.decValue(val)
         while val != nextVal:
-            if self._checkValue(position, nextVal):
+            if self.checkValue(position, nextVal):
                 # found it
                 return nextVal
 
@@ -693,7 +705,7 @@ class sArray:
 
         try:
             for _ in range(tinySquare.TINY_ROW_COUNT):
-                if self.elements_[pos.index()].isEmpty() and self._checkValue(
+                if self.elements_[pos.index()].isEmpty() and self.checkValue(
                     pos, value
                 ):
                     if None != foundPos:
@@ -785,7 +797,7 @@ class sArray:
 
         try:
             for _ in range(tinySquare.TINY_LINE_COUNT):
-                if self.elements_[pos.index()].isEmpty() and self._checkValue(
+                if self.elements_[pos.index()].isEmpty() and self.checkValue(
                     pos, value
                 ):
                     if None != foundPos:

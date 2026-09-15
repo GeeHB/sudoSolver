@@ -45,11 +45,11 @@ class solver:
     #
     #   Print stats on console (by default)
     #
-    def showStats(self, params: options):
-        print("\t- " + params.fileName_)
+    def showStats(self):
+        print("\t- " + self.params_.fileName_)
 
         # Found obvious values ?
-        if params.obviousValues:
+        if self.params_.obviousValues:
             if self.stats_.obvValues_:
                 print("\t- Found " + str(self.stats_.obvValues_) + " obvious value(s) in " + str(round(self.stats_.obvDuration_, 2)) + " second(s)")
             else:
@@ -57,6 +57,5 @@ class solver:
 
         print("\t- Solved in " + str(round(self.stats_.bruteDuration_, 2)) + " second(s)")
         print("\t- " + str(self.stats_.bruteAttempts_) + " attempt(s)\n")
-
 
 # EOF
