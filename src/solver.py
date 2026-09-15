@@ -9,14 +9,14 @@
 #
 
 from options import options, stats
-from sArray import sArray
+from sudoku import sudoku
 
 
 class solver:
     def __init__(self, params : options):
         self.initDone_ = False
         self.params_ : options = params
-        self.sudoku_ : sArray = sArray()    # First empty array
+        self.sudoku_ : sudoku = sudoku()    # First empty array
         self.stats_ : stats = stats()
 
     @property

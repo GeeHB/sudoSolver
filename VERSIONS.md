@@ -25,8 +25,9 @@
 #### Version 4.0.1
 * sept. 2026
 * Added :
-  * sArray <- gridMaker + sudoku
-  * 
+  * sudoku <- gridMaker + sudoku
+  * solver <- abstrct class for GUI solver app.
+  * pygameSolver <- GUI and sudoku's calls using pygame
 
 #### Version 3.1.4
 * aug. 2026
