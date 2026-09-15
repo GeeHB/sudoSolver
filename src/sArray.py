@@ -166,7 +166,7 @@ class sArray:
                             )
 
                         for val in values:
-                            self._setAt(pt, val)
+                            self.setAt(pt, val)
 
                             # Next value
                             pt += 1
@@ -229,7 +229,7 @@ class sArray:
             return None
 
     #
-    # Array creation
+    # Array
     #
 
     # Remove elements according to complexity
@@ -413,7 +413,7 @@ class sArray:
             else:
                 # Try to put the "candidate" value at current position
                 #
-                if True == self._checkValue(position, candidate):
+                if True == self.checkValue(position, candidate):
                     # possible !!!
                     self.attempts_ += 1
 
@@ -427,7 +427,7 @@ class sArray:
 
     # Can we put the value at the current position ?
     #
-    def _checkValue(self, position:pointer, value:int)->bool:
+    def checkValue(self, position:pointer, value:int)->bool:
         return (
             self._checkLine(position, value)
             and self._checkRow(position, value)
@@ -459,7 +459,8 @@ class sArray:
         return False == mySquare.inMe(self.elements_, value)
 
     # (try to) set a value at current position
-    def _setAt(self, position : pointer, val:str, warn:bool=True) -> bool:
+    #
+    def setAt(self, position : pointer, val:str, warn:bool=True) -> bool:
         value = int(val)
 
         # in [0,9] ?
@@ -539,7 +540,7 @@ class sArray:
 
     # Find the next possible value for an element (greater than the current one)
     #
-    def _findNextValue(self, position : pointer, val : int)->int:
+    def findNextValue(self, position : pointer, val : int)->int:
         nextVal : int = position.incValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
@@ -551,7 +552,7 @@ class sArray:
 
     # Find the lowest possible value for an element
     #
-    def _findPreviousValue(self, position : pointer, val : int)->int:
+    def findPreviousValue(self, position : pointer, val : int)->int:
         nextVal : int = position.decValue(val)
         while val != nextVal:
             if self._checkValue(position, nextVal):
@@ -625,7 +626,7 @@ class sArray:
     def _checkObviousValue(self, position:pointer)-> int | None:
         value : int | None = None
         for test in range(VALUE_MIN, VALUE_MAX + 1):
-            if self._checkValue(position, test):
+            if self.checkValue(position, test):
                 # This value can be used
                 if value:
                     # already a possible value at this pos.
