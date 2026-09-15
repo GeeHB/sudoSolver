@@ -4,4 +4,4 @@ archives/
 venv/
 .idea/
 *.pyc
-grids/
+sudokus/

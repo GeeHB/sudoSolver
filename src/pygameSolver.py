@@ -54,7 +54,7 @@ STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
 
 SQUARE_MIN              = 10   # Minimal square size
 
-DELTA_W                 = 10   # Grid offsets
+DELTA_W                 = 10   # Offsets
 DELTA_H                 = 10
 
 EXT_BORDER_THICK        = 3    # Thickness of external border
@@ -66,7 +66,7 @@ MENUBAR_HEIGHT          = 32
 ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
 ELT_FONT_SIZE           = 35                                # default size
 
-FILE_FONT_NAME          = 'Helvetica,Arial'                 # Grid's name display
+FILE_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
 FILE_FONT_SIZE          = 25
 FILE_FONT_POS_X         = 35
 FILE_FONT_POS_Y         = 5
@@ -255,7 +255,7 @@ class pygameSolver(solver.solver):
     # Edition status
     #
     EDIT_CONTINUE:int = statusbits.STATUS_NONE
-    EDIT_MODIFIED:int = 1  # Grid has been modified (at least once)
+    EDIT_MODIFIED:int = 1  # The sudoku has been modified (at least once)
     EDIT_STOP:int = 2  # Stop edition
     EDIT_ESCAPE:int = 4  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
@@ -275,11 +275,10 @@ class pygameSolver(solver.solver):
         self.sElement_ : textSurface | None = None
 
         self.mode_ :statusbits.statusBits = statusbits.statusBits()       # Display mode
-        self.gridFileName_ : str | None = None
 
         self.keyHandler_ = None
 
-        # Display the grid name
+        # Display the sudoku's name
         self.sFileName_ : textSurface | None       = None
 
         # Text message
@@ -361,7 +360,7 @@ class pygameSolver(solver.solver):
             if self.params_.execMode_.isSet(options.EXEC_SOLVE):
                 if not self.params_.execMode_.isSet(options.EXEC_EDIT):
                     self._displayText("Press a key to start the solver", False)
-                    self._waitForEvent(allEvents=True)
+                    self._waitForEvent(allEvents=False)
 
                 # Obvious values first ...
                 if self.params_.obviousValues:
@@ -372,7 +371,7 @@ class pygameSolver(solver.solver):
                             f"Found {self.stats_.obvValues_!r} obvious values", False
                         )
                         self._draw()
-                        self._waitForEvent(allEvents=True)
+                        self._waitForEvent(allEvents=False)
 
                 # ... and then try to resolve
                 found, escaped, self.stats_.bruteAttempts_, self.stats_.bruteDuration_ = (
@@ -384,7 +383,7 @@ class pygameSolver(solver.solver):
                 self._displayText("Press a key to quit", False)
 
                 time.sleep(1)
-                self._waitForEvent(allEvents=True)
+                self._waitForEvent(allEvents=False)
 
                 if escaped:
                     print("Resolution process canceled")
@@ -498,8 +497,8 @@ class pygameSolver(solver.solver):
     # Refresh the whole window
     #
     def _refresh(self):
+        self._drawBackground()
         if len(self.sudoku_.elements_) > 0:
-            self._drawBackground()
             self._draw()
         else:
             self._update()
@@ -508,6 +507,8 @@ class pygameSolver(solver.solver):
     #
     def _displayText(self, text:str, information:bool):
         if information:
+            print(text)
+        else:
             # Display text on top of the board
             self._showMessage(text)
             self._refresh()
@@ -553,7 +554,7 @@ class pygameSolver(solver.solver):
                 dy = (self.intSquareWidth_ - self.sElement_.getHeight()) / 2
                 self.win_.blit(mySurface, (x + dx, y + dy))
 
-    # Show text message (on top of the grid)
+    # Show text message (on top of the sudoku)
     #
     def _showMessage(self, message : str):
         if self.sMessage_:
@@ -586,7 +587,7 @@ class pygameSolver(solver.solver):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
             raise sudokuError(fileName +  " is not a file")
-        self.gridFileName_ = fileName
+        self.params_.fileName_ = fileName
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName, self.TXT_COLOUR, self.BK_COLOUR_FILENAME)
@@ -596,9 +597,9 @@ class pygameSolver(solver.solver):
 
     # Load a sudoku stored in a file
     #
-    #   return True if grid has been successfully loaded
+    #   return True if sudoku has been successfully loaded
     #
-    def _fromFile(self, fileName : str, nameOnGrid:bool=True) -> bool:
+    def _fromFile(self, fileName : str, nameOnArray:bool=True) -> bool:
         self.sudoku_.empty()
 
         try:
@@ -609,7 +610,7 @@ class pygameSolver(solver.solver):
             print(f"Sudoku Error : {se.message_}")
             return False
 
-        if nameOnGrid:
+        if nameOnArray:
             self._setFileName(fileName)
 
         self._drawBackground()
@@ -745,7 +746,7 @@ class pygameSolver(solver.solver):
     #  Edition & browsing
     #
 
-    # Browse a folder (to find a grid)
+    # Browse a folder (to find a sudoku file)
     #
     #  Returns the selected filename or ""
     def _browse(self, folderName:str)->str:
@@ -813,7 +814,7 @@ class pygameSolver(solver.solver):
                         done = True
                         clearFile = True
                     else:
-                        # Choose the grid (for edition or solving)
+                        # Choose the sudoku from file (for edition or solving)
                         if self.EDIT_QUIT_AND_SAVE == event.key:
                             done = True
         elif event.type == self.EVT_QUIT:
@@ -846,9 +847,9 @@ class pygameSolver(solver.solver):
         files.sort()
         return len(files) > 0
 
-    # Edit / modify the grid
+    # Edit / modify the sudoku's array
     #
-    #   Returns the tuple of booleans : (escaped ?, grid saved (or successfully edited) ?)
+    #   Returns the tuple of booleans : (escaped ?, sudoku saved (or successfully edited) ?)
     #
     def _edit(self) -> tuple[bool, bool]:
         currentPos : pointer = pointer(gameMode=False)  # current position

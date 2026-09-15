@@ -46,7 +46,7 @@ class solver:
     #   Print stats on console (by default)
     #
     def showStats(self):
-        print("\t- " + self.params_.fileName_)
+        print("\n\t- " + self.params_.fileName_)
 
         # Found obvious values ?
         if self.params_.obviousValues:

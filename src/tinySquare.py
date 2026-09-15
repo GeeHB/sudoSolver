@@ -15,7 +15,7 @@ SQUARES_INDEXES : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 #
 # tinySquare object
 #
-#   A tiny-square is one of the 9 3x3 matrix composing the whole grid
+#   A tiny-square is one of the 9 3x3 matrix composing the whole array
 #
 class tinySquare:
     # Dimensions

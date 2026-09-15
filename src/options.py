@@ -33,37 +33,37 @@ PYTHON_VER_MIN = 10
 
 ARG_BROWSE_S = "-b"  # Browse a folder
 ARG_BROWSE = "--browse"
-COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained grids"
+COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained sudokus"
 
-ARG_EDIT_S = "-e"  # Edit (and modify or create) a grid
+ARG_EDIT_S = "-e"  # Edit (and modify or create) a sudoku
 ARG_EDIT = "--edit"
 COMMENT_EDIT = "Edit or create the {FILE} file"
 
-ARG_SOLVE_S = "-s"  # Search a solution for the grid
+ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
 ARG_SOLVE = "--solve"
-COMMENT_SOLVE = "Solve (find a solution) for the grid saved in {FILE} file"
+COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
 
-ARG_USER_S = "-u"  # Search for a solution for the grid
+ARG_USER_S = "-u"  # Search for a solution for the sudoku
 ARG_USER = "--user"
 COMMENT_USER = "User mode"
 
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
-COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
+COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
 
 # File management
 #
 FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
 FILE_COMMENTS:str = "#"  # Comment lines start with
-FILE_EXPORT_EXTENSION:str = ".solution"  # A solution grid file
+FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
 
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
 
-ARG_NEW_S = "-n"  # New grid
+ARG_NEW_S = "-n"  # New sudoku
 ARG_NEW = "--new"
-COMMENT_NEW = "Create a new grid of {COMPLEXITY} complexity"
+COMMENT_NEW = "Create a new sudoku of {COMPLEXITY} complexity"
 
 ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
 ARG_SEARCH_OBVIOUS = "--obvious"
@@ -71,17 +71,17 @@ COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution search
 
 ARG_SAVE_SOLUTION_S = "-x"  # Save / export the solution
 ARG_SAVE_SOLUTION = "--export"
-COMMENT_SAVE_SOLUTION = "Save the solution of the grid"
+COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
 
-# Show grid during the search process
+# Show sudoku during the search process
 ARG_DETAILS_S = "-d"  # Draw details
 ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show grids during process"
+COMMENT_DETAILS = "Show sudokusudokus during process"
 
 #
 # App. folders
 #
-DEF_GRID_FOLDER = "../grids"
+DEF_SUDOKU_FOLDER = "../sudokus"
 DEF_ASSETS_FOLDER = "../assets"
 
 # Array complexity - ie. count of filled elements
@@ -99,7 +99,7 @@ class options:
     PROGRESS_NONE:int = 0  # Don't show progession
     PROGRESS_SLOW:int = 1  # Singlethreaded mode
     PROGRESS_SINGLETHREADED:int = PROGRESS_SLOW
-    PROGRESS_SPEED:int = 2  # Use a distinct thread for displaying grids
+    PROGRESS_SPEED:int = 2  # Use a distinct thread for displaying sudokus
     PROGRESS_MULTITHREADED:int = PROGRESS_SPEED
 
     # Exec modes
@@ -128,10 +128,8 @@ class options:
         self.complexity_:int = arrayComplexity.Empty.value
         self.runOptions_ : statusbits.statusBits =statusbits.statusBits(self.OPTIONS_NONE)
 
-
-    # Access to cmdline options
+    # Access to cmd line properties
     #
-
     @property
     def exportSolution(self)->bool:
         return self.runOptions_.isSet(self.OPTIONS_EXPORT)
@@ -309,7 +307,7 @@ class options:
         if not self.userMode and args.editSolve is not None:
             self.execMode_.set(self.EXEC_SOLVE)
 
-        # Generate a new grid ?
+        # Generate a new sudoku ?
         # if True == self.editMode_ :
         if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
             mode : str = args.new[0]
@@ -323,7 +321,7 @@ class options:
                 case _:
                     self.complexity_ = arrayComplexity.Easy.value
 
-        # Display grid during the search process ?
+        # Display sudoku during the search process ?
         display = args.details[0] if args.details is not None else 0
         if display == self.PROGRESS_MULTITHREADED:
             self.progressMode_ = self.PROGRESS_MULTITHREADED

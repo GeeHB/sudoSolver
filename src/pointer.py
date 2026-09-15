@@ -24,7 +24,7 @@ INDEX_MIN = 0
 INDEX_MAX = (ARRAY_SIZE - 1)
 
 #
-# pointer - "ID" of an element in the sudoku's grid
+# pointer - "ID" of an element in the sudoku's array
 #
 #   This object does all the conversion from linear index to matrix coordinates
 #
@@ -47,13 +47,13 @@ class pointer:
     #
     def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None):
         if pos is None:
-            # Ensure position is in the grid
+            # Ensure position is in the array
             self.row_ = self._setInRange(row)
             self.line_ = self._setInRange(line)
         else:
-            # Mouse click outside the grid ?
+            # Mouse click outside the array ?
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
-                # Outside the grid => ignore the click
+                # Outside the array => ignore the click
                 return
 
             self.row_ = pos[0]

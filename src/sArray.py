@@ -100,7 +100,7 @@ class sArray:
 
         self.complexity = compl
 
-        # Step 1 - Start from a complete (new) grid
+        # Step 1 - Start from a complete (new) sudoku
         _ = self.resolve()
 
         # Step 2 : shuffle elements
@@ -122,7 +122,7 @@ class sArray:
         for index in range(ARRAY_SIZE):
             self.elements_[index].setOriginal();
 
-        # Step 8 : Remove elements according to complexite
+        # Step 8 : remove elements according to complexite
         self._removeElements()
 
     # Return to the original state
@@ -132,7 +132,7 @@ class sArray:
             if not el.isOriginal():
                 el.empty(deep = False)
 
-    # Read a grid'file
+    # Read a sudoku file
     #
     def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
         if fileName is None or 0 == len(fileName):
@@ -160,7 +160,7 @@ class sArray:
 
                         values = line.split(FILE_VALUE_SEPARATOR)
 
-                        if not ROW_COUNT == len(values):
+                        if ROW_COUNT != len(values):
                             raise sudokuError(
                                 f"Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
                             )
@@ -181,14 +181,12 @@ class sArray:
     #   return the name of the saved file or None if an error occured
     #
     def save(self, genName:bool = False, comments:list[str] | None = None, newFileName:str | None = None):
-
         if self.fileName_ is None:
             return None
 
         # A new name ?
         if newFileName is not None:
             self.fileName_ = newFileName
-            # self.outputs_.setGridName(newFileName, create=True)
 
         fileName = self.fileName_
         if genName:
@@ -363,7 +361,7 @@ class sArray:
     #
 
     #
-    # Solve the grid (internal method without exceptions handling)
+    # Solve the sudoku (internal method without exceptions handling)
     #
 
     # Single Threaded mode (default)
@@ -520,7 +518,7 @@ class sArray:
     # Find the next empty pos.
     #
     #   Returns a pointer to the found position
-    #   An exception reachedEndOfList is raised when the grid is full (the game is over and a solution has been found)
+    #   An exception reachedEndOfList is raised when the sudoku is full (the game is over and a solution has been found)
     #
     def _findFirstEmptyPos(self, start:pointer)->pointer:
         newPos : pointer = copy.deepcopy(start)
@@ -533,8 +531,8 @@ class sArray:
     # Returns to the previous position
     #
     #   Returns a pointer to the found position
-    #   An IndexError exception is raised when the pointer is out of the grid (index -1)
-    #   No solution for the grid
+    #   An IndexError exception is raised when the pointer is out of the array (index -1)
+    #   No solution for the sudoku
     #
     def _previousPos(self, current:pointer)->pointer:
         newPos : pointer = copy.deepcopy(current)
@@ -596,7 +594,7 @@ class sArray:
         # Find a solution !!!
         return found, time.time() - start
 
-    # Search and set all the possible obvious values in the grid
+    # Search and set all the possible obvious values in the sudoku
     #   returns the # of values found (and set)
     #
     def _findObviousValues(self)->int:
