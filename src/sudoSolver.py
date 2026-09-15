@@ -15,12 +15,12 @@
 import sys
 
 import pygameSolver
+import solver
 from options import (
     PYTHON_VER_MAJ,
     PYTHON_VER_MIN,
     options,
 )
-from solver import solver
 
 # Entry point
 if "__main__" == __name__:
@@ -45,17 +45,16 @@ if "__main__" == __name__:
 
     print(params.version())
 
+    mySolver : solver.solver = solver.solver(params)
     try:
-        mySolver : solver = pygameSolver.pygameSolver(params)
+        mySolver = pygameSolver.pygameSolver(params)
 
-        mySolver.start()
         mySolver.initialize()
+        mySolver.start()
     except Exception as e:  # noqa: BLE001
         print(f"{type(e).__name__}: {e}")
         print("Unknown error")
     finally:
         mySolver.end()
-
-
 
 # EOF
