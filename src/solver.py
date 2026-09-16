@@ -16,7 +16,7 @@ class solver:
     def __init__(self, params : options):
         self.initDone_ = False
         self.params_ : options = params
-        self.sudoku_ : sudoku = sudoku()    # First empty array
+        self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
 
     @property
@@ -25,6 +25,14 @@ class solver:
     @initialized.setter
     def initialized(self, newVal : bool):
         self.initDone_ = newVal
+
+    # Filename
+    @property
+    def filename(self)->str|None:
+        return self.params_.fileName_
+    @filename.setter
+    def filename(self, newVal : str):
+        self.params_.fileName_ = newVal
 
     # GUI initialization
     #
@@ -46,7 +54,7 @@ class solver:
     #   Print stats on console (by default)
     #
     def showStats(self):
-        print("\n\t- " + self.params_.fileName_)
+        print(f"\n\t- {self.filename}")
 
         # Found obvious values ?
         if self.params_.obviousValues:

@@ -337,7 +337,7 @@ class pygameSolver(solver.solver):
     def start(self):
         try:
             if self.params_.browseFolder:
-                self.params_.fileName_ = self._browse(self.params_.folderName_)
+                self.filename = self._browse(self.params_.folderName_)
                 if 0 == len(self.params_.fileName_):
                     return
             else:
@@ -422,10 +422,12 @@ class pygameSolver(solver.solver):
     #
     @override
     def end(self):
-        if self.initialized and self.sFileName_ is not None and self.sMessage_ is not None:
+        if self.initialized :
             # Close text objects
-            self.sFileName_.end()
-            self.sMessage_.end()
+            if self.sFileName_ is not None:
+                self.sFileName_.end()
+            if self.sMessage_ is not None:
+                self.sMessage_.end()
 
             # close the display
             pygame.display.quit()
@@ -436,37 +438,38 @@ class pygameSolver(solver.solver):
     #  drawings
     #
 
+    # Draw background, frames and borders
+    #
     def _drawBackground(self):
-        if self.win_ is None :
-            return (False, False, None, None)
+        if self.win_ is not None:
+            # background ...
+            self.win_.fill(self.BK_COLOUR)
 
-        # background ...
-        self.win_.fill(self.BK_COLOUR)
+            if 0 != self.extSquareWidth_ :
+                # thin borders ...
+                #
+                for line in range(LINE_COUNT):
+                    for row in range(ROW_COUNT):
+                        x = DELTA_W + row * self.extSquareWidth_
+                        y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
-        if 0 != self.extSquareWidth_ :
+                # ... large ext. borders
+                #
+                lSquare = self.extSquareWidth_ * 3
+                for line in range(3):
+                    for row in range(3):
+                        x = DELTA_W + row * lSquare
+                        y = MENUBAR_HEIGHT + DELTA_H + line * lSquare
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_THICK)
 
-            # thin borders ...
-            #
-            for line in range(LINE_COUNT):
-                for row in range(ROW_COUNT):
-                    x = DELTA_W + row * self.extSquareWidth_
-                    y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
-
-            # ... large ext. borders
-            #
-            lSquare = self.extSquareWidth_ * 3
-            for line in range(3):
-                for row in range(3):
-                    x = DELTA_W + row * lSquare
-                    y = MENUBAR_HEIGHT + DELTA_H + line * lSquare
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_THICK)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)
-                    pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_THICK)
-
-        self._update()
+            self._update()
+        #else:
+            #return (False, False, None, None)
 
     # Update the whole window
     #
@@ -491,8 +494,10 @@ class pygameSolver(solver.solver):
 
             pygame.display.update()
 
+    """
     def _flip(self):
         pygame.display.flip()
+    """
 
     # Refresh the whole window
     #
@@ -515,11 +520,17 @@ class pygameSolver(solver.solver):
 
     # Draw the whole array
     #
-    def _draw(self):
+    #   elements :  array of elements to draw or None.
+    #               if None, current sudoku will be drawn
+    #
+    def _draw(self, elements : list[element] | None = None):
         position : pointer = pointer(gameMode = False)
+        if elements is None :
+            elements = self.sudoku_.elements_
+
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
-                currentElement = self.sudoku_.elements_[position.index()]
+                currentElement = elements[position.index()]
                 value : int | None = currentElement.num
                 if value is not None:
                     self._drawSingleElement(row, line, value, self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
@@ -587,7 +598,8 @@ class pygameSolver(solver.solver):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
             raise sudokuError(fileName +  " is not a file")
-        self.params_.fileName_ = fileName
+
+        self.filename = fileName
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName, self.TXT_COLOUR, self.BK_COLOUR_FILENAME)
@@ -715,11 +727,6 @@ class pygameSolver(solver.solver):
                     event.key = self.REMOVE_VALUE
 
         return event
-
-    # All events ...
-    #
-    def _getEvents(self)->list[pygame.event.Event]:
-        return pygame.event.get()
 
     # Mouse events and status
     #
