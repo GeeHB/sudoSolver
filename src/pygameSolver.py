@@ -262,26 +262,18 @@ class pygameSolver(solver.solver):
     EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
 
     def __init__(self, params : options):
-        super().__init__(params)
+        solver.solver.__init__(self, params)    # Call parent'e constructor
 
-        self.win_            = None     # My window
+        self.win_  = None     # My window
         self.width_ :int = 0        # Window's dimensions
         self.height_ : int = 0
         self.intSquareWidth_ :int = 0        # Internal dims of an element
         self.extSquareWidth_ :int = 0        # Ext. dims
         self.editStatus_:statusbits.statusBits = statusbits.statusBits(self.EDIT_CONTINUE)
-
-        # Elements'values drawing
-        self.sElement_ : textSurface | None = None
-
         self.mode_ :statusbits.statusBits = statusbits.statusBits()       # Display mode
 
-        self.keyHandler_ = None
-
-        # Display the sudoku's name
-        self.sFileName_ : textSurface | None       = None
-
-        # Text message
+        self.sElement_ : textSurface | None = None      # single value
+        self.sFileName_ : textSurface | None = None
         self.sMessage_ : blinkingText | None = None
 
     #
@@ -374,8 +366,8 @@ class pygameSolver(solver.solver):
                         self._waitForEvent(allEvents=False)
 
                 # ... and then try to resolve
-                found, escaped, self.stats_.bruteAttempts_, self.stats_.bruteDuration_ = (
-                    self.sudoku_.resolve()
+                found, self.stats_.bruteAttempts_, self.stats_.bruteDuration_ = (
+                    self.resolve()
                 )
 
                 # Display the solution (if any)
@@ -385,24 +377,21 @@ class pygameSolver(solver.solver):
                 time.sleep(1)
                 self._waitForEvent(allEvents=False)
 
-                if escaped:
-                    print("Resolution process canceled")
-                else:
-                    # Export the solution ?
-                    if self.params_.exportSolution:
-                        comments : list[str] = []
-                        comments.append(" ")
-                        comments.append(f" Source file : {self.params_.fileName_}")
-                        comments.append(" ")
-                        comments.append(
-                            f"Solved by {APP_AUTHOR_SHORT}::{APP_NAME} in {round(self.stats_.bruteDuration_, 2)!r} sec."
-                        )
-                        comments.append(" ")
+                # Export the solution ?
+                if self.params_.exportSolution:
+                    comments : list[str] = []
+                    comments.append(" ")
+                    comments.append(f" Source file : {self.params_.fileName_}")
+                    comments.append(" ")
+                    comments.append(
+                        f"Solved by {APP_AUTHOR_SHORT}::{APP_NAME} in {round(self.stats_.bruteDuration_, 2)!r} sec."
+                    )
+                    comments.append(" ")
 
-                        if self.sudoku_.save(True, comments) is not None:
-                            print(
-                                f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
-                            )
+                    if self.sudoku_.save(True, comments) is not None:
+                        print(
+                            f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
+                        )
 
                 self.end()
 
@@ -417,6 +406,16 @@ class pygameSolver(solver.solver):
             print("Too many lines in the file", file=sys.stderr)
         except KeyboardInterrupt:
             print("Canceled by user")
+
+    # Draw the full array
+    #
+    @override
+    def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+        if redrawBackground:
+            self._drawBackground()
+
+        self._draw(elements)
+        self._update()
 
     # End drawings
     #
