@@ -72,7 +72,7 @@ ARG_DETAILS_S = "-d"  # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show sudokusudokus during process"
 
-#  App colours
+#  App colours in RGB
 #
 BORDER_COLOUR = (81, 154, 186)
 BK_COLOUR = (230, 230, 255)

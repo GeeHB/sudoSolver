@@ -275,6 +275,8 @@ class pygameSolver(solver.solver):
         self.initialized = False
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
+        self._convertColours() # Convert colours to pygame format
+
         # Init. the lib.
         rets = pygame.init()
 
@@ -420,11 +422,7 @@ class pygameSolver(solver.solver):
     @override
     def drawBackground(self):
         if self.win_ is not None:
-            # background ...
-            bkCol = pygame.Color()
-            self.colours_[self.ColourID.ID_BK]
-            self.win_.fill(bkCol)
-
+            self.win_.fill(self.colours_[self.ColourID.ID_BK].other)
             if 0 != self.extSquareWidth_ :
                 # thin borders ...
                 #
@@ -432,8 +430,12 @@ class pygameSolver(solver.solver):
                     for row in range(ROW_COUNT):
                         x = DELTA_W + row * self.extSquareWidth_
                         y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + self.extSquareWidth_))
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + self.extSquareWidth_), (x + self.extSquareWidth_, y + self.extSquareWidth_))
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x, y),
+                            (x, y + self.extSquareWidth_))
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x, y + self.extSquareWidth_),
+                            (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
                 # ... large ext. borders
                 #
@@ -442,10 +444,18 @@ class pygameSolver(solver.solver):
                     for row in range(3):
                         x = DELTA_W + row * lSquare
                         y = MENUBAR_HEIGHT + DELTA_H + line * lSquare
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y), (x, y + lSquare), EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x, y + lSquare), (x + lSquare, y + lSquare), EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x, y),
+                            (x, y + lSquare), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x, y + lSquare),
+                            (x + lSquare, y + lSquare), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x + lSquare, y + lSquare),
+                            (x + lSquare, y), EXT_BORDER_THICK)
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                            (x + lSquare, y),
+                            (x, y), EXT_BORDER_THICK)
 
             self.update()
         #else:
@@ -496,7 +506,8 @@ class pygameSolver(solver.solver):
 
     # Draw/erase a single element and its background
     #
-    def _drawSingleElement(self, row:int, line:int, value:int | None, bkColour:pygame.Color, txtColour:pygame.Color):
+    @override
+    def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
             return
@@ -506,11 +517,11 @@ class pygameSolver(solver.solver):
         y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_ + EXT_BORDER_THICK
 
         # Erase background
-        pygame.draw.rect(self.win_, bkColour, (x, y, self.intSquareWidth_, self.intSquareWidth_))
+        pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # The value (if valid)
         if value is not None and self.sElement_ is not None:
-            self.sElement_.setText(str(value), txtColour)
+            self.sElement_.setText(str(value), self.colours_[txtColourID].other)
 
             # Center the text
             mySurface = self.sElement_.surface()
@@ -527,7 +538,9 @@ class pygameSolver(solver.solver):
             self._clearMessage()
 
             # Draw on the specific surface
-            self.sMessage_.setText(message, self.TXT_COLOUR, self.BK_COLOUR)
+            self.sMessage_.setText(message,
+                self.colours_[self.ColourID.ID_TXT].other,
+                self.colours_[self.ColourID.ID_BK].other)
 
             # start blinking
             self.sMessage_.setVisible()
@@ -556,7 +569,9 @@ class pygameSolver(solver.solver):
         self.filename = fileName
 
         if self.sFileName_ is not None :
-            self.sFileName_.setText(fileName, self.TXT_COLOUR, self.BK_COLOUR_FILENAME)
+            self.sFileName_.setText(fileName,
+                self.colours_[self.ColourID.ID_TXT].other,
+                self.colours_[self.ColourID.ID_BK_FILENAME].other)
 
             # erase this name after a while ...
             self.sFileName_.startTimer()
@@ -875,9 +890,9 @@ class pygameSolver(solver.solver):
                     currentPos.row(),
                     currentPos.line(),
                     value,
-                    self.colours_[self.ColourID.ID_BK],
-                    self.colours_[self.ColourID.ID_HILITE],
-                )
+                    self.ColourID.ID_BK,
+                    self.ColourID.ID_HILITE,
+                    )
                 self.update()
 
         # Saves changes or exit
@@ -897,8 +912,8 @@ class pygameSolver(solver.solver):
                 prevPos.row(),
                 prevPos.line(),
                 self.sudoku_.elements_[prevPos.index()].num,
-                self.colours_[self.ColourID.ID_BK],
-                self.colours_[self.ColourID.ID_HILITE],
+                self.ColourID.ID_BK,
+                self.ColourID.ID_HILITE,
             )
 
             # Hilight the new value
@@ -906,8 +921,8 @@ class pygameSolver(solver.solver):
                 currentPos.row(),
                 currentPos.line(),
                 self.sudoku_.elements_[currentPos.index()].num,
-                self.colours_[self.ColourID.ID_BK],
-                self.colours_[self.ColourID.ID_HILITE],
+                self.ColourID.ID_SEL_BK,
+                self.ColourID.ID_SEL_TXT,
             )
             self.update()
 
@@ -948,10 +963,14 @@ class pygameSolver(solver.solver):
         self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
         self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
 
-    # Convert color object
+    # Convert colour objects from ownColour to pygameColor
     #
-    def _ownColour_2_pygameColor(self, id : int)->pygame.Color:
-        oColor = self.colours_[id]
-        return pygame.Color(oColor.r, oColor.g, oColor.b, oColor.a)
+    def _convertColours(self):
+        for id in range(len(self.colours_)):
+            self.colours_[id].other = pygame.Color(
+                self.colours_[id].r,
+                self.colours_[id].g,
+                self.colours_[id].b,
+                self.colours_[id].a)
 
 # EOF

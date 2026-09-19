@@ -9,6 +9,7 @@
 #
 import time
 from enum import IntEnum, auto
+from typing import Any
 
 import ownExceptions
 from element import element
@@ -45,6 +46,7 @@ class ownColour:
             self.g = rgb[1]
             self.b = rgb[2]
         self.a = alpha if alpha is not None else 255
+        self.other : Any = None
 
 # solver - Abstract class for GUI sudoku solvers
 #
@@ -70,14 +72,17 @@ class solver:
         self.stats_ : stats = stats()
 
         # Default colours
+        #
+        #   A list of  colours
+        #
         self.colours_ : list[ownColour] = []
-        self.colours_[self.ColourID.ID_BORDER] = ownColour(BORDER_COLOUR)
-        self.colours_[self.ColourID.ID_BK] = ownColour(BK_COLOUR)
-        self.colours_[self.ColourID.ID_BK_FILENAME] = ownColour(BK_COLOUR_FILENAME)
-        self.colours_[self.ColourID.ID_TXT] = ownColour(TXT_COLOUR)
-        self.colours_[self.ColourID.ID_HILITE] = ownColour(HILITE_COLOUR)
-        self.colours_[self.ColourID.ID_SEL_BK] = ownColour(SEL_BK_COLOUR)
-        self.colours_[self.ColourID.ID_SEL_TXT] = ownColour(SEL_TXT_COLOUR)
+        self.colours_.append(ownColour(BORDER_COLOUR))
+        self.colours_.append(ownColour(BK_COLOUR))
+        self.colours_.append(ownColour(BK_COLOUR_FILENAME))
+        self.colours_.append(ownColour(TXT_COLOUR))
+        self.colours_.append(ownColour(HILITE_COLOUR))
+        self.colours_.append(ownColour(SEL_BK_COLOUR))
+        self.colours_.append(ownColour(SEL_TXT_COLOUR))
 
     @property
     def initialized(self)->bool:
@@ -129,13 +134,12 @@ class solver:
             for row in range(ROW_COUNT):
                 currentElement = elements[position.index()]
                 value : int | None = currentElement.num
-                if value is not None:
-                    self.drawSingleElement(
-                        row, line,
-                        value,
-                        self.colours_[self.ColourID.ID_BK],
-                        self.colours_[self.ColourID.ID_HILITE] if currentElement.isOriginal() else self.colours_[self.ColourID.ID_OBVIOUS] if currentElement.isObvious() else self.colours_[self.ColourID.ID_TXT]
-                    )
+                self.drawSingleElement(
+                    row, line,
+                    value,
+                    self.ColourID.ID_BK,
+                    self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+                )
 
                 # next element ...
                 position+=1
@@ -144,7 +148,7 @@ class solver:
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row:int, line:int, value:int | None, bkColour:ownColour, txtColour:ownColour):
+    def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         pass
 
     # Draw background, frames and borders
@@ -218,7 +222,7 @@ class solver:
     def _resolveMultiThreaded(self)->bool:
         self.sudoku_.resolveMultiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
-            self.draw()     # redraw sudoku while searching solution
+            self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
 # EOF
