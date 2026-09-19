@@ -4,23 +4,80 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   solver object
-#                       - abstract class
+#   Description :   solver and ownColour objects
+#                       - GUI for sudoku solver
 #
 import time
+from enum import IntEnum, auto
 
 import ownExceptions
 from element import element
-from options import options, stats
+from options import (
+    BK_COLOUR,
+    BK_COLOUR_FILENAME,
+    BORDER_COLOUR,
+    HILITE_COLOUR,
+    SEL_BK_COLOUR,
+    SEL_TXT_COLOUR,
+    TXT_COLOUR,
+    options,
+    stats,
+)
+from pointer import (
+    LINE_COUNT,
+    ROW_COUNT,
+    pointer,
+)
 from sudoku import sudoku
 
 
+# colour - General and portable colour definition
+#
+class ownColour:
+    r : int
+    g : int
+    b : int
+    a : int
+
+    def __init__(self, rgb : tuple[int,int,int] | None, alpha : int | None = None):
+        if rgb is not None:
+            self.r = rgb[0]
+            self.g = rgb[1]
+            self.b = rgb[2]
+        self.a = alpha if alpha is not None else 255
+
+# solver - Abstract class for GUI sudoku solvers
+#
 class solver:
+    # Colours' ID
+    #
+    class ColourID(IntEnum):
+        ID_BORDER = 0
+        ID_BK = auto()
+        ID_BK_FILENAME = auto()
+        ID_TXT = auto()
+        ID_HILITE = auto()
+        ID_OBVIOUS = ID_BORDER
+        ID_SEL_BK = auto()
+        ID_SEL_TXT = auto()
+
+    # Constructor
+    #
     def __init__(self, params : options):
         self.initDone_ : bool = False
         self.params_ : options = params
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
+
+        # Default colours
+        self.colours_ : list[ownColour] = []
+        self.colours_[self.ColourID.ID_BORDER] = ownColour(BORDER_COLOUR)
+        self.colours_[self.ColourID.ID_BK] = ownColour(BK_COLOUR)
+        self.colours_[self.ColourID.ID_BK_FILENAME] = ownColour(BK_COLOUR_FILENAME)
+        self.colours_[self.ColourID.ID_TXT] = ownColour(TXT_COLOUR)
+        self.colours_[self.ColourID.ID_HILITE] = ownColour(HILITE_COLOUR)
+        self.colours_[self.ColourID.ID_SEL_BK] = ownColour(SEL_BK_COLOUR)
+        self.colours_[self.ColourID.ID_SEL_TXT] = ownColour(SEL_TXT_COLOUR)
 
     @property
     def initialized(self)->bool:
@@ -55,9 +112,49 @@ class solver:
     def start(self):
         pass
 
-    # Draw the full array
+    # Draw the whole array
+    #
+    #   elements :  array of elements to draw or None.
+    #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+        if redrawBackground:
+            self.drawBackground()
+
+        position : pointer = pointer(gameMode = False)
+        if elements is None :
+            elements = self.sudoku_.elements_
+
+        for line in range(LINE_COUNT):
+            for row in range(ROW_COUNT):
+                currentElement = elements[position.index()]
+                value : int | None = currentElement.num
+                if value is not None:
+                    self.drawSingleElement(
+                        row, line,
+                        value,
+                        self.colours_[self.ColourID.ID_BK],
+                        self.colours_[self.ColourID.ID_HILITE] if currentElement.isOriginal() else self.colours_[self.ColourID.ID_OBVIOUS] if currentElement.isObvious() else self.colours_[self.ColourID.ID_TXT]
+                    )
+
+                # next element ...
+                position+=1
+
+            self.update()
+
+    # Draw/erase a single element and its background
+    #
+    def drawSingleElement(self, row:int, line:int, value:int | None, bkColour:ownColour, txtColour:ownColour):
+        pass
+
+    # Draw background, frames and borders
+    #
+    def drawBackground(self):
+        pass
+
+    # Update the whole window
+    #
+    def update(self):
         pass
 
     # End drawings
@@ -80,17 +177,17 @@ class solver:
         end : float = 0.0
 
         # Let's go
-        try:
-            if self.multithreaded:
-                found = self._resolveMultiThreaded()
-            else:
+        if self.multithreaded:
+            found = self._resolveMultiThreaded()
+        else:
+            try:
                 self.sudoku_.resolveSingleThreaded()
-        except ownExceptions.reachedEndOfList:
-            # Found a solution !!!
-            found = True
-        except IndexError:
-            # No solution found
-            self.sudoku_.attempts = 0
+            except ownExceptions.reachedEndOfList:
+                # Found a solution !!!
+                found = True
+            except IndexError:
+                # No solution found
+                self.sudoku_.attempts = 0
 
         if found:
             end = time.time() - start
@@ -117,6 +214,7 @@ class solver:
 
     # Multi-threaded mode
     #
+    # returns True if a solution has been founded
     def _resolveMultiThreaded(self)->bool:
         self.sudoku_.resolveMultiThreaded() # start resolution thread
         while self.sudoku_.is_alive():

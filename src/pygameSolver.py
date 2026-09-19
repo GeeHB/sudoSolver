@@ -240,18 +240,6 @@ class pygameSolver(solver.solver):
     MODE_EDIT:int           = 1
     MODE_BROWSEFOLDER:int   = 2
 
-    #  App colours
-    #
-    BORDER_COLOUR:pygame.Color = pygame.Color(81, 154, 186)
-    BK_COLOUR:pygame.Color     = pygame.Color(230, 230, 255)
-    BK_COLOUR_FILENAME:pygame.Color  = pygame.Color(220, 220, 245)
-    TXT_COLOUR:pygame.Color = pygame.Color(64, 64, 64)
-    HILITE_COLOUR:pygame.Color = pygame.Color(248, 128, 112)
-    OBVIOUS_COLOUR      = BORDER_COLOUR
-
-    SEL_BK_COLOUR : pygame.Color = pygame.Color(50, 50, 255)
-    SEL_TXT_COLOUR : pygame.Color = pygame.Color(255, 255, 255)
-
     # Edition status
     #
     EDIT_CONTINUE:int = statusbits.STATUS_NONE
@@ -262,7 +250,7 @@ class pygameSolver(solver.solver):
     EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
 
     def __init__(self, params : options):
-        solver.solver.__init__(self, params)    # Call parent'e constructor
+        solver.solver.__init__(self, params)    # Call parent's constructor
 
         self.win_  = None     # My window
         self.width_ :int = 0        # Window's dimensions
@@ -321,7 +309,7 @@ class pygameSolver(solver.solver):
         # Messages
         self.sMessage_ = blinkingText(FILE_FONT_NAME, FILE_FONT_SIZE)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
-        self._drawBackground()
+        self.drawBackground()
 
     # Start the sudoku (browsing, editing or solving)
     #
@@ -337,7 +325,7 @@ class pygameSolver(solver.solver):
                     self.params_.fileName_, not self.params_.execMode_.isSet(options.EXEC_EDIT)
                 )
 
-            self._draw()
+            self.draw()
 
             # Edition
             if self.params_.execMode_.isSet(options.EXEC_EDIT):
@@ -362,7 +350,7 @@ class pygameSolver(solver.solver):
                         self._displayText(
                             f"Found {self.stats_.obvValues_!r} obvious values", False
                         )
-                        self._draw()
+                        self.draw()
                         self._waitForEvent(allEvents=False)
 
                 # ... and then try to resolve
@@ -371,7 +359,7 @@ class pygameSolver(solver.solver):
                 )
 
                 # Display the solution (if any)
-                self._draw()
+                self.draw()
                 self._displayText("Press a key to quit", False)
 
                 time.sleep(1)
@@ -407,16 +395,6 @@ class pygameSolver(solver.solver):
         except KeyboardInterrupt:
             print("Canceled by user")
 
-    # Draw the full array
-    #
-    @override
-    def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
-        if redrawBackground:
-            self._drawBackground()
-
-        self._draw(elements)
-        self._update()
-
     # End drawings
     #
     @override
@@ -439,10 +417,13 @@ class pygameSolver(solver.solver):
 
     # Draw background, frames and borders
     #
-    def _drawBackground(self):
+    @override
+    def drawBackground(self):
         if self.win_ is not None:
             # background ...
-            self.win_.fill(self.BK_COLOUR)
+            bkCol = pygame.Color()
+            self.colours_[self.ColourID.ID_BK]
+            self.win_.fill(bkCol)
 
             if 0 != self.extSquareWidth_ :
                 # thin borders ...
@@ -466,13 +447,14 @@ class pygameSolver(solver.solver):
                         pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y + lSquare), (x + lSquare, y), EXT_BORDER_THICK)
                         pygame.draw.line(self.win_, self.BORDER_COLOUR, (x + lSquare, y), (x, y), EXT_BORDER_THICK)
 
-            self._update()
+            self.update()
         #else:
             #return (False, False, None, None)
 
     # Update the whole window
     #
-    def _update(self):
+    @override
+    def update(self):
         if self.win_ is not None:
                 # Display filename ?
             if self.sFileName_ is not None and self.sFileName_.isValid():
@@ -493,19 +475,14 @@ class pygameSolver(solver.solver):
 
             pygame.display.update()
 
-    """
-    def _flip(self):
-        pygame.display.flip()
-    """
-
     # Refresh the whole window
     #
     def _refresh(self):
-        self._drawBackground()
+        self.drawBackground()
         if len(self.sudoku_.elements_) > 0:
-            self._draw()
+            self.draw()
         else:
-            self._update()
+            self.update()
 
     # Display text
     #
@@ -516,28 +493,6 @@ class pygameSolver(solver.solver):
             # Display text on top of the board
             self._showMessage(text)
             self._refresh()
-
-    # Draw the whole array
-    #
-    #   elements :  array of elements to draw or None.
-    #               if None, current sudoku will be drawn
-    #
-    def _draw(self, elements : list[element] | None = None):
-        position : pointer = pointer(gameMode = False)
-        if elements is None :
-            elements = self.sudoku_.elements_
-
-        for line in range(LINE_COUNT):
-            for row in range(ROW_COUNT):
-                currentElement = elements[position.index()]
-                value : int | None = currentElement.num
-                if value is not None:
-                    self._drawSingleElement(row, line, value, self.BK_COLOUR, self.HILITE_COLOUR if currentElement.isOriginal() else self.OBVIOUS_COLOUR if currentElement.isObvious() else self.TXT_COLOUR)
-
-                # next element ...
-                position+=1
-
-        self._update()
 
     # Draw/erase a single element and its background
     #
@@ -624,9 +579,9 @@ class pygameSolver(solver.solver):
         if nameOnArray:
             self._setFileName(fileName)
 
-        self._drawBackground()
-        self._draw()
-        self._update()
+        self.drawBackground()
+        self.draw()
+        self.update()
 
         return True
 
@@ -637,7 +592,6 @@ class pygameSolver(solver.solver):
     # Handle window's resize
     #
     def _onResizeWindow(self, newWidth:int, newHeight:int):
-
         self.width_ = newWidth
         self.height_ = newHeight
 
@@ -682,10 +636,10 @@ class pygameSolver(solver.solver):
                     #print(f"W : {self.width_} x H : {self.height_}")
 
                     # Draw bkgrnd & lines ...
-                    self._drawBackground()
+                    self.drawBackground()
 
                     # ... and the array's content
-                    self._draw()
+                    self.draw()
 
                     # returns all events ?
                     if True == allEvents:
@@ -917,14 +871,14 @@ class pygameSolver(solver.solver):
         if not escaped:
             value : int | None = self.sudoku_.elements_[currentPos.index()].num
             if value is not None:
-                self._drawSingleElement(
+                self.drawSingleElement(
                     currentPos.row(),
                     currentPos.line(),
                     value,
-                    self.BK_COLOUR,
-                    self.HILITE_COLOUR,
+                    self.colours_[self.ColourID.ID_BK],
+                    self.colours_[self.ColourID.ID_HILITE],
                 )
-                self._update()
+                self.update()
 
         # Saves changes or exit
         return (
@@ -939,23 +893,23 @@ class pygameSolver(solver.solver):
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         if prevPos is not None:
             # if sel. changed, erase previously selected element
-            self._drawSingleElement(
+            self.drawSingleElement(
                 prevPos.row(),
                 prevPos.line(),
                 self.sudoku_.elements_[prevPos.index()].num,
-                self.BK_COLOUR,
-                self.HILITE_COLOUR,
+                self.colours_[self.ColourID.ID_BK],
+                self.colours_[self.ColourID.ID_HILITE],
             )
 
             # Hilight the new value
-            self._drawSingleElement(
+            self.drawSingleElement(
                 currentPos.row(),
                 currentPos.line(),
                 self.sudoku_.elements_[currentPos.index()].num,
-                self.SEL_BK_COLOUR,
-                self.HILITE_COLOUR,
+                self.colours_[self.ColourID.ID_BK],
+                self.colours_[self.ColourID.ID_HILITE],
             )
-            self._update()
+            self.update()
 
     # (try to) set a value
     #
@@ -993,5 +947,11 @@ class pygameSolver(solver.solver):
     def _edit_removeValue(self, pos: pointer):
         self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
         self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
+
+    # Convert color object
+    #
+    def _ownColour_2_pygameColor(self, id : int)->pygame.Color:
+        oColor = self.colours_[id]
+        return pygame.Color(oColor.r, oColor.g, oColor.b, oColor.a)
 
 # EOF

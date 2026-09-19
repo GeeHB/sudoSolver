@@ -51,12 +51,6 @@ ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
 
-# File management
-#
-FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
-FILE_COMMENTS:str = "#"  # Comment lines start with
-FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
-
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
@@ -78,11 +72,29 @@ ARG_DETAILS_S = "-d"  # Draw details
 ARG_DETAILS = "--details"
 COMMENT_DETAILS = "Show sudokusudokus during process"
 
+#  App colours
+#
+BORDER_COLOUR = (81, 154, 186)
+BK_COLOUR = (230, 230, 255)
+BK_COLOUR_FILENAME = (220, 220, 245)
+TXT_COLOUR = (64, 64, 64)
+HILITE_COLOUR = (248, 128, 112)
+OBVIOUS_COLOUR = BORDER_COLOUR
+SEL_BK_COLOUR = (50, 50, 255)
+SEL_TXT_COLOUR = (255, 255, 255)
+
 #
 # App. folders
 #
 DEF_SUDOKU_FOLDER = "../sudokus"
 DEF_ASSETS_FOLDER = "../assets"
+
+# File management
+#
+FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
+FILE_COMMENTS:str = "#"  # Comment lines start with
+FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
+
 
 # Array complexity - ie. count of filled elements
 class arrayComplexity(IntEnum):

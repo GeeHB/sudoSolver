@@ -47,18 +47,7 @@ class sudoku(threading.Thread):
         self.elements_ : list[element] = []
         self.complexity_ : int = arrayComplexity.Empty.value
         self.found_ = False
-
         random.seed()
-
-    """
-    # Filename
-    @property
-    def filename(self)->str|None:
-        return self.fileName_
-    @filename.setter
-    def filename(self, newVal : str):
-        self.fileName_ = newVal
-    """
 
     # Complexity (for new arrays created from scratch)
     @property
@@ -69,6 +58,7 @@ class sudoku(threading.Thread):
         if newVal is not None:
             self.complexity_ = newVal
 
+    # Found a solution ?
     @property
     def found(self)->bool:
         return self.found_
@@ -76,14 +66,13 @@ class sudoku(threading.Thread):
     def found(self, newVal : bool):
         self.found_ = newVal
 
+    # # attempts
     @property
     def attempts(self)->int:
         return self.attempts_
     @attempts.setter
     def attempts(self, newVal : int):
         self.attempts_ = newVal
-    def incAttempts(self):
-        self.attempts_+=1
 
     # Convert current array to a printable string
     #
@@ -411,7 +400,7 @@ class sudoku(threading.Thread):
                 # Try to put the "candidate" value at current position
                 #
                 if True == self.checkValue(position, candidate):
-                    self.incAttempts()
+                    self.attempts = self.attempts + 1
 
                     self.elements_[position.index()].setValue(candidate)
 
@@ -831,6 +820,7 @@ class sudoku(threading.Thread):
     #
     @override
     def run(self):
+        # Exceptions should be catched by the callling thread !
         try:
             self.resolveSingleThreaded()
         except reachedEndOfList:
