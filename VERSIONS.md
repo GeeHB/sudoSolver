@@ -26,7 +26,7 @@
 * sept. 2026
 * Added :
   * sudoku <- gridMaker + sudoku
-  * solver <- abstrct class for GUI solver app.
+  * solver <- abstract class for GUI solver app.
   * pygameSolver <- GUI and sudoku's calls using pygame
 
 #### Version 3.1.4

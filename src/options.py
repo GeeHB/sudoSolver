@@ -110,7 +110,7 @@ class options:
     # Progression modes
     PROGRESS_NONE:int = 0  # Don't show progession
     PROGRESS_SLOW:int = 1  # Singlethreaded mode
-    PROGRESS_SINGLETHREADED:int = PROGRESS_SLOW
+    PROGRESS_SHOW_SAME_THREAD:int = PROGRESS_SLOW
     PROGRESS_SPEED:int = 2  # Use a distinct thread for displaying sudokus
     PROGRESS_MULTITHREADED:int = PROGRESS_SPEED
 
@@ -341,10 +341,10 @@ class options:
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")
-                self.progressMode_ = self.PROGRESS_SINGLETHREADED
+                self.progressMode_ = self.PROGRESS_SHOW_SAME_THREAD
         else:
             self.progressMode_ = (
-                self.PROGRESS_SINGLETHREADED if display == 1 else self.PROGRESS_NONE
+                self.PROGRESS_SHOW_SAME_THREAD if display == 1 else self.PROGRESS_NONE
             )
 
         # Export solution => solverMode should be activated
