@@ -91,10 +91,6 @@ class solver:
     def initialized(self, newVal : bool):
         self.initDone_ = newVal
 
-    @property
-    def multithreaded(self)->bool:
-        return self.params_.progressMode_ == options.PROGRESS_MULTITHREADED
-
     # Filename
     @property
     def filename(self)->str|None:
@@ -181,17 +177,15 @@ class solver:
         end : float = 0.0
 
         # Let's go
-        if self.multithreaded:
-            found = self._resolveMultiThreaded()
-        else:
-            try:
-                self.sudoku_.resolveSingleThreaded()
-            except ownExceptions.reachedEndOfList:
-                # Found a solution !!!
-                found = True
-            except IndexError:
-                # No solution found
-                self.sudoku_.attempts = 0
+        match self.params_.progressMode_ :
+            case self.params_.PROGRESS_MULTITHREADED:
+                found = self._resolveMultiThreaded()
+
+            case self.params_.PROGRESS_SHOW_SAME_THREAD:
+                found = self._resolveAndDisplay()
+
+            case _:
+                found = self._resolveSingleThreaded()
 
         if found:
             end = time.time() - start
@@ -215,6 +209,28 @@ class solver:
 
         print("\t- Solved in " + str(round(self.stats_.bruteDuration_, 2)) + " second(s)")
         print("\t- " + str(self.stats_.bruteAttempts_) + " attempt(s)\n")
+
+    # Single-threaded mode
+    #
+    # returns True if a solution has been founded
+    def _resolveSingleThreaded(self)->bool:
+        try:
+            self.sudoku_.resolveSingleThreaded()
+        except ownExceptions.reachedEndOfList:
+            # Found a solution !!!
+            return True
+        except IndexError:
+            # No solution found
+            return False
+
+    # Single-threaded mode using a generator to display progression
+    #
+    # returns True if a solution has been founded
+    def _resolveAndDisplay(self)->bool:
+        for _ in self.sudoku_.resolveGenerator() :
+            self.draw()
+
+        return self.sudoku_.found
 
     # Multi-threaded mode
     #

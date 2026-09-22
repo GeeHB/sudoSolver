@@ -416,6 +416,50 @@ class sudoku(threading.Thread):
         threading.Thread.__init__(self)  # Create the new thread
         self.start()  # start the thread (ie. call run() method )
 
+    # Single Threaded mode as a generator
+    #
+    def resolveGenerator(self):
+        candidate : int = 0
+        position : pointer = pointer(gameMode=True)
+        position = self._findFirstEmptyPos(position)
+
+        self.attempts = 0
+
+        try:
+            while True:
+                candidate += 1
+                if candidate > VALUE_MAX:
+                    # No possible value found at this position
+                    # we'll have to go backward, to the last value setted
+                    position = self._previousPos(position)
+
+                    # candidate value = prev. value (incremented at next occurence)
+                    candidate = self.elements_[position.index()].empty(deep = False)
+
+                    #yield False # Going back
+                else:
+                    # Try to put the "candidate" value at current position
+                    #
+                    if True == self.checkValue(position, candidate):
+                        self.attempts = self.attempts + 1
+
+                        self.elements_[position.index()].setValue(candidate)
+
+                        yield True  # Forwarding
+
+                        # Go to the next "empty" position
+                        position = self._findFirstEmptyPos(position)
+
+                        # At the next pos., we always try the lowest possible value
+                        candidate = 0
+
+        except reachedEndOfList:
+            self.found = True
+        except IndexError:
+            # No solution found
+            self.found = False
+
+
     # Get the list of possible values at a given position
     #
     def getValues(self, position:pointer)->list[int]:
