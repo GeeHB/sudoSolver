@@ -19,7 +19,7 @@ from sharedTools import statusbits
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "4.0.1"
-APP_RELEASE_DATE = "08/09/2026"
+APP_RELEASE_DATE = "22/09/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -28,6 +28,7 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 PYTHON_VER_MAJ = 3
 PYTHON_VER_MIN = 10
 
+#
 # Command line options
 #
 
@@ -43,10 +44,6 @@ ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
 ARG_SOLVE = "--solve"
 COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
 
-ARG_USER_S = "-u"  # Search for a solution for the sudoku
-ARG_USER = "--user"
-COMMENT_USER = "User mode"
-
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
 COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
@@ -54,10 +51,6 @@ COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sud
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
-
-ARG_NEW_S = "-n"  # New sudoku
-ARG_NEW = "--new"
-COMMENT_NEW = "Create a new sudoku of {COMPLEXITY} complexity"
 
 ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
 ARG_SEARCH_OBVIOUS = "--obvious"
@@ -70,18 +63,12 @@ COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
 # Show sudoku during the search process
 ARG_DETAILS_S = "-d"  # Draw details
 ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show sudokusudokus during process"
+COMMENT_DETAILS = "Show sudokus during the resolution process"
 
-#  App colours in RGB
-#
-BORDER_COLOUR = (81, 154, 186)
-BK_COLOUR = (230, 230, 255)
-BK_COLOUR_FILENAME = (220, 220, 245)
-TXT_COLOUR = (64, 64, 64)
-HILITE_COLOUR = (248, 128, 112)
-OBVIOUS_COLOUR = BORDER_COLOUR
-SEL_BK_COLOUR = (50, 50, 255)
-SEL_TXT_COLOUR = (255, 255, 255)
+# Use wxPython library as GUI
+ARG_WX_S = "-wx"
+ARG_WX = "--wxPython"
+COMMENT_WX = "Use wkPython for drawings and GUI"
 
 #
 # App. folders
@@ -118,15 +105,14 @@ class options:
     EXEC_NONE:int = statusbits.STATUS_NONE
     EXEC_CREATE:int = 1
     EXEC_EDIT:int = EXEC_CREATE
-    EXEC_USER:int = 2
-    EXEC_SOLVE:int = 4
+    EXEC_SOLVE:int = 2
 
     # App. options
     OPTIONS_NONE:int = 0
-    OPTIONS_EXPORT:int = 1      # Export solution
-    OPTIONS_SEARCH_OBVIOUS = 2  # Search opbious values
-    OPTIONS_BROWSE_FOLDER = 4
-    OPTIONS_USER_MODE = 8
+    OPTIONS_GUI_WX = 1
+    OPTIONS_EXPORT:int = 2      # Export solution
+    OPTIONS_SEARCH_OBVIOUS = 4  # Search opbious values
+    OPTIONS_BROWSE_FOLDER = 8
 
     # Construction
     #
@@ -150,6 +136,13 @@ class options:
         self.runOptions_.set(self.OPTIONS_EXPORT, newVal)
 
     @property
+    def wxGUI(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_GUI_WX)
+    @wxGUI.setter
+    def wxGUI(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_GUI_WX, newVal)
+
+    @property
     def obviousValues(self)->bool:
         return self.runOptions_.isSet(self.OPTIONS_SEARCH_OBVIOUS)
     @obviousValues.setter
@@ -163,21 +156,19 @@ class options:
     def browseFolder(self, newVal : bool):
         self.runOptions_.set(self.OPTIONS_BROWSE_FOLDER, newVal)
 
-    @property
-    def userMode(self)->bool:
-        return self.runOptions_.isSet(self.OPTIONS_USER_MODE)
-    @userMode.setter
-    def userMode(self, newVal : bool):
-        self.runOptions_.set(self.OPTIONS_USER_MODE, newVal)
 
     # Browse the command line
     #   returns True when ok
     def parse(self):
         parser = argparse.ArgumentParser(epilog=self.version())
 
-        # User mode
+        # Use wxPython library ?
         _ = parser.add_argument(
-            ARG_USER_S, ARG_USER, action="store_true", help=COMMENT_USER, required=False
+            ARG_WX_S,
+            ARG_WX,
+            action="store_true",
+            help=COMMENT_WX,
+            required=False,
         )
 
         # Export the solution ?
@@ -263,22 +254,12 @@ class options:
             nargs=1,
         )
 
-        # Create a new array
-        _ = action.add_argument(
-            ARG_NEW_S,
-            ARG_NEW,
-            help=COMMENT_NEW,
-            metavar="COMPLEXITY",
-            choices=[arrayComplexity.Empty.name, arrayComplexity.Easy.name, arrayComplexity.Medium.name, arrayComplexity.Hard.name],
-            required=False,
-        )
-
         # Parse line
         #
         args = parser.parse_args()
 
-        # User mode ?
-        self.userMode = args.user  # pyright: ignore[reportAny]
+        # wxPython ?
+        self.wxGUI = args.wxPython
 
         # Export / save the solution
         self.exportSolution = args.export
@@ -316,11 +297,12 @@ class options:
                         else 0
                     )
 
-        if not self.userMode and args.editSolve is not None:
+        if args.editSolve is not None:
             self.execMode_.set(self.EXEC_SOLVE)
 
         # Generate a new sudoku ?
         # if True == self.editMode_ :
+        """
         if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
             mode : str = args.new[0]
             match mode:
@@ -332,6 +314,7 @@ class options:
                     self.complexity_ = arrayComplexity.Easy.value
                 case _:
                     self.complexity_ = arrayComplexity.Easy.value
+        """
 
         # Display sudoku during the search process ?
         display = args.details[0] if args.details is not None else 0

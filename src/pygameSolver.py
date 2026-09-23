@@ -4,10 +4,9 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   sudoSolver object
+#   Description :   draw sudoku using pygame library
 #
 import copy
-import math
 import os
 import sys
 import time
@@ -20,6 +19,7 @@ except ModuleNotFoundError:
     sys.exit(0)
 import pygame.event
 
+import GUIConsts
 import solver
 from element import element
 from options import (
@@ -45,36 +45,48 @@ from sharedTools import (
 # Internal constants
 #
 
-# Positions and dimensions in pixels
-#
-SQUARE_SIDE_BASE        = 60
-SQUARE_SIDE             = 60   # Initial external size of a square element
-
-STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
-
-SQUARE_MIN              = 10   # Minimal square size
-
-DELTA_W                 = 10   # Offsets
-DELTA_H                 = 10
-
-EXT_BORDER_THICK        = 3    # Thickness of external border
-
-MENUBAR_HEIGHT          = 32
-
-# Elements'text font sizes (in pixels) and names
-#
-ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
-ELT_FONT_SIZE           = 35                                # default size
-
-FILE_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
-FILE_FONT_SIZE          = 25
-FILE_FONT_POS_X         = 35
-FILE_FONT_POS_Y         = 5
 
 # Events frequencies in ms
 #
 DEF_MSG_HIDING_FREQ     = 2000  # Hide the filename
 DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
+
+# solverApp - Abstract class for application
+#
+class pygameSolverApp(solver.solverApp):
+    # Constructor
+    #
+    def __init__(self, params : options):
+        super().__init__(params)
+
+        # Init. the lib.
+        rets = pygame.init()
+        if 0 != rets[1] :
+            raise sudokuError(f"PYGame initialization error - PYGame returns {rets[1]!r} error(s)")
+
+        self.solver_ : pygameSolver = pygameSolver(params)  # Create sudoku solver
+
+    # GUI initialization
+    #
+    @override
+    def initialize(self):
+        self.solver_.initialize()
+
+    # Start drawings / UI
+    #
+    @override
+    def start(self):
+        self.solver_.start()
+
+    # End drawings
+    #
+    @override
+    def end(self):
+        self.solver_.end()
+
+        pygame.display.quit()
+        pygame.quit()
+
 
 #
 # textSurface - "subsurface" containig a single line of text
@@ -83,11 +95,11 @@ class textSurface:
     # Construction
     def __init__(self, fontName:str, fontSize:int):
         # Members
-        self.surface_ : pygame.Surface | None   = None
-        self.position_ : tuple[int,int]  = (0,0)
-        self.font_ : pygame.font.Font | None       = None      # Font used for drawing the text
-        self.eventID_ : int    = 0         # Event ID - optionnal
-        self.eventFreq_ : int  = 0
+        self.surface_ : pygame.Surface | None = None
+        self.position_ : tuple[int,int] = (0,0)
+        self.font_ : pygame.font.Font | None = None      # Font used for drawing the text
+        self.eventID_ : int = 0         # Event ID - optionnal
+        self.eventFreq_ : int = 0
         self.setFont(fontName, fontSize)
 
     # Valid ?
@@ -253,10 +265,6 @@ class pygameSolver(solver.solver):
         solver.solver.__init__(self, params)    # Call parent's constructor
 
         self.win_  = None     # My window
-        self.width_ :int = 0        # Window's dimensions
-        self.height_ : int = 0
-        self.intSquareWidth_ :int = 0        # Internal dims of an element
-        self.extSquareWidth_ :int = 0        # Ext. dims
         self.editStatus_:statusbits.statusBits = statusbits.statusBits(self.EDIT_CONTINUE)
         self.mode_ :statusbits.statusBits = statusbits.statusBits()       # Display mode
 
@@ -272,29 +280,17 @@ class pygameSolver(solver.solver):
     #
     @override
     def initialize(self):
+        solver.solver.initialize(self)
+
         self.initialized = False
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
-
-        self._convertColours() # Convert colours to pygame format
-
-        # Init. the lib.
-        rets = pygame.init()
-
-        if 0 != rets[1] :
-            raise sudokuError(f"PYGame initialization error - PYGame returns {rets[1]!r} error(s)")
 
         # PYGame init. is ok
         self.initialized = True
 
-        # Default dimensions
-        self.width_ = ROW_COUNT * SQUARE_SIDE + 2 * DELTA_W + STATS_FRAME_WIDTH
-        self.height_ = MENUBAR_HEIGHT + LINE_COUNT * SQUARE_SIDE + 2 * DELTA_H
-        self.extSquareWidth_ = SQUARE_SIDE
-        self.intSquareWidth_ = SQUARE_SIDE - 2 * EXT_BORDER_THICK
-
         # font for drawing elements
-        fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE_BASE)
-        self.sElement_ = textSurface(ELT_FONT_NAME, fontSize)
+        fontSize = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
+        self.sElement_ = textSurface(GUIConsts.ELT_FONT_NAME, fontSize)
         self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
 
         # Main window creation
@@ -304,12 +300,12 @@ class pygameSolver(solver.solver):
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
-        self.sFileName_ = textSurface(FILE_FONT_NAME, FILE_FONT_SIZE)
-        self.sFileName_.moveTo(FILE_FONT_POS_X, FILE_FONT_POS_Y)
+        self.sFileName_ = textSurface(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
+        self.sFileName_.moveTo(GUIConsts.FILE_FONT_POS_X, GUIConsts.FILE_FONT_POS_Y)
         self.sFileName_.setEventID(pygame.USEREVENT + 1, DEF_MSG_HIDING_FREQ)   # event for text hiding
 
         # Messages
-        self.sMessage_ = blinkingText(FILE_FONT_NAME, FILE_FONT_SIZE)
+        self.sMessage_ = blinkingText(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
         self.drawBackground()
 
@@ -408,9 +404,6 @@ class pygameSolver(solver.solver):
             if self.sMessage_ is not None:
                 self.sMessage_.end()
 
-            # close the display
-            pygame.display.quit()
-            pygame.quit()
             self.initialized = False
 
     #
@@ -428,8 +421,8 @@ class pygameSolver(solver.solver):
                 #
                 for line in range(LINE_COUNT):
                     for row in range(ROW_COUNT):
-                        x = DELTA_W + row * self.extSquareWidth_
-                        y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_
+                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_
+                        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * self.extSquareWidth_
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
@@ -442,20 +435,20 @@ class pygameSolver(solver.solver):
                 lSquare = self.extSquareWidth_ * 3
                 for line in range(3):
                     for row in range(3):
-                        x = DELTA_W + row * lSquare
-                        y = MENUBAR_HEIGHT + DELTA_H + line * lSquare
+                        x = GUIConsts.DELTA_W + row * lSquare
+                        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * lSquare
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
-                            (x, y + lSquare), EXT_BORDER_THICK)
+                            (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y + lSquare),
-                            (x + lSquare, y + lSquare), EXT_BORDER_THICK)
+                            (x + lSquare, y + lSquare), GUIConsts.EXT_BORDER_THICK)
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x + lSquare, y + lSquare),
-                            (x + lSquare, y), EXT_BORDER_THICK)
+                            (x + lSquare, y), GUIConsts.EXT_BORDER_THICK)
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x + lSquare, y),
-                            (x, y), EXT_BORDER_THICK)
+                            (x, y), GUIConsts.EXT_BORDER_THICK)
 
             self.update()
         #else:
@@ -513,8 +506,8 @@ class pygameSolver(solver.solver):
             return
 
         # top-left corner position
-        x = DELTA_W + row * self.extSquareWidth_ + EXT_BORDER_THICK
-        y = MENUBAR_HEIGHT + DELTA_H + line * self.extSquareWidth_ + EXT_BORDER_THICK
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
+        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
 
         # Erase background
         pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -606,29 +599,14 @@ class pygameSolver(solver.solver):
 
     # Handle window's resize
     #
-    def _onResizeWindow(self, newWidth:int, newHeight:int):
-        self.width_ = newWidth
-        self.height_ = newHeight
-
-        # Compute new square sizes
-        squareW = math.floor((newWidth - 2 * DELTA_W - STATS_FRAME_WIDTH) / ROW_COUNT)
-        squareH = math.floor((newHeight - MENUBAR_HEIGHT - 2 * DELTA_H) / LINE_COUNT)
-
-        if squareW < SQUARE_MIN or squareH < SQUARE_MIN :
-            self.extSquareWidth_ = SQUARE_MIN
-
-        # Use the smallest !
-        if squareW < squareH :
-            self.extSquareWidth_ = squareW
-        else:
-            self.extSquareWidth_ = squareH
-
-        self.intSquareWidth_ = self.extSquareWidth_ - 2 * EXT_BORDER_THICK
+    @override
+    def resizeWindow(self, newWidth:int, newHeight:int):
+        solver.solver.resizeWindow(self, newWidth, newHeight)
 
         # Update elements'font
         if self.sElement_ is not None:
-            fontSize = int(ELT_FONT_SIZE * self.intSquareWidth_ / SQUARE_SIDE)
-            self.sElement_.setFont(ELT_FONT_NAME, fontSize)
+            fontSize = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+            self.sElement_.setFont(GUIConsts.ELT_FONT_NAME, fontSize)
             self.sElement_.moveTo(int((self.extSquareWidth_ - float(fontSize))/2), 0)
 
     # Wait for an event
@@ -642,13 +620,8 @@ class pygameSolver(solver.solver):
                 if event.type == pygame.QUIT or event.type == pygame.KEYDOWN :
                     finished = True
                 elif event.type == pygame.VIDEORESIZE:
-
                     # Update surface size
-                    self._onResizeWindow(self.win_.get_width(), self.win_.get_height())
-
-                    # Resize the surface
-                    #self.win_ = pygame.display.set_mode((self.width_, self.height_), pygame.RESIZABLE)
-                    #print(f"W : {self.width_} x H : {self.height_}")
+                    self.resizeWindow(self.win_.get_width(), self.win_.get_height())
 
                     # Draw bkgrnd & lines ...
                     self.drawBackground()
@@ -715,7 +688,7 @@ class pygameSolver(solver.solver):
     # Mouse position
     #
     def _mousePosition(self, pos : tuple[int,int]):
-         return (-1 if pos[0] < DELTA_W else int((pos[0] - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_), -1 if pos[1] < (MENUBAR_HEIGHT + DELTA_H) else int((pos[1] - MENUBAR_HEIGHT - EXT_BORDER_THICK - DELTA_W) / self.extSquareWidth_))
+         return (-1 if pos[0] < GUIConsts.DELTA_W else int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W) / self.extSquareWidth_), -1 if pos[1] < (GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H) else int((pos[1] - GUIConsts.MENUBAR_HEIGHT - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W) / self.extSquareWidth_))
 
     #
     #  Edition & browsing
@@ -965,7 +938,8 @@ class pygameSolver(solver.solver):
 
     # Convert colour objects from ownColour to pygameColor
     #
-    def _convertColours(self):
+    @override
+    def convertColours(self):
         for id in range(len(self.colours_)):
             self.colours_[id].other = pygame.Color(
                 self.colours_[id].r,

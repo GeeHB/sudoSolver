@@ -14,13 +14,14 @@
 
 import sys
 
-import pygameSolver
 import solver
 from options import (
     PYTHON_VER_MAJ,
     PYTHON_VER_MIN,
     options,
 )
+from pygameSolver import pygameSolverApp
+from wxSolver import wxSolverApp
 
 # Entry point
 if "__main__" == __name__:
@@ -45,16 +46,19 @@ if "__main__" == __name__:
 
     print(params.version())
 
-    mySolver : solver.solver = solver.solver(params)
+    mySolverApp : solver.solverApp = solver.solverApp(params)
     try:
-        mySolver = pygameSolver.pygameSolver(params)
+        if params.wxGUI:
+            mySolverApp = wxSolverApp(params)
+        else:
+            mySolverApp = pygameSolverApp(params)
 
-        mySolver.initialize()
-        mySolver.start()
+        mySolverApp.initialize()
+        mySolverApp.start()
     except Exception as e:  # noqa: BLE001
         print(f"{type(e).__name__}: {e}")
         print("Unknown error")
     finally:
-        mySolver.end()
+        mySolverApp.end()
 
 # EOF

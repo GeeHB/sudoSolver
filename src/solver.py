@@ -7,13 +7,15 @@
 #   Description :   solver and ownColour objects
 #                       - GUI for sudoku solver
 #
+import math
 import time
 from enum import IntEnum, auto
 from typing import Any
 
+import GUIConsts
 import ownExceptions
 from element import element
-from options import (
+from GUIConsts import (
     BK_COLOUR,
     BK_COLOUR_FILENAME,
     BORDER_COLOUR,
@@ -21,6 +23,8 @@ from options import (
     SEL_BK_COLOUR,
     SEL_TXT_COLOUR,
     TXT_COLOUR,
+)
+from options import (
     options,
     stats,
 )
@@ -48,6 +52,29 @@ class ownColour:
         self.a = alpha if alpha is not None else 255
         self.other : Any = None
 
+# solverApp - Abstract class for application
+#
+class solverApp:
+    # Constructor
+    #
+    def __init__(self, params : options):
+        pass
+
+    # GUI initialization
+    #
+    def initialize(self):
+        pass
+
+    # Start drawings / UI
+    #
+    def start(self):
+        pass
+
+    # End drawings
+    #
+    def end(self):
+        pass
+
 # solver - Abstract class for GUI sudoku solvers
 #
 class solver:
@@ -70,6 +97,13 @@ class solver:
         self.params_ : options = params
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
+
+        # Dimensions
+        #
+        self.width_ :int = 0        # Window's dimensions
+        self.height_ : int = 0
+        self.intSquareWidth_ :int = 0        # Internal dims of an element
+        self.extSquareWidth_ :int = 0        # Ext. dims
 
         # Default colours
         #
@@ -106,7 +140,13 @@ class solver:
     # GUI initialization
     #
     def initialize(self):
-        pass
+        # Default dimensions
+        self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH
+        self.height_ = GUIConsts.MENUBAR_HEIGHT + LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
+        self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
+        self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
+
+        self.convertColours() # Convert colours
 
     # Start drawings / UI
     #
@@ -142,6 +182,28 @@ class solver:
 
             self.update()
 
+    # The window's size has changed
+    #
+    def resizeWindow(self, newWidth:int, newHeight:int):
+        self.width_ = newWidth
+        self.height_ = newHeight
+
+        # Compute new square sizes
+        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
+        squareH = math.floor((newHeight - GUIConsts.MENUBAR_HEIGHT - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
+
+        if squareW < GUIConsts.SQUARE_MIN or squareH < GUIConsts.SQUARE_MIN :
+            self.extSquareWidth_ = GUIConsts.SQUARE_MIN
+
+        # Use the smallest !
+        if squareW < squareH :
+            self.extSquareWidth_ = squareW
+        else:
+            self.extSquareWidth_ = squareH
+
+        self.intSquareWidth_ = self.extSquareWidth_ - 2 * GUIConsts.EXT_BORDER_THICK
+
+
     # Draw/erase a single element and its background
     #
     def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
@@ -160,6 +222,11 @@ class solver:
     # End drawings
     #
     def end(self):
+        pass
+
+    # Convert colour objects from ownColour to pygameColor
+    #
+    def convertColours(self):
         pass
 
     #

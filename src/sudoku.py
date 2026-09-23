@@ -382,7 +382,6 @@ class sudoku(threading.Thread):
         candidate : int = 0
         position : pointer = pointer(gameMode=True)
         position = self._findFirstEmptyPos(position)
-
         self.attempts = 0
 
         # All the elements "before" the current position are set with possible/allowed values
@@ -418,12 +417,12 @@ class sudoku(threading.Thread):
 
     # Single Threaded mode as a generator
     #
-    def resolveGenerator(self):
+    def resolveGenerator(self, step : int = 100):
         candidate : int = 0
         position : pointer = pointer(gameMode=True)
         position = self._findFirstEmptyPos(position)
-
         self.attempts = 0
+        self.found = False
 
         try:
             while True:
@@ -445,7 +444,8 @@ class sudoku(threading.Thread):
 
                         self.elements_[position.index()].setValue(candidate)
 
-                        yield True  # Forwarding
+                        if self.attempts_ % step == 0 :
+                            yield True  # Forwarding
 
                         # Go to the next "empty" position
                         position = self._findFirstEmptyPos(position)
