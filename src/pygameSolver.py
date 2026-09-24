@@ -271,6 +271,7 @@ class pygameSolver(solver.solver):
         self.sElement_ : textSurface | None = None      # single value
         self.sFileName_ : textSurface | None = None
         self.sMessage_ : blinkingText | None = None
+        self.params_.center = True
 
     #
     # Methods from solver
@@ -421,8 +422,8 @@ class pygameSolver(solver.solver):
                 #
                 for line in range(LINE_COUNT):
                     for row in range(ROW_COUNT):
-                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_
-                        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * self.extSquareWidth_
+                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsetX_
+                        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsetY_
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
@@ -435,8 +436,8 @@ class pygameSolver(solver.solver):
                 lSquare = self.extSquareWidth_ * 3
                 for line in range(3):
                     for row in range(3):
-                        x = GUIConsts.DELTA_W + row * lSquare
-                        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * lSquare
+                        x = GUIConsts.DELTA_W + row * lSquare + self.offsetX_
+                        y = GUIConsts.DELTA_H + line * lSquare + self.offsetY_
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
@@ -506,8 +507,8 @@ class pygameSolver(solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
-        y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetX_
+        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetY_
 
         # Erase background
         pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -600,8 +601,8 @@ class pygameSolver(solver.solver):
     # Handle window's resize
     #
     @override
-    def resizeWindow(self, newWidth:int, newHeight:int):
-        solver.solver.resizeWindow(self, newWidth, newHeight)
+    def newWindowSize(self, newWidth:int, newHeight:int):
+        solver.solver.newWindowSize(self, newWidth, newHeight)
 
         # Update elements'font
         if self.sElement_ is not None:
@@ -621,13 +622,10 @@ class pygameSolver(solver.solver):
                     finished = True
                 elif event.type == pygame.VIDEORESIZE:
                     # Update surface size
-                    self.resizeWindow(self.win_.get_width(), self.win_.get_height())
-
-                    # Draw bkgrnd & lines ...
-                    self.drawBackground()
+                    self.newWindowSize(self.win_.get_width(), self.win_.get_height())
 
                     # ... and the array's content
-                    self.draw()
+                    self.draw(redrawBackground=True)
 
                     # returns all events ?
                     if True == allEvents:

@@ -107,7 +107,8 @@ class wxSolver(wx.Frame, solver.solver):
     # Window's size just changed
     #
     def OnSize(self, event : wx.SizeEvent):
-        self.resizeWindow(event.Size.width, event.Size.height)
+        #print(f"x:{event.Size.width} - y:{event.Size.height}")
+        self.newWindowSize(event.Size.width, event.Size.height)
 
     #
     #  drawings
@@ -128,8 +129,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
-                    x = GUIConsts.DELTA_W + row * self.extSquareWidth_
-                    y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * self.extSquareWidth_
+                    x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsetX_
+                    y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsetY_
                     dc.DrawLine(x, y, x, y + self.extSquareWidth_)
                     dc.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
@@ -141,8 +142,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(3):
                 for row in range(3):
-                    x = GUIConsts.DELTA_W + row * lSquare
-                    y = GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H + line * lSquare
+                    x = GUIConsts.DELTA_W + row * lSquare + self.offsetX_
+                    y = GUIConsts.DELTA_H + line * lSquare + self.offsetY_
                     dc.DrawLine(x, y,x, y + lSquare)
                     dc.DrawLine(x, y + lSquare,x + lSquare, y + lSquare)
                     dc.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)

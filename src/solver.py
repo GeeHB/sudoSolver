@@ -100,6 +100,8 @@ class solver:
 
         # Dimensions
         #
+        self.offsetX_ : int = 0
+        self.offsetY_ : int = 0
         self.width_ :int = 0        # Window's dimensions
         self.height_ : int = 0
         self.intSquareWidth_ :int = 0        # Internal dims of an element
@@ -117,6 +119,8 @@ class solver:
         self.colours_.append(ownColour(HILITE_COLOUR))
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
+
+        self.params_.center = True
 
     @property
     def initialized(self)->bool:
@@ -184,7 +188,7 @@ class solver:
 
     # The window's size has changed
     #
-    def resizeWindow(self, newWidth:int, newHeight:int):
+    def newWindowSize(self, newWidth:int, newHeight:int):
         self.width_ = newWidth
         self.height_ = newHeight
 
@@ -203,6 +207,15 @@ class solver:
 
         self.intSquareWidth_ = self.extSquareWidth_ - 2 * GUIConsts.EXT_BORDER_THICK
 
+        if self.params_.center :
+            self.offsetX_ = math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH)) / 2)
+            self.offsetY_ = GUIConsts.MENUBAR_HEIGHT + math.floor((self.height_ - (self.extSquareWidth_ * LINE_COUNT + 2 * GUIConsts.DELTA_H)) / 2)
+        else:
+            self.offsetX_ = 0
+            self.offsetY_ = 0
+
+        print(f"w {newWidth} x h {newHeight}")
+        print(f"offset ({self.offsetX_} , {self.offsetY_})")
 
     # Draw/erase a single element and its background
     #

@@ -109,10 +109,11 @@ class options:
 
     # App. options
     OPTIONS_NONE:int = 0
-    OPTIONS_GUI_WX = 1
+    OPTIONS_GUI_WX:int = 1
     OPTIONS_EXPORT:int = 2      # Export solution
     OPTIONS_SEARCH_OBVIOUS = 4  # Search opbious values
     OPTIONS_BROWSE_FOLDER = 8
+    OPTIONS_GUI_CENTER:int = 16 # The sudoku array is centered in the GUI window
 
     # Construction
     #
@@ -135,12 +136,21 @@ class options:
     def exportSolution(self, newVal : bool):
         self.runOptions_.set(self.OPTIONS_EXPORT, newVal)
 
+    # Use wxPython lib ?
     @property
     def wxGUI(self)->bool:
         return self.runOptions_.isSet(self.OPTIONS_GUI_WX)
     @wxGUI.setter
     def wxGUI(self, newVal : bool):
         self.runOptions_.set(self.OPTIONS_GUI_WX, newVal)
+
+    # Center ?
+    @property
+    def center(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_GUI_CENTER)
+    @center.setter
+    def center(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_GUI_CENTER, newVal)
 
     @property
     def obviousValues(self)->bool:
