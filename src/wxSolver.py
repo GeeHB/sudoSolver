@@ -94,7 +94,10 @@ class wxSolver(wx.Frame, solver.solver):
                         faceName = GUIConsts.ELT_FONT_NAME)
 
         solver.solver.__init__(self, params)
-        self.dc_ : wx.DC | None = None
+
+        self.memDC_ : wx.MemoryDC | None = None
+        self.clientSize_ : wx.Size = wx.Size(0,0)
+
         self.textOffsets_ : wx.Size = wx.Size(0,0)
         self.select_ : wxSelection = wxSelection()
 
@@ -104,7 +107,6 @@ class wxSolver(wx.Frame, solver.solver):
     def initialize(self):
         solver.solver.initialize(self)
 
-        self.SetBackgroundColour(self.colours_[self.ColourID.ID_BK].other)  # Set background color
         self.Show()
 
         # Associate event to handlers
@@ -143,24 +145,36 @@ class wxSolver(wx.Frame, solver.solver):
     # Draw the window
     #
     def OnPaint(self, event : wx.Event):
-        self._display_StartUp()
-        #self.drawBackground()
-        self.draw(redrawBackground=True)
-        self._display_End()
+        if self.memDC_ is not None and self.memDC_.IsOk():
+            bmpSize : wx.Size = self.memDC_.GetSize()
+            paintDC = wx.PaintDC(self)
+            paintDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)
 
     # Window's size just changed
     #
     def OnSize(self, event : wx.SizeEvent):
-        #print(f"x:{event.Size.width} - y:{event.Size.height}")
+        # Resize elements
         self.newWindowSize(event.Size.width, event.Size.height)
+        self.clientSize_ = event.Size
         self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
+
+        if self.memDC_ :
+            self.memDC_.SelectObject(wx.NullBitmap) # Free previous bitmap if any
+            self.memDC_ = None
+
+        # Create memory DC with bitmap
+        self._display_StartUp()
 
         # Numbers are centered !
         self._display_StartUp()
-        if self.dc_ is not None :
-            self.dc_.SetFont(self.font_)
-            dims : wx.Size = self.dc_.GetTextExtent("O")
+        if self.memDC_ is not None and self.memDC_.IsOk() :
+            self.memDC_.SetFont(self.font_)
+            dims : wx.Size = self.memDC_.GetTextExtent("O")
             self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
+
+        # Redraw the whole array
+        self.drawBackground()
+        self.draw()
 
     #
     #  drawings
@@ -168,50 +182,49 @@ class wxSolver(wx.Frame, solver.solver):
 
     @override
     def _display_StartUp(self):
-        #dc = wx.PaintDC(self)
-        dc = wx.ClientDC(self)
-        if dc.IsOk():
-            self.dc_ = wx.GCDC(dc)
-            self.dc_.SetFont(self.font_)
-        else:
-            self.dc_ = None
+        if self.memDC_ is None :
+            bmp = wx.Bitmap()
+            bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
+            self.memDC_ = wx.MemoryDC(bmp)
+            self.memDC_.SetFont(self.font_)
+            self.memDC_.SetBackground(wx.Brush(self.colours_[self.ColourID.ID_BK].other))
+            self.memDC_.Clear()
 
     @override
     def _display_End(self):
         self.Refresh()
-        self.dc_ = None
 
     # Draw background, frames and borders
     #
     @override
     def drawBackground(self):
-        if self.dc_ is not None and 0 != self.extSquareWidth_ :
+        if self.memDC_ is not None and 0 != self.extSquareWidth_ :
             # thin borders ...
             #
             pen = wx.Pen(self.colours_[self.ColourID.ID_BORDER].other, 1, wx.PENSTYLE_SOLID)
-            self.dc_.SetPen(pen)
+            self.memDC_.SetPen(pen)
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
                     x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsets_[0]
                     y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
-                    self.dc_.DrawLine(x, y, x, y + self.extSquareWidth_)
-                    self.dc_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
+                    self.memDC_.DrawLine(x, y, x, y + self.extSquareWidth_)
+                    self.memDC_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
             # ... large ext. borders
             #
             penLarge = wx.Pen(self.colours_[self.ColourID.ID_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
-            self.dc_.SetPen(penLarge)
+            self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
 
             for line in range(3):
                 for row in range(3):
                     x = GUIConsts.DELTA_W + row * lSquare + self.offsets_[0]
                     y = GUIConsts.DELTA_H + line * lSquare + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
-                    self.dc_.DrawLine(x, y,x, y + lSquare)
-                    self.dc_.DrawLine(x, y + lSquare,x + lSquare, y + lSquare)
-                    self.dc_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
-                    self.dc_.DrawLine(x + lSquare, y, x, y)
+                    self.memDC_.DrawLine(x, y,x, y + lSquare)
+                    self.memDC_.DrawLine(x, y + lSquare,x + lSquare, y + lSquare)
+                    self.memDC_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
+                    self.memDC_.DrawLine(x + lSquare, y, x, y)
 
 
     # Draw/erase a single element and its background
@@ -219,7 +232,7 @@ class wxSolver(wx.Frame, solver.solver):
     @override
     def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         # too small to be drawn ?
-        if self.dc_ is None or 0 == self.extSquareWidth_ :
+        if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return
 
         # top-left corner position
@@ -227,14 +240,14 @@ class wxSolver(wx.Frame, solver.solver):
         y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT + self.textOffsets_.y
 
         # Erase background
-        self.dc_.SetBrush(wx.Brush(self.colours_[bkColourID].other))
-        self.dc_.SetPen(wx.TRANSPARENT_PEN)
-        self.dc_.DrawRectangle(x, y, self.fontSize_, self.fontSize_)
+        self.memDC_.SetBrush(wx.Brush(self.colours_[bkColourID].other))
+        self.memDC_.SetPen(wx.TRANSPARENT_PEN)
+        self.memDC_.DrawRectangle(x, y, self.fontSize_, self.fontSize_)
 
         # The value (if valid)
         if value is not None :
-            self.dc_.SetTextForeground(self.colours_[txtColourID].other)
-            self.dc_.DrawText(str(value), x, y)
+            self.memDC_.SetTextForeground(self.colours_[txtColourID].other)
+            self.memDC_.DrawText(str(value), x, y)
 
     # Convert colour objects from ownColour to wx.Colour
     #
