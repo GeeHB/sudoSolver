@@ -45,7 +45,7 @@ class pointer:
 
     # Absolute position
     #
-    def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None):
+    def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None)->bool:
         if pos is None:
             # Ensure position is in the array
             self.row_ = self._setInRange(row)
@@ -54,13 +54,14 @@ class pointer:
             # Mouse click outside the array ?
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
                 # Outside the array => ignore the click
-                return
+                return False
 
             self.row_ = pos[0]
             self.line_ = pos[1]
 
         self.index_ = self.row_ + self.line_ * ROW_COUNT
         self._whereAmI(False)
+        return True
 
     # Access
     #
@@ -156,7 +157,7 @@ class pointer:
     # Updating coordinates
     #
     def _whereAmI(self, all:bool = True):
-        if True == all:
+        if all:
             # V. math
             self.line_ = math.floor(self.index_ / ROW_COUNT)
             self.row_ = self.index_ - ROW_COUNT * self.line_

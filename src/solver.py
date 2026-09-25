@@ -28,14 +28,25 @@ from options import (
     options,
     stats,
 )
-from ownExceptions import sudokuError
+from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
     LINE_COUNT,
     ROW_COUNT,
     pointer,
 )
+from sharedTools import (
+    statusbits,
+)
 from sudoku import sudoku
 
+# Edition status
+#
+EDIT_CONTINUE:int = statusbits.STATUS_NONE
+EDIT_MODIFIED:int = 1  # The sudoku has been modified (at least once)
+EDIT_STOP:int = 2  # Stop edition
+EDIT_ESCAPE:int = 4  # Escape edition
+EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
+EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
 
 # colour - General and portable colour definition
 #
@@ -98,11 +109,11 @@ class solver:
         self.params_ : options = params
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
+        self.editStatus_:statusbits.statusBits = statusbits.statusBits(EDIT_CONTINUE)
 
         # Dimensions
         #
-        self.offsetX_ : int = 0
-        self.offsetY_ : int = 0
+        self.offsets_ : tuple[int,int] = (0,0)
         self.width_ :int = 0        # Window's dimensions
         self.height_ : int = 0
         self.intSquareWidth_ :int = 0        # Internal dims of an element
@@ -195,10 +206,10 @@ class solver:
     # Drawing in the client area
     #
 
-    def displayStartUp(self):
+    def _display_StartUp(self):
         pass
 
-    def displayEnd(self):
+    def _display_End(self):
         pass
 
     # Draw the whole array
@@ -207,7 +218,7 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
-        self.displayStartUp()
+        self._display_StartUp()
 
         if redrawBackground:
             self.drawBackground()
@@ -231,7 +242,7 @@ class solver:
                 position+=1
 
         self.update()
-        self.displayEnd()
+        self._display_End()
 
     # The window's size has changed
     #
@@ -255,23 +266,20 @@ class solver:
         self.intSquareWidth_ = self.extSquareWidth_ - 2 * GUIConsts.EXT_BORDER_THICK
 
         if self.params_.center :
-            self.offsetX_ = math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH)) / 2)
-            self.offsetY_ = GUIConsts.MENUBAR_HEIGHT + math.floor((self.height_ - (self.extSquareWidth_ * LINE_COUNT + 2 * GUIConsts.DELTA_H)) / 2)
+            self.offsets_ = (math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH)) / 2),
+                GUIConsts.MENUBAR_HEIGHT + math.floor((self.height_ - (self.extSquareWidth_ * LINE_COUNT + 2 * GUIConsts.DELTA_H)) / 2))
         else:
-            self.offsetX_ = 0
-            self.offsetY_ = 0
+            self.offsets_ = (0,0)
 
         # font size in pixels
         self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
-        #print(f"w {newWidth} x h {newHeight}")
-        #print(f"offset ({self.offsetX_} , {self.offsetY_})")
 
-    # Mouse position : screen -> array corrdinatates
+    # Mouse position : screen -> array coordinates
     #
     def mousePosition(self, pos : tuple[int,int])->tuple[int, int]:
-        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsetX_) / self.extSquareWidth_)
-        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsetY_) / self.extSquareWidth_)
+        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[0]) / self.extSquareWidth_)
+        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[1]) / self.extSquareWidth_)
         return (x,y)
 
     # Draw/erase a single element and its background
@@ -316,13 +324,13 @@ class solver:
         # Let's go
         match self.params_.progressMode_ :
             case self.params_.PROGRESS_MULTITHREADED:
-                found = self._resolveMultiThreaded()
+                found = self._resolve_MultiThreaded()
 
             case self.params_.PROGRESS_SHOW_SAME_THREAD:
-                found = self._resolveAndDisplay()
+                found = self._resolve_AndDisplay()
 
             case _:
-                found = self._resolveSingleThreaded()
+                found = self._resolve_SingleThreaded()
 
         if found:
             end = time.time() - start
@@ -347,13 +355,85 @@ class solver:
         print("\t- Solved in " + str(round(self.stats_.bruteDuration_, 2)) + " second(s)")
         print("\t- " + str(self.stats_.bruteAttempts_) + " attempt(s)\n")
 
+    #
+    # Array edition
+    #
+
+    # Update array during edition
+    #
+    def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
+        self._display_StartUp()
+
+        if prevPos is not None:
+            # if sel. changed, erase previously selected element
+            self.drawSingleElement(
+                prevPos.row(),
+                prevPos.line(),
+                self.sudoku_.elements_[prevPos.index()].num,
+                self.ColourID.ID_BK,
+                self.ColourID.ID_HILITE,
+            )
+
+        # Hilight the new value
+        self.drawSingleElement(
+            currentPos.row(),
+            currentPos.line(),
+            self.sudoku_.elements_[currentPos.index()].num,
+            self.ColourID.ID_SEL_BK,
+            self.ColourID.ID_SEL_TXT,
+        )
+
+        self._display_End()
+
+
+    # (try to) set a value
+    #
+    def _edit_setValue(self, pos: pointer, val: int):
+        if self.sudoku_.checkValue(pos, val):
+            self.sudoku_.elements_[pos.index()].setValue(val, element.STATUS_ORIGINAL, True)
+            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+
+    # Decrease value
+    #
+    def _edit_decValue(self, pos: pointer):
+        val : int | None = self.sudoku_.elements_[pos.index()].num
+        if val is None:
+            val = 0
+
+        newVal : int = self.sudoku_.findPreviousValue(pos, val)
+        if newVal != val:
+            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
+            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+
+    # Inc value
+    #
+    def _edit_incValue(self, pos: pointer):
+        val : int | None = self.sudoku_.elements_[pos.index()].num
+        if val is None:
+            val = 0
+
+        newVal : int = self.sudoku_.findNextValue(pos, val)
+        if newVal != val:
+            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
+            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+
+    # Remove current value
+    #
+    def _edit_removeValue(self, pos: pointer):
+        self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
+        self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+
+    #
+    # Resolution
+    #
+
     # Single-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolveSingleThreaded(self)->bool:
+    def _resolve_SingleThreaded(self)->bool:
         try:
             self.sudoku_.resolveSingleThreaded()
-        except ownExceptions.reachedEndOfList:
+        except reachedEndOfList:
             # Found a solution !!!
             return True
         except IndexError:
@@ -363,7 +443,7 @@ class solver:
     # Single-threaded mode using a generator to display progression
     #
     # returns True if a solution has been founded
-    def _resolveAndDisplay(self)->bool:
+    def _resolve_AndDisplay(self)->bool:
         for _ in self.sudoku_.resolveGenerator() :
             self.draw()
 
@@ -372,7 +452,7 @@ class solver:
     # Multi-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolveMultiThreaded(self)->bool:
+    def _resolve_MultiThreaded(self)->bool:
         self.sudoku_.resolveMultiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution

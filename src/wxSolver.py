@@ -41,6 +41,12 @@ from sharedTools import (
     systeminfos,
 )
 
+# wxSelection - Position & selection in the area
+#
+class wxSelection:
+    def __init__(self):
+        self.currentPos_ : pointer = pointer(0)
+        self.prevPos_ : pointer | None = None
 
 # wxSolverApp - Abstract class for application
 #
@@ -88,8 +94,9 @@ class wxSolver(wx.Frame, solver.solver):
                         faceName = GUIConsts.ELT_FONT_NAME)
 
         solver.solver.__init__(self, params)
-        self.dc_ = None
+        self.dc_ : wx.DC | None = None
         self.textOffsets_ : wx.Size = wx.Size(0,0)
+        self.select_ : wxSelection = wxSelection()
 
     # GUI initialization
     #
@@ -102,22 +109,44 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Associate event to handlers
         #
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
 
         self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
 
+    # Set/change the current array's filename
+    #
+    @override
+    def setFileName(self, fileName:str, create:bool = False):
+        solver.solver.setFileName(self, fileName, create)
+
+        title : str = APP_SHORT_NAME
+        if len(fileName) > 0:
+            title = title + " - " + fileName
+
+        self.SetTitle(title)
+
     #
     # Event handlers
     #
 
+    # User clicked  with left button
+    #
+    def OnLButtonUp(self, event : wx.MouseEvent):
+        self.select_.prevPos_ = copy.deepcopy(self.select_.currentPos_)   # // copy constructor
+
+        newPos : tuple[int,int] = self.mousePosition(pos=(event.x, event.y))
+        if self.select_.currentPos_.moveTo(pos=newPos) :
+            self._edit_updatePos(self.select_.prevPos_, self.select_.currentPos_)
+
     # Draw the window
     #
     def OnPaint(self, event : wx.Event):
-        self.displayStartUp()
+        self._display_StartUp()
         #self.drawBackground()
         self.draw(redrawBackground=True)
-        self.displayEnd()
+        self._display_End()
 
     # Window's size just changed
     #
@@ -127,25 +156,29 @@ class wxSolver(wx.Frame, solver.solver):
         self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
 
         # Numbers are centered !
-        dc = wx.ClientDC(self)
-        dc.SetFont(self.font_)
-        dims : wx.Size = dc.GetTextExtent("O")
-        self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
+        self._display_StartUp()
+        if self.dc_ is not None :
+            self.dc_.SetFont(self.font_)
+            dims : wx.Size = self.dc_.GetTextExtent("O")
+            self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
 
     #
     #  drawings
     #
 
     @override
-    def displayStartUp(self):
-        dc = wx.PaintDC(self)
-        self.dc_ = wx.GCDC(dc)
-
-        self.dc_.SetTextForeground(self.colours_[self.ColourID.ID_TXT].other)
-        self.dc_.SetFont(self.font_)
+    def _display_StartUp(self):
+        #dc = wx.PaintDC(self)
+        dc = wx.ClientDC(self)
+        if dc.IsOk():
+            self.dc_ = wx.GCDC(dc)
+            self.dc_.SetFont(self.font_)
+        else:
+            self.dc_ = None
 
     @override
-    def displayEnd(self):
+    def _display_End(self):
+        self.Refresh()
         self.dc_ = None
 
     # Draw background, frames and borders
@@ -160,8 +193,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
-                    x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsetX_
-                    y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsetY_ + GUIConsts.MENUBAR_HEIGHT
+                    x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsets_[0]
+                    y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
                     self.dc_.DrawLine(x, y, x, y + self.extSquareWidth_)
                     self.dc_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
@@ -173,8 +206,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(3):
                 for row in range(3):
-                    x = GUIConsts.DELTA_W + row * lSquare + self.offsetX_
-                    y = GUIConsts.DELTA_H + line * lSquare + self.offsetY_ + GUIConsts.MENUBAR_HEIGHT
+                    x = GUIConsts.DELTA_W + row * lSquare + self.offsets_[0]
+                    y = GUIConsts.DELTA_H + line * lSquare + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
                     self.dc_.DrawLine(x, y,x, y + lSquare)
                     self.dc_.DrawLine(x, y + lSquare,x + lSquare, y + lSquare)
                     self.dc_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
@@ -190,16 +223,17 @@ class wxSolver(wx.Frame, solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetX_ + self.textOffsets_.x
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetY_ + GUIConsts.MENUBAR_HEIGHT + self.textOffsets_.y
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0] + self.textOffsets_.x
+        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT + self.textOffsets_.y
 
         # Erase background
-        self.dc_.SetBrush(wx.Brush(self.colours_[self.ColourID.ID_BK].other))
+        self.dc_.SetBrush(wx.Brush(self.colours_[bkColourID].other))
         self.dc_.SetPen(wx.TRANSPARENT_PEN)
         self.dc_.DrawRectangle(x, y, self.fontSize_, self.fontSize_)
 
         # The value (if valid)
         if value is not None :
+            self.dc_.SetTextForeground(self.colours_[txtColourID].other)
             self.dc_.DrawText(str(value), x, y)
 
     # Convert colour objects from ownColour to wx.Colour

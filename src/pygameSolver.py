@@ -252,20 +252,10 @@ class pygameSolver(solver.solver):
     MODE_EDIT:int           = 1
     MODE_BROWSEFOLDER:int   = 2
 
-    # Edition status
-    #
-    EDIT_CONTINUE:int = statusbits.STATUS_NONE
-    EDIT_MODIFIED:int = 1  # The sudoku has been modified (at least once)
-    EDIT_STOP:int = 2  # Stop edition
-    EDIT_ESCAPE:int = 4  # Escape edition
-    EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
-
     def __init__(self, params : options):
         solver.solver.__init__(self, params)    # Call parent's constructor
 
         self.win_  = None     # My window
-        self.editStatus_:statusbits.statusBits = statusbits.statusBits(self.EDIT_CONTINUE)
         self.mode_ :statusbits.statusBits = statusbits.statusBits()       # Display mode
 
         self.sElement_ : textSurface | None = None      # single value
@@ -422,8 +412,8 @@ class pygameSolver(solver.solver):
                 #
                 for line in range(LINE_COUNT):
                     for row in range(ROW_COUNT):
-                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsetX_
-                        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsetY_
+                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsets_[0]
+                        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsets_[1]
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
@@ -436,8 +426,8 @@ class pygameSolver(solver.solver):
                 lSquare = self.extSquareWidth_ * 3
                 for line in range(3):
                     for row in range(3):
-                        x = GUIConsts.DELTA_W + row * lSquare + self.offsetX_
-                        y = GUIConsts.DELTA_H + line * lSquare + self.offsetY_
+                        x = GUIConsts.DELTA_W + row * lSquare + self.offsets_[0]
+                        y = GUIConsts.DELTA_H + line * lSquare + self.offsets_[1]
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
@@ -507,8 +497,8 @@ class pygameSolver(solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetX_
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsetY_
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
+        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
         # Erase background
         pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -767,16 +757,16 @@ class pygameSolver(solver.solver):
     def _edit(self) -> tuple[bool, bool]:
         currentPos : pointer = pointer(gameMode=False)  # current position
         prevPos : pointer | None =  None  # previous pos (if erase needed)
-        self.editStatus_.value = self.EDIT_CONTINUE
+        self.editStatus_.value = solver.EDIT_CONTINUE
 
-        while not self.editStatus_.isSet(self.EDIT_STOP):
+        while not self.editStatus_.isSet(solver.EDIT_STOP):
             # if sel. changed, erase previously selected element
             self._edit_updatePos(
-                None if self.editStatus_.isSet(self.EDIT_NOREDRAW) else prevPos,
+                None if self.editStatus_.isSet(solver.EDIT_NOREDRAW) else prevPos,
                 currentPos,
             )
             prevPos = copy.deepcopy(currentPos)   # // copy constructor
-            self.editStatus_.remove(self.EDIT_NOREDRAW)
+            self.editStatus_.remove(solver.EDIT_NOREDRAW)
 
             # Wait for an event
             event = self._pollEvent()
@@ -785,7 +775,7 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    currentPos.moveTo(pos=self.mousePosition(pos))
+                    _ = currentPos.moveTo(pos=self.mousePosition(pos))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
@@ -811,16 +801,16 @@ class pygameSolver(solver.solver):
                         case self.REMOVE_VALUE:
                             self._edit_removeValue(currentPos)
                         case self.EDIT_CANCEL:
-                            self.editStatus_.set(self.EDIT_ESCAPED)
+                            self.editStatus_.set(solver.EDIT_ESCAPED)
                         case self.EDIT_QUIT_AND_SAVE:
-                            self.editStatus_.set(self.EDIT_STOP)
+                            self.editStatus_.set(solver.EDIT_STOP)
                         case _:
                             pass
 
                 elif event.type == self.EVT_QUIT:
-                    self.editStatus_.set(self.EDIT_ESCAPED)
+                    self.editStatus_.set(solver.EDIT_ESCAPED)
 
-        escaped = self.editStatus_.isSet(self.EDIT_ESCAPE)
+        escaped = self.editStatus_.isSet(solver.EDIT_ESCAPE)
         if not escaped:
             value : int | None = self.sudoku_.elements_[currentPos.index()].num
             if value is not None:
@@ -836,70 +826,17 @@ class pygameSolver(solver.solver):
         # Saves changes or exit
         return (
             escaped,
-            ((self.sudoku_.save() is not None) if self.editStatus_.isSet(self.EDIT_MODIFIED) else True)
+            ((self.sudoku_.save() is not None) if self.editStatus_.isSet(solver.EDIT_MODIFIED) else True)
             if not escaped
             else False,
         )
 
     # Update array during edition
     #
+    @override
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
-        if prevPos is not None:
-            # if sel. changed, erase previously selected element
-            self.drawSingleElement(
-                prevPos.row(),
-                prevPos.line(),
-                self.sudoku_.elements_[prevPos.index()].num,
-                self.ColourID.ID_BK,
-                self.ColourID.ID_HILITE,
-            )
-
-            # Hilight the new value
-            self.drawSingleElement(
-                currentPos.row(),
-                currentPos.line(),
-                self.sudoku_.elements_[currentPos.index()].num,
-                self.ColourID.ID_SEL_BK,
-                self.ColourID.ID_SEL_TXT,
-            )
-            self.update()
-
-    # (try to) set a value
-    #
-    def _edit_setValue(self, pos: pointer, val: int):
-        if self.sudoku_.checkValue(pos, val):
-            self.sudoku_.elements_[pos.index()].setValue(val, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
-
-    # Decrease value
-    #
-    def _edit_decValue(self, pos: pointer):
-        val : int | None = self.sudoku_.elements_[pos.index()].num
-        if val is None:
-            val = 0
-
-        newVal : int = self.sudoku_.findPreviousValue(pos, val)
-        if newVal != val:
-            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
-
-    # Inc value
-    #
-    def _edit_incValue(self, pos: pointer):
-        val : int | None = self.sudoku_.elements_[pos.index()].num
-        if val is None:
-            val = 0
-
-        newVal : int = self.sudoku_.findNextValue(pos, val)
-        if newVal != val:
-            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
-
-    # Remove current value
-    #
-    def _edit_removeValue(self, pos: pointer):
-        self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
-        self.editStatus_.set(self.EDIT_NOREDRAW | self.EDIT_MODIFIED)
+        solver.solver._edit_updatePos(self, prevPos, currentPos)
+        self.update()
 
     # Convert colour objects from ownColour to pygameColor
     #
