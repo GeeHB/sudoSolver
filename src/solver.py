@@ -8,12 +8,12 @@
 #                       - GUI for sudoku solver
 #
 import math
+import os
 import time
 from enum import IntEnum, auto
 from typing import Any
 
 import GUIConsts
-import ownExceptions
 from element import element
 from GUIConsts import (
     BK_COLOUR,
@@ -28,6 +28,7 @@ from options import (
     options,
     stats,
 )
+from ownExceptions import sudokuError
 from pointer import (
     LINE_COUNT,
     ROW_COUNT,
@@ -106,6 +107,7 @@ class solver:
         self.height_ : int = 0
         self.intSquareWidth_ :int = 0        # Internal dims of an element
         self.extSquareWidth_ :int = 0        # Ext. dims
+        self.fontsize_ : int = 0
 
         # Default colours
         #
@@ -120,7 +122,7 @@ class solver:
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
 
-        self.params_.center = True
+        self.params_.center = False
 
     @property
     def initialized(self)->bool:
@@ -149,12 +151,54 @@ class solver:
         self.height_ = GUIConsts.MENUBAR_HEIGHT + LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
+        self.fontsize_ = GUIConsts.ELT_FONT_SIZE
 
         self.convertColours() # Convert colours
 
     # Start drawings / UI
     #
-    def start(self):
+    def startUI(self):
+        pass
+
+    # Set/change the current array's filename
+    #
+    def setFileName(self, fileName:str, create:bool = False):
+        # the file must exists
+        if False == create and False == os.path.isfile(fileName):
+            raise sudokuError(fileName +  " is not a file")
+
+        self.filename = fileName
+
+
+    # Load a sudoku stored in a file
+    #
+    #   return True if sudoku has been successfully loaded
+    #
+    def fromFile(self, fileName : str, redraw:bool=True) -> bool:
+        self.sudoku_.empty()
+
+        try:
+            self.sudoku_.load(fileName, True, False)
+        except UnicodeDecodeError:
+            return False
+        except sudokuError as se:
+            print(f"Sudoku Error : {se.message_}")
+            return False
+
+        if redraw:
+            self.setFileName(fileName)
+            self.draw(redrawBackground=True)
+
+        return True
+
+    #
+    # Drawing in the client area
+    #
+
+    def displayStartUp(self):
+        pass
+
+    def displayEnd(self):
         pass
 
     # Draw the whole array
@@ -163,6 +207,8 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+        self.displayStartUp()
+
         if redrawBackground:
             self.drawBackground()
 
@@ -184,7 +230,8 @@ class solver:
                 # next element ...
                 position+=1
 
-            self.update()
+        self.update()
+        self.displayEnd()
 
     # The window's size has changed
     #
@@ -214,8 +261,18 @@ class solver:
             self.offsetX_ = 0
             self.offsetY_ = 0
 
-        print(f"w {newWidth} x h {newHeight}")
-        print(f"offset ({self.offsetX_} , {self.offsetY_})")
+        # font size in pixels
+        self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+
+        #print(f"w {newWidth} x h {newHeight}")
+        #print(f"offset ({self.offsetX_} , {self.offsetY_})")
+
+    # Mouse position : screen -> array corrdinatates
+    #
+    def mousePosition(self, pos : tuple[int,int])->tuple[int, int]:
+        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsetX_) / self.extSquareWidth_)
+        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsetY_) / self.extSquareWidth_)
+        return (x,y)
 
     # Draw/erase a single element and its background
     #

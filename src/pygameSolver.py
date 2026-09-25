@@ -76,7 +76,7 @@ class pygameSolverApp(solver.solverApp):
     #
     @override
     def start(self):
-        self.solver_.start()
+        self.solver_.startUI()
 
     # End drawings
     #
@@ -313,7 +313,7 @@ class pygameSolver(solver.solver):
     # Start the sudoku (browsing, editing or solving)
     #
     @override
-    def start(self):
+    def startUI(self):
         try:
             if self.params_.browseFolder:
                 self.filename = self._browse(self.params_.folderName_)
@@ -451,7 +451,7 @@ class pygameSolver(solver.solver):
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
-            self.update()
+            #self.update()
         #else:
             #return (False, False, None, None)
 
@@ -555,12 +555,9 @@ class pygameSolver(solver.solver):
 
     # Set/change the current array's filename
     #
-    def _setFileName(self, fileName:str, create:bool = False):
-        # the file must exists
-        if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(fileName +  " is not a file")
-
-        self.filename = fileName
+    @override
+    def setFileName(self, fileName:str, create:bool = False):
+        solver.solver.setFileName(self, fileName, create)
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName,
@@ -569,30 +566,6 @@ class pygameSolver(solver.solver):
 
             # erase this name after a while ...
             self.sFileName_.startTimer()
-
-    # Load a sudoku stored in a file
-    #
-    #   return True if sudoku has been successfully loaded
-    #
-    def _fromFile(self, fileName : str, nameOnArray:bool=True) -> bool:
-        self.sudoku_.empty()
-
-        try:
-            self.sudoku_.load(fileName, True, False)
-        except UnicodeDecodeError:
-            return False
-        except sudokuError as se:
-            print(f"Sudoku Error : {se.message_}")
-            return False
-
-        if nameOnArray:
-            self._setFileName(fileName)
-
-        self.drawBackground()
-        self.draw()
-        self.update()
-
-        return True
 
     #
     # Events
@@ -606,9 +579,8 @@ class pygameSolver(solver.solver):
 
         # Update elements'font
         if self.sElement_ is not None:
-            fontSize = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
-            self.sElement_.setFont(GUIConsts.ELT_FONT_NAME, fontSize)
-            self.sElement_.moveTo(int((self.extSquareWidth_ - float(fontSize))/2), 0)
+            self.sElement_.setFont(GUIConsts.ELT_FONT_NAME, self.fontSize_)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.fontSize_))/2), 0)
 
     # Wait for an event
     #
@@ -683,11 +655,6 @@ class pygameSolver(solver.solver):
         valid : bool = (evt.type == pygame.QUIT or evt.type == pygame.KEYDOWN)
         return (True, evt) if valid else (False, None)
 
-    # Mouse position
-    #
-    def _mousePosition(self, pos : tuple[int,int]):
-         return (-1 if pos[0] < GUIConsts.DELTA_W else int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W) / self.extSquareWidth_), -1 if pos[1] < (GUIConsts.MENUBAR_HEIGHT + GUIConsts.DELTA_H) else int((pos[1] - GUIConsts.MENUBAR_HEIGHT - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W) / self.extSquareWidth_))
-
     #
     #  Edition & browsing
     #
@@ -715,7 +682,7 @@ class pygameSolver(solver.solver):
 
                 # load the file and update drawings
                 try:
-                    self._fromFile(currentFile)
+                    self.fromFile(currentFile)
                 except sudokuError as e:
                     print(f"Sudoku Error : {e.message_}")
                 except OSError as other:
@@ -818,7 +785,7 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    currentPos.moveTo(pos=self._mousePosition(pos))
+                    currentPos.moveTo(pos=self.mousePosition(pos))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
