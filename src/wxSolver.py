@@ -236,18 +236,18 @@ class wxSolver(wx.Frame, solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0] + self.textOffsets_.x
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT + self.textOffsets_.y
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
+        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
 
         # Erase background
         self.memDC_.SetBrush(wx.Brush(self.colours_[bkColourID].other))
         self.memDC_.SetPen(wx.TRANSPARENT_PEN)
-        self.memDC_.DrawRectangle(x, y, self.fontSize_, self.fontSize_)
+        self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
         if value is not None :
             self.memDC_.SetTextForeground(self.colours_[txtColourID].other)
-            self.memDC_.DrawText(str(value), x, y)
+            self.memDC_.DrawText(str(value), x + self.textOffsets_.x, y + self.textOffsets_.y)
 
     # Convert colour objects from ownColour to wx.Colour
     #
