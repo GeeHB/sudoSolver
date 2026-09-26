@@ -80,19 +80,17 @@ class wxSolver(wx.Frame, solver.solver):
     def __init__(self, params : options):
         #wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = (wx.CAPTION & wx.RESIZE_BORDER))
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE)
-
-        self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
-                        wx.FONTFAMILY_DEFAULT,
-                        wx.FONTSTYLE_NORMAL,
-                        wx.FONTWEIGHT_NORMAL,
-                        faceName = GUIConsts.ELT_FONT_NAME)
-
         solver.solver.__init__(self, params)
 
         # Display
         self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
         self.clientSize_ : wx.Size = wx.Size(0,0)
         self.textOffsets_ : wx.Size = wx.Size(0,0)
+        self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
+                        wx.FONTFAMILY_DEFAULT,
+                        wx.FONTSTYLE_NORMAL,
+                        wx.FONTWEIGHT_NORMAL,
+                        faceName = GUIConsts.ELT_FONT_NAME)
 
     # GUI initialization
     #
@@ -166,7 +164,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
 
         # Redraw the whole array
-        self.drawBackground()
+        self._draw_background()
         self.draw()
 
     #
@@ -190,7 +188,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Draw background, frames and borders
     #
     @override
-    def drawBackground(self):
+    def _draw_background(self):
         if self.memDC_ is not None and 0 != self.extSquareWidth_ :
             # thin borders ...
             #
@@ -223,7 +221,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         # too small to be drawn ?
         if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return

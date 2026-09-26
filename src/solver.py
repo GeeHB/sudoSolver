@@ -7,6 +7,7 @@
 #   Description :   solver and ownColour objects
 #                       - GUI for sudoku solver
 #
+import copy
 import math
 import os
 import time
@@ -39,6 +40,7 @@ from sharedTools import (
 )
 from sudoku import sudoku
 
+
 # colour - General and portable colour definition
 #
 class ownColour:
@@ -63,16 +65,30 @@ class editStatus:
     EDIT_NO_EDITION:int = statusbits.STATUS_NONE
     EDIT_CONTINUE:int = 1
     EDIT_MODIFIED:int = 2  # The sudoku has been modified (at least once)
-    EDIT_STOP:int = 4  # Stop edition
-    EDIT_ESCAPE:int = 8  # Escape edition
+    EDIT_STOP:int = EDIT_NO_EDITION  # Stop edition
+    EDIT_ESCAPE:int = 4  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NO_REDRAW:int = 16  # don't redraw at previous pos value
+    EDIT_NO_REDRAW:int = 8  # don't redraw at previous pos value
 
     def __init__(self):
         self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
         self.currentPos_ : pointer = pointer(0)
         self.prevPos_ : pointer | None = None
         self.blink_ : bool = False
+
+    def clear(self, status : int = EDIT_NO_EDITION):
+        self.status_.set(status)
+        self.currentPos_ = pointer(0)
+        self.prevPos_ = None
+        self.blink_ = False
+
+    def forward(self):
+        self.prevPos_ = copy.deepcopy(self.currentPos_)   # // copy constructor
+        self.status_.remove(self.EDIT_NO_REDRAW)
+
+    def blink(self)->bool:
+        self.blink_ = not self.blink_
+        return self.blink_
 
 # solverApp - Abstract class for application
 #
@@ -210,7 +226,7 @@ class solver:
 
         if redraw:
             self.setFileName(fileName)
-            self.draw(redrawBackground=True)
+            self.draw(re_draw_background=True)
 
         return True
 
@@ -229,11 +245,11 @@ class solver:
     #   elements :  array of elements to draw or None.
     #               if None, current sudoku will be drawn
     #
-    def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+    def draw(self, elements : list[element] | None = None, re_draw_background : bool = False):
         self._display_StartUp()
 
-        if redrawBackground:
-            self.drawBackground()
+        if re_draw_background:
+            self._draw_background()
 
         position : pointer = pointer(gameMode = False)
         if elements is None :
@@ -242,10 +258,9 @@ class solver:
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
                 currentElement = elements[position.index()]
-                value : int | None = currentElement.num
-                self.drawSingleElement(
+                self._draw_singleElement(
                     row, line,
-                    value,
+                    currentElement.num,
                     self.ColourID.ID_BK,
                     self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
                 )
@@ -296,12 +311,12 @@ class solver:
 
     # Draw/erase a single element and its background
     #
-    def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         pass
 
     # Draw background, frames and borders
     #
-    def drawBackground(self):
+    def _draw_background(self):
         pass
 
     # Update the whole window
@@ -378,7 +393,7 @@ class solver:
 
         if prevPos is not None:
             # if sel. changed, erase previously selected element
-            self.drawSingleElement(
+            self._draw_singleElement(
                 prevPos.row(),
                 prevPos.line(),
                 self.sudoku_.elements_[prevPos.index()].num,
@@ -387,7 +402,7 @@ class solver:
             )
 
         # Hilight the new value
-        self.drawSingleElement(
+        self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
             self.sudoku_.elements_[currentPos.index()].num,
@@ -397,42 +412,41 @@ class solver:
 
         self._display_End()
 
-
     # (try to) set a value
     #
-    def _edit_setValue(self, pos: pointer, val: int):
-        if self.sudoku_.checkValue(pos, val):
-            self.sudoku_.elements_[pos.index()].setValue(val, element.STATUS_ORIGINAL, True)
+    def _edit_setValue(self, val: int):
+        if self.sudoku_.checkValue(self.edition_.currentPos_, val):
+            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(val, element.STATUS_ORIGINAL, True)
             self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
     #
-    def _edit_decValue(self, pos: pointer):
-        val : int | None = self.sudoku_.elements_[pos.index()].num
+    def _edit_decValue(self):
+        val : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
         if val is None:
             val = 0
 
-        newVal : int = self.sudoku_.findPreviousValue(pos, val)
+        newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
+            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
             self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Inc value
     #
-    def _edit_incValue(self, pos: pointer):
-        val : int | None = self.sudoku_.elements_[pos.index()].num
+    def _edit_incValue(self):
+        val : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
         if val is None:
             val = 0
 
-        newVal : int = self.sudoku_.findNextValue(pos, val)
+        newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
+            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
             self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Remove current value
     #
-    def _edit_removeValue(self, pos: pointer):
-        self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
+    def _edit_removeValue(self):
+        self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(0, element.STATUS_ORIGINAL, True)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     #
@@ -467,7 +481,7 @@ class solver:
     def _resolve_MultiThreaded(self)->bool:
         self.sudoku_.resolveMultiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
-            self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
+            self.draw(re_draw_background=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
 # EOF

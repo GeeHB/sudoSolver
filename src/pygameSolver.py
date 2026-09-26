@@ -298,7 +298,7 @@ class pygameSolver(solver.solver):
         # Messages
         self.sMessage_ = blinkingText(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
-        self.drawBackground()
+        self._draw_background()
 
     # Start the sudoku (browsing, editing or solving)
     #
@@ -404,7 +404,7 @@ class pygameSolver(solver.solver):
     # Draw background, frames and borders
     #
     @override
-    def drawBackground(self):
+    def _draw_background(self):
         if self.win_ is not None:
             self.win_.fill(self.colours_[self.ColourID.ID_BK].other)
             if 0 != self.extSquareWidth_ :
@@ -472,7 +472,7 @@ class pygameSolver(solver.solver):
     # Refresh the whole window
     #
     def _refresh(self):
-        self.drawBackground()
+        self._draw_background()
         if len(self.sudoku_.elements_) > 0:
             self.draw()
         else:
@@ -491,7 +491,7 @@ class pygameSolver(solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def drawSingleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
             return
@@ -587,7 +587,7 @@ class pygameSolver(solver.solver):
                     self.newWindowSize(self.win_.get_width(), self.win_.get_height())
 
                     # ... and the array's content
-                    self.draw(redrawBackground=True)
+                    self.draw(re_draw_background=True)
 
                     # returns all events ?
                     if True == allEvents:
@@ -755,18 +755,16 @@ class pygameSolver(solver.solver):
     #   Returns the tuple of booleans : (escaped ?, sudoku saved (or successfully edited) ?)
     #
     def _edit(self) -> tuple[bool, bool]:
-        currentPos : pointer = pointer(gameMode=False)  # current position
-        prevPos : pointer | None =  None  # previous pos (if erase needed)
-        self.edition_.status_.value = solver.editStatus.EDIT_CONTINUE
+        self.edition_.clear(solver.editStatus.EDIT_CONTINUE)    # let's go !
 
         while not self.edition_.status_.isSet(solver.editStatus.EDIT_STOP):
             # if sel. changed, erase previously selected element
             self._edit_updatePos(
-                None if self.edition_.status_.isSet(solver.editStatus.EDIT_NO_REDRAW) else prevPos,
-                currentPos,
+                None if self.edition_.status_.isSet(solver.editStatus.EDIT_NO_REDRAW) else self.edition_.prevPos_,
+                self.edition_.currentPos_,
             )
-            prevPos = copy.deepcopy(currentPos)   # // copy constructor
-            self.edition_.status_.remove(solver.editStatus.EDIT_NO_REDRAW)
+
+            self.edition_.forward()
 
             # Wait for an event
             event = self._pollEvent()
@@ -775,31 +773,29 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    _ = currentPos.moveTo(pos=self.mousePosition(pos))
+                    _ = self.edition_.currentPos_.moveTo(pos=self.mousePosition(pos))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
                     match event.key:
                         case self.MOVE_LEFT:
-                            currentPos.decRow()
+                            self.edition_.currentPos_.decRow()
                         case self.MOVE_RIGHT:
-                            currentPos.incRow()
+                            self.edition_.currentPos_.incRow()
                         case self.MOVE_UP:
-                            currentPos.decLine()
+                            self.edition_.currentPos_.decLine()
                         case self.MOVE_DOWN:
-                            currentPos.incLine()
+                            self.edition_.currentPos_.incLine()
                         case key if key in range(
                             self.VALUE_1, self.VALUE_9 + 1
                         ):
-                            self._edit_setValue(
-                                currentPos, key - self.VALUE_1 + 1
-                            )
+                            self._edit_setValue(key - self.VALUE_1 + 1)
                         case self.VALUE_DEC:
-                            self._edit_decValue(currentPos)
+                            self._edit_decValue()
                         case self.VALUE_INC:
-                            self._edit_incValue(currentPos)
+                            self._edit_incValue()
                         case self.REMOVE_VALUE:
-                            self._edit_removeValue(currentPos)
+                            self._edit_removeValue()
                         case self.EDIT_CANCEL:
                             self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
                         case self.EDIT_QUIT_AND_SAVE:
@@ -812,11 +808,11 @@ class pygameSolver(solver.solver):
 
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
-            value : int | None = self.sudoku_.elements_[currentPos.index()].num
+            value : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
             if value is not None:
-                self.drawSingleElement(
-                    currentPos.row(),
-                    currentPos.line(),
+                self._draw_singleElement(
+                    self.edition_.currentPos_.row(),
+                    self.edition_.currentPos_.line(),
                     value,
                     self.ColourID.ID_BK,
                     self.ColourID.ID_HILITE,
