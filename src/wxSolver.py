@@ -85,7 +85,7 @@ class wxSolver(wx.Frame, solver.solver):
         # Display
         self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
         self.clientSize_ : wx.Size = wx.Size(0,0)
-        self.textOffsets_ : wx.Size = wx.Size(0,0)
+        self.textOffsets_ : wx.Size = wx.Size(0,0)  # for text in array
         self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
@@ -154,10 +154,10 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_ = None
 
         # Create memory DC with bitmap
-        self._display_StartUp()
+        self._draw_StartUp()
 
         # Numbers are centered !
-        self._display_StartUp()
+        self._draw_StartUp()
         if self.memDC_ is not None and self.memDC_.IsOk() :
             self.memDC_.SetFont(self.font_)
             dims : wx.Size = self.memDC_.GetTextExtent("O")
@@ -172,7 +172,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
 
     @override
-    def _display_StartUp(self):
+    def _draw_StartUp(self):
         if self.memDC_ is None :
             bmp = wx.Bitmap()
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
@@ -182,7 +182,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_.Clear()
 
     @override
-    def _display_End(self):
+    def _draw_End(self):
         self.Refresh()
 
     # Draw background, frames and borders

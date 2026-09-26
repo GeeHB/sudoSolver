@@ -65,10 +65,10 @@ class editStatus:
     EDIT_NO_EDITION:int = statusbits.STATUS_NONE
     EDIT_CONTINUE:int = 1
     EDIT_MODIFIED:int = 2  # The sudoku has been modified (at least once)
-    EDIT_STOP:int = EDIT_NO_EDITION  # Stop edition
-    EDIT_ESCAPE:int = 4  # Escape edition
+    EDIT_STOP:int = 4  # Stop edition
+    EDIT_ESCAPE:int = 8  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NO_REDRAW:int = 8  # don't redraw at previous pos value
+    EDIT_NO_REDRAW:int = 16  # don't redraw at previous pos value
 
     def __init__(self):
         self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
@@ -234,19 +234,13 @@ class solver:
     # Drawing in the client area
     #
 
-    def _display_StartUp(self):
-        pass
-
-    def _display_End(self):
-        pass
-
     # Draw the whole array
     #
     #   elements :  array of elements to draw or None.
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, re_draw_background : bool = False):
-        self._display_StartUp()
+        self._draw_StartUp()
 
         if re_draw_background:
             self._draw_background()
@@ -269,7 +263,23 @@ class solver:
                 position+=1
 
         self.update()
-        self._display_End()
+        self._draw_End()
+
+    def _draw_StartUp(self):
+        pass
+
+    def _draw_End(self):
+        pass
+
+    # Draw/erase a single element and its background
+    #
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+        pass
+
+    # Draw background, frames and borders
+    #
+    def _draw_background(self):
+        pass
 
     # The window's size has changed
     #
@@ -308,16 +318,6 @@ class solver:
         x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[0]) / self.extSquareWidth_)
         y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[1]) / self.extSquareWidth_)
         return (x,y)
-
-    # Draw/erase a single element and its background
-    #
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
-        pass
-
-    # Draw background, frames and borders
-    #
-    def _draw_background(self):
-        pass
 
     # Update the whole window
     #
@@ -389,7 +389,7 @@ class solver:
     # Update array during edition
     #
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
-        self._display_StartUp()
+        self._draw_StartUp()
 
         if prevPos is not None:
             # if sel. changed, erase previously selected element
@@ -410,7 +410,7 @@ class solver:
             self.ColourID.ID_SEL_TXT,
         )
 
-        self._display_End()
+        self._draw_End()
 
     # (try to) set a value
     #

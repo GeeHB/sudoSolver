@@ -797,9 +797,13 @@ class pygameSolver(solver.solver):
                         case self.REMOVE_VALUE:
                             self._edit_removeValue()
                         case self.EDIT_CANCEL:
+                            print(f"Avant : {self.edition_.status_.value_}")
                             self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
+                            print(f"Après : {self.edition_.status_.value_}")
+                            print("bye bye")
                         case self.EDIT_QUIT_AND_SAVE:
                             self.edition_.status_.set(solver.editStatus.EDIT_STOP)
+                            print("On sort")
                         case _:
                             pass
 
