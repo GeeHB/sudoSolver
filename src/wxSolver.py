@@ -41,12 +41,6 @@ from sharedTools import (
     systeminfos,
 )
 
-# wxSelection - Position & selection in the area
-#
-class wxSelection:
-    def __init__(self):
-        self.currentPos_ : pointer = pointer(0)
-        self.prevPos_ : pointer | None = None
 
 # wxSolverApp - Abstract class for application
 #
@@ -95,11 +89,10 @@ class wxSolver(wx.Frame, solver.solver):
 
         solver.solver.__init__(self, params)
 
-        self.memDC_ : wx.MemoryDC | None = None
+        # Display
+        self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
         self.clientSize_ : wx.Size = wx.Size(0,0)
-
         self.textOffsets_ : wx.Size = wx.Size(0,0)
-        self.select_ : wxSelection = wxSelection()
 
     # GUI initialization
     #
@@ -136,11 +129,11 @@ class wxSolver(wx.Frame, solver.solver):
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
-        self.select_.prevPos_ = copy.deepcopy(self.select_.currentPos_)   # // copy constructor
+        self.edition_.prevPos_ = copy.deepcopy(self.edition_.currentPos_)   # // copy constructor
 
         newPos : tuple[int,int] = self.mousePosition(pos=(event.x, event.y))
-        if self.select_.currentPos_.moveTo(pos=newPos) :
-            self._edit_updatePos(self.select_.prevPos_, self.select_.currentPos_)
+        if self.edition_.currentPos_.moveTo(pos=newPos) :
+            self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
     # Draw the window
     #

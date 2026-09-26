@@ -39,15 +39,6 @@ from sharedTools import (
 )
 from sudoku import sudoku
 
-# Edition status
-#
-EDIT_CONTINUE:int = statusbits.STATUS_NONE
-EDIT_MODIFIED:int = 1  # The sudoku has been modified (at least once)
-EDIT_STOP:int = 2  # Stop edition
-EDIT_ESCAPE:int = 4  # Escape edition
-EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-EDIT_NOREDRAW:int = 8  # don't redraw at previous pos value
-
 # colour - General and portable colour definition
 #
 class ownColour:
@@ -63,6 +54,25 @@ class ownColour:
             self.b = rgb[2]
         self.a = alpha if alpha is not None else 255
         self.other : Any = None
+
+# editSel - Edition and selection inf.
+#
+class editStatus:
+    # Edition status
+    #
+    EDIT_NO_EDITION:int = statusbits.STATUS_NONE
+    EDIT_CONTINUE:int = 1
+    EDIT_MODIFIED:int = 2  # The sudoku has been modified (at least once)
+    EDIT_STOP:int = 4  # Stop edition
+    EDIT_ESCAPE:int = 8  # Escape edition
+    EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
+    EDIT_NO_REDRAW:int = 16  # don't redraw at previous pos value
+
+    def __init__(self):
+        self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
+        self.currentPos_ : pointer = pointer(0)
+        self.prevPos_ : pointer | None = None
+        self.blink_ : bool = False
 
 # solverApp - Abstract class for application
 #
@@ -98,6 +108,7 @@ class solver:
         ID_BK_FILENAME = auto()
         ID_TXT = auto()
         ID_HILITE = auto()
+        ID_HILITE_TXT = ID_TXT
         ID_OBVIOUS = ID_BORDER
         ID_SEL_BK = auto()
         ID_SEL_TXT = auto()
@@ -109,7 +120,7 @@ class solver:
         self.params_ : options = params
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
-        self.editStatus_:statusbits.statusBits = statusbits.statusBits(EDIT_CONTINUE)
+        self.edition_ : editStatus = editStatus()
 
         # Dimensions
         #
@@ -130,6 +141,7 @@ class solver:
         self.colours_.append(ownColour(BK_COLOUR_FILENAME))
         self.colours_.append(ownColour(TXT_COLOUR))
         self.colours_.append(ownColour(HILITE_COLOUR))
+        #self.colours_.append(ownColour(HILITE_COLOUR))
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
 
@@ -391,7 +403,7 @@ class solver:
     def _edit_setValue(self, pos: pointer, val: int):
         if self.sudoku_.checkValue(pos, val):
             self.sudoku_.elements_[pos.index()].setValue(val, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
     #
@@ -403,7 +415,7 @@ class solver:
         newVal : int = self.sudoku_.findPreviousValue(pos, val)
         if newVal != val:
             self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Inc value
     #
@@ -415,13 +427,13 @@ class solver:
         newVal : int = self.sudoku_.findNextValue(pos, val)
         if newVal != val:
             self.sudoku_.elements_[pos.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Remove current value
     #
     def _edit_removeValue(self, pos: pointer):
         self.sudoku_.elements_[pos.index()].setValue(0, element.STATUS_ORIGINAL, True)
-        self.editStatus_.set(EDIT_NOREDRAW | EDIT_MODIFIED)
+        self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     #
     # Resolution

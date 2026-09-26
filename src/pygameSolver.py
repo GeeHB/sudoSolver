@@ -757,16 +757,16 @@ class pygameSolver(solver.solver):
     def _edit(self) -> tuple[bool, bool]:
         currentPos : pointer = pointer(gameMode=False)  # current position
         prevPos : pointer | None =  None  # previous pos (if erase needed)
-        self.editStatus_.value = solver.EDIT_CONTINUE
+        self.edition_.status_.value = solver.editStatus.EDIT_CONTINUE
 
-        while not self.editStatus_.isSet(solver.EDIT_STOP):
+        while not self.edition_.status_.isSet(solver.editStatus.EDIT_STOP):
             # if sel. changed, erase previously selected element
             self._edit_updatePos(
-                None if self.editStatus_.isSet(solver.EDIT_NOREDRAW) else prevPos,
+                None if self.edition_.status_.isSet(solver.editStatus.EDIT_NO_REDRAW) else prevPos,
                 currentPos,
             )
             prevPos = copy.deepcopy(currentPos)   # // copy constructor
-            self.editStatus_.remove(solver.EDIT_NOREDRAW)
+            self.edition_.status_.remove(solver.editStatus.EDIT_NO_REDRAW)
 
             # Wait for an event
             event = self._pollEvent()
@@ -801,16 +801,16 @@ class pygameSolver(solver.solver):
                         case self.REMOVE_VALUE:
                             self._edit_removeValue(currentPos)
                         case self.EDIT_CANCEL:
-                            self.editStatus_.set(solver.EDIT_ESCAPED)
+                            self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
                         case self.EDIT_QUIT_AND_SAVE:
-                            self.editStatus_.set(solver.EDIT_STOP)
+                            self.edition_.status_.set(solver.editStatus.EDIT_STOP)
                         case _:
                             pass
 
                 elif event.type == self.EVT_QUIT:
-                    self.editStatus_.set(solver.EDIT_ESCAPED)
+                    self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
 
-        escaped = self.editStatus_.isSet(solver.EDIT_ESCAPE)
+        escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
             value : int | None = self.sudoku_.elements_[currentPos.index()].num
             if value is not None:
@@ -826,7 +826,7 @@ class pygameSolver(solver.solver):
         # Saves changes or exit
         return (
             escaped,
-            ((self.sudoku_.save() is not None) if self.editStatus_.isSet(solver.EDIT_MODIFIED) else True)
+            ((self.sudoku_.save() is not None) if self.edition_.status_.isSet(solver.editStatus.EDIT_MODIFIED) else True)
             if not escaped
             else False,
         )
