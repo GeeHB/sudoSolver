@@ -87,6 +87,7 @@ class editStatus:
         self.prevPos_ = copy.deepcopy(self.currentPos_)
         self.status_.remove(self.EDIT_NO_REDRAW)
 
+    # Blinking effect
     def blink(self)->bool:
         self.blink_ = not self.blink_
         return self.blink_
@@ -393,6 +394,16 @@ class solver:
     #
     # Array edition
     #
+
+    # Start edition mode
+    #
+    def _edit_start(self):
+        pass
+
+    # End of edition mode
+    #
+    def _edit_stop(self):
+        pass
 
     # Update array during edition
     #

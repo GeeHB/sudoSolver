@@ -43,4 +43,5 @@ FILE_FONT_SIZE          = 25
 FILE_FONT_POS_X         = 35
 FILE_FONT_POS_Y         = 5
 
+BLINK_RATE : int = 750 # Blinking rate in ms
 #eof

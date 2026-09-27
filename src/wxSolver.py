@@ -9,9 +9,7 @@
 #
 import copy
 import math
-import os
 import sys
-import time
 from typing import override
 
 try :
@@ -24,21 +22,12 @@ import GUIConsts
 import solver
 from element import element
 from options import (
-    APP_AUTHOR_SHORT,
-    APP_NAME,
     APP_SHORT_NAME,
-    FILE_EXPORT_EXTENSION,
     options,
 )
-from ownExceptions import sudokuError
 from pointer import (
     LINE_COUNT,
     ROW_COUNT,
-    pointer,
-)
-from sharedTools import (
-    statusbits,
-    systeminfos,
 )
 
 
@@ -91,6 +80,7 @@ class wxSolver(wx.Frame, solver.solver):
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
                         faceName = GUIConsts.ELT_FONT_NAME)
+        self.blinkTimer_ : wx.Timer = wx.Timer(self)
 
     # GUI initialization
     #
@@ -105,9 +95,11 @@ class wxSolver(wx.Frame, solver.solver):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
 
         self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
         self.edition_.editable = True
+        self._edit_start()
 
     # Set/change the current array's filename
     #
@@ -168,6 +160,20 @@ class wxSolver(wx.Frame, solver.solver):
         # Redraw the whole array
         self._draw_background()
         self.draw()
+
+    def OnTimer(self, event : wx.Event):
+        hilite : bool = self.edition_.blink()
+
+        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
+        value : int | None = currentElement.num
+        self._draw_startUp()
+        self._draw_singleElement(
+            self.edition_.currentPos_.row(),
+            self.edition_.currentPos_.line(),
+            value,
+            self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT)
+        self._draw_end()
 
     #
     #  drawings
@@ -251,4 +257,19 @@ class wxSolver(wx.Frame, solver.solver):
                 self.colours_[id].g,
                 self.colours_[id].b,
                 self.colours_[id].a)
+
+    # Start edition mode
+    #
+    @override
+    def _edit_start(self):
+        if not self.blinkTimer_.IsRunning():
+            self.blinkTimer_.Start(GUIConsts.BLINK_RATE)
+
+    # End of edition mode
+    #
+    @override
+    def _edit_stop(self):
+        if self.blinkTimer_.IsRunning():
+            self.blinkTimer_.Stop()
+
 # EOF
