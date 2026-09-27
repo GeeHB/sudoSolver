@@ -63,12 +63,13 @@ class editStatus:
     # Edition status
     #
     EDIT_NO_EDITION:int = statusbits.STATUS_NONE
-    EDIT_CONTINUE:int = 1
-    EDIT_MODIFIED:int = 2  # The sudoku has been modified (at least once)
-    EDIT_STOP:int = 4  # Stop edition
-    EDIT_ESCAPE:int = 8  # Escape edition
+    EDIT_ALLOW_EDITION:int = 1
+    EDIT_CONTINUE:int = 2
+    EDIT_MODIFIED:int = 4  # The sudoku has been modified (at least once)
+    EDIT_STOP:int = 8  # Stop edition
+    EDIT_ESCAPE:int = 16  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NO_REDRAW:int = 16  # don't redraw at previous pos value
+    EDIT_NO_REDRAW:int = 32  # don't redraw at previous pos value
 
     def __init__(self):
         self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
@@ -83,12 +84,19 @@ class editStatus:
         self.blink_ = False
 
     def forward(self):
-        self.prevPos_ = copy.deepcopy(self.currentPos_)   # // copy constructor
+        self.prevPos_ = copy.deepcopy(self.currentPos_)
         self.status_.remove(self.EDIT_NO_REDRAW)
 
     def blink(self)->bool:
         self.blink_ = not self.blink_
         return self.blink_
+
+    @property
+    def editable(self)->bool:
+        return self.status_.isSet(self.EDIT_ALLOW_EDITION)
+    @editable.setter
+    def editable(self, set : bool = True):
+        self.status_.set(self.EDIT_ALLOW_EDITION, set)
 
 # solverApp - Abstract class for application
 #
@@ -161,7 +169,7 @@ class solver:
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
 
-        self.params_.center = False
+        self.params_.center = True
 
     @property
     def initialized(self)->bool:
@@ -187,7 +195,7 @@ class solver:
     def initialize(self):
         # Default dimensions
         self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH
-        self.height_ = GUIConsts.MENUBAR_HEIGHT + LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
+        self.height_ = LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
         self.fontsize_ = GUIConsts.ELT_FONT_SIZE
@@ -240,7 +248,7 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, re_draw_background : bool = False):
-        self._draw_StartUp()
+        self._draw_startUp()
 
         if re_draw_background:
             self._draw_background()
@@ -263,12 +271,12 @@ class solver:
                 position+=1
 
         self.update()
-        self._draw_End()
+        self._draw_end()
 
-    def _draw_StartUp(self):
+    def _draw_startUp(self):
         pass
 
-    def _draw_End(self):
+    def _draw_end(self):
         pass
 
     # Draw/erase a single element and its background
@@ -289,7 +297,7 @@ class solver:
 
         # Compute new square sizes
         squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
-        squareH = math.floor((newHeight - GUIConsts.MENUBAR_HEIGHT - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
+        squareH = math.floor((newHeight - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
 
         if squareW < GUIConsts.SQUARE_MIN or squareH < GUIConsts.SQUARE_MIN :
             self.extSquareWidth_ = GUIConsts.SQUARE_MIN
@@ -303,8 +311,8 @@ class solver:
         self.intSquareWidth_ = self.extSquareWidth_ - 2 * GUIConsts.EXT_BORDER_THICK
 
         if self.params_.center :
-            self.offsets_ = (math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH)) / 2),
-                GUIConsts.MENUBAR_HEIGHT + math.floor((self.height_ - (self.extSquareWidth_ * LINE_COUNT + 2 * GUIConsts.DELTA_H)) / 2))
+            self.offsets_ = (math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT)) / 2),
+                math.floor((self.height_ - self.extSquareWidth_ * LINE_COUNT) / 2))
         else:
             self.offsets_ = (0,0)
 
@@ -315,8 +323,8 @@ class solver:
     # Mouse position : screen -> array coordinates
     #
     def mousePosition(self, pos : tuple[int,int])->tuple[int, int]:
-        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[0]) / self.extSquareWidth_)
-        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - GUIConsts.DELTA_W - self.offsets_[1]) / self.extSquareWidth_)
+        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
+        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
         return (x,y)
 
     # Update the whole window
@@ -389,7 +397,7 @@ class solver:
     # Update array during edition
     #
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
-        self._draw_StartUp()
+        self._draw_startUp()
 
         if prevPos is not None:
             # if sel. changed, erase previously selected element
@@ -410,7 +418,7 @@ class solver:
             self.ColourID.ID_SEL_TXT,
         )
 
-        self._draw_End()
+        self._draw_end()
 
     # (try to) set a value
     #

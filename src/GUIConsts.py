@@ -32,7 +32,6 @@ DELTA_H                 = 10
 
 EXT_BORDER_THICK        = 3    # Thickness of external border
 
-MENUBAR_HEIGHT          = 32
 
 # Elements'text font sizes (in pixels) and names
 #

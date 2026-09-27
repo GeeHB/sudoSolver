@@ -107,6 +107,7 @@ class wxSolver(wx.Frame, solver.solver):
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
 
         self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
+        self.edition_.editable = True
 
     # Set/change the current array's filename
     #
@@ -127,11 +128,12 @@ class wxSolver(wx.Frame, solver.solver):
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
-        self.edition_.prevPos_ = copy.deepcopy(self.edition_.currentPos_)   # // copy constructor
+        if self.edition_.editable:
+            self.edition_.prevPos_ = copy.deepcopy(self.edition_.currentPos_)   # // copy constructor
 
-        newPos : tuple[int,int] = self.mousePosition(pos=(event.x, event.y))
-        if self.edition_.currentPos_.moveTo(pos=newPos) :
-            self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
+            newPos : tuple[int,int] = self.mousePosition(pos=(event.x, event.y))
+            if self.edition_.currentPos_.moveTo(pos=newPos) :
+                self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
     # Draw the window
     #
@@ -139,7 +141,7 @@ class wxSolver(wx.Frame, solver.solver):
         if self.memDC_ is not None and self.memDC_.IsOk():
             bmpSize : wx.Size = self.memDC_.GetSize()
             paintDC = wx.PaintDC(self)
-            paintDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)
+            paintDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
 
     # Window's size just changed
     #
@@ -154,10 +156,10 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_ = None
 
         # Create memory DC with bitmap
-        self._draw_StartUp()
+        self._draw_startUp()
 
         # Numbers are centered !
-        self._draw_StartUp()
+        self._draw_startUp()
         if self.memDC_ is not None and self.memDC_.IsOk() :
             self.memDC_.SetFont(self.font_)
             dims : wx.Size = self.memDC_.GetTextExtent("O")
@@ -172,7 +174,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
 
     @override
-    def _draw_StartUp(self):
+    def _draw_startUp(self):
         if self.memDC_ is None :
             bmp = wx.Bitmap()
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
@@ -182,7 +184,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_.Clear()
 
     @override
-    def _draw_End(self):
+    def _draw_end(self):
         self.Refresh()
 
     # Draw background, frames and borders
@@ -197,8 +199,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
-                    x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsets_[0]
-                    y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
+                    x = row * self.extSquareWidth_ + self.offsets_[0]
+                    y = line * self.extSquareWidth_ + self.offsets_[1]
                     self.memDC_.DrawLine(x, y, x, y + self.extSquareWidth_)
                     self.memDC_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
@@ -210,13 +212,12 @@ class wxSolver(wx.Frame, solver.solver):
 
             for line in range(3):
                 for row in range(3):
-                    x = GUIConsts.DELTA_W + row * lSquare + self.offsets_[0]
-                    y = GUIConsts.DELTA_H + line * lSquare + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
+                    x = row * lSquare + self.offsets_[0]
+                    y = line * lSquare + self.offsets_[1]
                     self.memDC_.DrawLine(x, y,x, y + lSquare)
                     self.memDC_.DrawLine(x, y + lSquare,x + lSquare, y + lSquare)
                     self.memDC_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
                     self.memDC_.DrawLine(x + lSquare, y, x, y)
-
 
     # Draw/erase a single element and its background
     #
@@ -227,8 +228,8 @@ class wxSolver(wx.Frame, solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1] + GUIConsts.MENUBAR_HEIGHT
+        x = row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
+        y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
         # Erase background
         self.memDC_.SetBrush(wx.Brush(self.colours_[bkColourID].other))

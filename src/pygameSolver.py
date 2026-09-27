@@ -497,8 +497,8 @@ class pygameSolver(solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
+        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
+        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
 
         # Erase background
         pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
