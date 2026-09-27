@@ -421,12 +421,13 @@ class solver:
             )
 
         # Hilight the new value
+        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
             self.sudoku_.elements_[currentPos.index()].num,
             self.ColourID.ID_SEL_BK,
-            self.ColourID.ID_SEL_TXT,
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
         )
 
         self._draw_end()

@@ -151,7 +151,6 @@ class wxSolver(wx.Frame, solver.solver):
         self._draw_startUp()
 
         # Numbers are centered !
-        self._draw_startUp()
         if self.memDC_ is not None and self.memDC_.IsOk() :
             self.memDC_.SetFont(self.font_)
             dims : wx.Size = self.memDC_.GetTextExtent("O")
