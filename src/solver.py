@@ -83,7 +83,7 @@ class editStatus:
         self.prevPos_ = None
         self.blink_ = False
 
-    def forward(self):
+    def move(self):
         self.prevPos_ = copy.deepcopy(self.currentPos_)
         self.status_.remove(self.EDIT_NO_REDRAW)
 
@@ -125,6 +125,16 @@ class solverApp:
 # solver - Abstract class for GUI sudoku solvers
 #
 class solver:
+
+    #
+    #  key codes
+    #
+
+    MOVE_LEFT:int           = 0
+    MOVE_RIGHT:int          = 0
+    MOVE_UP:int             = 0
+    MOVE_DOWN:int           = 0
+
     # Colours' ID
     #
     class ColourID(IntEnum):
@@ -280,6 +290,19 @@ class solver:
     def _draw_end(self):
         pass
 
+    # Draw selected element (on edit mode)
+    #
+    def _draw_selectedElement(self, hilite : bool = True):
+        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
+        value : int | None = currentElement.num
+        self._draw_startUp()
+        self._draw_singleElement(
+            self.edition_.currentPos_.row(),
+            self.edition_.currentPos_.line(),
+            value,
+            self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT)
+
     # Draw/erase a single element and its background
     #
     def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
@@ -323,10 +346,12 @@ class solver:
 
     # Mouse position : screen -> array coordinates
     #
-    def mousePosition(self, pos : tuple[int,int])->tuple[int, int]:
-        x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
-        y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
-        return (x,y)
+    def _mouse_translatePosition(self, pos : tuple[int,int])->tuple[int, int]:
+        if pos[1] > self.offsets_[1] :
+            x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
+            y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
+            return (x,y)
+        return (-1,-1)
 
     # Update the whole window
     #

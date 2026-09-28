@@ -764,7 +764,7 @@ class pygameSolver(solver.solver):
                 self.edition_.currentPos_,
             )
 
-            self.edition_.forward()
+            self.edition_.move()
 
             # Wait for an event
             event = self._pollEvent()
@@ -773,7 +773,7 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    _ = self.edition_.currentPos_.moveTo(pos=self.mousePosition(pos))
+                    _ = self.edition_.currentPos_.moveTo(pos=self._mouse_translatePosition(pos))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
@@ -797,13 +797,9 @@ class pygameSolver(solver.solver):
                         case self.REMOVE_VALUE:
                             self._edit_removeValue()
                         case self.EDIT_CANCEL:
-                            print(f"Avant : {self.edition_.status_.value_}")
                             self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
-                            print(f"Après : {self.edition_.status_.value_}")
-                            print("bye bye")
                         case self.EDIT_QUIT_AND_SAVE:
                             self.edition_.status_.set(solver.editStatus.EDIT_STOP)
-                            print("On sort")
                         case _:
                             pass
 

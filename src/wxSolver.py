@@ -13,7 +13,7 @@ import sys
 from typing import override
 
 try :
-    import wx
+    import wx  # pyright: ignore[reportMissingTypeStubs]
 except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
@@ -64,11 +64,24 @@ class wxSolverApp(wx.App, solver.solverApp):
 # wxSolver - Abstract class for GUI sudoku solvers
 #
 class wxSolver(wx.Frame, solver.solver):
+
+    #
+    #  key codes
+    #
+
+    MOVE_LEFT:int           = wx.WXK_LEFT
+    MOVE_RIGHT:int          = wx.WXK_RIGHT
+    MOVE_UP:int             = wx.WXK_UP
+    MOVE_DOWN:int           = wx.WXK_DOWN
+
     # Constructor
     #
     def __init__(self, params : options):
         #wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = (wx.CAPTION & wx.RESIZE_BORDER))
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE)
+
+        self.panel_ = wx.Panel(self, wx.ID_ANY)     # to receive keyboard focus
+
         solver.solver.__init__(self, params)
 
         # Display
@@ -92,10 +105,17 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Associate event to handlers
         #
+        self.panel_.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)  # pyright: ignore[reportUnknownMemberType]
+
+        # binded twice isnce panel and frame both can intercept a click !
+        self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
+
+        self.panel_.SetFocus()
 
         self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
         self.edition_.editable = True
@@ -117,15 +137,53 @@ class wxSolver(wx.Frame, solver.solver):
     # Event handlers
     #
 
+    # Keyboard events
+    #
+    def OnKeyDown(self, event :  wx.KeyEvent):
+        if self.edition_.editable:
+            keyCode = event.GetKeyCode()
+            self.edition_.move()
+            match keyCode:
+                case self.MOVE_LEFT:
+                    self.edition_.currentPos_.decRow()
+                case self.MOVE_RIGHT:
+                    self.edition_.currentPos_.incRow()
+                case self.MOVE_UP:
+                    self.edition_.currentPos_.decLine()
+                case self.MOVE_DOWN:
+                    self.edition_.currentPos_.incLine()
+                case _:
+                    pass
+
+            #self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
+            self._edit_selChanged()
+
+            """
+                            case key if key in range(
+                                self.VALUE_1, self.VALUE_9 + 1
+                            ):
+                                self._edit_setValue(key - self.VALUE_1 + 1)
+                            case self.VALUE_DEC:
+                                self._edit_decValue()
+                            case self.VALUE_INC:
+                                self._edit_incValue()
+                            case self.REMOVE_VALUE:
+                                self._edit_removeValue()
+            """
+
+
+            return
+
+        event.Skip()  # Allow other handlers to process the key
+
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.edition_.editable:
-            self.edition_.prevPos_ = copy.deepcopy(self.edition_.currentPos_)   # // copy constructor
-
-            newPos : tuple[int,int] = self.mousePosition(pos=(event.x, event.y))
-            if self.edition_.currentPos_.moveTo(pos=newPos) :
-                self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
+            self.edition_.move()
+            newPos : tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            if self.edition_.currentPos_.moveTo(pos=newPos):
+                self._edit_selChanged()
 
     # Draw the window
     #
@@ -156,22 +214,16 @@ class wxSolver(wx.Frame, solver.solver):
             dims : wx.Size = self.memDC_.GetTextExtent("O")
             self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
 
+        if self.edition_.editable:
+            self.edition_.blink_ = False
+
         # Redraw the whole array
         self._draw_background()
         self.draw()
 
     def OnTimer(self, event : wx.Event):
-        hilite : bool = self.edition_.blink()
-
-        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
-        value : int | None = currentElement.num
         self._draw_startUp()
-        self._draw_singleElement(
-            self.edition_.currentPos_.row(),
-            self.edition_.currentPos_.line(),
-            value,
-            self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT)
+        self._draw_selectedElement(self.edition_.blink())
         self._draw_end()
 
     #
@@ -270,5 +322,12 @@ class wxSolver(wx.Frame, solver.solver):
     def _edit_stop(self):
         if self.blinkTimer_.IsRunning():
             self.blinkTimer_.Stop()
+
+    # Selected item has just changed
+    #
+    def _edit_selChanged(self):
+        self._edit_stop()
+        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
+        self._edit_start()
 
 # EOF
