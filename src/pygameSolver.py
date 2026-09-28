@@ -215,10 +215,10 @@ class pygameSolver(solver.solver):
 
     # PYGame keys
     #
-    MOVE_LEFT:int           = pygame.K_LEFT
-    MOVE_RIGHT:int          = pygame.K_RIGHT
-    MOVE_UP:int             = pygame.K_UP
-    MOVE_DOWN:int           = pygame.K_DOWN
+    KEY_MOVE_LEFT:int           = pygame.K_LEFT
+    KEY_MOVE_RIGHT:int          = pygame.K_RIGHT
+    KEY_MOVE_UP:int             = pygame.K_UP
+    KEY_MOVE_DOWN:int           = pygame.K_DOWN
 
     # Mouse click
     EVT_MOUSEBUTTONDOWN:int = pygame.MOUSEBUTTONDOWN
@@ -230,18 +230,18 @@ class pygameSolver(solver.solver):
     MOUSE_BUTTON_RIGHT:int  = 3
 
     # Change element value
-    REMOVE_VALUE:int        = pygame.K_DELETE
-    REMOVE_VALUE_BIS:int    = pygame.K_BACKSPACE
+    KEY_REMOVE_VALUE:int        = pygame.K_DELETE
+    KEY_REMOVE_VALUE_BIS:int    = pygame.K_BACKSPACE
 
-    VALUE_DEC:int           = pygame.K_PAGEDOWN
-    VALUE_INC:int           = pygame.K_PAGEUP
+    KEY_VALUE_DEC:int           = pygame.K_PAGEDOWN
+    KEY_VALUE_INC:int           = pygame.K_PAGEUP
 
     # Set value
-    VALUE_1:int             = pygame.K_1
-    VALUE_9:int             = pygame.K_9
+    KEY_VALUE_1:int             = pygame.K_1
+    KEY_VALUE_9:int             = pygame.K_9
 
-    VALUE_KPAD_1:int         = pygame.K_KP1  # from keypad
-    VALUE_KPAD_9:int         = pygame.K_KP9
+    KEY_VALUE_KPAD_1:int         = pygame.K_KP1  # from keypad
+    KEY_VALUE_KPAD_9:int         = pygame.K_KP9
 
     EDIT_CANCEL:int         = pygame.K_ESCAPE
     EDIT_QUIT_AND_SAVE:int  = pygame.K_RETURN
@@ -412,8 +412,8 @@ class pygameSolver(solver.solver):
                 #
                 for line in range(LINE_COUNT):
                     for row in range(ROW_COUNT):
-                        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + self.offsets_[0]
-                        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + self.offsets_[1]
+                        x = row * self.extSquareWidth_ + self.offsets_[0]
+                        y = line * self.extSquareWidth_ + self.offsets_[1]
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
@@ -426,8 +426,8 @@ class pygameSolver(solver.solver):
                 lSquare = self.extSquareWidth_ * 3
                 for line in range(3):
                     for row in range(3):
-                        x = GUIConsts.DELTA_W + row * lSquare + self.offsets_[0]
-                        y = GUIConsts.DELTA_H + line * lSquare + self.offsets_[1]
+                        x = row * lSquare + self.offsets_[0]
+                        y = line * lSquare + self.offsets_[1]
                         pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
                             (x, y),
                             (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
@@ -497,8 +497,8 @@ class pygameSolver(solver.solver):
             return
 
         # top-left corner position
-        x = GUIConsts.DELTA_W + row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
-        y = GUIConsts.DELTA_H + line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK
+        x = row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
+        y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
         # Erase background
         pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
@@ -564,8 +564,8 @@ class pygameSolver(solver.solver):
     # Handle window's resize
     #
     @override
-    def newWindowSize(self, newWidth:int, newHeight:int):
-        solver.solver.newWindowSize(self, newWidth, newHeight)
+    def _draw_newClientSize(self, newWidth:int, newHeight:int):
+        solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
         # Update elements'font
         if self.sElement_ is not None:
@@ -584,10 +584,11 @@ class pygameSolver(solver.solver):
                     finished = True
                 elif event.type == pygame.VIDEORESIZE:
                     # Update surface size
-                    self.newWindowSize(self.win_.get_width(), self.win_.get_height())
+                    self._draw_newClientSize(self.win_.get_width(), self.win_.get_height())
 
                     # ... and the array's content
                     self.draw(re_draw_background=True)
+                    self.update()
 
                     # returns all events ?
                     if True == allEvents:
@@ -620,12 +621,12 @@ class pygameSolver(solver.solver):
         # Keyboard translations
         if event.type == pygame.KEYDOWN:
             # turn keypad num keys into num keys
-            if  event.key >= self.VALUE_KPAD_1 and event.key <= self.VALUE_KPAD_9:
-                event.key = self.VALUE_1 + event.key - self.VALUE_KPAD_1
+            if  event.key >= self.KEY_VALUE_KPAD_1 and event.key <= self.KEY_VALUE_KPAD_9:
+                event.key = self.KEY_VALUE_1 + event.key - self.KEY_VALUE_KPAD_1
             # DEL == Backspace
             else :
-                if event.key == self.REMOVE_VALUE_BIS:
-                    event.key = self.REMOVE_VALUE
+                if event.key == self.KEY_REMOVE_VALUE_BIS:
+                    event.key = self.KEY_REMOVE_VALUE
 
         return event
 
@@ -702,12 +703,12 @@ class pygameSolver(solver.solver):
         event : pygame.event.Event = self._waitForEvent(allEvents=True)
 
         if event.type == self.EVT_KEYDOWN:
-            if self.MOVE_RIGHT == event.key:
+            if self.KEY_MOVE_RIGHT == event.key:
                 index += 1
                 if index >= maxIndex:
                     index = 0
             else:
-                if self.MOVE_LEFT == event.key:
+                if self.KEY_MOVE_LEFT == event.key:
                     index -= 1
                     if index < 0:
                         index = maxIndex - 1
@@ -778,23 +779,23 @@ class pygameSolver(solver.solver):
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
                     match event.key:
-                        case self.MOVE_LEFT:
+                        case self.KEY_MOVE_LEFT:
                             self.edition_.currentPos_.decRow()
-                        case self.MOVE_RIGHT:
+                        case self.KEY_MOVE_RIGHT:
                             self.edition_.currentPos_.incRow()
-                        case self.MOVE_UP:
+                        case self.KEY_MOVE_UP:
                             self.edition_.currentPos_.decLine()
-                        case self.MOVE_DOWN:
+                        case self.KEY_MOVE_DOWN:
                             self.edition_.currentPos_.incLine()
                         case key if key in range(
-                            self.VALUE_1, self.VALUE_9 + 1
+                            self.KEY_VALUE_1, self.KEY_VALUE_9 + 1
                         ):
-                            self._edit_setValue(key - self.VALUE_1 + 1)
-                        case self.VALUE_DEC:
+                            self._edit_setValue(key - self.KEY_VALUE_1 + 1)
+                        case self.KEY_VALUE_DEC:
                             self._edit_decValue()
-                        case self.VALUE_INC:
+                        case self.KEY_VALUE_INC:
                             self._edit_incValue()
-                        case self.REMOVE_VALUE:
+                        case self.KEY_REMOVE_VALUE:
                             self._edit_removeValue()
                         case self.EDIT_CANCEL:
                             self.edition_.status_.set(solver.editStatus.EDIT_ESCAPED)
@@ -837,7 +838,7 @@ class pygameSolver(solver.solver):
     # Convert colour objects from ownColour to pygameColor
     #
     @override
-    def convertColours(self):
+    def _draw_convertColours(self):
         for id in range(len(self.colours_)):
             self.colours_[id].other = pygame.Color(
                 self.colours_[id].r,

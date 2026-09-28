@@ -130,10 +130,26 @@ class solver:
     #  key codes
     #
 
-    MOVE_LEFT:int           = 0
-    MOVE_RIGHT:int          = 0
-    MOVE_UP:int             = 0
-    MOVE_DOWN:int           = 0
+    # Change pos.
+    KEY_MOVE_LEFT:int = 0
+    KEY_MOVE_RIGHT:int = 0
+    KEY_MOVE_UP:int = 0
+    KEY_MOVE_DOWN:int = 0
+
+    # Change element value
+    KEY_REMOVE_VALUE:int = 0
+    KEY_REMOVE_VALUE_BIS:int = 0
+
+    KEY_VALUE_DEC:int = 0
+    KEY_VALUE_INC:int = 0
+
+    # Set value
+    KEY_VALUE_1:int = 0
+    KEY_VALUE_9:int = 0
+
+    KEY_VALUE_KPAD_1:int = 0
+    KEY_VALUE_KPAD_9:int = 0
+
 
     # Colours' ID
     #
@@ -211,7 +227,7 @@ class solver:
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
         self.fontsize_ = GUIConsts.ELT_FONT_SIZE
 
-        self.convertColours() # Convert colours
+        self._draw_convertColours() # Convert colours
 
     # Start drawings / UI
     #
@@ -315,9 +331,11 @@ class solver:
 
     # The window's size has changed
     #
-    def newWindowSize(self, newWidth:int, newHeight:int):
+    def _draw_newClientSize(self, newWidth:int, newHeight:int):
         self.width_ = newWidth
         self.height_ = newHeight
+
+        print(f"{newWidth} x {newHeight}")
 
         # Compute new square sizes
         squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
@@ -365,7 +383,7 @@ class solver:
 
     # Convert colour objects from ownColour to pygameColor
     #
-    def convertColours(self):
+    def _draw_convertColours(self):
         pass
 
     #

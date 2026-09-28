@@ -69,10 +69,24 @@ class wxSolver(wx.Frame, solver.solver):
     #  key codes
     #
 
-    MOVE_LEFT:int           = wx.WXK_LEFT
-    MOVE_RIGHT:int          = wx.WXK_RIGHT
-    MOVE_UP:int             = wx.WXK_UP
-    MOVE_DOWN:int           = wx.WXK_DOWN
+    KEY_MOVE_LEFT:int = wx.WXK_LEFT
+    KEY_MOVE_RIGHT:int = wx.WXK_RIGHT
+    KEY_MOVE_UP:int = wx.WXK_UP
+    KEY_MOVE_DOWN:int = wx.WXK_DOWN
+
+    # Change element value
+    KEY_REMOVE_VALUE:int = wx.WXK_DELETE
+    KEY_REMOVE_VALUE_BIS:int = wx.WXK_BACK
+
+    KEY_VALUE_DEC:int = wx.WXK_PAGEDOWN
+    KEY_VALUE_INC:int = wx.WXK_PAGEUP
+
+    # Set value
+    KEY_VALUE_1:int = 325 #ord('1')
+    KEY_VALUE_9:int = 333 #ord('9')
+
+    KEY_VALUE_KPAD_1:int = wx.WXK_NUMPAD1
+    KEY_VALUE_KPAD_9:int = wx.WXK_NUMPAD1
 
     # Constructor
     #
@@ -142,34 +156,32 @@ class wxSolver(wx.Frame, solver.solver):
     def OnKeyDown(self, event :  wx.KeyEvent):
         if self.edition_.editable:
             keyCode = event.GetKeyCode()
+            #print(f"Key : {keyCode}")
+
             self.edition_.move()
             match keyCode:
-                case self.MOVE_LEFT:
+                case self.KEY_MOVE_LEFT:
                     self.edition_.currentPos_.decRow()
-                case self.MOVE_RIGHT:
+                case self.KEY_MOVE_RIGHT:
                     self.edition_.currentPos_.incRow()
-                case self.MOVE_UP:
+                case self.KEY_MOVE_UP:
                     self.edition_.currentPos_.decLine()
-                case self.MOVE_DOWN:
+                case self.KEY_MOVE_DOWN:
                     self.edition_.currentPos_.incLine()
+                case key if key in range(
+                    self.KEY_VALUE_1, self.KEY_VALUE_9 + 1
+                ):
+                    self._edit_setValue(key - self.KEY_VALUE_1 + 1)
+                case self.KEY_VALUE_DEC:
+                    self._edit_decValue()
+                case self.KEY_VALUE_INC:
+                    self._edit_incValue()
+                case self.KEY_REMOVE_VALUE:
+                    self._edit_removeValue()
                 case _:
                     pass
 
-            #self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
             self._edit_selChanged()
-
-            """
-                            case key if key in range(
-                                self.VALUE_1, self.VALUE_9 + 1
-                            ):
-                                self._edit_setValue(key - self.VALUE_1 + 1)
-                            case self.VALUE_DEC:
-                                self._edit_decValue()
-                            case self.VALUE_INC:
-                                self._edit_incValue()
-                            case self.REMOVE_VALUE:
-                                self._edit_removeValue()
-            """
 
 
             return
@@ -197,7 +209,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     def OnSize(self, event : wx.SizeEvent):
         # Resize elements
-        self.newWindowSize(event.Size.width, event.Size.height)
+        self._draw_newClientSize(event.Size.width, event.Size.height)
         self.clientSize_ = event.Size
         self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
 
@@ -213,9 +225,6 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_.SetFont(self.font_)
             dims : wx.Size = self.memDC_.GetTextExtent("O")
             self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
-
-        if self.edition_.editable:
-            self.edition_.blink_ = False
 
         # Redraw the whole array
         self._draw_background()
@@ -301,7 +310,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Convert colour objects from ownColour to wx.Colour
     #
     @override
-    def convertColours(self):
+    def _draw_convertColours(self):
         for id in range(len(self.colours_)):
             self.colours_[id].other = wx.Colour(
                 self.colours_[id].r,
