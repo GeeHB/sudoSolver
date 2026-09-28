@@ -115,7 +115,7 @@ class wxSolver(wx.Frame, solver.solver):
     def initialize(self):
         solver.solver.initialize(self)
 
-        self.Show()
+        self.createMenuBar()
 
         # Associate event to handlers
         #
@@ -125,11 +125,16 @@ class wxSolver(wx.Frame, solver.solver):
         self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
+        self.Bind(wx.EVT_MENU, self.OnMenuEvent)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
 
+
+
+
         self.panel_.SetFocus()
+        self.Show()
 
         self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
         self.edition_.editable = True
@@ -147,9 +152,55 @@ class wxSolver(wx.Frame, solver.solver):
 
         self.SetTitle(title)
 
+    def createMenuBar(self):
+        self.menuBar_ : wx.MenuBar = wx.MenuBar()
+        self.SetMenuBar(self.menuBar_)
+
+        filePopUp = wx.Menu()
+        filePopUp.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
+
+        self.menuBar_.Append(filePopUp, "&File")
+
+
+        # Make a file menu with Hello and Exit items
+        fileMenu = wx.Menu()
+        # The "\t..." syntax defines an accelerator key that also triggers
+        # the same event
+        helloItem = fileMenu.Append(-1, "&Hello...\tCtrl-H",
+                "Help string shown in status bar for this menu item")
+        fileMenu.AppendSeparator()
+        # When using a stock ID we don't need to specify the menu item's
+        # label
+        exitItem = fileMenu.Append(wx.ID_EXIT)
+
+        # Now a help menu for the about item
+        helpMenu = wx.Menu()
+        aboutItem = helpMenu.Append(wx.ID_ABOUT)
+
+        # Make the menu bar and add the two menus to it. The '&' defines
+        # that the next letter is the "mnemonic" for the menu item. On the
+        # platforms that support it those letters are underlined and can be
+        # triggered from the keyboard.
+        menuBar = wx.MenuBar()
+        menuBar.Append(fileMenu, "&File")
+        menuBar.Append(helpMenu, "&Help")
+
+        # Give the menu bar to the frame
+        self.SetMenuBar(menuBar)
+
+
     #
     # Event handlers
     #
+
+    def OnMenuEvent(self, event:wx.MenuEvent):
+        menuId = event.GetId()
+
+        match menuId:
+            case wx.ID_EXIT:
+                self.Close(True)
+            case _:
+                pass
 
     # Keyboard events
     #

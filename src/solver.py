@@ -275,30 +275,32 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, re_draw_background : bool = False):
-        self._draw_startUp()
-
-        if re_draw_background:
-            self._draw_background()
-
-        position : pointer = pointer(gameMode = False)
         if elements is None :
             elements = self.sudoku_.elements_
 
-        for line in range(LINE_COUNT):
-            for row in range(ROW_COUNT):
-                currentElement = elements[position.index()]
-                self._draw_singleElement(
-                    row, line,
-                    currentElement.num,
-                    self.ColourID.ID_BK,
-                    self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
-                )
+        if len(elements) > 0 :
+            self._draw_startUp()
 
-                # next element ...
-                position+=1
+            if re_draw_background:
+                self._draw_background()
 
-        self.update()
-        self._draw_end()
+            position : pointer = pointer(gameMode = False)
+
+            for line in range(LINE_COUNT):
+                for row in range(ROW_COUNT):
+                    currentElement = elements[position.index()]
+                    self._draw_singleElement(
+                        row, line,
+                        currentElement.num,
+                        self.ColourID.ID_BK,
+                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+                    )
+
+                    # next element ...
+                    position+=1
+
+            self.update()
+            self._draw_end()
 
     def _draw_startUp(self):
         pass
@@ -334,8 +336,6 @@ class solver:
     def _draw_newClientSize(self, newWidth:int, newHeight:int):
         self.width_ = newWidth
         self.height_ = newHeight
-
-        print(f"{newWidth} x {newHeight}")
 
         # Compute new square sizes
         squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
