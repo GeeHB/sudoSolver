@@ -79,8 +79,7 @@ class editStatus:
 
     def clear(self, status : int = EDIT_NO_EDITION, editable:bool = False):
         self.status_.set(status)
-        #self.currentPos_.moveTo(row= 0, line = 0)
-        #print(self.currentPos_)
+        self.currentPos_.clear(False)
         self.prevPos_ = None
         self.blink_ = False
         self.editable = editable

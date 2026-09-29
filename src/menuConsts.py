@@ -27,7 +27,7 @@ IDM_FILE_NEW_HARD:str = 'Hard'
 #
 IDM_EDIT:str = '&Edit'
 ID_EDIT_MODIFY:int =  wx.NewIdRef()
-IDM_EDIT_MODIFY:str = 'Start'
+IDM_EDIT_MODIFY:str = 'Modify'
 ID_EDIT_DONE:int =  wx.NewIdRef()
 IDM_EDIT_DONE:str = 'Done'
 

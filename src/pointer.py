@@ -31,17 +31,23 @@ INDEX_MAX = (ARRAY_SIZE - 1)
 class pointer:
     # Construction
     #
-    def __init__(self, index:int | None = None, gameMode:bool = True):
-        self.index_:int  = INDEX_MIN if index is None else index
-        self.row_:int = 0
-        self.line_:int = 0
-        self.squareID_:int = 0
-        self.gameMode_:bool = gameMode
+    def __init__(self, index:int | None = None, game:bool = True):
+        self.clear(game)
 
-        self._whereAmI()
+        if index is not None and self._inRange(index):
+            self.index_ = index
+            self._whereAmI()
+
 
     def __repr__(self)->str:
-        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}"
+        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}\n\t-{"Game" if self.gameMode_ else "not game"}"
+
+    def clear(self, game:bool):
+        self.index_ = INDEX_MIN
+        self.row_ = 0
+        self.line_ = 0
+        self.squareID_ = 0
+        self.gameMode_ = game
 
     # Absolute position
     #

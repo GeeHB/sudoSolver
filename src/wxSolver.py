@@ -374,12 +374,15 @@ class wxSolver(wx.Frame, solver.solver):
     # Start edition mode
     #
     @override
-    def _edit_start(self):
+    def _edit_start(self, initPos:bool = True):
         # Anything to edit ?
         if len(self.sudoku_.elements_) == 0:
             self.sudoku_.empty()
 
-        self.edition_.clear(editable = True)
+        if initPos:
+            self.edition_.clear(editable = True)
+        else:
+            self.edition_.editable = True
 
         self._edit_blink()
         if not self.blinkTimer_.IsRunning():
@@ -403,7 +406,7 @@ class wxSolver(wx.Frame, solver.solver):
     def _edit_selChanged(self):
         self._edit_stop()
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
-        self._edit_start()
+        self._edit_start(False)
 
     def _edit_blink(self):
         self._draw_startUp()
