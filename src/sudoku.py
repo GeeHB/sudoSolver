@@ -80,7 +80,7 @@ class sudoku(threading.Thread):
     def __str__(self)->str:
         output : str = ""  # to stop warnings !!!!
         if len(self.elements_) == ARRAY_SIZE:
-            position : pointer = pointer(gameMode=False)
+            position : pointer = pointer(game=False)
             for _ in range(LINE_COUNT):
                 output += "\n"
                 for _ in range(ROW_COUNT):
@@ -113,7 +113,11 @@ class sudoku(threading.Thread):
         self.complexity = compl
 
         # Step 1 - Start from a complete (new) sudoku
-        _ = self.resolveSingleThreaded()
+        try:
+            _ = self.resolveSingleThreaded()
+        except reachedEndOfList:
+            # Found a solution !!!
+            pass
 
         # Step 2 : shuffle elements
         self._shuffleValues()
@@ -160,7 +164,7 @@ class sudoku(threading.Thread):
         #
         try:
             with open(fileName) as file:
-                pt = pointer(gameMode=False)
+                pt = pointer(game=False)
 
                 # Read the lines
                 for line in file:
@@ -215,7 +219,7 @@ class sudoku(threading.Thread):
                         file.write(line)
 
                 # File content
-                pt = pointer(gameMode=False)
+                pt = pointer(game=False)
                 for lIndex in range(LINE_COUNT):
                     line = ""
                     for _ in range(ROW_COUNT):
@@ -380,7 +384,7 @@ class sudoku(threading.Thread):
     #
     def resolveSingleThreaded(self):
         candidate : int = 0
-        position : pointer = pointer(gameMode=True)
+        position : pointer = pointer(game=True)
         position = self._findFirstEmptyPos(position)
         self.attempts = 0
 
@@ -419,7 +423,7 @@ class sudoku(threading.Thread):
     #
     def resolveGenerator(self, step : int = 100):
         candidate : int = 0
-        position : pointer = pointer(gameMode=True)
+        position : pointer = pointer(game=True)
         position = self._findFirstEmptyPos(position)
         self.attempts = 0
         self.found = False

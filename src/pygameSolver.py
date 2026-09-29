@@ -441,14 +441,14 @@ class pygameSolver(solver.solver):
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
-            #self.update()
+            #self._draw_update()
         #else:
             #return (False, False, None, None)
 
     # Update the whole window
     #
     @override
-    def update(self):
+    def _draw_update(self):
         if self.win_ is not None:
                 # Display filename ?
             if self.sFileName_ is not None and self.sFileName_.isValid():
@@ -476,7 +476,7 @@ class pygameSolver(solver.solver):
         if len(self.sudoku_.elements_) > 0:
             self.draw()
         else:
-            self.update()
+            self._draw_update()
 
     # Display text
     #
@@ -588,7 +588,7 @@ class pygameSolver(solver.solver):
 
                     # ... and the array's content
                     self.draw(re_draw_background=True)
-                    self.update()
+                    self._draw_update()
 
                     # returns all events ?
                     if True == allEvents:
@@ -818,7 +818,7 @@ class pygameSolver(solver.solver):
                     self.ColourID.ID_BK,
                     self.ColourID.ID_HILITE,
                     )
-                self.update()
+                self._draw_update()
 
         # Saves changes or exit
         return (
@@ -833,7 +833,7 @@ class pygameSolver(solver.solver):
     @override
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         solver.solver._edit_updatePos(self, prevPos, currentPos)
-        self.update()
+        self._draw_update()
 
     # Convert colour objects from ownColour to pygameColor
     #

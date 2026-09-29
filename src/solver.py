@@ -264,7 +264,7 @@ class solver:
 
         if redraw:
             self.setFileName(fileName)
-            self.draw(re_draw_background=True)
+            self.draw(redrawBackground=True)
 
         return True
 
@@ -277,17 +277,17 @@ class solver:
     #   elements :  array of elements to draw or None.
     #               if None, current sudoku will be drawn
     #
-    def draw(self, elements : list[element] | None = None, re_draw_background : bool = False):
+    def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
         if elements is None :
             elements = self.sudoku_.elements_
 
         if len(elements) > 0 :
             self._draw_startUp()
 
-            if re_draw_background:
+            if redrawBackground:
                 self._draw_background()
 
-            position : pointer = pointer(gameMode = False)
+            position : pointer = pointer(game = False)
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
@@ -302,11 +302,15 @@ class solver:
                     # next element ...
                     position+=1
 
-            self.update()
             self._draw_end()
 
     def _draw_startUp(self):
         pass
+
+    # Update the whole window
+    #
+    def _draw_update(self):
+        self.draw(redrawBackground=True)
 
     def _draw_end(self):
         pass
@@ -373,11 +377,6 @@ class solver:
             y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
             return (x,y)
         return (-1,-1)
-
-    # Update the whole window
-    #
-    def update(self):
-        pass
 
     # End drawings
     #
@@ -547,7 +546,7 @@ class solver:
     def _resolve_MultiThreaded(self)->bool:
         self.sudoku_.resolveMultiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
-            self.draw(re_draw_background=False)     # redraw sudoku while searching for a solution
+            self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
 # EOF

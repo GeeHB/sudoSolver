@@ -24,6 +24,7 @@ import solver
 from element import element
 from options import (
     APP_SHORT_NAME,
+    arrayComplexity,
     options,
 )
 from pointer import (
@@ -196,8 +197,12 @@ class wxSolver(wx.Frame, solver.solver):
         menuId = event.GetId()
 
         match menuId:
+            case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
+                self._menu_onNewArray(menuId)
+
             case menuConsts.ID_EDIT_MODIFY:
                 self._edit_start()
+
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
 
@@ -412,5 +417,21 @@ class wxSolver(wx.Frame, solver.solver):
         self._draw_startUp()
         self._draw_elementSelected(self.edition_.blink())
         self._draw_end()
+
+    #
+    #  Menus
+    #
+    def _menu_onNewArray(self, menuId:int):
+        match menuId:
+            case menuConsts.ID_FILE_NEW_EASY:
+                self.sudoku_.new(arrayComplexity.Easy)
+            case menuConsts.ID_FILE_NEW_MEDIUM:
+                self.sudoku_.new(arrayComplexity.Medium)
+            case menuConsts.ID_FILE_NEW_HARD:
+                self.sudoku_.new(arrayComplexity.Hard)
+            case _:
+                self.sudoku_.new(arrayComplexity.Empty)
+
+        self._draw_update()
 
 # EOF

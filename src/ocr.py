@@ -41,7 +41,7 @@ def gridFromImage(self, fileName:str | None, removeFrames:bool=False, genBoxes:b
         data = pytesseract.image_to_data(
             img, output_type=Output.DICT, config=TESSERACT_CONFIG
         )
-        position = pointer(gameMode=False)
+        position = pointer(game=False)
 
         for i in range(len(data["text"])):
             if data["conf"][i] != -1:
