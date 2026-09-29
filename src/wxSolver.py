@@ -19,6 +19,7 @@ except ModuleNotFoundError:
     sys.exit(0)
 
 import GUIConsts
+import menuConsts
 import solver
 from element import element
 from options import (
@@ -153,40 +154,47 @@ class wxSolver(wx.Frame, solver.solver):
         self.SetTitle(title)
 
     def createMenuBar(self):
+        # Files popup
+        fileMenu = wx.Menu()
+
+        fileNew = wx.Menu()
+        fileNew.Append(menuConsts.ID_FILE_NEW_EMPTY, menuConsts.IDM_FILE_NEW_EMPTY)
+        fileNew.Append(menuConsts.ID_FILE_NEW_EASY, menuConsts.IDM_FILE_NEW_EASY)
+        fileNew.Append(menuConsts.ID_FILE_NEW_MEDIUM, menuConsts.IDM_FILE_NEW_MEDIUM)
+        fileNew.Append(menuConsts.ID_FILE_NEW_HARD, menuConsts.IDM_FILE_NEW_HARD)
+        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_FILE_NEW, fileNew)
+
+        fileMenu.Append(wx.ID_OPEN)
+        fileMenu.Append(wx.ID_SAVE)
+        fileMenu.AppendSeparator()
+        fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
+
+        # Edition
+        editMenu = wx.Menu()
+        editMenu.Append(menuConsts.ID_EDIT_MODIFY, menuConsts.IDM_EDIT_MODIFY)
+
+
+
+        # Resolution
+        solveMenu = wx.Menu()
+        solveMenu.Append(menuConsts.ID_SOLVE_MANUAL, menuConsts.IDM_SOLVE_MANUAL)
+        solveMenu.Append(menuConsts.ID_SOLVE_OBVIOUS, menuConsts.IDM_SOLVE_OBVIOUS)
+
+        resolveMenu = wx.Menu()
+        resolveMenu.Append(menuConsts.ID_SOLVE_RESOLVE_SINGLE, menuConsts.IDM_SOLVE_RESOLVE_SINGLE)
+        resolveMenu.Append(menuConsts.ID_SOLVE_RESOLVE_MULTI, menuConsts.IDM_SOLVE_RESOLVE_MULTI)
+        solveMenu.Append(wx.ID_ANY, menuConsts.IDM_SOLVE_RESOLVE, resolveMenu)
+
+        solveMenu.Append(menuConsts.ID_SOLVE_REVERT, menuConsts.IDM_SOLVE_REVERT)
+
+        # Menu bar creation
         self.menuBar_ : wx.MenuBar = wx.MenuBar()
         self.SetMenuBar(self.menuBar_)
+        self.menuBar_.Append(fileMenu, menuConsts.IDM_FILE)
+        self.menuBar_.Append(editMenu,menuConsts.IDM_EDIT)
+        self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
-        filePopUp = wx.Menu()
-        filePopUp.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
-
-        self.menuBar_.Append(filePopUp, "&File")
-
-
-        # Make a file menu with Hello and Exit items
-        fileMenu = wx.Menu()
-        # The "\t..." syntax defines an accelerator key that also triggers
-        # the same event
-        helloItem = fileMenu.Append(-1, "&Hello...\tCtrl-H",
-                "Help string shown in status bar for this menu item")
-        fileMenu.AppendSeparator()
-        # When using a stock ID we don't need to specify the menu item's
-        # label
-        exitItem = fileMenu.Append(wx.ID_EXIT)
-
-        # Now a help menu for the about item
-        helpMenu = wx.Menu()
-        aboutItem = helpMenu.Append(wx.ID_ABOUT)
-
-        # Make the menu bar and add the two menus to it. The '&' defines
-        # that the next letter is the "mnemonic" for the menu item. On the
-        # platforms that support it those letters are underlined and can be
-        # triggered from the keyboard.
-        menuBar = wx.MenuBar()
-        menuBar.Append(fileMenu, "&File")
-        menuBar.Append(helpMenu, "&Help")
-
-        # Give the menu bar to the frame
-        self.SetMenuBar(menuBar)
+        self.SetMenuBar(self.menuBar_)
 
 
     #
