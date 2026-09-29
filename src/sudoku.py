@@ -49,6 +49,9 @@ class sudoku(threading.Thread):
         self.found_ = False
         random.seed()
 
+    def IsOk(self)->bool:
+        return (len(self.elements_) == ARRAY_SIZE)
+
     # Complexity (for new arrays created from scratch)
     @property
     def complexity(self)->int:
@@ -79,7 +82,7 @@ class sudoku(threading.Thread):
     @override
     def __str__(self)->str:
         output : str = ""  # to stop warnings !!!!
-        if len(self.elements_) == ARRAY_SIZE:
+        if self.IsOk() :
             position : pointer = pointer(game=False)
             for _ in range(LINE_COUNT):
                 output += "\n"
@@ -258,7 +261,6 @@ class sudoku(threading.Thread):
                 clues-=1
 
         return clues
-
 
     # _shuffleValues() : randomly shuffle elements' values
     #
@@ -579,8 +581,6 @@ class sudoku(threading.Thread):
         newPos : pointer = copy.deepcopy(current)
         self.elements_[newPos.index()].empty(deep = False)
         newPos -= 1
-
-        # while self.elements_[newPos.index()].isOriginal():
 
         # Don't touch "Original" nor "Obvious" values
         while not self.elements_[newPos.index()].isChangeable():

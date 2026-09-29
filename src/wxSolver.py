@@ -198,13 +198,22 @@ class wxSolver(wx.Frame, solver.solver):
 
         match menuId:
             case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
-                self._menu_onNewArray(menuId)
+                self._onNewArray(menuId)
 
             case menuConsts.ID_EDIT_MODIFY:
                 self._edit_start()
 
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
+
+            case menuConsts.ID_SOLVE_OBVIOUS:
+                self._onFindObviousValues()
+            case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
+                    self._onResolveSingleThread()
+            case menuConsts.ID_SOLVE_RESOLVE_MULTI:
+                    self._onResolveMultiThreaded()
+            case menuConsts.ID_SOLVE_REVERT:
+                    self._onRevert()
 
             case wx.ID_EXIT:
                 self.Close(True)
@@ -421,7 +430,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     #  Menus
     #
-    def _menu_onNewArray(self, menuId:int):
+    def _onNewArray(self, menuId:int):
         match menuId:
             case menuConsts.ID_FILE_NEW_EASY:
                 self.sudoku_.new(arrayComplexity.Easy)
@@ -433,5 +442,30 @@ class wxSolver(wx.Frame, solver.solver):
                 self.sudoku_.new(arrayComplexity.Empty)
 
         self._draw_update()
+
+    def _onFindObviousValues(self):
+        if self.sudoku_.IsOk():
+            ret : tuple[int,float] = self.sudoku_.findObviousValues()
+            if ret[0] > 0:
+                self._draw_update()
+
+    def _onResolveSingleThread(self):
+        if self.sudoku_.IsOk():
+            if self._resolve_SingleThreaded():
+                self._draw_update()
+            else:
+                print("Pas de solution")
+
+    def _onResolveMultiThreaded(self):
+        if self.sudoku_.IsOk():
+            if self._resolve_MultiThreaded():
+                self._draw_update()
+            else:
+                print("Pas de solution")
+
+    def _onRevert(self):
+        if self.sudoku_.IsOk():
+            self.sudoku_.revert()
+            self._draw_update()
 
 # EOF
