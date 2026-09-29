@@ -12,6 +12,8 @@ import math
 import sys
 from typing import override
 
+from wx.core import ID_OPEN
+
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
 except ModuleNotFoundError:
@@ -199,6 +201,8 @@ class wxSolver(wx.Frame, solver.solver):
         match menuId:
             case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
                 self._onNewArray(menuId)
+            case wx.ID_OPEN:
+                self._onFileOpen()
 
             case menuConsts.ID_EDIT_MODIFY:
                 self._edit_start()
@@ -430,6 +434,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     #  Menus
     #
+
     def _onNewArray(self, menuId:int):
         match menuId:
             case menuConsts.ID_FILE_NEW_EASY:
@@ -442,6 +447,24 @@ class wxSolver(wx.Frame, solver.solver):
                 self.sudoku_.new(arrayComplexity.Empty)
 
         self._draw_update()
+
+    def _onFileOpen(self):
+        """
+        if self.contentNotSaved:
+            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                                wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
+        """
+
+        with wx.FileDialog(self, "Open sudoku file", wildcard="TXT files (*.txt)|*.txt",
+                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return     # the user changed their mind
+
+            # Proceed loading the file chosen by the user
+            pathName:str = fileDialog.GetPath()
+            self.fromFile(pathName)
 
     def _onFindObviousValues(self):
         if self.sudoku_.IsOk():

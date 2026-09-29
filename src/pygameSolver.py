@@ -587,7 +587,7 @@ class pygameSolver(solver.solver):
                     self._draw_newClientSize(self.win_.get_width(), self.win_.get_height())
 
                     # ... and the array's content
-                    self.draw(re_draw_background=True)
+                    self.draw(redrawBackground=True)
                     self._draw_update()
 
                     # returns all events ?
