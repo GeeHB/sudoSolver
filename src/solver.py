@@ -77,11 +77,13 @@ class editStatus:
         self.prevPos_ : pointer | None = None
         self.blink_ : bool = False
 
-    def clear(self, status : int = EDIT_NO_EDITION):
+    def clear(self, status : int = EDIT_NO_EDITION, editable:bool = False):
         self.status_.set(status)
-        self.currentPos_ = pointer(0)
+        #self.currentPos_.moveTo(row= 0, line = 0)
+        #print(self.currentPos_)
         self.prevPos_ = None
         self.blink_ = False
+        self.editable = editable
 
     def move(self):
         self.prevPos_ = copy.deepcopy(self.currentPos_)
@@ -98,6 +100,8 @@ class editStatus:
     @editable.setter
     def editable(self, set : bool = True):
         self.status_.set(self.EDIT_ALLOW_EDITION, set)
+        if set:
+            self.blink_ = False
 
 # solverApp - Abstract class for application
 #
@@ -310,7 +314,7 @@ class solver:
 
     # Draw selected element (on edit mode)
     #
-    def _draw_selectedElement(self, hilite : bool = True):
+    def _draw_elementSelected(self, hilite : bool = True):
         currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
         value : int | None = currentElement.num
         self._draw_startUp()

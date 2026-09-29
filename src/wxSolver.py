@@ -126,20 +126,13 @@ class wxSolver(wx.Frame, solver.solver):
         self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
-        self.Bind(wx.EVT_MENU, self.OnMenuEvent)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
 
-
-
-
         self.panel_.SetFocus()
         self.Show()
-
-        self.fromFile("/home/jhb/Nextcloud/personnel/JHB/dev/python/sudoSolver/sudokus/diverto09-6.txt", False)
-        self.edition_.editable = True
-        self._edit_start()
 
     # Set/change the current array's filename
     #
@@ -172,8 +165,7 @@ class wxSolver(wx.Frame, solver.solver):
         # Edition
         editMenu = wx.Menu()
         editMenu.Append(menuConsts.ID_EDIT_MODIFY, menuConsts.IDM_EDIT_MODIFY)
-
-
+        editMenu.Append(menuConsts.ID_EDIT_DONE, menuConsts.IDM_EDIT_DONE)
 
         # Resolution
         solveMenu = wx.Menu()
@@ -196,15 +188,19 @@ class wxSolver(wx.Frame, solver.solver):
 
         self.SetMenuBar(self.menuBar_)
 
-
     #
     # Event handlers
     #
 
-    def OnMenuEvent(self, event:wx.MenuEvent):
+    def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
 
         match menuId:
+            case menuConsts.ID_EDIT_MODIFY:
+                self._edit_start()
+            case menuConsts.ID_EDIT_DONE:
+                self._edit_stop()
+
             case wx.ID_EXIT:
                 self.Close(True)
             case _:
@@ -290,9 +286,7 @@ class wxSolver(wx.Frame, solver.solver):
         self.draw()
 
     def OnTimer(self, event : wx.Event):
-        self._draw_startUp()
-        self._draw_selectedElement(self.edition_.blink())
-        self._draw_end()
+        self._edit_blink()
 
     #
     #  drawings
@@ -381,6 +375,13 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def _edit_start(self):
+        # Anything to edit ?
+        if len(self.sudoku_.elements_) == 0:
+            self.sudoku_.empty()
+
+        self.edition_.clear(editable = True)
+
+        self._edit_blink()
         if not self.blinkTimer_.IsRunning():
             self.blinkTimer_.Start(GUIConsts.BLINK_RATE)
 
@@ -388,8 +389,14 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def _edit_stop(self):
+        self.edition_.editable = False
         if self.blinkTimer_.IsRunning():
             self.blinkTimer_.Stop()
+
+        self._draw_startUp()
+        self._draw_elementSelected(False)
+        self._draw_end()
+
 
     # Selected item has just changed
     #
@@ -397,5 +404,10 @@ class wxSolver(wx.Frame, solver.solver):
         self._edit_stop()
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
         self._edit_start()
+
+    def _edit_blink(self):
+        self._draw_startUp()
+        self._draw_elementSelected(self.edition_.blink())
+        self._draw_end()
 
 # EOF

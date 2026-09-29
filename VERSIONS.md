@@ -21,6 +21,7 @@
 #### todo
 * Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
 * add getters and setters : pygameOutputs.py
+* solver.py::editStatus.clean(...) : bug si surrentPos_ est modifié ...
 
 #### Version 4.0.1
 * sept. 2026
