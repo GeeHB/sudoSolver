@@ -34,7 +34,7 @@ class pointer:
     def __init__(self, index:int | None = None, game:bool = True):
         self.clear(game)
 
-        if index is not None and self._inRange(index):
+        if index is not None and self._inRange(index, 0, ARRAY_SIZE):
             self.index_ = index
             self._whereAmI()
 

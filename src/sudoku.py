@@ -763,7 +763,6 @@ class sudoku(threading.Thread):
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS)
-            #print(f"Line - Position : {foundPos} - {self.elements_[foundPos.index()]}")
             return 1
 
         # No ...
