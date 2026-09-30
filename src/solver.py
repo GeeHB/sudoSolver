@@ -199,7 +199,7 @@ class solver:
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
 
-        self.params_.center = True
+        # self.params_.center = True
 
     @property
     def initialized(self)->bool:
@@ -363,7 +363,7 @@ class solver:
             self.offsets_ = (math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT)) / 2),
                 math.floor((self.height_ - self.extSquareWidth_ * LINE_COUNT) / 2))
         else:
-            self.offsets_ = (0,0)
+            self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 
         # font size in pixels
         self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
