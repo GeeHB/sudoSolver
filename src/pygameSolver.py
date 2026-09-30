@@ -45,12 +45,6 @@ from sharedTools import (
 # Internal constants
 #
 
-
-# Events frequencies in ms
-#
-DEF_MSG_HIDING_FREQ     = 2000  # Hide the filename
-DEF_BLINKING_FREQ       = 750   # blinking freq. in ms
-
 # solverApp - Abstract class for application
 #
 class pygameSolverApp(solver.solverApp):
@@ -273,7 +267,6 @@ class pygameSolver(solver.solver):
     def initialize(self):
         solver.solver.initialize(self)
 
-        self.initialized = False
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
         # PYGame init. is ok
@@ -293,11 +286,12 @@ class pygameSolver(solver.solver):
         # fileName displays
         self.sFileName_ = textSurface(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
         self.sFileName_.moveTo(GUIConsts.FILE_FONT_POS_X, GUIConsts.FILE_FONT_POS_Y)
-        self.sFileName_.setEventID(pygame.USEREVENT + 1, DEF_MSG_HIDING_FREQ)   # event for text hiding
+        self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.MSG_HIDE_RATE)   # event for text hiding
 
         # Messages
         self.sMessage_ = blinkingText(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
-        self.sMessage_.setEventID(pygame.USEREVENT + 2, DEF_BLINKING_FREQ)
+        self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.BLINK_RATE)
+
         self._draw_background()
 
     # Start the sudoku (browsing, editing or solving)
@@ -441,7 +435,7 @@ class pygameSolver(solver.solver):
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
-            #self._draw_update()
+            self._draw_update()
         #else:
             #return (False, False, None, None)
 
@@ -467,16 +461,15 @@ class pygameSolver(solver.solver):
                 if mySurface is not None:
                     self.win_.blit(mySurface, (x,y))
 
-            pygame.display.update()
+    @override
+    def _draw_end(self):
+        self._draw_update()
+        pygame.display.update()
 
     # Refresh the whole window
     #
     def _refresh(self):
-        self._draw_background()
-        if len(self.sudoku_.elements_) > 0:
-            self.draw()
-        else:
-            self._draw_update()
+        self.draw(redrawBackground=True)
 
     # Display text
     #
@@ -588,7 +581,7 @@ class pygameSolver(solver.solver):
 
                     # ... and the array's content
                     self.draw(redrawBackground=True)
-                    self._draw_update()
+                    pygame.display.flip()
 
                     # returns all events ?
                     if True == allEvents:
@@ -811,6 +804,7 @@ class pygameSolver(solver.solver):
         if not escaped:
             value : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
             if value is not None:
+                self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
                     self.edition_.currentPos_.line(),
@@ -818,7 +812,7 @@ class pygameSolver(solver.solver):
                     self.ColourID.ID_BK,
                     self.ColourID.ID_HILITE,
                     )
-                self._draw_update()
+                self._draw_end()
 
         # Saves changes or exit
         return (
@@ -833,7 +827,6 @@ class pygameSolver(solver.solver):
     @override
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         solver.solver._edit_updatePos(self, prevPos, currentPos)
-        self._draw_update()
 
     # Convert colour objects from ownColour to pygameColor
     #

@@ -226,6 +226,7 @@ class solver:
         # Default dimensions
         self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH
         self.height_ = LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
+        self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
         self.fontsize_ = GUIConsts.ELT_FONT_SIZE

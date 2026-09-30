@@ -281,9 +281,9 @@ class wxSolver(wx.Frame, solver.solver):
     # Window's size just changed
     #
     def OnSize(self, event : wx.SizeEvent):
-        # Resize elements
-        self._draw_newClientSize(event.Size.width, event.Size.height)
-        self.clientSize_ = event.Size
+        self.clientSize_ = self.GetClientSize() # Size minus menu height
+
+        self._draw_newClientSize(self.clientSize_.width, self.clientSize_.height)
         self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
 
         if self.memDC_ :

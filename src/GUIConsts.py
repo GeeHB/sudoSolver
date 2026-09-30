@@ -43,5 +43,9 @@ FILE_FONT_SIZE          = 25
 FILE_FONT_POS_X         = 35
 FILE_FONT_POS_Y         = 5
 
+# Timers frequencies
+#
 BLINK_RATE : int = 750 # Blinking rate in ms
-#eof
+MSG_HIDE_RATE : int = 2000 # Hide the filename
+
+#EOF
