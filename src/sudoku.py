@@ -307,7 +307,7 @@ class sudoku(threading.Thread):
     #
     def _swapValues(self, first:int, second:int):
         if first != second:
-            for index in range(INDEX_MIN, INDEX_MAX):
+            for index in range(INDEX_MIN, INDEX_MAX+1):
                 value = self.elements_[index].num
                 if value == first:
                     self.elements_[index].num = second
