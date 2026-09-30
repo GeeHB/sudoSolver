@@ -95,7 +95,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Constructor
     #
     def __init__(self, params : options):
-        #wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = (wx.CAPTION & wx.RESIZE_BORDER))
+        wx.Log.SetLogLevel(wx.LOG_Error)  # pyright: ignore[reportUnknownMemberType]
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE)
 
         self.panel_ = wx.Panel(self, wx.ID_ANY)     # to receive keyboard focus
@@ -104,6 +104,7 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Display
         self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
+        self.directDraw_ = False
         self.clientSize_ : wx.Size = wx.Size(0,0)
         self.textOffsets_ : wx.Size = wx.Size(0,0)  # for text in array
         self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
@@ -322,7 +323,14 @@ class wxSolver(wx.Frame, solver.solver):
 
     @override
     def _draw_end(self):
-        self.Refresh()
+        if not self.directDraw_ :
+            self.Refresh()
+        else:
+            if self.memDC_ is not None and self.memDC_.IsOk():
+                bmpSize : wx.Size = self.memDC_.GetSize()
+                clientDC = wx.ClientDC(self)
+                clientDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
+
 
     # Draw background, frames and borders
     #
@@ -481,10 +489,13 @@ class wxSolver(wx.Frame, solver.solver):
 
     def _onResolveMultiThreaded(self):
         if self.sudoku_.IsOk():
-            if self._resolve_MultiThreaded():
-                self._draw_update()
-            else:
+            self.directDraw_ = True
+
+            if not self._resolve_MultiThreaded():
                 print("Pas de solution")
+
+            self.directDraw_ = False
+            self._draw_update()
 
     def _onRevert(self):
         if self.sudoku_.IsOk():

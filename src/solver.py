@@ -456,14 +456,15 @@ class solver:
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         self._draw_startUp()
 
-        if prevPos is not None:
+        if prevPos is not None :
+            prevElement : element = self.sudoku_.elements_[prevPos.index()]
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
                 prevPos.row(),
                 prevPos.line(),
                 self.sudoku_.elements_[prevPos.index()].num,
                 self.ColourID.ID_BK,
-                self.ColourID.ID_HILITE,
+                self.ColourID.ID_HILITE if prevElement.isOriginal() else self.ColourID.ID_OBVIOUS if prevElement.isObvious() else self.ColourID.ID_TXT,
             )
 
         # Hilight the new value
@@ -483,7 +484,7 @@ class solver:
     def _edit_setValue(self, val: int):
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
             self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(val, element.STATUS_ORIGINAL, True)
-            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+            self.edition_.status_.set(editStatus.EDIT_NO_REDRAWStatus.EDIT_MODIFIED)
 
     # Decrease value
     #
