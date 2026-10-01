@@ -86,9 +86,9 @@ FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
 # Array complexity - ie. count of filled elements
 class arrayComplexity(IntEnum):
     Empty = 0
-    Easy = 33
-    Medium = 26
-    Hard = 22
+    Easy = 30
+    Medium = 23
+    Hard = 18
 
 #
 #   options object : command-line parsing and parameters management

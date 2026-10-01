@@ -26,7 +26,6 @@ from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
    ARRAY_SIZE,
    INDEX_MAX,
-   INDEX_MIN,
    LINE_COUNT,
    ROW_COUNT,
    VALUE_MAX,
@@ -104,7 +103,7 @@ class sudoku(threading.Thread):
             for _ in range(ARRAY_SIZE):
                 self.elements_.append(element())
 
-    # Create a new full array
+    # Create a new array
     #
     def new(self, compl : int | None):
         self.empty()
@@ -200,7 +199,7 @@ class sudoku(threading.Thread):
     #   return the name of the saved file or None if an error occured
     #
     def save(self, genName:bool = False, comments:list[str] | None = None, newFileName:str | None = None):
-        if self.fileName_ is None:
+        if self.fileName_ is None or len(self.elements_) != ARRAY_SIZE:
             return None
 
         # A new name ?
@@ -227,7 +226,8 @@ class sudoku(threading.Thread):
                     line = ""
                     for _ in range(ROW_COUNT):
                         el = self.elements_[pt.index()]
-                        line += str(0 if el.isEmpty() else el.num)
+                        #line += str(0 if el.isEmpty() else el.num)
+                        line += str(el.num if el.isOriginal() else 0)   # just save 'original' values
                         line += FILE_VALUE_SEPARATOR
                         pt += 1
 
@@ -307,9 +307,8 @@ class sudoku(threading.Thread):
     #
     def _swapValues(self, first:int, second:int):
         if first != second:
-            for index in range(INDEX_MIN, INDEX_MAX+1):
-                value = self.elements_[index].num
-                if value == first:
+            for index in range(ARRAY_SIZE):
+                if self.elements_[index].num == first:
                     self.elements_[index].num = second
                 else:
                     if self.elements_[index].num == second:

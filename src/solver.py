@@ -63,7 +63,6 @@ class editStatus:
     # Edition status
     #
     EDIT_NO_EDITION:int = statusbits.STATUS_NONE
-    EDIT_ALLOW_EDITION:int = 1
     EDIT_CONTINUE:int = 2
     EDIT_MODIFIED:int = 4  # The sudoku has been modified (at least once)
     EDIT_STOP:int = 8  # Stop edition
@@ -89,18 +88,20 @@ class editStatus:
         self.status_.remove(self.EDIT_NO_REDRAW)
 
     # Blinking effect
+    @property
     def blink(self)->bool:
+        return self.blink_
+    @blink.setter
+    def blink(self, set : bool = True):
+        self.blink_ = set
+    def changeBlink(self)->bool:
         self.blink_ = not self.blink_
         return self.blink_
 
+    # Value modified ?
     @property
-    def editable(self)->bool:
-        return self.status_.isSet(self.EDIT_ALLOW_EDITION)
-    @editable.setter
-    def editable(self, set : bool = True):
-        self.status_.set(self.EDIT_ALLOW_EDITION, set)
-        if set:
-            self.blink_ = False
+    def modified(self)->bool:
+        return self.status_.isSet(self.EDIT_MODIFIED)
 
 # solverApp - Abstract class for application
 #
@@ -152,6 +153,8 @@ class solver:
 
     KEY_VALUE_KPAD_1:int = 0
     KEY_VALUE_KPAD_9:int = 0
+
+    KEY_ENTER: int = 0
 
 
     # Colours' ID
@@ -210,11 +213,19 @@ class solver:
 
     # Filename
     @property
-    def filename(self)->str|None:
+    def filename(self)->str:
         return self.params_.fileName_
     @filename.setter
     def filename(self, newVal : str):
         self.params_.fileName_ = newVal
+
+    # Set/change the current array's filename
+    #
+    def _setFilename(self, fileName:str, create:bool = False):
+        # the file must exists
+        if False == create and False == os.path.isfile(fileName):
+            raise sudokuError(fileName +  " is not a file")
+        self.filename = fileName
 
     #
     # Theses methods MUST be overriden
@@ -238,16 +249,6 @@ class solver:
     def startUI(self):
         pass
 
-    # Set/change the current array's filename
-    #
-    def setFileName(self, fileName:str, create:bool = False):
-        # the file must exists
-        if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(fileName +  " is not a file")
-
-        self.filename = fileName
-
-
     # Load a sudoku stored in a file
     #
     #   return True if sudoku has been successfully loaded
@@ -264,7 +265,7 @@ class solver:
             return False
 
         if redraw:
-            self.setFileName(fileName)
+            self._setFilename(fileName)
             self.draw(redrawBackground=True)
 
         return True
@@ -484,7 +485,7 @@ class solver:
     def _edit_setValue(self, val: int):
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
             self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(val, element.STATUS_ORIGINAL, True)
-            self.edition_.status_.set(editStatus.EDIT_NO_REDRAWStatus.EDIT_MODIFIED)
+            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
     #

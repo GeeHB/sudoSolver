@@ -6,7 +6,7 @@
 #
 #   Description :   draw sudoku using pygame library
 #
-import copy
+
 import os
 import sys
 import time
@@ -539,8 +539,8 @@ class pygameSolver(solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def setFileName(self, fileName:str, create:bool = False):
-        solver.solver.setFileName(self, fileName, create)
+    def _setFilename(self, fileName:str, create:bool = False):
+        solver.solver._setFilename(self, fileName, create)
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName,
