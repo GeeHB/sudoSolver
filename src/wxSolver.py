@@ -137,6 +137,7 @@ class wxSolver(wx.Frame, solver.solver):
         # binded twice isnce panel and frame both can intercept a click !
         self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
@@ -220,6 +221,35 @@ class wxSolver(wx.Frame, solver.solver):
 
             if self.edition_.currentPos_.moveTo(pos=newPos):
                 self._edit_selChanged()
+
+            return
+
+        event.Skip()  # Allow other handlers to process the key
+
+    # User clicked  with right button
+    #
+    def OnRButtonUp(self, event : wx.MouseEvent):
+        if self.state_.isSet(self.ARRAY_EDITING) :
+            self.edition_.move()
+            newPos : tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+
+            if self.edition_.currentPos_.moveTo(pos=newPos):
+                self._edit_selChanged()
+
+            # possible values
+            values: list[int] =self.sudoku_.getValues(self.edition_.currentPos_)
+
+            # Generate a contextual menu at mouse pos with all possible values
+            popUp: wx.Menu = wx.Menu()
+            for index in range(1,10):
+                id = menuConsts.ID_POPUP_FIRST + index
+                popUp.Append(id, f"{index}")
+                if index not in values :
+                    popUp.Enable(id, False)
+
+            self.PopupMenu(popUp, event.GetPosition())
+            popUp.Destroy()
+
 
             return
 
