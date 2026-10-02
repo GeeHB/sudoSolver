@@ -394,15 +394,35 @@ class solver:
     #  Other "shared" methods
     #
 
+    # Find all the obvious values
+    #
+    #   return a boolean : found value(s) ?
+    #
+    def findObviousValues(self)->bool:
+        self.stats_.clear()
+        found : int = 0
+        start : float = time.time()
+        values = 1
+        while 0 < values:
+            values = self.sudoku_.findObviousValues()
+            found += values
+
+        if found>0:
+            self.stats_.obvValues_ = found
+            self.stats_.obvDuration_ = time.time() - start
+            return True
+
+        return False
+
     # Resolve current sudoku using local parameters
     #
-    # returns the tuple (found a solution?, #attempts, duration)
-    def resolve(self)->tuple[bool, int, float]:
-        found = False
+    # returns found a solution ?
+    def resolve(self)->bool:
+        found:bool = False
+        self.stats_.clear()
 
         # for stats
         start : float = time.time()
-        end : float = 0.0
 
         # Let's go
         match self.params_.progressMode_ :
@@ -416,10 +436,11 @@ class solver:
                 found = self._resolve_SingleThreaded()
 
         if found:
-            end = time.time() - start
+            self.stats_.bruteAttempts_ = self.sudoku_.attempts
+            self.stats_.bruteDuration_ = time.time() - start
 
         # Finished (anyway)
-        return (found, self.sudoku_.attempts, end)
+        return found
 
     # Show resolution stats
     #

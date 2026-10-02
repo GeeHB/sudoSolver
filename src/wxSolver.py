@@ -158,10 +158,19 @@ class wxSolver(wx.Frame, solver.solver):
 
         self.SetTitle(title)
 
+    # Show resolution stats
+    #
+    @override
+    def showStats(self):
+        wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
+            APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+
     #
     # Event handlers
     #
 
+    # Click on a menu item
+    #
     def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
 
@@ -347,7 +356,7 @@ class wxSolver(wx.Frame, solver.solver):
     @override
     def _edit_start(self, initPos:bool = True):
         self.state_.set(self.ARRAY_EDITING)
-        self._menu_setStates()
+        self._menu_setItemsStates()
 
         # Anything to edit ?
         if len(self.sudoku_.elements_) == 0:
@@ -370,7 +379,7 @@ class wxSolver(wx.Frame, solver.solver):
         if self.edition_.modified:
             self.state_.set(self.ARRAY_MODIFIED, True)
 
-        self._menu_setStates()
+        self._menu_setItemsStates()
 
         if self.blinkTimer_.IsRunning():
             self.blinkTimer_.Stop()
@@ -472,12 +481,13 @@ class wxSolver(wx.Frame, solver.solver):
         self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
         self.SetMenuBar(self.menuBar_)
-        self._menu_setStates()
+        self._menu_setItemsStates()
 
     # Change items ' states
     # '
-    def _menu_setStates(self):
+    def _menu_setItemsStates(self):
         #modified : bool = self.state_.isSet(self.ARRAY_MODIFIED)
+        valid : bool = self.sudoku_.IsOk()
         editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
         solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
 
@@ -494,6 +504,8 @@ class wxSolver(wx.Frame, solver.solver):
 
         self.menuBar_.Enable(menuConsts.ID_EDIT_MODIFY, state)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_MANUAL, state)
+
+        state = state and valid
         self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, state)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_SINGLE, state)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_MULTI, state)
@@ -513,14 +525,14 @@ class wxSolver(wx.Frame, solver.solver):
                 self.sudoku_.new(arrayComplexity.Empty)
 
         self.state_.assign(self.ARRAY_NEW)
-        self._menu_setStates()
+        self._menu_setItemsStates()
 
         self._draw_update()
 
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox("Current content has not been saved! Do you want to proceed?", "Please confirm",
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox("Current content has not been saved! Do you want to proceed?", GUIConsts.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -533,7 +545,7 @@ class wxSolver(wx.Frame, solver.solver):
         # New file just loaded
         self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
         self.state_.assign(self.ARRAY_NEW)
-        self._menu_setStates()
+        self._menu_setItemsStates()
 
     # Save current array
     #
@@ -562,7 +574,7 @@ class wxSolver(wx.Frame, solver.solver):
         if done :
             self._setFilename(path)  # pyright: ignore[reportUnknownArgumentType]
             self.state_.assign(self.ARRAY_NEW)
-            self._menu_setStates()
+            self._menu_setItemsStates()
 
     # Quit
     #
@@ -581,26 +593,34 @@ class wxSolver(wx.Frame, solver.solver):
 
     def _menu_findOviousValues(self):
         if self.sudoku_.IsOk():
-            ret : tuple[int,float] = self.sudoku_.findObviousValues()
-            if ret[0] > 0:
+            if self.findObviousValues():
                 self._draw_update()
+                wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
+                    APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+            else:
+                wx.MessageBox("No obvious value found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
     def _menu_resolveSingleThread(self):
         if self.sudoku_.IsOk():
-            if self._resolve_SingleThreaded():
+            self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
+
+            if self.resolve():
                 self._draw_update()
+                self.showStats()
             else:
-                print("Pas de solution")
+                wx.MessageBox("No solution found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
     def _menu_resolveMultiThreaded(self):
         if self.sudoku_.IsOk():
             self.directDraw_ = True
+            self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
 
-            if not self._resolve_MultiThreaded():
-                print("Pas de solution")
+            if not self.resolve():
+                wx.MessageBox("No solution found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
             self.directDraw_ = False
             self._draw_update()
+            self.showStats()
 
     # Return to original array's state (remove added values)
     #

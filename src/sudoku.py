@@ -12,7 +12,6 @@ import math
 import os
 import random
 import threading
-import time
 from typing import override
 
 from element import element
@@ -629,25 +628,10 @@ class sudoku(threading.Thread):
     #   Obvious values
     #
 
-    # Find all the obvious values
-    #
-    #   return a tuple (#obvious values, duration in s.)
-    #
-    def findObviousValues(self)->tuple[int, float]:
-        found : int = 0
-        start : float = time.time()
-        values = 1
-        while 0 < values:
-            values = self._findObviousValues()
-            found += values
-
-        # Find a solution !!!
-        return found, time.time() - start
-
     # Search and set all the possible obvious values in the sudoku
     #   returns the # of values found (and set)
     #
-    def _findObviousValues(self)->int:
+    def findObviousValues(self)->int:
         found : int = 0
         position : pointer = pointer()
 

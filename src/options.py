@@ -369,6 +369,9 @@ class options:
 #
 class stats:
     def __init__(self) -> None:
+        self.clear()
+
+    def clear(self) -> None:
         self.obvValues_ : int = 0          # Count of obvious values found
         self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
         self.bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process

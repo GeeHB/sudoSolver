@@ -326,10 +326,7 @@ class pygameSolver(solver.solver):
                     self._waitForEvent(allEvents=False)
 
                 # Obvious values first ...
-                if self.params_.obviousValues:
-                    self.stats_.obvValues_, self.stats_.obvDuration_ = self.sudoku_.findObviousValues()
-
-                    if self.stats_.obvValues_ > 0:
+                if self.params_.obviousValues and self.sudoku_.findObviousValues():
                         self._displayText(
                             f"Found {self.stats_.obvValues_!r} obvious values", False
                         )
@@ -337,9 +334,7 @@ class pygameSolver(solver.solver):
                         self._waitForEvent(allEvents=False)
 
                 # ... and then try to resolve
-                found, self.stats_.bruteAttempts_, self.stats_.bruteDuration_ = (
-                    self.resolve()
-                )
+                found = self.resolve()
 
                 # Display the solution (if any)
                 self.draw()
