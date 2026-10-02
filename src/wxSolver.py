@@ -242,7 +242,7 @@ class wxSolver(wx.Frame, solver.solver):
             # Generate a contextual menu at mouse pos with all possible values
             popUp: wx.Menu = wx.Menu()
             for index in range(1,10):
-                id = menuConsts.ID_POPUP_FIRST + index
+                id = menuConsts.ID_POPUP[index]
                 popUp.Append(id, f"{index}")
                 if index not in values :
                     popUp.Enable(id, False)

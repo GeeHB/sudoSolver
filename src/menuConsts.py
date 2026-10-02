@@ -22,7 +22,7 @@ IDM_FILE_NEW_MEDIUM:str = 'Medium'
 ID_FILE_NEW_HARD:int = wx.NewIdRef().GetId()
 IDM_FILE_NEW_HARD:str = 'Hard'
 
-ID_POPUP_FIRST:int = wx.NewIdRef().GetId()
+ID_POPUP:list[int] =  [wx.NewIdRef().GetId() for _ in range(9)]
 
 
 # Edition
