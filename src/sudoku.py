@@ -10,6 +10,7 @@
 import copy
 import math
 import os
+import pathlib
 import random
 import threading
 from typing import override
@@ -17,19 +18,18 @@ from typing import override
 from element import element
 from options import (
     FILE_COMMENTS,
-    FILE_EXPORT_EXTENSION,
     FILE_VALUE_SEPARATOR,
     arrayComplexity,
 )
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
-   ARRAY_SIZE,
-   INDEX_MAX,
-   LINE_COUNT,
-   ROW_COUNT,
-   VALUE_MAX,
-   VALUE_MIN,
-   pointer,
+    ARRAY_SIZE,
+    INDEX_MAX,
+    LINE_COUNT,
+    ROW_COUNT,
+    VALUE_MAX,
+    VALUE_MIN,
+    pointer,
 )
 from tinySquare import tinySquare
 
@@ -207,22 +207,28 @@ class sudoku(threading.Thread):
     #
     #   return the name of the saved file or None if an error occured
     #
-    def save(self, genName:bool = False, comments:list[str] | None = None, newFileName:str | None = None):
-        if self.fileName_ is None or len(self.elements_) != ARRAY_SIZE:
+    def save(self, addExtent:str | None = None, fileComments:list[str] | None = None, newFileName:str | None = None)->str | None:
+        if not self.IsOk():
             return None
 
-        # A new name ?
-        if newFileName is not None:
-            self.fileName_ = newFileName
+        fileName : str = ""
 
-        fileName = self.fileName_
-        if genName:
-            fileName += FILE_EXPORT_EXTENSION
+        if newFileName is not None and len(newFileName)>0:
+            fileName =newFileName
+        else:
+            if self.fileName_ is None:
+                return None
+
+        if addExtent is not None and len(addExtent) > 0:
+            extension = pathlib.Path(fileName).suffix
+            if len(extension) == 0:
+                fileName += addExtent
+
         try:
             with open(fileName, "w") as file:
                 # a few comments ?
-                if comments and len(comments):
-                    for comment in comments:
+                if fileComments and len(fileComments):
+                    for comment in fileComments:
                         line = FILE_COMMENTS
                         line += " "
                         line += comment
@@ -247,7 +253,6 @@ class sudoku(threading.Thread):
 
                     file.write(line)
 
-            # file.close()
             return fileName
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")

@@ -19,7 +19,7 @@ from sharedTools import statusbits
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "4.0.1"
-APP_RELEASE_DATE = "22/09/2026"
+APP_RELEASE_DATE = "02/10/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -80,6 +80,7 @@ DEF_ASSETS_FOLDER = "../assets"
 #
 FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
 FILE_COMMENTS:str = "#"  # Comment lines start with
+FILE_EXTENSION:str = ".txt"
 FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
 
 
@@ -371,9 +372,10 @@ class stats:
     def __init__(self) -> None:
         self.clear()
 
-    def clear(self) -> None:
-        self.obvValues_ : int = 0          # Count of obvious values found
-        self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
+    def clear(self,clearObvious: bool= True) -> None:
+        if clearObvious:
+            self.obvValues_ : int = 0          # Count of obvious values found
+            self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
         self.bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
         self.bruteAttempts_ : int  = 0     # Brute-force attempts counter
 

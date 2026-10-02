@@ -20,9 +20,9 @@ except ModuleNotFoundError:
 import GUIConsts
 import menuConsts
 import solver
-from element import element
 from options import (
     APP_SHORT_NAME,
+    FILE_EXTENSION,
     arrayComplexity,
     options,
 )
@@ -149,8 +149,8 @@ class wxSolver(wx.Frame, solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def _setFilename(self, fileName:str, create:bool = False):
-        solver.solver._setFilename(self, fileName, create)
+    def setFilename(self, fileName:str, create:bool = False):
+        solver.solver.setFilename(self, fileName, create)
 
         title : str = APP_SHORT_NAME
         if len(fileName) > 0:
@@ -555,7 +555,7 @@ class wxSolver(wx.Frame, solver.solver):
                         wx.ICON_EXCLAMATION | wx.OK, self)
             return
 
-        path : str = self.filename
+        path : str | None = self.filename
         done : bool = False
         wildcard = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 
@@ -568,13 +568,19 @@ class wxSolver(wx.Frame, solver.solver):
         ) as dlg:  # pyright: ignore[reportUnknownVariableType]
             if dlg.ShowModal() == wx.ID_OK:  # pyright: ignore[reportUnknownMemberType]
                 path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
-                ret : str | None = self.sudoku_.save(newFileName=path)  # pyright: ignore[reportUnknownArgumentType]
-                done = ret is not None or len(ret)>0  # pyright: ignore[reportArgumentType]
+
+                # Save the sudoku
+                path = self.sudoku_.save(newFileName=path, addExtent = FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
+                done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
 
         if done :
-            self._setFilename(path)  # pyright: ignore[reportUnknownArgumentType]
+            self.setFilename(path)  # pyright: ignore[reportUnknownArgumentType, reportArgumentType]
             self.state_.assign(self.ARRAY_NEW)
             self._menu_setItemsStates()
+
+            wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
+                        GUIConsts.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
+
 
     # Quit
     #

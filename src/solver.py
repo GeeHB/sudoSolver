@@ -221,10 +221,10 @@ class solver:
 
     # Set/change the current array's filename
     #
-    def _setFilename(self, fileName:str, create:bool = False):
+    def setFilename(self, fileName:str, create:bool = False):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(fileName +  " is not a file")
+            raise sudokuError(f"{fileName} is not a file or does not exist")
         self.filename = fileName
 
     #
@@ -265,7 +265,7 @@ class solver:
             return False
 
         if redraw:
-            self._setFilename(fileName)
+            self.setFilename(fileName)
             self.draw(redrawBackground=True)
 
         return True
@@ -419,7 +419,7 @@ class solver:
     # returns found a solution ?
     def resolve(self)->bool:
         found:bool = False
-        self.stats_.clear()
+        self.stats_.clear(False)
 
         # for stats
         start : float = time.time()

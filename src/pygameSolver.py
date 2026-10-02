@@ -21,7 +21,6 @@ import pygame.event
 
 import GUIConsts
 import solver
-from element import element
 from options import (
     APP_AUTHOR_SHORT,
     APP_NAME,
@@ -326,7 +325,7 @@ class pygameSolver(solver.solver):
                     self._waitForEvent(allEvents=False)
 
                 # Obvious values first ...
-                if self.params_.obviousValues and self.sudoku_.findObviousValues():
+                if self.params_.obviousValues and self.findObviousValues():
                         self._displayText(
                             f"Found {self.stats_.obvValues_!r} obvious values", False
                         )
@@ -354,7 +353,7 @@ class pygameSolver(solver.solver):
                     )
                     comments.append(" ")
 
-                    if self.sudoku_.save(True, comments) is not None:
+                    if self.sudoku_.save(addExtent=FILE_EXPORT_EXTENSION, fileComments = comments) is not None:
                         print(
                             f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
                         )
@@ -534,8 +533,8 @@ class pygameSolver(solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def _setFilename(self, fileName:str, create:bool = False):
-        solver.solver._setFilename(self, fileName, create)
+    def setFilename(self, fileName:str, create:bool = False):
+        solver.solver.setFilename(self, fileName, create)
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName,
