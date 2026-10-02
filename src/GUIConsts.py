@@ -48,4 +48,10 @@ FILE_FONT_POS_Y         = 5
 BLINK_RATE : int = 750 # Blinking rate in ms
 MSG_HIDE_RATE : int = 2000 # Hide the filename
 
+#
+#  str
+#
+STR_LOAD: str = "Open sudoku"
+STR_SAVE: str = "Save sudoku"
+
 #EOF

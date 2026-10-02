@@ -189,7 +189,7 @@ class wxSolver(wx.Frame, solver.solver):
                     self._menu_revertArray()
 
             case wx.ID_EXIT:
-                self.Close(True)
+                self._menu_fileExit()
             case _:
                 pass
 
@@ -524,7 +524,7 @@ class wxSolver(wx.Frame, solver.solver):
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
-        with wx.FileDialog(self, "Open sudoku file", wildcard="TXT files (*.txt)|*.txt",
+        with wx.FileDialog(self, GUIConsts.STR_LOAD, wildcard="TXT files (*.txt)|*.txt",
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
@@ -539,21 +539,21 @@ class wxSolver(wx.Frame, solver.solver):
     #
     def _menu_fileSave(self):
         if self.sudoku_.isEmpty():
-            wx.MessageBox("The current sudoku array is empty.", "Empty sudoku",
+            wx.MessageBox("The current sudoku array is empty.", GUIConsts.STR_SAVE,
                         wx.ICON_EXCLAMATION | wx.OK, self)
             return
 
         path : str = self.filename
         done : bool = False
         wildcard = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+
         with wx.FileDialog(
             self,
-            message="Save sudoku",
+            message=GUIConsts.STR_SAVE,
             defaultFile=path,
             wildcard=wildcard,
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         ) as dlg:  # pyright: ignore[reportUnknownVariableType]
-            # Affichage et gestion de la réponse
             if dlg.ShowModal() == wx.ID_OK:  # pyright: ignore[reportUnknownMemberType]
                 path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
                 ret : str | None = self.sudoku_.save(newFileName=path)  # pyright: ignore[reportUnknownArgumentType]
@@ -563,6 +563,17 @@ class wxSolver(wx.Frame, solver.solver):
             self._setFilename(path)  # pyright: ignore[reportUnknownArgumentType]
             self.state_.assign(self.ARRAY_NEW)
             self._menu_setStates()
+
+    # Quit
+    #
+    def _menu_fileExit(self):
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
+                    "The current sudoku has been modified.\nDo you want to quit without saving?",
+                    GUIConsts.STR_SAVE,
+                    wx.ICON_QUESTION | wx.YES_NO, self):
+            return
+
+        self.Close(True)
 
     #
     # Resolving
