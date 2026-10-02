@@ -7,7 +7,6 @@
 #   Description :   draw sudoku using the wxPython library
 #                   Fedora : sudo dnf install python3-wxpython4
 #
-from curses import KEY_ENTER
 import math
 import sys
 from typing import override
@@ -539,6 +538,11 @@ class wxSolver(wx.Frame, solver.solver):
     # Save current array
     #
     def _menu_fileSave(self):
+        if self.sudoku_.isEmpty():
+            wx.MessageBox("The current sudoku array is empty.", "Empty sudoku",
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+            return
+
         path : str = self.filename
         done : bool = False
         wildcard = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"

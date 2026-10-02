@@ -103,6 +103,16 @@ class sudoku(threading.Thread):
             for _ in range(ARRAY_SIZE):
                 self.elements_.append(element())
 
+    # Is the array fully empty ?
+    #
+    def isEmpty(self) -> bool:
+        if self.IsOk():
+            for index in range(ARRAY_SIZE):
+                if not self.elements_[index].isEmpty():
+                    return False
+
+        return True  # yes (empty or not inoitialized)
+
     # Create a new array
     #
     def new(self, compl : int | None):
