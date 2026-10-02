@@ -483,7 +483,7 @@ class sudoku(threading.Thread):
     #
     def getValues(self, position:pointer)->list[int]:
         values : list[int] = []
-        for value in range(VALUE_MIN, VALUE_MAX):
+        for value in range(VALUE_MIN, VALUE_MAX+1):
             if self.checkValue(position, value):
                 # This value can be used
                 values.append(value)
