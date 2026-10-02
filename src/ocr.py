@@ -14,6 +14,11 @@ from pytesseract import Output
 #
 #   OCR
 #
+#
+
+TESSERACT_CONFIG = "--psm 6 -c tessedit_char_whitelist=123456789"  # OCR parameters
+TESSERACT_BOX_THICKNESS = 1
+TESSERACT_BOX_COLOR = (0, 255, 0)
 
 # Parse an image file
 #
@@ -36,7 +41,7 @@ def gridFromImage(self, fileName:str | None, removeFrames:bool=False, genBoxes:b
         data = pytesseract.image_to_data(
             img, output_type=Output.DICT, config=TESSERACT_CONFIG
         )
-        position = pointer(gameMode=False)
+        position = pointer(game=False)
 
         for i in range(len(data["text"])):
             if data["conf"][i] != -1:

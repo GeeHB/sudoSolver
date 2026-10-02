@@ -1,7 +1,6 @@
 {
   "include": ["src"],
-  //"exclude": ["**/__pycache__", "src/mountPoints.py"],
-  "exclude": ["**/__pycache__", "src/ocr.py"],
+  "exclude": ["**/__pycache__", "src/ocr.py", "src/menuConsts.py"],
   // off, basic, standard, strict
   "typeCheckingMode": "strict"
 }

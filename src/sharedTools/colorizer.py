@@ -1,6 +1,3 @@
-#!/bin/python
-# pyright: reportPossiblyUnboundVariable= none
-#
 # coding=UTF-8
 #
 #   Fichier     :   colorizer.py
@@ -16,7 +13,7 @@
 
 from collections.abc import Iterable
 
-COLORIZER_VERSION = "2.1.1"
+COLORIZER_VERSION = "2.1.2"
 
 try :
     # Pour la coloration des sorties terminal
@@ -126,7 +123,7 @@ class colorizer:
     def colored(self, content:str, txtColor:str | None = None, bkColor: str | None = None, formatAttr :  Iterable[str] | None = None) -> str:
         retour:str = content
         if self.colored_:
-            retour = termcolor.colored(text=content, color=txtColor, on_color = bkColor, attrs = formatAttr)
+            retour = termcolor.colored(text=content, color=txtColor, on_color = bkColor, attrs = formatAttr)  # pyright: ignore[reportPossiblyUnboundVariable]
         return retour
 
     # Début de ligne en mode [OK] / [KO]

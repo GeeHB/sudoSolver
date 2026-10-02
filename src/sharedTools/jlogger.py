@@ -1,5 +1,3 @@
-#!/bin/python
-#
 # coding=UTF-8
 #
 #   Fichier     :   jlogger.py
@@ -15,7 +13,7 @@ import os
 import sys
 from zoneinfo import ZoneInfo
 
-JLOG_VERSION = "1.1.1"
+JLOG_VERSION = "1.1.2"
 
 # Date et heure pour les logs
 JLOG_DATE_REGION = "Europe/Paris"

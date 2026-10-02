@@ -15,52 +15,60 @@ from ownExceptions import reachedEndOfList
 #
 ROW_COUNT = LINE_COUNT = 9
 
-GRID_SIZE = ROW_COUNT * LINE_COUNT
+ARRAY_SIZE = ROW_COUNT * LINE_COUNT
 
 VALUE_MIN = 1
 VALUE_MAX = LINE_COUNT
 
 INDEX_MIN = 0
-INDEX_MAX = (GRID_SIZE - 1)
+INDEX_MAX = (ARRAY_SIZE - 1)
 
 #
-# pointer - "ID" of an element in the sudoku's grid
+# pointer - "ID" of an element in the sudoku's array
 #
 #   This object does all the conversion from linear index to matrix coordinates
 #
 class pointer:
     # Construction
     #
-    def __init__(self, index:int | None = None, gameMode:bool = True):
-        self.index_:int  = INDEX_MIN if index is None else index
-        self.row_:int = 0
-        self.line_:int = 0
-        self.squareID_:int = 0
-        self.gameMode_:bool = gameMode
+    def __init__(self, index:int | None = None, game:bool = True):
+        self.clear(game)
 
-        self._whereAmI()
+        if index is not None and self._inRange(index, 0, ARRAY_SIZE):
+            self.index_ = index
+            self._whereAmI()
+
 
     def __repr__(self)->str:
-        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}"
+        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}\n\t-{"Game" if self.gameMode_ else "not game"}"
+
+    def clear(self, game:bool):
+        self.index_ = INDEX_MIN
+        self.row_ = 0
+        self.line_ = 0
+        self.squareID_ = 0
+        self.gameMode_ = game
 
     # Absolute position
     #
-    def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None):
+    def moveTo(self, line:int = 0, row:int = 0, pos:tuple[int,int] | None = None)->bool:
         if pos is None:
-            # Ensure position is in the grid
+            # Ensure position is in the array
             self.row_ = self._setInRange(row)
             self.line_ = self._setInRange(line)
         else:
-            # Mouse click outside the grid ?
+            # Mouse click outside the array ?
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
-                # Outside the grid => ignore the click
-                return
+                # Outside the array => ignore the click
+                #print(f"invalide : {pos}")
+                return False
 
             self.row_ = pos[0]
             self.line_ = pos[1]
 
         self.index_ = self.row_ + self.line_ * ROW_COUNT
         self._whereAmI(False)
+        return True
 
     # Access
     #
@@ -156,7 +164,7 @@ class pointer:
     # Updating coordinates
     #
     def _whereAmI(self, all:bool = True):
-        if True == all:
+        if all:
             # V. math
             self.line_ = math.floor(self.index_ / ROW_COUNT)
             self.row_ = self.index_ - ROW_COUNT * self.line_

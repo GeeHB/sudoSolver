@@ -3,16 +3,16 @@
 ## 1 - Edit and Solve *Sudokus*
 ### 1.1 - Presentation
 
-Theses 2 *python3* tools allow you to create, edit, modify and find a solution for any sudoku grid.
+Theses 2 *python3* tools allow you to create, edit, modify and find a solution for any sudoku.
 
 * *sudoSolver.py* is a simple command-line application for editing, modifying and solving sudoku.
 * *tksudoSolver.py* uses the same 'engine' as *sudoSolver.py* and displays a simple GUI based on *tkInter / TCL-TK*.
 For both, solutions are found using a "brute force" algorithm. Some optimisations, searching for obvious values first, can be performed.
-During the search process, grids can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
+During the search process, sudokus can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
 
 Displays are performed, as desired, on the console or on the *GUI* using *PYGame*. When *nCurses* is available, console displays uses colors.
 
-Sample grids can be found in the *./grids* subfolder.
+Sample sudokus can be found in the *./sudokus* subfolder.
 
 ### 1.2 - Compatibility
 Both tools are 100% written in *Python 3* and have been tested on various systems :
@@ -28,11 +28,11 @@ Both tools are 100% written in *Python 3* and have been tested on various system
 A simple command-line application written in *Python 3* for editing, modifying and solving sudoku.
 
 Solutions are found using a "brute force" algorithm. Some optimisations, searching for obvious values first, can be performed.
-During the search process, grids can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
+During the search process, sudokus can be displayed in monothreaded mode (very slow) or in a multithreaded way (one thread for computong and a second for drawing operations).
 
 Displays are performed, as desired, on the console or on the *GUI* using *PYGame*. When *nCurses* is available, console displays uses colors.
 
-Sample grids can be found in the *./grid* subfolder.
+Sample sudokus can be found in the *./sudokus* subfolder.
 
 ### 2.2 - Parameters
 
@@ -40,13 +40,13 @@ Sample grids can be found in the *./grid* subfolder.
 
 | **Parameter** | **Long parameter**| **Description** | Display mode |
 |-----------|-------------|--------------|--------------|
-| *\-b FOLDER* | *--browse FOLDER* | Browse the folder *FOLDER*. All the grids in the folder will be displayed. | *GUI* only |
-| *\-e FILENAME* | *--edit FILENAME* | Edit the grid saved in *FILENAME*. If the *FILENAME* does not exists, it will be created. | *GUI* only |
+| *\-b FOLDER* | *--browse FOLDER* | Browse the folder *FOLDER*. All the sudokus in the folder will be displayed. | *GUI* only |
+| *\-e FILENAME* | *--edit FILENAME* | Edit the sudoku saved in *FILENAME*. If the *FILENAME* does not exists, it will be created. | *GUI* only |
 | *\-s FILENAME* | *--solve FILENAME*|Solve the sudoku saved in FILENAME | all |
-| *\-bs FOLDER* | *--browseSolve*| Browse the folder *FOLDER* and solve the selected grid. The *left* and *right* arrows allows browsing in the folder. When *enter* key is pressed the selected grid is solved. | *GUI* only |
-| *\-es FILENAME* | *--edit FILENAME*|Edit the grid in *FILENAME* and solve it. If the file does not exist, it will be created. | *GUI* only |
+| *\-bs FOLDER* | *--browseSolve*| Browse the folder *FOLDER* and solve the selected sudoku. The *left* and *right* arrows allows browsing in the folder. When *enter* key is pressed the selected sudoku is solved. | *GUI* only |
+| *\-es FILENAME* | *--edit FILENAME*|Edit the sudoku in *FILENAME* and solve it. If the file does not exist, it will be created. | *GUI* only |
 | *\-c* | *--console* | Force console mode. If *nCurses* is available, the library will be used. | console |
-| *\-d {None, 1,2}* | *--display {None, 1, 2}* |  Show grid during the resolution process. 1 is slow, 2 using a multithreaded algorithm and None (by default) for no drawings. | GUI only |
+| *\-d {None, 1,2}* | *--display {None, 1, 2}* |  Show sudoku during the resolution process. 1 is slow, 2 using a multithreaded algorithm and None (by default) for no drawings. | GUI only |
 | *\-o* | *--obvious* | Search *obvious* values before executing brute-force solution searching. | all |
 | *\-x* | *--export* | Export the solution, if any, in a *.solution* file. | all |
 
@@ -57,10 +57,10 @@ Sample grids can be found in the *./grid* subfolder.
 
 ### 2.3 - Examples
 
-Create (and edit) the *newGrid.txt* file :
+Create (and edit) the *newSudoku.txt* file :
 
 ```
-sudoSolver.py -e newGrid.txt
+sudoSolver.py -e newSudoku.txt
 ```
 
 Browse *backup* folder :
@@ -69,27 +69,27 @@ Browse *backup* folder :
 sudoSolver.py -b backup
 ```
 
-Edit and solve with opitmisation newGrid.txt and show progression :
+Edit and solve with opitmisation newSudoku.txt and show progression :
 
 ```
-sudoSolver.py -es newGrid.txt -o -d
+sudoSolver.py -es newSudoku.txt -o -d
 ```
 
-Solve, in console mode, newGrid.txt :
+Solve, in console mode, newSudoku.txt :
 
 ```
-sudoSolver.py -s newGrid.txt -c
+sudoSolver.py -s newSudoku.txt -c
 ```
 
-Browse the backup folder and solve the choosen grid using optimisation and show progress in a multithreaded mode; result must be saved :
+Browse the backup folder and solve the choosen sudoku using optimisation and show progress in a multithreaded mode; result must be saved :
 
 sudoSolver.py -bs ./backup -o -dd -x
 
-### 2.4 - Grid edition
+### 2.4 - Edition of a sudoku
 
 > *The edition mode is only available with *GUI* displays (TCL/Tk or PYGame).*
 
-Whether you edit or create a new grid, the editor allow you to fill the grid with the values of your choice.
+Whether you edit or create a new sudoku, the editor allow you to fill the sudoku with the values of your choice.
 
 You can use the defined keys :
 
@@ -117,13 +117,13 @@ In this screenshot the application displays stats in the console :
 During edition, the selected box is displayed with a blue background :
 ![Grid edition](github/edition.png)
 
-In the example the application is called in console mode (-c option) to solve (-s option) the grid named ./grids/f0989.txt :
+In the example the application is called in console mode (-c option) to solve (-s option) the sudoku named ./sudokus/f0989.txt :
 
 ```
-./sudoSolver.py -s ./grids/f0989.txt -c
+./sudoSolver.py -s ./sudokus/f0989.txt -c
 ```
 
-First, the grid is displayed :
+First, the sudoku is displayed :
 
 ![New grid](github/cursesNew.png)
 
@@ -133,9 +133,9 @@ Press "enter" and the solution is displayed :
 
 When the application searches for *obvious values*, the values found are displayed using the blue color.
 
-In this sample the application start the edition of a grid :
+In this sample the application start the edition of a sudoku :
 
-![Selected grid](github/newGrid.png)
+![Selected grid](github/newSudoku.png)
 
 Then the founded obvious values are displayed :
 
@@ -151,7 +151,7 @@ This *GUI* version of *sudoSolver* works exactly the same as sudoSolver.py. The 
 
  Tab | Button | Action |
 |-----|-----|--------|
-|Grid| Browse | Choose folder containing grids |
+|Grid| Browse | Choose folder containing sudokus |
 |Grid| << | Previous file in the folder |
 |Grid| >> | Next file |
 |Grid| Create | Create an empty file |
