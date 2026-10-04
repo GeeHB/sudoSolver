@@ -22,9 +22,6 @@ IDM_FILE_NEW_MEDIUM:str = 'Medium'
 ID_FILE_NEW_HARD:int = wx.NewIdRef().GetId()
 IDM_FILE_NEW_HARD:str = 'Hard'
 
-ID_POPUP:list[int] =  [wx.NewIdRef().GetId() for _ in range(9)]
-
-
 # Edition
 #
 IDM_EDIT:str = '&Edit'
@@ -50,6 +47,12 @@ IDM_SOLVE_RESOLVE_MULTI:str= 'Multi-threaded'
 
 ID_SOLVE_REVERT:int =  wx.NewIdRef().GetId()
 IDM_SOLVE_REVERT:str =  'Revert'
+
+# Contextual menu
+#
+ID_POPUP_EMPTY:int = wx.NewIdRef().GetId()
+IDM_POPUP_EMPTY:str = "Empty"
+ID_POPUP_VALUES:list[int] =  [wx.NewIdRef().GetId() for _ in range(9)]
 
 
 
