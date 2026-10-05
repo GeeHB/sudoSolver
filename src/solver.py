@@ -41,7 +41,16 @@ from sharedTools import (
 from sudoku import sudoku
 
 
-# colour - General and portable colour definition
+# A "previous" value in the array
+#
+class prevValue:
+    def __init__(self, index:int, value:int | None):
+        self.index_ = index
+        self.value_ = value if value is not None else 0
+    def __repr__(self)->str:
+        return f"(Id:{self.index_} - val:{self.value_})"
+
+# ownColour - General and portable colour definition
 #
 class ownColour:
     r : int
@@ -189,6 +198,8 @@ class solver:
         self.intSquareWidth_ :int = 0        # Internal dims of an element
         self.extSquareWidth_ :int = 0        # Ext. dims
         self.fontsize_ : int = 0
+
+        self.prevValues_:list[prevValue] = []   # List of prev. values during edition
 
         # Default colours
         #
@@ -467,8 +478,8 @@ class solver:
 
     # Start edition mode
     #
-    def _edit_start(self):
-        pass
+    def _edit_start(self, initPos:bool = True):
+        self.prevValues_.clear()        # Nothing to undo or cancel
 
     # End of edition mode
     #
@@ -507,8 +518,14 @@ class solver:
     #
     def _edit_setValue(self, val: int):
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
-            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(val, element.STATUS_ORIGINAL, True)
-            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+            self._edit__setValue(val)
+
+    def _edit__setValue(self, val: int, id:int = -1,keep:bool = True):
+        index:int = id if id != -1 else self.edition_.currentPos_.index()
+        if keep:
+            self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
+        self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
     #
@@ -519,8 +536,7 @@ class solver:
 
         newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+            self._edit__setValue(newVal)
 
     # Inc value
     #
@@ -531,14 +547,39 @@ class solver:
 
         newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(newVal, element.STATUS_ORIGINAL, True)
-            self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+            self._edit__setValue(newVal)
 
     # Remove current value
     #
     def _edit_removeValue(self):
-        self.sudoku_.elements_[self.edition_.currentPos_.index()].setValue(0, element.STATUS_ORIGINAL, True)
-        self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+        self._edit__setValue(0)
+
+    # Undo
+    #
+    #  Returns position of modified element or -1 on error
+    def _edit_undo(self)->int:
+        if len(self.prevValues_) > 0:
+            prev:prevValue = self.prevValues_.pop()
+            self._edit__setValue(prev.value_, prev.index_, keep=False)
+            return prev.index_
+        return -1
+
+    # Cancel current edition process (and whole changes)
+    #
+    def _edit_cancel(self)->bool:
+        if len(self.prevValues_) == 0:
+            return False
+
+        for val in reversed(self.prevValues_):
+            print(val)
+            if val.value_ > 0:
+                self.sudoku_.elements_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
+            else:
+                self.sudoku_.elements_[val.index_].empty(True)
+
+        self.prevValues_.clear()
+        return True
+
 
     #
     # Resolution

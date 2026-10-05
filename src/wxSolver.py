@@ -125,13 +125,14 @@ class wxSolver(wx.Frame, solver.solver):
                         faceName = GUIConsts.ELT_FONT_NAME)
         self.blinkTimer_ : wx.Timer = wx.Timer(self)
 
+
     # GUI initialization
     #
     @override
     def initialize(self):
         solver.solver.initialize(self)
 
-        self._menu_createBar()
+        self._menu_create()
 
         # Associate event to handlers
         #
@@ -186,17 +187,21 @@ class wxSolver(wx.Frame, solver.solver):
         # Other menu items
         match menuId:
             case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
-                self._menu_fileNewArray(menuId)
+                self._menu_fileNew(menuId)
             case wx.ID_OPEN:
                 self._menu_fileOpen()
             case wx.ID_SAVE:
                 self._menu_fileSave()
 
+            case menuConsts.ID_EDIT_UNDO:
+                self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
                 self._edit_start()
-
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
+            case menuConsts.ID_EDIT_CANCEL:
+                self._edit_cancel()
+
 
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._menu_findOviousValues()
@@ -395,6 +400,8 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def _edit_start(self, initPos:bool = True):
+        super()._edit_start(initPos)
+
         self.state_.set(self.ARRAY_EDITING)
         self._menu_setItemsStates()
 
@@ -415,6 +422,8 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def _edit_stop(self):
+        super()._edit_stop()
+
         self.state_.set(self.ARRAY_EDITING, False)
         if self.edition_.modified:
             self.state_.set(self.ARRAY_MODIFIED, True)
@@ -432,9 +441,9 @@ class wxSolver(wx.Frame, solver.solver):
     # Selected item has just changed
     #
     def _edit_selChanged(self):
-        self._edit_stop()
+        #self._edit_stop()
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
-        self._edit_start(False)
+        #self._edit_start(False)
 
     def _edit_blink(self):
         self._draw_startUp()
@@ -470,13 +479,33 @@ class wxSolver(wx.Frame, solver.solver):
                 self._edit_stop()
                 return
             case self.EDIT_CANCEL:
-                self._edit_stop()
-                self.sudoku_.revert()
+                self._edit_cancel()
                 return
             case _:
                 pass
 
         self._edit_selChanged()
+
+    # Undo
+    #
+    def _edit_undo(self)->int:
+        id:int = super()._edit_undo()
+        if id > -1:
+            self.draw()
+        return id
+
+    # Cancel
+    #
+    @override
+    def _edit_cancel(self)->bool:
+        done:bool = False
+        if super()._edit_cancel():
+            self.state_.remove(self.ARRAY_MODIFIED) # !!!
+            self.draw()
+            done = True
+
+        self._edit_stop()
+        return done
 
     #
     #  Menus
@@ -484,7 +513,7 @@ class wxSolver(wx.Frame, solver.solver):
 
     # Create the menubar
     #
-    def _menu_createBar(self):
+    def _menu_create(self):
         # Files popup
         fileMenu = wx.Menu()
 
@@ -502,8 +531,11 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Edition
         editMenu = wx.Menu()
+        editMenu.Append(menuConsts.ID_EDIT_UNDO, menuConsts.IDM_EDIT_UNDO)
+        editMenu.AppendSeparator()
         editMenu.Append(menuConsts.ID_EDIT_MODIFY, menuConsts.IDM_EDIT_MODIFY)
         editMenu.Append(menuConsts.ID_EDIT_DONE, menuConsts.IDM_EDIT_DONE)
+        editMenu.Append(menuConsts.ID_EDIT_CANCEL, menuConsts.IDM_EDIT_CANCEL)
 
         # Resolution
         solveMenu = wx.Menu()
@@ -535,7 +567,9 @@ class wxSolver(wx.Frame, solver.solver):
         editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
         solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
 
+        self.menuBar_.Enable(menuConsts.ID_EDIT_UNDO, editOn)
         self.menuBar_.Enable(menuConsts.ID_EDIT_DONE, editOn)
+        self.menuBar_.Enable(menuConsts.ID_EDIT_CANCEL, editOn)
 
         state : bool = not (editOn or solving)
 
@@ -557,7 +591,11 @@ class wxSolver(wx.Frame, solver.solver):
 
     # Create a new or empty array
     #
-    def _menu_fileNewArray(self, menuId:int):
+    def _menu_fileNew(self, menuId:int):
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOTSAVED, GUIConsts.STR_NEW,
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
+
         match menuId:
             case menuConsts.ID_FILE_NEW_EASY:
                 self.sudoku_.new(arrayComplexity.Easy)
@@ -576,7 +614,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox("Current content has not been saved! Do you want to proceed?", GUIConsts.STR_LOAD,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOTSAVED, GUIConsts.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -630,8 +668,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     def _menu_fileExit(self):
         if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
-                    "The current sudoku has been modified.\nDo you want to quit without saving?",
-                    GUIConsts.STR_SAVE,
+                    GUIConsts.STR_NOTSAVED, GUIConsts.STR_EXIT,
                     wx.ICON_QUESTION | wx.YES_NO, self):
             return
 

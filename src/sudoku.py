@@ -530,7 +530,6 @@ class sudoku(threading.Thread):
         value = int(val)
 
         # in [0,9] ?
-        value = int(val)
         if value < 0 or value > 9:
             if warn:
                 raise sudokuError(

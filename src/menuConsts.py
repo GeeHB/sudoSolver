@@ -25,10 +25,14 @@ IDM_FILE_NEW_HARD:str = 'Hard'
 # Edition
 #
 IDM_EDIT:str = '&Edit'
+ID_EDIT_UNDO:int =  wx.NewIdRef().GetId()
+IDM_EDIT_UNDO:str = 'Undo'
 ID_EDIT_MODIFY:int =  wx.NewIdRef().GetId()
 IDM_EDIT_MODIFY:str = 'Modify'
 ID_EDIT_DONE:int =  wx.NewIdRef().GetId()
 IDM_EDIT_DONE:str = 'Done'
+ID_EDIT_CANCEL:int =  wx.NewIdRef().GetId()
+IDM_EDIT_CANCEL:str = 'Cancel'
 
 
 # Resolution
