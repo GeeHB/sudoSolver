@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   tinySquare.py
@@ -8,83 +6,71 @@
 #
 #   Description :   tinySquare object
 #
+from element import element
 from pointer import ROW_COUNT, pointer
 
+# Top-left index of tiny-squares in the global array
+SQUARES_INDEXES : list[int] = [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
 #
 # tinySquare object
 #
-#   A tiny-square is one of the 9 3x3 matrix composing the whole grid
+#   A tiny-square is one of the 9 3x3 matrix composing the whole array
 #
 class tinySquare:
-
     # Dimensions
-    TINY_LINE_COUNT = 3
-    TINY_ROW_COUNT = 3
-
-    topLine_ = 0
-    topRow_ = 0
+    TINY_LINE_COUNT:int = 3
+    TINY_ROW_COUNT:int = 3
 
     # Construction
     #
-    def __init__(self, index = None, other = None):
-        # Top-left index of tiny-squares
-        #
-        self.TINY_SQUARES_INDEXES = [0, 3, 6, 27, 30, 33, 54, 57, 60]
+    def __init__(self, index:int | None = None):
+        self.topLine_:int = 0
+        self.topRow_:int = 0
+        self.Id_ : int = 0
 
-        # Copy ?
-        #
-        if other is not None:
-            self.set(other)
-        else:
-            self.IdFromIndex(index)
+        if index is not None:
+            self.Id_ = self.IdFromIndex(index)
 
-    # Copy constrcutor
+    def __repr__(self)->str:
+        return f"SquareID - id : {self.Id_}"
+
+    # Get ID from positionnal index (of an element)
     #
-    def set(self, other):
-        if type(other) is tinySquare:
-            self.Id_ = other.Id_
-            self.topLine_ = other.topLine_
-            self.topRow_ = other.topRow_
+    def IdFromIndex(self, id:int)->int:
+        if id < 0 or id >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
+            raise IndexError
 
-    # Get index from positionnal index (of an element)
-    #
-    def IdFromIndex(self, index):
-        if type(index) is int:
-            if index < 0 or index >= (self.TINY_LINE_COUNT * self.TINY_ROW_COUNT):
-                raise IndexError
+        # "top" values
+        position = pointer(index = SQUARES_INDEXES[id])
+        self.topLine_ = position.line_
+        self.topRow_ = position.row_
 
-            self.Id_ = index
-
-            # "top" values
-            position = pointer(index = self.TINY_SQUARES_INDEXES[index])
-            self.topLine_ = position.line_
-            self.topRow_ = position.row_
+        return id
 
     # Access
     #
-    def Id(self):
+    def Id(self)->int:
         return self.Id_
 
     # Top indexes
-    def topLine(self):
+    def topLine(self)->int:
         return self.topLine_
 
-    def topRow(self):
+    def topRow(self)->int:
         return self.topRow_
 
     # Indexes by line
     #
     #   returns a 3x3 matrix : line[0] / line[1] / line[2]
     #
-    def indexes(self):
-
-        ids = []
+    def indexes(self)->list[list[int]]:
+        ids :list[list[int]]= []
 
         # Start index
-        index = self.TINY_SQUARES_INDEXES[self.Id_]
+        index = SQUARES_INDEXES[self.Id_]
         for _ in range (self.TINY_LINE_COUNT):
-            line = []
+            line : list[int]= []
             for row in range(self.TINY_ROW_COUNT):
                 line.append(index + row)    # Add the index to the line
 
@@ -98,20 +84,19 @@ class tinySquare:
     #
     #   returns the tuple (line, row) if found or (None, None)
     #
-    def findValue(self, elements, value):
-
+    def findValue(self, elements:list[element], value:int)->tuple[int | None,int | None]:
         # All my positions
-        positions = self.indexes()
+        positions:list[list[int]] = self.indexes()
 
         # Check all the positions
         for line in range (tinySquare.TINY_LINE_COUNT):
             for row in range(tinySquare.TINY_ROW_COUNT):
-                if value == elements[positions[line][row]].value():
+                if value == elements[positions[line][row]].num:
                     # This value is in the square
                     return (line, row)
 
         # No, this value is not in this square
-        return (-1, -1)
+        return (None, None)
 
     # Is the value "in" the square ?
     #
@@ -119,7 +104,7 @@ class tinySquare:
     #
     #   return a boolean - True if found
     #
-    def inMe(self, elements, value):
-        return not bool(self.findValue(elements, value)[0] == -1)
+    def inMe(self, elements:list[element], value:int)->bool:
+        return not bool(self.findValue(elements, value)[0] == None)
 
 # EOF

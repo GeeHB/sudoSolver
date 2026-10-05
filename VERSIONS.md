@@ -20,6 +20,18 @@
 
 #### todo
 * Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
+* add getters and setters : pygameOutputs.py
+* 'Esc' from edit mode -> return to array's previous state
+
+#### Version 4.0.1
+* oct. 2026
+* Added :
+  * sudoku <- gridMaker + sudoku
+  * solver <- abstract class for GUI solver app.
+  * pygameSolver <- GUI and sudoku's calls using pygame
+  * wxSolver <- GUI and menu with wxPython lib
+* Correction
+  * PYGame : réaffichage complet de la grille lors du clignottement d'un message
 
 #### Version 3.1.4
 * aug. 2026
@@ -30,6 +42,7 @@
    * Creation of new grids - gridMaker.py
    * folder org.
 * Corrections :
+  * check destination folder
   * Remove console and curses mode
     * remove outputs.py, consoleOutputs.py, cursesOutputs.py
   * pyRight & mccabe corrections

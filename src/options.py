@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # coding=UTF-8
 #
 #   File        :   options.py
@@ -11,15 +9,17 @@
 
 import argparse
 import sysconfig
+from enum import IntEnum
 
 from sharedTools import colorizer as color
-from sharedTools import statusBits
+from sharedTools import statusbits
 
 # App informations
+#
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
-APP_CURRENT_VERSION = "3.1.3"
-APP_RELEASE_DATE = "03/08/2026"
+APP_CURRENT_VERSION = "4.0.2"
+APP_RELEASE_DATE = "02/10/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -28,38 +28,29 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 PYTHON_VER_MAJ = 3
 PYTHON_VER_MIN = 10
 
+#
 # Command line options
 #
 
 ARG_BROWSE_S = "-b"  # Browse a folder
 ARG_BROWSE = "--browse"
-COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained grids"
+COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained sudokus"
 
-ARG_EDIT_S = "-e"  # Edit (and modify or create) a grid
+ARG_EDIT_S = "-e"  # Edit (and modify or create) a sudoku
 ARG_EDIT = "--edit"
 COMMENT_EDIT = "Edit or create the {FILE} file"
 
-ARG_SOLVE_S = "-s"  # Search for a solution for the grid
+ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
 ARG_SOLVE = "--solve"
-COMMENT_SOLVE = "Solve (find a solution) for the grid saved in {FILE} file"
-
-ARG_USER_S = "-u"  # Search for a solution for the grid
-ARG_USER = "--user"
-COMMENT_USER = "User mode"
+COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
 
 ARG_BROWSE_AND_SOLVE_S = "-bs"
 ARG_BROWSE_AND_SOLVE = "--browseSolve"
-COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen grid"
-
-FILE_EXPORT_EXTENSION = ".solution"  # A solution grid file
+COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
 
 ARG_EDIT_AND_SOLVE_S = "-es"
 ARG_EDIT_AND_SOLVE = "--editSolve"
 COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
-
-ARG_NEW_S = "-n"  # New grid
-ARG_NEW = "--new"
-COMMENT_NEW = "Create a new grid of {COMPLEXITY} complexity"
 
 ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
 ARG_SEARCH_OBVIOUS = "--obvious"
@@ -67,78 +58,134 @@ COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution search
 
 ARG_SAVE_SOLUTION_S = "-x"  # Save / export the solution
 ARG_SAVE_SOLUTION = "--export"
-COMMENT_SAVE_SOLUTION = "Save the solution of the grid"
+COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
 
-# Show grid during the search process
+# Show sudoku during the search process
 ARG_DETAILS_S = "-d"  # Draw details
 ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show grids during process"
+COMMENT_DETAILS = "Show sudokus during the resolution process"
+
+# Use wxPython library as GUI
+ARG_WX_S = "-wx"
+ARG_WX = "--wxPython"
+COMMENT_WX = "Use wkPython for drawings and GUI"
 
 #
-# App. folders
+#  Files & folders
 #
-DEF_GRID_FOLDER = "../grids"
+
+DEF_SUDOKU_FOLDER = "../sudokus"
 DEF_ASSETS_FOLDER = "../assets"
+
+# File management
+#
+FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
+FILE_COMMENTS:str = "#"  # Comment lines start with
+FILE_EXTENSION:str = ".txt"
+FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
+
+#
+# Array complexity - ie. count of filled elements
+#
+class arrayComplexity(IntEnum):
+    Empty = 0
+    Easy = 30
+    Medium = 23
+    Hard = 18
 
 #
 #   options object : command-line parsing and parameters management
 #
 class options:
     # Progression modes
-    PROGRESS_NONE = 0  # Don't show progession
-    PROGRESS_SLOW = 1  # Singlethreaded mode
-    PROGRESS_SINGLETHREADED = PROGRESS_SLOW
-    PROGRESS_SPEED = 2  # Use a distinct thread for displaying grids
-    PROGRESS_MULTITHREADED = PROGRESS_SPEED
+    PROGRESS_NONE:int = 0  # Don't show progession
+    PROGRESS_SLOW:int = 1  # Singlethreaded mode
+    PROGRESS_SHOW_SAME_THREAD:int = PROGRESS_SLOW
+    PROGRESS_SPEED:int = 2  # Use a distinct thread for displaying sudokus
+    PROGRESS_MULTITHREADED:int = PROGRESS_SPEED
 
     # Exec modes
-    EXEC_NONE = statusBits.STATUS_NONE
-    EXEC_CREATE = 1
-    EXEC_EDIT = EXEC_CREATE
-    EXEC_USER = 2
-    EXEC_SOLVE = 4
+    EXEC_NONE:int = statusbits.STATUS_NONE
+    EXEC_CREATE:int = 1
+    EXEC_EDIT:int = EXEC_CREATE
+    EXEC_SOLVE:int = 2
 
-    # Types of new grids and count of empty elements
-    NEW_EMPTY = "Empty"
-    NEW_EASY = "Easy"
-    NEW_MEDIUM = "Medium"
-    NEW_HARD = "Hard"
-
-    # Grid complexity - ie. count of filled elements
-    COMPLEXITY_EMPTY = 0
-    COMPLEXITY_EASY = 33
-    COMPLEXITY_MEDIUM = 26
-    COMPLEXITY_HARD = 22
+    # App. options
+    OPTIONS_NONE:int = 0
+    OPTIONS_GUI_WX:int = 1
+    OPTIONS_EXPORT:int = 2      # Export solution
+    OPTIONS_SEARCH_OBVIOUS = 4  # Search opbious values
+    OPTIONS_BROWSE_FOLDER = 8
+    OPTIONS_GUI_CENTER:int = 16 # The sudoku array is centered in the GUI window
 
     # Construction
     #
     def __init__(self):
-
         # Default values
-        self.color_ = color.colorizer(True, False)
-        self.browseFolder_ = False
-        self.fileName_ = ""
-        self.folderName_ = ""
-        self.exportSolution_ = False
-        self.obviousValues_ = (
-            False  # don't search "obvious" values before trying to solve
-        )
-        self.progressMode_ = self.PROGRESS_NONE
-        self.execMode_ = statusBits.statusBits(self.EXEC_NONE)
+        self.color_:color.colorizer = color.colorizer(True, False)
+        self.fileName_:str = ""
+        self.folderName_:str = ""
+        self.progressMode_:int = self.PROGRESS_NONE
+        self.execMode_:statusbits.statusBits = statusbits.statusBits(self.EXEC_NONE)
+        self.complexity_:int = arrayComplexity.Empty.value
+        self.runOptions_ : statusbits.statusBits =statusbits.statusBits(self.OPTIONS_NONE)
+
+    # Access to cmd line properties
+    #
+    @property
+    def exportSolution(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_EXPORT)
+    @exportSolution.setter
+    def exportSolution(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_EXPORT, newVal)
+
+    # Use wxPython lib ?
+    @property
+    def wxGUI(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_GUI_WX)
+    @wxGUI.setter
+    def wxGUI(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_GUI_WX, newVal)
+
+    # Center ?
+    @property
+    def center(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_GUI_CENTER)
+    @center.setter
+    def center(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_GUI_CENTER, newVal)
+
+    @property
+    def obviousValues(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_SEARCH_OBVIOUS)
+    @obviousValues.setter
+    def obviousValues(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_SEARCH_OBVIOUS, newVal)
+
+    @property
+    def browseFolder(self)->bool:
+        return self.runOptions_.isSet(self.OPTIONS_BROWSE_FOLDER)
+    @browseFolder.setter
+    def browseFolder(self, newVal : bool):
+        self.runOptions_.set(self.OPTIONS_BROWSE_FOLDER, newVal)
+
 
     # Browse the command line
     #   returns True when ok
     def parse(self):
-
         parser = argparse.ArgumentParser(epilog=self.version())
 
-        # User mode
-        parser.add_argument(
-            ARG_USER_S, ARG_USER, action="store_true", help=COMMENT_USER, required=False
+        # Use wxPython library ?
+        _ = parser.add_argument(
+            ARG_WX_S,
+            ARG_WX,
+            action="store_true",
+            help=COMMENT_WX,
+            required=False,
         )
 
         # Export the solution ?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_SAVE_SOLUTION_S,
             ARG_SAVE_SOLUTION,
             action="store_true",
@@ -147,7 +194,7 @@ class options:
         )
 
         # Search obvious values ?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_SEARCH_OBVIOUS_S,
             ARG_SEARCH_OBVIOUS,
             action="store_true",
@@ -156,14 +203,14 @@ class options:
         )
 
         # display progression?
-        parser.add_argument(
+        _ = parser.add_argument(
             ARG_DETAILS_S,
             ARG_DETAILS,
             help=COMMENT_DETAILS,
             required=False,
             nargs=1,
             type=int,
-            choices=range(self.PROGRESS_SLOW, self.PROGRESS_SPEED + 1),
+            choices=range(self.PROGRESS_NONE, self.PROGRESS_SPEED + 1),
         )
 
         # Mutually exclusive actions
@@ -171,7 +218,7 @@ class options:
         action = parser.add_mutually_exclusive_group()
 
         # Browse folder
-        action.add_argument(
+        _ = action.add_argument(
             ARG_BROWSE_S,
             ARG_BROWSE,
             help=COMMENT_BROWSE,
@@ -181,7 +228,7 @@ class options:
         )
 
         # Edition file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_EDIT_S,
             ARG_EDIT,
             help=COMMENT_EDIT,
@@ -191,7 +238,7 @@ class options:
         )
 
         # Solve file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_SOLVE_S,
             ARG_SOLVE,
             help=COMMENT_SOLVE,
@@ -201,7 +248,7 @@ class options:
         )
 
         # Browse folder and edit selected file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_BROWSE_AND_SOLVE_S,
             ARG_BROWSE_AND_SOLVE,
             help=COMMENT_BROWSE_AND_SOLVE,
@@ -211,7 +258,7 @@ class options:
         )
 
         # Edit and solve file
-        action.add_argument(
+        _ = action.add_argument(
             ARG_EDIT_AND_SOLVE_S,
             ARG_EDIT_AND_SOLVE,
             help=COMMENT_EDIT_AND_SOLVE,
@@ -220,32 +267,18 @@ class options:
             nargs=1,
         )
 
-        # Create a new grid
-        action.add_argument(
-            ARG_NEW_S,
-            ARG_NEW,
-            help=COMMENT_NEW,
-            metavar="COMPLEXITY",
-            choices=[self.NEW_EMPTY, self.NEW_EASY, self.NEW_MEDIUM, self.NEW_HARD],
-            required=False,
-        )
-
-        # Default values
-        #
-        self.newGrid_ = self.COMPLEXITY_EMPTY
-
         # Parse line
         #
         args = parser.parse_args()
 
-        # User mode ?
-        self.userMode_ = args.user
+        # wxPython ?
+        self.wxGUI = args.wxPython
 
         # Export / save the solution
-        self.exportSolution_ = args.export
+        self.exportSolution = args.export
 
         # Search obvious values ?
-        self.obviousValues_ = args.obvious
+        self.obviousValues = args.obvious
 
         # Solve ?
         if args.solve is not None:
@@ -262,7 +295,6 @@ class options:
                     if args.editSolve is not None
                     else 0
                 )
-
             else:
                 # Parse/browse folder ?
                 if args.browse is not None or args.browseSolve is not None:
@@ -271,51 +303,55 @@ class options:
                         if args.browse is not None
                         else args.browseSolve[0]
                     )
-                    self.browseFolder_ = True
+                    self.browseFolder = True
                     self.execMode_.set(
                         self.EXEC_EDIT | self.EXEC_SOLVE
                         if args.browseSolve is not None
                         else 0
                     )
 
-        if self.userMode_ == False and args.editSolve is not None:
+        if args.editSolve is not None:
             self.execMode_.set(self.EXEC_SOLVE)
 
-        # Generate a new grid ?
+        # Generate a new sudoku ?
         # if True == self.editMode_ :
+        """
         if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
-            mode = args.new[0]
-
+            mode : str = args.new[0]
             match mode:
-                case self.NEW_MEDIUM:
-                    self.newGrid_ = self.COMPLEXITY_MEDIUM
-                case self.NEW_HARD:
-                    self.newGrid_ = self.COMPLEXITY_HARD
-                case self.NEW_EASY, _:
-                    self.newGrid_ = self.COMPLEXITY_EASY
+                case arrayComplexity.Medium.name:
+                    self.complexity_ = arrayComplexity.Medium.value
+                case arrayComplexity.Hard.name:
+                    self.complexity_ = arrayComplexity.Hard.value
+                case arrayComplexity.Easy.name:
+                    self.complexity_ = arrayComplexity.Easy.value
+                case _:
+                    self.complexity_ = arrayComplexity.Easy.value
+        """
 
-        # Display grid during the search process ?
+        # Display sudoku during the search process ?
         display = args.details[0] if args.details is not None else 0
-        if display == 2:
+        if display == self.PROGRESS_MULTITHREADED:
             self.progressMode_ = self.PROGRESS_MULTITHREADED
+
             # Check if macOS
             if -1 != sysconfig.get_platform().find("macos"):
                 print("No multi-threading on macos")
-                self.progressMode_ = self.PROGRESS_SINGLETHREADED
+                self.progressMode_ = self.PROGRESS_SHOW_SAME_THREAD
         else:
             self.progressMode_ = (
-                self.PROGRESS_SINGLETHREADED if display == 1 else self.PROGRESS_NONE
+                self.PROGRESS_SHOW_SAME_THREAD if display == 1 else self.PROGRESS_NONE
             )
 
         # Export solution => solverMode should be activated
-        if self.exportSolution_ and not self.execMode_.isSet(self.EXEC_SOLVE):
+        if self.exportSolution and not self.execMode_.isSet(self.EXEC_SOLVE):
             return False
 
         # At least one action !
         ret = bool(
             self.execMode_.isSet(self.EXEC_EDIT)
             or self.execMode_.isSet(self.EXEC_SOLVE)
-            or self.browseFolder_
+            or self.browseFolder
         )
         if not ret:
             parser.print_help()
@@ -327,11 +363,22 @@ class options:
     #
     #   return a string
     #
-    def version(self, verbose=True):
-        if self.color_ is None:
-            self.color_ = color.colorizer(True)
+    def version(self)->str:
+        self.color_ = color.colorizer(True)
+        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD])} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
 
-        return f"{self.color_.colored(APP_NAME, formatAttr=[color.textAttribute.BOLD], datePrefix=(False == verbose))} by {APP_AUTHOR} - release {APP_CURRENT_VERSION} - {APP_RELEASE_DATE}"
+#
+# stats - Informations about a solution
+#
+class stats:
+    def __init__(self) -> None:
+        self.clear()
 
+    def clear(self,clearObvious: bool= True) -> None:
+        if clearObvious:
+            self.obvValues_ : int = 0          # Count of obvious values found
+            self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
+        self.bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
+        self.bruteAttempts_ : int  = 0     # Brute-force attempts counter
 
 # EOF
