@@ -50,9 +50,8 @@ IDM_SOLVE_REVERT:str =  'Revert'
 
 # Contextual menu
 #
-ID_POPUP_EMPTY:int = wx.NewIdRef().GetId()
 IDM_POPUP_EMPTY:str = "Empty"
-ID_POPUP_VALUES:list[int] =  [wx.NewIdRef().GetId() for _ in range(9)]
+ID_POPUP_VALUES:list[int] =  [wx.NewIdRef().GetId() for _ in range(10)]
 
 
 

@@ -154,7 +154,9 @@ class solver:
     KEY_VALUE_KPAD_1:int = 0
     KEY_VALUE_KPAD_9:int = 0
 
-    KEY_ENTER: int = 0
+    KEY_ENTER:int = 0
+
+    EDIT_CANCEL:int = 0
 
 
     # Colours' ID

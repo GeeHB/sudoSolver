@@ -21,7 +21,7 @@
 #### todo
 * Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
 * add getters and setters : pygameOutputs.py
-* selection / deselection auto. des menus
+* 'Esc' from edit mode -> return to array's previous state
 
 #### Version 4.0.1
 * oct. 2026

@@ -29,6 +29,7 @@ from options import (
 from pointer import (
     LINE_COUNT,
     ROW_COUNT,
+    VALUE_MAX,
 )
 from sharedTools import statusbits
 
@@ -98,6 +99,8 @@ class wxSolver(wx.Frame, solver.solver):
 
     KEY_ENTER: int = wx.WXK_RETURN
     KEY_NUM_ENTER:int = wx.WXK_NUMPAD_ENTER
+
+    EDIT_CANCEL:int = wx.WXK_ESCAPE
 
     # Constructor
     #
@@ -175,6 +178,12 @@ class wxSolver(wx.Frame, solver.solver):
     def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
 
+        # From the contextual menu ?
+        if self._menu_handleContextualItems(menuId):
+            self._edit_selChanged()
+            return
+
+        # Other menu items
         match menuId:
             case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
                 self._menu_fileNewArray(menuId)
@@ -226,7 +235,7 @@ class wxSolver(wx.Frame, solver.solver):
 
         event.Skip()  # Allow other handlers to process the key
 
-    # User clicked  with right button
+    # User clicked  with right button => display contextual menu
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
@@ -241,8 +250,8 @@ class wxSolver(wx.Frame, solver.solver):
 
             # Generate a contextual menu at mouse pos with all possible values
             popUp: wx.Menu = wx.Menu()
-            popUp.Append(menuConsts.ID_POPUP_EMPTY, menuConsts.IDM_POPUP_EMPTY)
-            popUp.Enable(menuConsts.ID_POPUP_EMPTY, not self.sudoku_.elements_[self.edition_.currentPos_.index_].isEmpty())
+            popUp.Append(menuConsts.ID_POPUP_VALUES[9], menuConsts.IDM_POPUP_EMPTY)
+            popUp.Enable(menuConsts.ID_POPUP_VALUES[9], not self.sudoku_.elements_[self.edition_.currentPos_.index_].isEmpty())
             for index in range(1,10):
                 id = menuConsts.ID_POPUP_VALUES[index-1]
                 popUp.Append(id, f"{index}")
@@ -251,7 +260,6 @@ class wxSolver(wx.Frame, solver.solver):
 
             self.PopupMenu(popUp, event.GetPosition())
             popUp.Destroy()
-
 
             return
 
@@ -461,6 +469,10 @@ class wxSolver(wx.Frame, solver.solver):
             case self.KEY_ENTER | self.KEY_NUM_ENTER:
                 self._edit_stop()
                 return
+            case self.EDIT_CANCEL:
+                self._edit_stop()
+                self.sudoku_.revert()
+                return
             case _:
                 pass
 
@@ -624,6 +636,24 @@ class wxSolver(wx.Frame, solver.solver):
             return
 
         self.Close(True)
+
+    # Check/handle menu event from contextualmenu
+    #
+    #   return True if item has been handled
+    def _menu_handleContextualItems(self, menuId:int)->bool:
+        # Check values
+        for index in range(VALUE_MAX):
+            if menuConsts.ID_POPUP_VALUES[index] == menuId:
+                self._edit_setValue(index+1)
+                return True
+
+        # Empty ?
+        if menuConsts.ID_POPUP_VALUES[VALUE_MAX] == menuId:
+                self._edit_removeValue()
+                return True
+
+        # Not found
+        return False
 
     #
     # Resolving
