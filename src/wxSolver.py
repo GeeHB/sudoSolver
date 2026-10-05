@@ -511,7 +511,7 @@ class wxSolver(wx.Frame, solver.solver):
     #  Menus
     #
 
-    # Create the menubar
+    # Create the menubar and accelerators
     #
     def _menu_create(self):
         # Files popup
@@ -557,7 +557,31 @@ class wxSolver(wx.Frame, solver.solver):
         self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
         self.SetMenuBar(self.menuBar_)
-        self._menu_setItemsStates()
+        self._menu_setItemsStates()     # initial states for items
+
+        # Accelerators
+        #
+        entries:list[wx.AcceleratorEntry] = []
+
+        # New
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_FILE_NEW_EMPTY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD0, menuConsts.ID_FILE_NEW_EMPTY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('1'), menuConsts.ID_FILE_NEW_EASY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD1, menuConsts.ID_FILE_NEW_EASY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('2'), menuConsts.ID_FILE_NEW_MEDIUM))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD2, menuConsts.ID_FILE_NEW_MEDIUM))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('3'), menuConsts.ID_FILE_NEW_HARD))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD3, menuConsts.ID_FILE_NEW_HARD))
+
+        # Edit
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), menuConsts.ID_EDIT_UNDO))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('M'), menuConsts.ID_EDIT_MODIFY))
+
+        # Solve
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('R'), menuConsts.ID_SOLVE_REVERT))
+
+        accel = wx.AcceleratorTable(entries)
+        self.SetAcceleratorTable(accel)
 
     # Change items ' states
     # '

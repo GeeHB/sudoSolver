@@ -14,25 +14,25 @@ import wx  # pyright: ignore[reportMissingTypeStubs]
 IDM_FILE:str = '&File'
 IDM_FILE_NEW:str = 'New'
 ID_FILE_NEW_EMPTY:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_EMPTY:str = 'Empty'
+IDM_FILE_NEW_EMPTY:str = 'Empty\tCtrl+0'
 ID_FILE_NEW_EASY:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_EASY:str = 'Easy'
+IDM_FILE_NEW_EASY:str = 'Easy\tCtrl+1'
 ID_FILE_NEW_MEDIUM:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_MEDIUM:str = 'Medium'
+IDM_FILE_NEW_MEDIUM:str = 'Medium\tCtrl+2'
 ID_FILE_NEW_HARD:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_HARD:str = 'Hard'
+IDM_FILE_NEW_HARD:str = 'Hard\tCtrl+3'
 
 # Edition
 #
 IDM_EDIT:str = '&Edit'
 ID_EDIT_UNDO:int =  wx.NewIdRef().GetId()
-IDM_EDIT_UNDO:str = 'Undo'
+IDM_EDIT_UNDO:str = 'Undo\tCtrl+Z'
 ID_EDIT_MODIFY:int =  wx.NewIdRef().GetId()
-IDM_EDIT_MODIFY:str = 'Modify'
+IDM_EDIT_MODIFY:str = '&Modify\tCtrl+M'
 ID_EDIT_DONE:int =  wx.NewIdRef().GetId()
-IDM_EDIT_DONE:str = 'Done'
+IDM_EDIT_DONE:str = 'Done\tEnter'
 ID_EDIT_CANCEL:int =  wx.NewIdRef().GetId()
-IDM_EDIT_CANCEL:str = 'Cancel'
+IDM_EDIT_CANCEL:str = 'Cancel\tEsc'
 
 
 # Resolution
@@ -50,7 +50,7 @@ ID_SOLVE_RESOLVE_MULTI:int =  wx.NewIdRef().GetId()
 IDM_SOLVE_RESOLVE_MULTI:str= 'Multi-threaded'
 
 ID_SOLVE_REVERT:int =  wx.NewIdRef().GetId()
-IDM_SOLVE_REVERT:str =  'Revert'
+IDM_SOLVE_REVERT:str =  'Revert\tCtrl+R'
 
 # Contextual menu
 #

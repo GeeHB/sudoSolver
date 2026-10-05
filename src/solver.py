@@ -571,7 +571,6 @@ class solver:
             return False
 
         for val in reversed(self.prevValues_):
-            print(val)
             if val.value_ > 0:
                 self.sudoku_.elements_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
             else:
