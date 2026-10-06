@@ -7,10 +7,21 @@
 #   Description :   element object definition - a single sudoku element
 #
 
+from enum import IntEnum, auto
+
 from typing_extensions import override
 
 from sharedTools import statusbits
 
+
+# Array complexity - ie. count of filled elements
+#
+class hypColour(IntEnum):
+    NO_COLOUR = 0
+    YELLOW = auto()
+    BLUE = auto()
+    GREEN = auto()
+    RED = auto()
 
 #
 # element - a single sudoku element
@@ -23,8 +34,10 @@ class element:
 
     # Construction
     def __init__(self, value:int | None = None):
-        self.value_: int = 0;
-        self.solution_ : int | None = None
+        self.value_:int = 0;
+        self.solution_:int | None = None
+        self.hyp_:int = hypColour.NO_COLOUR
+
         if not value is None:
             self.value_ = value
             self.status_:statusbits.statusBits = statusbits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
@@ -61,6 +74,16 @@ class element:
     @solution.setter
     def solution(self, newVal : int | None):
         self.solution_ = newVal
+
+    # hypothesis's colour ID
+    #
+    @property
+    def hypothesis(self)->int:
+        return self.hyp_
+    @hypothesis.setter
+    def hypothesis(self, newVal : int):
+        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.RED:
+            self.hyp_ = newVal
 
     # Set/modify the value
     #

@@ -19,11 +19,15 @@ from element import element
 from GUIConsts import (
     BK_COLOUR,
     BK_COLOUR_FILENAME,
+    BLUE_COLOUR,
     BORDER_COLOUR,
+    GREEN_COLOUR,
     HILITE_COLOUR,
+    RED_COLOUR,
     SEL_BK_COLOUR,
     SEL_TXT_COLOUR,
     TXT_COLOUR,
+    YELLOW_COLOUR,
 )
 from options import (
     options,
@@ -206,6 +210,8 @@ class solver:
         #   A list of  colours
         #
         self.colours_ : list[ownColour] = []
+
+        # for array and window
         self.colours_.append(ownColour(BORDER_COLOUR))
         self.colours_.append(ownColour(BK_COLOUR))
         self.colours_.append(ownColour(BK_COLOUR_FILENAME))
@@ -214,6 +220,14 @@ class solver:
         #self.colours_.append(ownColour(HILITE_COLOUR))
         self.colours_.append(ownColour(SEL_BK_COLOUR))
         self.colours_.append(ownColour(SEL_TXT_COLOUR))
+
+        # for hyptohesis
+        self.hypColoursStart_:int =len(self.colours_)
+        self.colours_.append(ownColour(YELLOW_COLOUR))
+        self.colours_.append(ownColour(BLUE_COLOUR))
+        self.colours_.append(ownColour(GREEN_COLOUR))
+        self.colours_.append(ownColour(RED_COLOUR))
+
 
         # self.params_.center = True
 
@@ -311,7 +325,8 @@ class solver:
                         row, line,
                         currentElement.num,
                         self.ColourID.ID_BK,
-                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+                        currentElement.hypothesis,
                     )
 
                     # next element ...
@@ -341,11 +356,13 @@ class solver:
             self.edition_.currentPos_.line(),
             value,
             self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT)
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            currentElement.hypothesis
+        )
 
     # Draw/erase a single element and its background
     #
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
         pass
 
     # Draw background, frames and borders
@@ -500,6 +517,7 @@ class solver:
                 self.sudoku_.elements_[prevPos.index()].num,
                 self.ColourID.ID_BK,
                 self.ColourID.ID_HILITE if prevElement.isOriginal() else self.ColourID.ID_OBVIOUS if prevElement.isObvious() else self.ColourID.ID_TXT,
+                prevElement.hypothesis
             )
 
         # Hilight the new value
@@ -509,7 +527,8 @@ class solver:
             currentPos.line(),
             self.sudoku_.elements_[currentPos.index()].num,
             self.ColourID.ID_SEL_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            currentElement.hypothesis
         )
 
         self._draw_end()
