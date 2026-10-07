@@ -15,7 +15,7 @@ from typing import override
 try :
     import pygame
 except ModuleNotFoundError:
-    print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
+    print("pygame is not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
 import pygame.event
 

@@ -76,6 +76,14 @@ class sudoku(threading.Thread):
     def attempts(self, newVal : int):
         self.attempts_ = newVal
 
+    # filename
+    @property
+    def filename(self)->str:
+        return self.fileName_ if self.fileName_ is not None else ""
+    @filename.setter
+    def filename(self, newVal : str):
+        self.fileName_ = newVal
+
     # Convert current array to a printable string
     #
     @override
@@ -190,50 +198,6 @@ class sudoku(threading.Thread):
             if not el.isOriginal():
                 el.empty(deep = False)
 
-    # Read a sudoku file
-    #
-    def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
-        if fileName is None or 0 == len(fileName):
-            # ???
-            raise sudokuError("sudoku::load - No valid file name")
-
-        if os.path.isdir(fileName):
-            raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
-
-        self.filename = fileName
-
-        # Open and read the file
-        #
-        try:
-            with open(fileName) as file:
-                pt = pointer(game=False)
-
-                # Read the lines
-                for line in file:
-                    # Not a comment !
-                    if line[0] != FILE_COMMENTS:
-                        # remove EOL
-                        if line[len(line) - 1] == "\n":
-                            line = line[: len(line) - 1]
-
-                        values = line.split(FILE_VALUE_SEPARATOR)
-
-                        if ROW_COUNT != len(values):
-                            raise sudokuError(
-                                f"sudoku::load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
-                            )
-
-                        for val in values:
-                            self.setAt(pt, val)
-
-                            # Next value
-                            pt += 1
-        except FileNotFoundError:
-            if True == mustExist:
-                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
-            else:
-                print(f"New file : '{fileName}'")
-
     # Single value
     #
 
@@ -310,6 +274,50 @@ class sudoku(threading.Thread):
     #  I O
     #
 
+    # Read a sudoku file
+    #
+    def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
+        if fileName is None or 0 == len(fileName):
+            # ???
+            raise sudokuError("sudoku::load - No valid file name")
+
+        if os.path.isdir(fileName):
+            raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
+
+        self.filename = fileName
+
+        # Open and read the file
+        #
+        try:
+            with open(fileName) as file:
+                pt = pointer(game=False)
+
+                # Read the lines
+                for line in file:
+                    # Not a comment !
+                    if line[0] != FILE_COMMENTS:
+                        # remove EOL
+                        if line[len(line) - 1] == "\n":
+                            line = line[: len(line) - 1]
+
+                        values = line.split(FILE_VALUE_SEPARATOR)
+
+                        if ROW_COUNT != len(values):
+                            raise sudokuError(
+                                f"sudoku::load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                            )
+
+                        for val in values:
+                            self.setAt(pt, val)
+
+                            # Next value
+                            pt += 1
+        except FileNotFoundError:
+            if True == mustExist:
+                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
+            else:
+                print(f"New file : '{fileName}'")
+
     # Save the file
     #
     #   return the name of the saved file or None if an error occured
@@ -318,18 +326,23 @@ class sudoku(threading.Thread):
         if not self.IsOk():
             return None
 
+        print(f"Fichier : {self.fileName_}")
+
         fileName : str = ""
 
         if newFileName is not None and len(newFileName)>0:
-            fileName =newFileName
+            fileName = newFileName
         else:
-            if self.fileName_ is None:
+            if len(self.filename) == 0:
                 return None
+            fileName = self.filename
 
         if addExtent is not None and len(addExtent) > 0:
             extension = pathlib.Path(fileName).suffix
             if len(extension) == 0:
                 fileName += addExtent
+
+        print(f"Fichier : {fileName}")
 
         try:
             with open(fileName, "w") as file:
@@ -360,6 +373,7 @@ class sudoku(threading.Thread):
 
                     file.write(line)
 
+            self.filename = fileName
             return fileName
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")

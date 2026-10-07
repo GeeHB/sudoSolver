@@ -245,6 +245,7 @@ class solver:
     @filename.setter
     def filename(self, newVal : str):
         self.params_.fileName_ = newVal
+        self.sudoku_.filename = newVal
 
     # Set/change the current array's filename
     #
