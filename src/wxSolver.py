@@ -17,6 +17,7 @@ except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
 
+import element
 import GUIConsts
 import menuConsts
 import solver
@@ -208,7 +209,7 @@ class wxSolver(wx.Frame, solver.solver):
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
                     self._menu_resolveSingleThread()
             case menuConsts.ID_SOLVE_RESOLVE_MULTI:
-                    self._menu_resolveMultiThreaded()
+                    self._menu_resolve_multiThreaded()
             case menuConsts.ID_SOLVE_REVERT:
                     self._menu_revertArray()
 
@@ -385,6 +386,34 @@ class wxSolver(wx.Frame, solver.solver):
             self.memDC_.SetTextForeground(self.colours_[txtColourID].other)
             self.memDC_.DrawText(str(value), x + self.textOffsets_.x, y + self.textOffsets_.y)
 
+            # Hypothesis/Tag ?
+            if hypColourID != element.hypColour.NO_COLOUR:
+                self.memDC_.SetBrush(wx.Brush(self.colours_[hypColourID + self.hypColoursStart_].other))
+                self.memDC_.SetPen(wx.TRANSPARENT_PEN)
+
+                radius = int(self.tagWidth_ / 2)
+
+                if self.tagWidth_ == GUIConsts.TAG_MIN_SIZE:
+                    self.memDC_.DrawCircle(
+                        x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - radius,
+                        y + GUIConsts.TAG_PADDING + radius,
+                        radius)
+                else:
+                    points = [
+                        (0, 0),
+                        (0, self.tagWidth_ + radius),
+                        (radius, self.tagWidth_),
+                        (self.tagWidth_, self.tagWidth_+radius),
+                        (self.tagWidth_, 0)
+                    ]
+
+                    self.memDC_.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
+                        points,
+                        x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
+                        y + GUIConsts.TAG_PADDING)
+
+
+
     # Convert colour objects from ownColour to wx.Colour
     #
     @override
@@ -434,7 +463,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.blinkTimer_.Stop()
 
         self._draw_startUp()
-        self._draw_elementSelected(False)
+        self._draw_selectedElement(False)
         self._draw_end()
 
 
@@ -447,7 +476,7 @@ class wxSolver(wx.Frame, solver.solver):
 
     def _edit_blink(self):
         self._draw_startUp()
-        self._draw_elementSelected(self.edition_.changeBlink())
+        self._draw_selectedElement(self.edition_.changeBlink())
         self._draw_end()
 
     # Edition of current array
@@ -468,7 +497,9 @@ class wxSolver(wx.Frame, solver.solver):
             case key if key in range(
                 self.KEY_VALUE_1, self.KEY_VALUE_9 + 1
             ):
-                self._edit_setValue(key - self.KEY_VALUE_1 + 1)
+                _ = self._edit_setValue(key - self.KEY_VALUE_1 + 1)
+                #if key == (self.KEY_VALUE_1 + 6):
+                #    self.sudoku_.elements_[index].hyp_ = 1
             case self.KEY_VALUE_DEC:
                 self._edit_decValue()
             case self.KEY_VALUE_INC:
@@ -739,7 +770,7 @@ class wxSolver(wx.Frame, solver.solver):
             else:
                 wx.MessageBox("No solution found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
-    def _menu_resolveMultiThreaded(self):
+    def _menu_resolve_multiThreaded(self):
         if self.sudoku_.IsOk():
             self.directDraw_ = True
             self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED

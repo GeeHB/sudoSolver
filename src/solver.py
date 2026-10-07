@@ -21,7 +21,7 @@ from GUIConsts import (
     COLOUR_BK_FILENAME,
     COLOUR_BLUE,
     COLOUR_BORDER,
-    GREEN_COLOUR,
+    COLOUR_GREEN,
     COLOUR_HILITE,
     COLOUR_RED,
     COLOUR_SEL_BK,
@@ -196,14 +196,15 @@ class solver:
 
         # Dimensions
         #
-        self.offsets_ : tuple[int,int] = (0,0)
-        self.width_ :int = 0        # Window's dimensions
-        self.height_ : int = 0
-        self.intSquareWidth_ :int = 0        # Internal dims of an element
-        self.extSquareWidth_ :int = 0        # Ext. dims
-        self.fontsize_ : int = 0
+        self.offsets_: tuple[int,int] = (0,0)
+        self.width_:int = 0        # Window's dimensions
+        self.height_: int = 0
+        self.intSquareWidth_:int = 0        # Internal dims of an element
+        self.extSquareWidth_:int = 0        # Ext. dims
+        self.fontsize_: int = 0
+        self.tagWidth_:int = 0
 
-        self.prevValues_:list[prevValue] = []   # List of prev. values during edition
+        self.prevValues_: list[prevValue] = []   # List of prev. values during edition
 
         # Default colours
         #
@@ -222,10 +223,10 @@ class solver:
         self.colours_.append(ownColour(COLOUR_SEL_TXT))
 
         # for hyptohesis
-        self.hypColoursStart_:int =len(self.colours_)
+        self.hypColoursStart_:int =len(self.colours_) - 1
         self.colours_.append(ownColour(COLOUR_YELLOW))
         self.colours_.append(ownColour(COLOUR_BLUE))
-        self.colours_.append(ownColour(GREEN_COLOUR))
+        self.colours_.append(ownColour(COLOUR_GREEN))
         self.colours_.append(ownColour(COLOUR_RED))
 
 
@@ -351,7 +352,7 @@ class solver:
 
     # Draw selected element (on edit mode)
     #
-    def _draw_elementSelected(self, hilite : bool = True):
+    def _draw_selectedElement(self, hilite : bool = True):
         currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
         value : int | None = currentElement.num
         self._draw_startUp()
@@ -404,6 +405,11 @@ class solver:
         # font size in pixels
         self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
+        # tag dims.
+        self.tagWidth_ = int(GUIConsts.TAG_MIN_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        if self.tagWidth_ % 2 != 0:
+            self.tagWidth_+=1
+        self.tagWidth_ = min(self.tagWidth_, GUIConsts.TAG_MAX_SIZE)
 
     # Mouse position : screen -> array coordinates
     #
@@ -438,7 +444,7 @@ class solver:
         start : float = time.time()
         values = 1
         while 0 < values:
-            values = self.sudoku_.findObviousValues()
+            values = self.sudoku_.obviousValues()
             found += values
 
         if found>0:
@@ -539,17 +545,19 @@ class solver:
 
     # (try to) set a value
     #
-    def _edit_setValue(self, val: int):
+    def _edit_setValue(self, val: int)->int:
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
-            self._edit_setValueEx(val)
+            return self._edit_setValueEx(val)
+        return -1
 
-    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True):
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
         #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index,False), val, element.STATUS_ORIGINAL | element.STATUS_SET)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+        return index
 
     # Decrease value
     #
@@ -614,7 +622,7 @@ class solver:
     # returns True if a solution has been founded
     def _resolve_SingleThreaded(self)->bool:
         try:
-            self.sudoku_.resolveSingleThreaded()
+            self.sudoku_.resolve_singleThreaded()
         except reachedEndOfList:
             # Found a solution !!!
             return True
@@ -626,7 +634,7 @@ class solver:
     #
     # returns True if a solution has been founded
     def _resolve_AndDisplay(self)->bool:
-        for _ in self.sudoku_.resolveGenerator() :
+        for _ in self.sudoku_.resolve_singleThreadGenerator() :
             self.draw()
 
         return self.sudoku_.found
@@ -635,9 +643,10 @@ class solver:
     #
     # returns True if a solution has been founded
     def _resolve_MultiThreaded(self)->bool:
-        self.sudoku_.resolveMultiThreaded() # start resolution thread
+        self.sudoku_.resolve_multiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
+
 # EOF

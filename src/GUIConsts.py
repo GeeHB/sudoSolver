@@ -38,8 +38,11 @@ DELTA_H                 = 10
 
 EXT_BORDER_THICK        = 3    # Thickness of external border
 
-TAG_MIN_SIZE:int        = 6
+# Tags / Hypothesis
+TAG_MIN_SIZE:int        = 6     # Dims
+TAG_MAX_SIZE:int        = 20
 
+TAG_PADDING:int         = 4
 
 # Elements'text font sizes (in pixels) and names
 #

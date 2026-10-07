@@ -122,6 +122,7 @@ class element:
         self.value_ = 0
         if deep:
             self.solution_ = 0
+        self.hyp_ = hypColour.NO_COLOUR
         return pValue
 
     # Element's status
