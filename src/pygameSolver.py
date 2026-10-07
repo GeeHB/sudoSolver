@@ -643,7 +643,7 @@ class pygameSolver(solver.solver):
     #  Returns the selected filename or ""
     def _browse(self, folderName:str)->str:
         if not os.path.isdir(folderName):
-            raise sudokuError(f"{folderName} is not a valid folder")
+            raise sudokuError(f"pygameSolver::_browse - {folderName} is not a valid folder")
 
         files : list[str] = []
         done:bool = not self._folderContent(folderName, files)

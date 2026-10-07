@@ -251,7 +251,7 @@ class solver:
     def setFilename(self, fileName:str, create:bool = False):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(f"{fileName} is not a file or does not exist")
+            raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
         self.filename = fileName
 
     #
@@ -307,6 +307,7 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+        #print(f"Non-empty values : {self.sudoku_.count_}")
         if elements is None :
             elements = self.sudoku_.elements_
 
@@ -537,13 +538,14 @@ class solver:
     #
     def _edit_setValue(self, val: int):
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
-            self._edit__setValue(val)
+            self._edit_setValueEx(val)
 
-    def _edit__setValue(self, val: int, id:int = -1,keep:bool = True):
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True):
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
-        self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        self.sudoku_.modifyAt(pointer(index,False), val, element.STATUS_ORIGINAL | element.STATUS_SET)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
@@ -555,7 +557,7 @@ class solver:
 
         newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit__setValue(newVal)
+            self._edit_setValueEx(newVal)
 
     # Inc value
     #
@@ -566,12 +568,13 @@ class solver:
 
         newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit__setValue(newVal)
+            self._edit_setValueEx(newVal)
 
     # Remove current value
     #
     def _edit_removeValue(self):
-        self._edit__setValue(0)
+        #self._edit_setValueEx(0)
+        self.sudoku_.clearAt(self.edition_.currentPos_.index(), True)
 
     # Undo
     #
@@ -579,7 +582,7 @@ class solver:
     def _edit_undo(self)->int:
         if len(self.prevValues_) > 0:
             prev:prevValue = self.prevValues_.pop()
-            self._edit__setValue(prev.value_, prev.index_, keep=False)
+            self._edit_setValueEx(prev.value_, prev.index_, keep=False)
             return prev.index_
         return -1
 

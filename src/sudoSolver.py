@@ -20,7 +20,6 @@ from options import (
     PYTHON_VER_MIN,
     options,
 )
-from pygameSolver import pygameSolverApp
 from wxSolver import wxSolverApp
 
 # Entry point
@@ -51,6 +50,7 @@ if "__main__" == __name__:
         if params.wxGUI:
             mySolverApp = wxSolverApp(params)
         else:
+            from pygameSolver import pygameSolverApp
             mySolverApp = pygameSolverApp(params)
 
         mySolverApp.initialize()

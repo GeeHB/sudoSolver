@@ -48,7 +48,7 @@ class element:
     @override
     def __repr__(self) -> str:
         out : str = "Element:"
-        out += f"\t\n- Status : {self.status_}"
+        out += f"\n\t- Status : {self.status_.value_}"
         out += f"\n\t- Value : {"empty" if self.status_.isSet(self.STATUS_EMPTY) else self.value_}"
         if self.solution_ is not None:
             out += f"\n\t- Solution : {self.solution_}"
@@ -61,7 +61,7 @@ class element:
         return self.value_ if self.status_.isSet(self.STATUS_SET) else None
     @num.setter
     def num(self, newVal : int | None):
-        if newVal is not None:
+        if newVal is not None and newVal > 0:
             self.value_ = newVal
         else:
             self.status_.assign(self.STATUS_EMPTY)
@@ -95,14 +95,14 @@ class element:
             # The element can't be "original"
             if not self.status_.isSet(self.STATUS_ORIGINAL):
                 # Update the value
-                if not value is None:
+                if value is not None:
                     self.value_ = value
                     self.status_.assign(self.STATUS_SET)
 
                     if 0 != status:
                         self.status_.set(status)
-
                 else:
+                    self.value_ = 0
                     self.status_.assign(self.STATUS_EMPTY)
         else:
             # Edition mode => value can be changed
@@ -114,7 +114,7 @@ class element:
                 self.solution_ = value
                 self.status_.assign(self.STATUS_SET | self.STATUS_ORIGINAL)
 
-    # The element is empty
+    # Empty the element
     #   returns the previous value
     def empty(self, deep : bool):
         self.status_.assign(self.STATUS_EMPTY)
