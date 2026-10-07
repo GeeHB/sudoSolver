@@ -15,12 +15,13 @@ from typing import override
 try :
     import pygame
 except ModuleNotFoundError:
-    print("pygame not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
+    print("pygame is not installed - pip install pygame | sudo apt/dnf install python(3)-pygame")
     sys.exit(0)
 import pygame.event
 
 import GUIConsts
 import solver
+from element import element
 from options import (
     APP_AUTHOR_SHORT,
     APP_NAME,
@@ -478,7 +479,7 @@ class pygameSolver(solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
             return
@@ -642,7 +643,7 @@ class pygameSolver(solver.solver):
     #  Returns the selected filename or ""
     def _browse(self, folderName:str)->str:
         if not os.path.isdir(folderName):
-            raise sudokuError(f"{folderName} is not a valid folder")
+            raise sudokuError(f"pygameSolver::_browse - {folderName} is not a valid folder")
 
         files : list[str] = []
         done:bool = not self._folderContent(folderName, files)
@@ -796,7 +797,8 @@ class pygameSolver(solver.solver):
 
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
-            value : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
+            currentElement: element = self.sudoku_.elements_[self.edition_.currentPos_.index()]
+            value : int | None = currentElement.num
             if value is not None:
                 self._draw_startUp()
                 self._draw_singleElement(
@@ -805,6 +807,7 @@ class pygameSolver(solver.solver):
                     value,
                     self.ColourID.ID_BK,
                     self.ColourID.ID_HILITE,
+                    currentElement.hypothesis,
                     )
                 self._draw_end()
 

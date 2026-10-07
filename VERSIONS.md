@@ -23,15 +23,20 @@
 * add getters and setters : pygameOutputs.py
 * 'Esc' from edit mode -> return to array's previous state
 
-#### Version 4.0.1
+#### Version 4.0.3
 * oct. 2026
 * Added :
   * sudoku <- gridMaker + sudoku
   * solver <- abstract class for GUI solver app.
   * pygameSolver <- GUI and sudoku's calls using pygame
   * wxSolver <- GUI and menu with wxPython lib
+  * prepare code for manual solving (wxPython mode only)
+    * tag and hyptothesis
+    * colours management
 * Correction
   * PYGame : réaffichage complet de la grille lors du clignottement d'un message
+  * code refactoring
+  * regression bugs ...
 
 #### Version 3.1.4
 * aug. 2026

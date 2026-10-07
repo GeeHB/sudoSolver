@@ -17,13 +17,17 @@ from typing import Any
 import GUIConsts
 from element import element
 from GUIConsts import (
-    BK_COLOUR,
-    BK_COLOUR_FILENAME,
-    BORDER_COLOUR,
-    HILITE_COLOUR,
-    SEL_BK_COLOUR,
-    SEL_TXT_COLOUR,
-    TXT_COLOUR,
+    COLOUR_BK,
+    COLOUR_BK_FILENAME,
+    COLOUR_BLUE,
+    COLOUR_BORDER,
+    GREEN_COLOUR,
+    COLOUR_HILITE,
+    COLOUR_RED,
+    COLOUR_SEL_BK,
+    COLOUR_SEL_TXT,
+    COLOUR_TXT,
+    COLOUR_YELLOW,
 )
 from options import (
     options,
@@ -206,14 +210,24 @@ class solver:
         #   A list of  colours
         #
         self.colours_ : list[ownColour] = []
-        self.colours_.append(ownColour(BORDER_COLOUR))
-        self.colours_.append(ownColour(BK_COLOUR))
-        self.colours_.append(ownColour(BK_COLOUR_FILENAME))
-        self.colours_.append(ownColour(TXT_COLOUR))
-        self.colours_.append(ownColour(HILITE_COLOUR))
-        #self.colours_.append(ownColour(HILITE_COLOUR))
-        self.colours_.append(ownColour(SEL_BK_COLOUR))
-        self.colours_.append(ownColour(SEL_TXT_COLOUR))
+
+        # for array and window
+        self.colours_.append(ownColour(COLOUR_BORDER))
+        self.colours_.append(ownColour(COLOUR_BK))
+        self.colours_.append(ownColour(COLOUR_BK_FILENAME))
+        self.colours_.append(ownColour(COLOUR_TXT))
+        self.colours_.append(ownColour(COLOUR_HILITE))
+        #self.colours_.append(ownColour(COLOUR_HILITE))
+        self.colours_.append(ownColour(COLOUR_SEL_BK))
+        self.colours_.append(ownColour(COLOUR_SEL_TXT))
+
+        # for hyptohesis
+        self.hypColoursStart_:int =len(self.colours_)
+        self.colours_.append(ownColour(COLOUR_YELLOW))
+        self.colours_.append(ownColour(COLOUR_BLUE))
+        self.colours_.append(ownColour(GREEN_COLOUR))
+        self.colours_.append(ownColour(COLOUR_RED))
+
 
         # self.params_.center = True
 
@@ -227,17 +241,19 @@ class solver:
     # Filename
     @property
     def filename(self)->str:
-        return self.params_.fileName_
+        #return self.params_.fileName_
+        return self.sudoku_.filename
     @filename.setter
     def filename(self, newVal : str):
-        self.params_.fileName_ = newVal
+        self.params_.fileName_ = newVal # BUG ? : should be useless
+        self.sudoku_.filename = newVal
 
     # Set/change the current array's filename
     #
     def setFilename(self, fileName:str, create:bool = False):
         # the file must exists
         if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(f"{fileName} is not a file or does not exist")
+            raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
         self.filename = fileName
 
     #
@@ -277,8 +293,9 @@ class solver:
             print(f"Sudoku Error : {se.message_}")
             return False
 
+        #self.setFilename(fileName)
+
         if redraw:
-            self.setFilename(fileName)
             self.draw(redrawBackground=True)
 
         return True
@@ -293,6 +310,7 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
+        #print(f"Non-empty values : {self.sudoku_.count_}")
         if elements is None :
             elements = self.sudoku_.elements_
 
@@ -311,7 +329,8 @@ class solver:
                         row, line,
                         currentElement.num,
                         self.ColourID.ID_BK,
-                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+                        currentElement.hypothesis,
                     )
 
                     # next element ...
@@ -341,11 +360,13 @@ class solver:
             self.edition_.currentPos_.line(),
             value,
             self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT)
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            currentElement.hypothesis
+        )
 
     # Draw/erase a single element and its background
     #
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
         pass
 
     # Draw background, frames and borders
@@ -500,6 +521,7 @@ class solver:
                 self.sudoku_.elements_[prevPos.index()].num,
                 self.ColourID.ID_BK,
                 self.ColourID.ID_HILITE if prevElement.isOriginal() else self.ColourID.ID_OBVIOUS if prevElement.isObvious() else self.ColourID.ID_TXT,
+                prevElement.hypothesis
             )
 
         # Hilight the new value
@@ -509,7 +531,8 @@ class solver:
             currentPos.line(),
             self.sudoku_.elements_[currentPos.index()].num,
             self.ColourID.ID_SEL_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT
+            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            currentElement.hypothesis
         )
 
         self._draw_end()
@@ -518,13 +541,14 @@ class solver:
     #
     def _edit_setValue(self, val: int):
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
-            self._edit__setValue(val)
+            self._edit_setValueEx(val)
 
-    def _edit__setValue(self, val: int, id:int = -1,keep:bool = True):
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True):
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
-        self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        self.sudoku_.modifyAt(pointer(index,False), val, element.STATUS_ORIGINAL | element.STATUS_SET)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
 
     # Decrease value
@@ -536,7 +560,7 @@ class solver:
 
         newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit__setValue(newVal)
+            self._edit_setValueEx(newVal)
 
     # Inc value
     #
@@ -547,12 +571,13 @@ class solver:
 
         newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit__setValue(newVal)
+            self._edit_setValueEx(newVal)
 
     # Remove current value
     #
     def _edit_removeValue(self):
-        self._edit__setValue(0)
+        #self._edit_setValueEx(0)
+        self.sudoku_.clearAt(self.edition_.currentPos_.index(), True)
 
     # Undo
     #
@@ -560,7 +585,7 @@ class solver:
     def _edit_undo(self)->int:
         if len(self.prevValues_) > 0:
             prev:prevValue = self.prevValues_.pop()
-            self._edit__setValue(prev.value_, prev.index_, keep=False)
+            self._edit_setValueEx(prev.value_, prev.index_, keep=False)
             return prev.index_
         return -1
 

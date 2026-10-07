@@ -366,7 +366,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
         # too small to be drawn ?
         if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return

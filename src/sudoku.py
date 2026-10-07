@@ -39,12 +39,13 @@ from tinySquare import tinySquare
 class sudoku(threading.Thread):
     # Construction
     def __init__(self):
-        self.fileName_ : str | None = None
+        self.fileName_: str | None = None
         self.attempts_:int = 0
         self.start_:float = 0.0  # Resolution start-time
-        self.elements_ : list[element] = []
-        self.complexity_ : int = arrayComplexity.Empty.value
-        self.found_ = False
+        self.elements_: list[element] = []
+        self.count_:int = 0
+        self.complexity_: int = arrayComplexity.Empty.value
+        self.found_:bool = False
         random.seed()
 
     def IsOk(self)->bool:
@@ -75,11 +76,19 @@ class sudoku(threading.Thread):
     def attempts(self, newVal : int):
         self.attempts_ = newVal
 
+    # filename
+    @property
+    def filename(self)->str:
+        return self.fileName_ if self.fileName_ is not None else ""
+    @filename.setter
+    def filename(self, newVal : str):
+        self.fileName_ = newVal
+
     # Convert current array to a printable string
     #
     @override
     def __str__(self)->str:
-        output : str = ""  # to stop warnings !!!!
+        output : str = ""
         if self.IsOk() :
             position : pointer = pointer(game=False)
             for _ in range(LINE_COUNT):
@@ -89,7 +98,6 @@ class sudoku(threading.Thread):
                     output += f" {' ' if currentElement.isEmpty() else str(currentElement.num)} "
                     position += 1
             output += "\n"
-
         return output
 
     # Create an empty array or clear currrent one
@@ -97,10 +105,11 @@ class sudoku(threading.Thread):
     def empty(self):
         if len(self.elements_) > 0:
             for index in range(ARRAY_SIZE):
-                self.elements_[index].empty(deep = True)
+                self.elements_[index].empty(deep = True) # empty the array
         else:
             for _ in range(ARRAY_SIZE):
-                self.elements_.append(element())
+                self.elements_.append(element())    # create an empty array
+        self.count_ = 0
 
     # Is the array fully empty ?
     #
@@ -110,7 +119,34 @@ class sudoku(threading.Thread):
                 if not self.elements_[index].isEmpty():
                     return False
 
-        return True  # yes (empty or not inoitialized)
+        return True  # yes (empty or not initialized)
+
+    # Count of non-empty elements ?
+    #
+    def nonEmptyItems(self) -> int:
+        self.count_ = 0;
+        if self.IsOk():
+            for index in range(ARRAY_SIZE):
+                if not self.elements_[index].isEmpty():
+                    self.count_+=1
+        return self.count_
+
+    # Clear (empty) an element
+    #   returns the previous value
+    def clearAt(self, index:int, deep : bool)->int:
+        if index>=0 and index < ARRAY_SIZE:
+            pValue: int = self.elements_[index].empty(deep)
+            if pValue > 0:
+                self.count_-=1
+            return pValue
+
+        raise IndexError
+
+
+    # Is the array full
+    #
+    def isFull(self)->bool:
+        return (self.count_ == ARRAY_SIZE)
 
     # Create a new array
     #
@@ -152,6 +188,9 @@ class sudoku(threading.Thread):
         # Step 8 : remove elements according to complexite
         self._removeElements()
 
+        # Update non-empty elements counter
+        self.nonEmptyItems()
+
     # Return to the original state
     #
     def revert(self):
@@ -159,15 +198,91 @@ class sudoku(threading.Thread):
             if not el.isOriginal():
                 el.empty(deep = False)
 
+    # Single value
+    #
+
+    # (try to) Set a value at the given position
+    #   this methods ensures the value is valid for the position
+    #
+    def setAt(self, position : pointer, val:str, numVal:int | None = None, warn:bool=True) -> bool:
+        if len(val) > 0:
+            value = int(val)
+        else:
+            value = 0 if numVal is None else numVal
+
+        # in [0,9] ?
+        if value < 0 or value > 9:
+            if warn:
+                raise sudokuError(
+                    f"sudoku::setAt - Value Error : {value} is not in the valid range in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                )
+            return False
+
+        if value > 0:
+            # Check the line
+            if False == self._checkLine(position, value):
+                if warn:
+                    raise sudokuError(
+                        f"sudoku::setAt - Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
+                return False
+
+            # Check the row
+            if False == self._checkRow(position, value):
+                if warn:
+                    raise sudokuError(
+                        f"sudoku::setAt - Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
+                return False
+
+            # Check the tiny-square
+            if False == self._checkTinySquare(position, value):
+                if warn:
+                    raise sudokuError(
+                        f"sudoku::setAt - Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    )
+                return False
+
+            # Set the value
+            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(
+                value, element.STATUS_ORIGINAL
+            )
+            self.count_+=1
+            return True
+
+        return False  # Value not set
+
+    # Modify the given element's value
+    #
+    def modifyAt(self, position: pointer, value: int, status:int | None = None):
+        currentVal: int | None = self.elements_[position.index()].num
+        self.elements_[position.index()].num = value
+
+        if status is not None:
+            self.elements_[position.index()].status_.assign(status)
+
+        # A new val ?
+        if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
+            self.count_+=1
+
+        if value == 0 and currentVal is not None and currentVal > 0:
+            self.count_-=1  # element's value has beeen removed
+
+        #print(self.elements_[position.index()])
+
+    #
+    #  I O
+    #
+
     # Read a sudoku file
     #
     def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
         if fileName is None or 0 == len(fileName):
             # ???
-            raise sudokuError("No valid file name")
+            raise sudokuError("sudoku::load - No valid file name")
 
         if os.path.isdir(fileName):
-            raise sudokuError(f"{fileName} is not a valid file")
+            raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
 
         self.filename = fileName
 
@@ -189,7 +304,7 @@ class sudoku(threading.Thread):
 
                         if ROW_COUNT != len(values):
                             raise sudokuError(
-                                f"Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                                f"sudoku::load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
                             )
 
                         for val in values:
@@ -199,7 +314,7 @@ class sudoku(threading.Thread):
                             pt += 1
         except FileNotFoundError:
             if True == mustExist:
-                raise sudokuError(f"The file '{fileName}' doesn't exist")
+                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
             else:
                 print(f"New file : '{fileName}'")
 
@@ -211,18 +326,23 @@ class sudoku(threading.Thread):
         if not self.IsOk():
             return None
 
+        print(f"Fichier : {self.fileName_}")
+
         fileName : str = ""
 
         if newFileName is not None and len(newFileName)>0:
-            fileName =newFileName
+            fileName = newFileName
         else:
-            if self.fileName_ is None:
+            if len(self.filename) == 0:
                 return None
+            fileName = self.filename
 
         if addExtent is not None and len(addExtent) > 0:
             extension = pathlib.Path(fileName).suffix
             if len(extension) == 0:
                 fileName += addExtent
+
+        print(f"Fichier : {fileName}")
 
         try:
             with open(fileName, "w") as file:
@@ -253,15 +373,28 @@ class sudoku(threading.Thread):
 
                     file.write(line)
 
+            self.filename = fileName
             return fileName
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
-            print(f"io error while writing the file '{fileName}'")
+            print(f"sudoku::save - io error while writing the file '{fileName}'")
             return None
 
     #
     # Array
     #
+
+    # Get the list of possible values at a given position
+    #
+    def getValues(self, position:pointer)->list[int]:
+        values : list[int] = []
+        for value in range(VALUE_MIN, VALUE_MAX+1):
+            if self.checkValue(position, value):
+                # This value can be used
+                values.append(value)
+
+        # return the list
+        return values
 
     # Remove elements according to complexity
     #
@@ -478,19 +611,6 @@ class sudoku(threading.Thread):
             # No solution found
             self.found = False
 
-
-    # Get the list of possible values at a given position
-    #
-    def getValues(self, position:pointer)->list[int]:
-        values : list[int] = []
-        for value in range(VALUE_MIN, VALUE_MAX+1):
-            if self.checkValue(position, value):
-                # This value can be used
-                values.append(value)
-
-        # return the list
-        return values
-
     # Can we put the value at the current position ?
     #
     def checkValue(self, position:pointer, value:int)->bool:
@@ -523,52 +643,6 @@ class sudoku(threading.Thread):
         # Search in my tiny-square
         mySquare : tinySquare = tinySquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
-
-    # (try to) set a value at current position
-    #
-    def setAt(self, position : pointer, val:str, warn:bool=True) -> bool:
-        value = int(val)
-
-        # in [0,9] ?
-        if value < 0 or value > 9:
-            if warn:
-                raise sudokuError(
-                    f"Value Error : {value} is not in the valid range in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                )
-            return False
-
-        if value > 0:
-            # Check the line
-            if False == self._checkLine(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
-
-            # Check the row
-            if False == self._checkRow(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
-
-            # Check the tiny-square
-            if False == self._checkTinySquare(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
-
-            # Set the value
-            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(
-                value, element.STATUS_ORIGINAL
-            )
-            return True
-
-        return False  # Value not set
 
     # Find the next empty pos.
     #

@@ -9,14 +9,20 @@
 
 #  App colours in RGB
 #
-BORDER_COLOUR = (81, 154, 186)
-BK_COLOUR = (230, 230, 255)
-BK_COLOUR_FILENAME = (220, 220, 245)
-TXT_COLOUR = (64, 64, 64)
-HILITE_COLOUR = (248, 128, 112)
-OBVIOUS_COLOUR = BORDER_COLOUR
-SEL_BK_COLOUR = (50, 50, 255)
-SEL_TXT_COLOUR = (255, 255, 255)
+
+COLOUR_BORDER = (81, 154, 186)
+COLOUR_BK = (230, 230, 255)
+COLOUR_BK_FILENAME = (220, 220, 245)
+COLOUR_TXT = (64, 64, 64)
+COLOUR_HILITE = (248, 128, 112)
+COLOUR_OBVIOUS = COLOUR_BORDER
+COLOUR_SEL_BK = (50, 50, 255)
+COLOUR_SEL_TXT = (255, 255, 255)
+
+COLOUR_YELLOW = (255,255,0)
+COLOUR_BLUE = (0,0,255)
+COLOUR_GREEN=(0,255,0)
+COLOUR_RED=(255,0,0)
 
 # Positions and dimensions in pixels
 #
@@ -31,6 +37,8 @@ DELTA_W                 = 10   # Offsets
 DELTA_H                 = 10
 
 EXT_BORDER_THICK        = 3    # Thickness of external border
+
+TAG_MIN_SIZE:int        = 6
 
 
 # Elements'text font sizes (in pixels) and names
