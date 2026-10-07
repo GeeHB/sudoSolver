@@ -17,17 +17,17 @@ from typing import Any
 import GUIConsts
 from element import element
 from GUIConsts import (
-    BK_COLOUR,
-    BK_COLOUR_FILENAME,
-    BLUE_COLOUR,
-    BORDER_COLOUR,
+    COLOUR_BK,
+    COLOUR_BK_FILENAME,
+    COLOUR_BLUE,
+    COLOUR_BORDER,
     GREEN_COLOUR,
-    HILITE_COLOUR,
-    RED_COLOUR,
-    SEL_BK_COLOUR,
-    SEL_TXT_COLOUR,
-    TXT_COLOUR,
-    YELLOW_COLOUR,
+    COLOUR_HILITE,
+    COLOUR_RED,
+    COLOUR_SEL_BK,
+    COLOUR_SEL_TXT,
+    COLOUR_TXT,
+    COLOUR_YELLOW,
 )
 from options import (
     options,
@@ -212,21 +212,21 @@ class solver:
         self.colours_ : list[ownColour] = []
 
         # for array and window
-        self.colours_.append(ownColour(BORDER_COLOUR))
-        self.colours_.append(ownColour(BK_COLOUR))
-        self.colours_.append(ownColour(BK_COLOUR_FILENAME))
-        self.colours_.append(ownColour(TXT_COLOUR))
-        self.colours_.append(ownColour(HILITE_COLOUR))
-        #self.colours_.append(ownColour(HILITE_COLOUR))
-        self.colours_.append(ownColour(SEL_BK_COLOUR))
-        self.colours_.append(ownColour(SEL_TXT_COLOUR))
+        self.colours_.append(ownColour(COLOUR_BORDER))
+        self.colours_.append(ownColour(COLOUR_BK))
+        self.colours_.append(ownColour(COLOUR_BK_FILENAME))
+        self.colours_.append(ownColour(COLOUR_TXT))
+        self.colours_.append(ownColour(COLOUR_HILITE))
+        #self.colours_.append(ownColour(COLOUR_HILITE))
+        self.colours_.append(ownColour(COLOUR_SEL_BK))
+        self.colours_.append(ownColour(COLOUR_SEL_TXT))
 
         # for hyptohesis
         self.hypColoursStart_:int =len(self.colours_)
-        self.colours_.append(ownColour(YELLOW_COLOUR))
-        self.colours_.append(ownColour(BLUE_COLOUR))
+        self.colours_.append(ownColour(COLOUR_YELLOW))
+        self.colours_.append(ownColour(COLOUR_BLUE))
         self.colours_.append(ownColour(GREEN_COLOUR))
-        self.colours_.append(ownColour(RED_COLOUR))
+        self.colours_.append(ownColour(COLOUR_RED))
 
 
         # self.params_.center = True
@@ -241,10 +241,11 @@ class solver:
     # Filename
     @property
     def filename(self)->str:
-        return self.params_.fileName_
+        #return self.params_.fileName_
+        return self.sudoku_.filename
     @filename.setter
     def filename(self, newVal : str):
-        self.params_.fileName_ = newVal
+        self.params_.fileName_ = newVal # BUG ? : should be useless
         self.sudoku_.filename = newVal
 
     # Set/change the current array's filename
@@ -292,8 +293,9 @@ class solver:
             print(f"Sudoku Error : {se.message_}")
             return False
 
+        #self.setFilename(fileName)
+
         if redraw:
-            self.setFilename(fileName)
             self.draw(redrawBackground=True)
 
         return True
