@@ -444,7 +444,7 @@ class solver:
         start : float = time.time()
         values = 1
         while 0 < values:
-            values = self.sudoku_.obviousValues()
+            values = self.sudoku_.obvious_findValues()
             found += values
 
         if found>0:

@@ -56,8 +56,10 @@ FILE_FONT_POS_Y         = 5
 
 # Timers frequencies
 #
-BLINK_RATE : int = 750 # Blinking rate in ms
-MSG_HIDE_RATE : int = 2000 # Hide the filename
+BLINK_ID:int = 100
+BLINK_RATE: int = 750 # Blinking rate in ms
+
+MSG_HIDE_RATE: int = 2000 # Hide the filename
 
 #
 #  str

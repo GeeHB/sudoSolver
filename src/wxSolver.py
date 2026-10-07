@@ -124,7 +124,7 @@ class wxSolver(wx.Frame, solver.solver):
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
                         faceName = GUIConsts.ELT_FONT_NAME)
-        self.blinkTimer_ : wx.Timer = wx.Timer(self)
+        self.blinkTimer_ : wx.Timer = wx.Timer(self, GUIConsts.BLINK_ID)
 
 
     # GUI initialization
@@ -304,11 +304,17 @@ class wxSolver(wx.Frame, solver.solver):
         self._draw_background()
         self.draw()
 
+    # Timer notification
+    #
     def OnTimer(self, event : wx.Event):
-        self._edit_blink()
+        match event.Id:
+            case GUIConsts.BLINK_ID:
+                self._edit_blink()
+            case _ :
+                event.Skip()
 
     #
-    #  drawings
+    #  Drawings
     #
 
     @override
@@ -323,14 +329,13 @@ class wxSolver(wx.Frame, solver.solver):
 
     @override
     def _draw_end(self):
-        if not self.directDraw_ :
+        if not self.directDraw_:
             self.Refresh()
         else:
             if self.memDC_ is not None and self.memDC_.IsOk():
                 bmpSize : wx.Size = self.memDC_.GetSize()
                 clientDC = wx.ClientDC(self)
                 clientDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
-
 
     # Draw background, frames and borders
     #

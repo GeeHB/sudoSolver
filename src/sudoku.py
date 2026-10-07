@@ -709,7 +709,7 @@ class sudoku(threading.Thread):
     # Search and set all the possible obvious values in the sudoku
     #   returns the # of values found (and set)
     #
-    def obviousValues(self)->int:
+    def obvious_findValues(self)->int:
         found : int = 0
         position : pointer = pointer()
 
