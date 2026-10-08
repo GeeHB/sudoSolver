@@ -806,7 +806,7 @@ class pygameSolver(solver.solver):
                     self.edition_.currentPos_.line(),
                     value,
                     self.ColourID.ID_BK,
-                    self.ColourID.ID_HILITE,
+                    self.ColourID.ID_ORIGINAL_TXT,
                     currentElement.hypothesis,
                     )
                 self._draw_end()

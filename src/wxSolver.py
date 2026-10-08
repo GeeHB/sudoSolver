@@ -197,13 +197,18 @@ class wxSolver(wx.Frame, solver.solver):
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
+                self.edition_.creating = True
                 self._edit_start()
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
+                self.edition_.creating = False
             case menuConsts.ID_EDIT_CANCEL:
                 self._edit_cancel()
+                self.edition_.creating = False
 
-
+            case menuConsts.ID_SOLVE_MANUAL:
+                self.edition_.manualSolving = True
+                self._edit_start()
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._menu_findOviousValues()
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
@@ -444,7 +449,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.sudoku_.empty()
 
         if initPos:
-            self.edition_.clear(editable = True)    # move to cursor to (0,0)
+            self.edition_.clear()    # move to cursor to (0,0)
         else:
             self.edition_.blink = False
 
