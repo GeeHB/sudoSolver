@@ -125,7 +125,7 @@ class wxSolver(wx.Frame, solver.solver):
                         wx.FONTWEIGHT_NORMAL,
                         faceName = GUIConsts.ELT_FONT_NAME)
         self.blinkTimer_ : wx.Timer = wx.Timer(self, GUIConsts.BLINK_ID)
-
+        self.menuThemesID_:dict[str,int] = {}
 
     # GUI initialization
     #
@@ -151,6 +151,12 @@ class wxSolver(wx.Frame, solver.solver):
 
         self.panel_.SetFocus()
         self.Show()
+
+    # End drawings
+    #
+    @override
+    def end(self):
+        self._draw_freeMemDC()
 
     # Set/change the current array's filename
     #
@@ -179,6 +185,8 @@ class wxSolver(wx.Frame, solver.solver):
     #
     def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
+        #menu = event.GetEventObject()
+        #print(f"Item : {menu.GetLabelText(menuId)}")
 
         # From the contextual menu ?
         if self._menu_handleContextualItems(menuId):
@@ -187,7 +195,7 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Other menu items
         match menuId:
-            case menuConsts.ID_FILE_NEW_EMPTY | menuConsts.ID_FILE_NEW_EASY | menuConsts.ID_FILE_NEW_MEDIUM | menuConsts.ID_FILE_NEW_HARD :
+            case menuConsts.ID_CREATE_EMPTY | menuConsts.ID_CREATE_EASY | menuConsts.ID_CREATE_MEDIUM | menuConsts.ID_CREATE_HARD :
                 self._menu_fileNew(menuId)
             case wx.ID_OPEN:
                 self._menu_fileOpen()
@@ -222,6 +230,13 @@ class wxSolver(wx.Frame, solver.solver):
                 self._menu_fileExit()
             case _:
                 pass
+
+        # Change theme ?
+        if menuId in self.menuThemesID_.values():
+           keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
+           self._draw_changeTheme(keys[0])
+           self._draw_freeMemDC()
+           self.draw(redrawBackground=True)
 
     # Keyboard events
     #
@@ -292,9 +307,7 @@ class wxSolver(wx.Frame, solver.solver):
         self._draw_newClientSize(self.clientSize_.width, self.clientSize_.height)
         self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
 
-        if self.memDC_ :
-            self.memDC_.SelectObject(wx.NullBitmap) # Free previous bitmap if any
-            self.memDC_ = None
+        self._draw_freeMemDC()
 
         # Create memory DC with bitmap
         self._draw_startUp()
@@ -347,6 +360,7 @@ class wxSolver(wx.Frame, solver.solver):
     @override
     def _draw_background(self):
         if self.memDC_ is not None and 0 != self.extSquareWidth_ :
+
             # thin borders ...
             #
             pen = wx.Pen(self.colours_[GUIConsts.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
@@ -434,6 +448,12 @@ class wxSolver(wx.Frame, solver.solver):
                 self.colours_[id].g,
                 self.colours_[id].b,
                 self.colours_[id].a)
+
+    # Delete current memory DC
+    def _draw_freeMemDC(self):
+        if self.memDC_ :
+            self.memDC_.SelectObject(wx.NullBitmap) # Free previous bitmap if any
+            self.memDC_ = None
 
     # Start edition mode
     #
@@ -558,25 +578,32 @@ class wxSolver(wx.Frame, solver.solver):
         # Files popup
         fileMenu = wx.Menu()
 
-        fileNew = wx.Menu()
-        fileNew.Append(menuConsts.ID_FILE_NEW_EMPTY, menuConsts.IDM_FILE_NEW_EMPTY)
-        fileNew.Append(menuConsts.ID_FILE_NEW_EASY, menuConsts.IDM_FILE_NEW_EASY)
-        fileNew.Append(menuConsts.ID_FILE_NEW_MEDIUM, menuConsts.IDM_FILE_NEW_MEDIUM)
-        fileNew.Append(menuConsts.ID_FILE_NEW_HARD, menuConsts.IDM_FILE_NEW_HARD)
-        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_FILE_NEW, fileNew)
-
         fileMenu.Append(wx.ID_OPEN)
         fileMenu.Append(wx.ID_SAVE)
+
+        fileMenu.AppendSeparator()
+        themeMenu = wx.Menu()
+        for name in list(GUIConsts.colourThemes.keys()):
+            newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+            self.menuThemesID_[name] = newID
+            themeMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
+
+        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themeMenu)
         fileMenu.AppendSeparator()
         fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
 
-        # Edition
-        editMenu = wx.Menu()
-        editMenu.Append(menuConsts.ID_EDIT_UNDO, menuConsts.IDM_EDIT_UNDO)
-        editMenu.AppendSeparator()
-        editMenu.Append(menuConsts.ID_EDIT_MODIFY, menuConsts.IDM_EDIT_MODIFY)
-        editMenu.Append(menuConsts.ID_EDIT_DONE, menuConsts.IDM_EDIT_DONE)
-        editMenu.Append(menuConsts.ID_EDIT_CANCEL, menuConsts.IDM_EDIT_CANCEL)
+        # Creation
+        createMenu = wx.Menu()
+        createMenu.Append(menuConsts.ID_CREATE_EMPTY, menuConsts.IDM_CREATE_EMPTY)
+        createMenu.Append(menuConsts.ID_CREATE_EASY, menuConsts.IDM_CREATE_EASY)
+        createMenu.Append(menuConsts.ID_CREATE_MEDIUM, menuConsts.IDM_CREATE_MEDIUM)
+        createMenu.Append(menuConsts.ID_CREATE_HARD, menuConsts.IDM_CREATE_HARD)
+        createMenu.AppendSeparator()
+        createMenu.Append(menuConsts.ID_EDIT_UNDO, menuConsts.IDM_CREATE_UNDO)
+        createMenu.AppendSeparator()
+        createMenu.Append(menuConsts.ID_EDIT_MODIFY, menuConsts.IDM_CREATE_MODIFY)
+        createMenu.Append(menuConsts.ID_EDIT_DONE, menuConsts.IDM_CREATE_DONE)
+        createMenu.Append(menuConsts.ID_EDIT_CANCEL, menuConsts.IDM_CREATE_CANCEL)
 
         # Resolution
         solveMenu = wx.Menu()
@@ -594,7 +621,7 @@ class wxSolver(wx.Frame, solver.solver):
         self.menuBar_ : wx.MenuBar = wx.MenuBar()
         self.SetMenuBar(self.menuBar_)
         self.menuBar_.Append(fileMenu, menuConsts.IDM_FILE)
-        self.menuBar_.Append(editMenu,menuConsts.IDM_EDIT)
+        self.menuBar_.Append(createMenu,menuConsts.IDM_CREATE)
         self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
         self.SetMenuBar(self.menuBar_)
@@ -605,14 +632,14 @@ class wxSolver(wx.Frame, solver.solver):
         entries:list[wx.AcceleratorEntry] = []
 
         # New
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_FILE_NEW_EMPTY))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD0, menuConsts.ID_FILE_NEW_EMPTY))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('1'), menuConsts.ID_FILE_NEW_EASY))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD1, menuConsts.ID_FILE_NEW_EASY))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('2'), menuConsts.ID_FILE_NEW_MEDIUM))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD2, menuConsts.ID_FILE_NEW_MEDIUM))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('3'), menuConsts.ID_FILE_NEW_HARD))
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD3, menuConsts.ID_FILE_NEW_HARD))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_CREATE_EMPTY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD0, menuConsts.ID_CREATE_EMPTY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('1'), menuConsts.ID_CREATE_EASY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD1, menuConsts.ID_CREATE_EASY))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('2'), menuConsts.ID_CREATE_MEDIUM))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD2, menuConsts.ID_CREATE_MEDIUM))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('3'), menuConsts.ID_CREATE_HARD))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD3, menuConsts.ID_CREATE_HARD))
 
         # Edit
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), menuConsts.ID_EDIT_UNDO))
@@ -638,10 +665,10 @@ class wxSolver(wx.Frame, solver.solver):
 
         state : bool = not (editOn or solving)
 
-        self.menuBar_.Enable(menuConsts.ID_FILE_NEW_EMPTY, state)
-        self.menuBar_.Enable(menuConsts.ID_FILE_NEW_EASY, state)
-        self.menuBar_.Enable(menuConsts.ID_FILE_NEW_MEDIUM, state)
-        self.menuBar_.Enable(menuConsts.ID_FILE_NEW_HARD, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_EMPTY, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_EASY, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_MEDIUM, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_HARD, state)
         self.menuBar_.Enable(wx.ID_OPEN, state)
         self.menuBar_.Enable(wx.ID_SAVE, state)
 
@@ -662,11 +689,11 @@ class wxSolver(wx.Frame, solver.solver):
                 return
 
         match menuId:
-            case menuConsts.ID_FILE_NEW_EASY:
+            case menuConsts.ID_CREATE_EASY:
                 self.sudoku_.new(arrayComplexity.Easy)
-            case menuConsts.ID_FILE_NEW_MEDIUM:
+            case menuConsts.ID_CREATE_MEDIUM:
                 self.sudoku_.new(arrayComplexity.Medium)
-            case menuConsts.ID_FILE_NEW_HARD:
+            case menuConsts.ID_CREATE_HARD:
                 self.sudoku_.new(arrayComplexity.Hard)
             case _:
                 self.sudoku_.new(arrayComplexity.Empty)

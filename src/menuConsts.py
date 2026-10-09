@@ -9,30 +9,31 @@
 
 import wx  # pyright: ignore[reportMissingTypeStubs]
 
-# File / New
+# Files
 #
 IDM_FILE:str = '&File'
-IDM_FILE_NEW:str = 'New'
-ID_FILE_NEW_EMPTY:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_EMPTY:str = 'Empty\tCtrl+0'
-ID_FILE_NEW_EASY:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_EASY:str = 'Easy\tCtrl+1'
-ID_FILE_NEW_MEDIUM:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_MEDIUM:str = 'Medium\tCtrl+2'
-ID_FILE_NEW_HARD:int = wx.NewIdRef().GetId()
-IDM_FILE_NEW_HARD:str = 'Hard\tCtrl+3'
+IDM_THEMES:str = 'Themes'
 
-# Edition
+# Creation
 #
-IDM_EDIT:str = '&Edit'
+IDM_CREATE:str = '&Create'
+ID_CREATE_EMPTY:int = wx.NewIdRef().GetId()
+IDM_CREATE_EMPTY:str = 'Empty\tCtrl+0'
+ID_CREATE_EASY:int = wx.NewIdRef().GetId()
+IDM_CREATE_EASY:str = 'Easy\tCtrl+1'
+ID_CREATE_MEDIUM:int = wx.NewIdRef().GetId()
+IDM_CREATE_MEDIUM:str = 'Medium\tCtrl+2'
+ID_CREATE_HARD:int = wx.NewIdRef().GetId()
+IDM_CREATE_HARD:str = 'Hard\tCtrl+3'
+
 ID_EDIT_UNDO:int =  wx.NewIdRef().GetId()
-IDM_EDIT_UNDO:str = 'Undo\tCtrl+Z'
+IDM_CREATE_UNDO:str = 'Undo\tCtrl+Z'
 ID_EDIT_MODIFY:int =  wx.NewIdRef().GetId()
-IDM_EDIT_MODIFY:str = '&Modify\tCtrl+M'
+IDM_CREATE_MODIFY:str = '&Modify\tCtrl+M'
 ID_EDIT_DONE:int =  wx.NewIdRef().GetId()
-IDM_EDIT_DONE:str = 'Done\tEnter'
+IDM_CREATE_DONE:str = 'Done\tEnter'
 ID_EDIT_CANCEL:int =  wx.NewIdRef().GetId()
-IDM_EDIT_CANCEL:str = 'Cancel\tEsc'
+IDM_CREATE_CANCEL:str = 'Cancel\tEsc'
 
 
 # Resolution

@@ -200,7 +200,7 @@ class solver:
         self.tagWidth_:int = 0
 
         self.colours_ : list[ownColour] = []
-        self._draw_changeTheme("bzort")
+        self._draw_changeTheme(GUIConsts.DEF_THEME_NAME)
 
     @property
     def initialized(self)->bool:
@@ -241,8 +241,6 @@ class solver:
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
         self.fontsize_ = GUIConsts.ELT_FONT_SIZE
-
-        self._draw_convertColours() # Convert colours
 
     # Start drawings / UI
     #
@@ -430,7 +428,9 @@ class solver:
         for col in colourThemes[name] :
             self.colours_.append(ownColour(col))
 
-    # Mouse position : screen -> array coordinates
+        self._draw_convertColours() # Convert colours
+
+    # Mouse position : client -> array coordinates
     #
     def _mouse_translatePosition(self, pos : tuple[int,int])->tuple[int, int]:
         if pos[1] > self.offsets_[1] :
