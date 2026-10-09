@@ -329,7 +329,7 @@ class wxSolver(wx.Frame, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
             self.memDC_.SetFont(self.font_)
-            self.memDC_.SetBackground(wx.Brush(self.colours_[self.ColourID.ID_WINDOW_BK].other))
+            self.memDC_.SetBackground(wx.Brush(self.colours_[GUIConsts.colourID.ID_WINDOW_BK].other))
             self.memDC_.Clear()
 
     @override
@@ -349,7 +349,7 @@ class wxSolver(wx.Frame, solver.solver):
         if self.memDC_ is not None and 0 != self.extSquareWidth_ :
             # thin borders ...
             #
-            pen = wx.Pen(self.colours_[self.ColourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
+            pen = wx.Pen(self.colours_[GUIConsts.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(pen)
 
             for line in range(LINE_COUNT):
@@ -361,7 +361,7 @@ class wxSolver(wx.Frame, solver.solver):
 
             # ... large ext. borders
             #
-            penLarge = wx.Pen(self.colours_[self.ColourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
+            penLarge = wx.Pen(self.colours_[GUIConsts.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
 
@@ -398,7 +398,7 @@ class wxSolver(wx.Frame, solver.solver):
 
             # Hypothesis/Tag ?
             if hypColourID != element.hypColour.NO_COLOUR:
-                self.memDC_.SetBrush(wx.Brush(self.colours_[hypColourID + self.hypColoursStart_].other))
+                self.memDC_.SetBrush(wx.Brush(self.colours_[hypColourID + GUIConsts.colourID.ID_TAG_1 - 1].other))
                 self.memDC_.SetPen(wx.TRANSPARENT_PEN)
 
                 radius = int(self.tagWidth_ / 2)

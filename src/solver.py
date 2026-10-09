@@ -11,27 +11,11 @@ import copy
 import math
 import os
 import time
-from enum import IntEnum, auto
 from typing import Any
 
 import GUIConsts
 from element import element
-from GUIConsts import (
-    COLOUR_BK_EVEN,
-    COLOUR_BK_FILENAME,
-    COLOUR_BK_ODD,
-    COLOUR_BLUE,
-    COLOUR_BORDER,
-    COLOUR_DEF_TXT,
-    COLOUR_GREEN,
-    COLOUR_OBVIOUS,
-    COLOUR_ORIGINAL,
-    COLOUR_RED,
-    COLOUR_SEL_BK,
-    COLOUR_SEL_TXT,
-    COLOUR_WND_BK,
-    COLOUR_YELLOW,
-)
+from GUIConsts import colourID, colourThemes
 from options import (
     options,
     stats,
@@ -196,25 +180,6 @@ class solver:
 
     EDIT_CANCEL:int = 0
 
-
-    # IDs of colours used by app.
-    #
-    class ColourID(IntEnum):
-        ID_WINDOW_BK = 0
-
-        ID_FRAME_BORDER = auto()    # Frame borders and bkgrnd
-        ID_FRAME_BK_EVEN = auto()
-        ID_FRAME_BK_ODD = auto()
-
-        ID_BK_FILENAME = auto()
-
-        ID_DEFAULT_TXT = auto()  # Text colours
-        ID_ORIGINAL_TXT = auto()
-        ID_OBVIOUS_TXT = auto()
-
-        ID_SEL_BK = auto()      # Selected text and bkgrnd
-        ID_SEL_TXT = auto()
-
     # Constructor
     #
     def __init__(self, params : options):
@@ -223,9 +188,9 @@ class solver:
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
         self.edition_ : editStatus = editStatus()
+        self.prevValues_: list[prevValue] = []   # List of prev. values during edition
 
         # Dimensions
-        #
         self.offsets_: tuple[int,int] = (0,0)
         self.width_:int = 0        # Window's dimensions
         self.height_: int = 0
@@ -234,39 +199,8 @@ class solver:
         self.fontsize_: int = 0
         self.tagWidth_:int = 0
 
-        self.prevValues_: list[prevValue] = []   # List of prev. values during edition
-
-        # Default colours
-        #
-        #   A list of  colours
-        #
         self.colours_ : list[ownColour] = []
-
-        # for array and window
-        self.colours_.append(ownColour(COLOUR_WND_BK))
-
-        self.colours_.append(ownColour(COLOUR_BORDER))
-        self.colours_.append(ownColour(COLOUR_BK_EVEN))
-        self.colours_.append(ownColour(COLOUR_BK_ODD))
-
-        self.colours_.append(ownColour(COLOUR_BK_FILENAME))
-
-        self.colours_.append(ownColour(COLOUR_DEF_TXT))
-        self.colours_.append(ownColour(COLOUR_ORIGINAL))
-        self.colours_.append(ownColour(COLOUR_OBVIOUS))      # obvious
-
-        self.colours_.append(ownColour(COLOUR_SEL_BK))
-        self.colours_.append(ownColour(COLOUR_SEL_TXT))
-
-        # for hypothesis
-        self.hypColoursStart_:int =len(self.colours_) - 1
-        self.colours_.append(ownColour(COLOUR_YELLOW))
-        self.colours_.append(ownColour(COLOUR_BLUE))
-        self.colours_.append(ownColour(COLOUR_GREEN))
-        self.colours_.append(ownColour(COLOUR_RED))
-
-
-        # self.params_.center = True
+        self._draw_changeTheme("bzort")
 
     @property
     def initialized(self)->bool:
@@ -313,6 +247,11 @@ class solver:
     # Start drawings / UI
     #
     def startUI(self):
+        pass
+
+    # End drawings
+    #
+    def end(self):
         pass
 
     # Load a sudoku stored in a file
@@ -457,18 +396,39 @@ class solver:
     #  @return : Tuple(bk Colour, txt Colour)
     def _draw_elementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
-        bkColour:int = self.ColourID.ID_SEL_BK if selected else self.ColourID.ID_FRAME_BK_ODD if position.squareID() % 2 else self.ColourID.ID_FRAME_BK_EVEN
+        bkColour:int = colourID.ID_SEL_BK if selected else colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else colourID.ID_FRAME_BK_EVEN
 
         if self.edition_.creating:
-            return bkColour, self.ColourID.ID_ORIGINAL_TXT   # always use "original" colour
+            return bkColour, colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
         if self.sudoku_.elements_[pos].isObvious():
-            return bkColour, self.ColourID.ID_OBVIOUS_TXT
+            return bkColour, colourID.ID_OBVIOUS_TXT
         else:
             if self.sudoku_.elements_[pos].isOriginal():
-                return bkColour, self.ColourID.ID_ORIGINAL_TXT
+                return bkColour, colourID.ID_ORIGINAL_TXT
 
-        return bkColour, self.ColourID.ID_SEL_TXT if selected else self.ColourID.ID_DEFAULT_TXT
+        return bkColour, colourID.ID_SEL_TXT if selected else colourID.ID_DEFAULT_TXT
+
+    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
+    #
+    def _draw_convertColours(self):
+        pass
+
+    # Change colour's theme
+    #
+    def _draw_changeTheme(self, name:str):
+        if name not in list(colourThemes.keys()):
+            print(f"Error - '{name}' is not a valid theme name. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
+            name = GUIConsts.DEF_THEME_NAME
+
+        if len(colourThemes[name]) != colourID.ID_COLOUR_COUNT:
+            print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
+            name = GUIConsts.DEF_THEME_NAME
+
+        # Transfer colours in internal list for conversion
+        self.colours_.clear()
+        for col in colourThemes[name] :
+            self.colours_.append(ownColour(col))
 
     # Mouse position : screen -> array coordinates
     #
@@ -478,16 +438,6 @@ class solver:
             y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
             return (x,y)
         return (-1,-1)
-
-    # End drawings
-    #
-    def end(self):
-        pass
-
-    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
-    #
-    def _draw_convertColours(self):
-        pass
 
     #
     #  Other "shared" methods

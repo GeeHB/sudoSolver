@@ -7,46 +7,67 @@
 #   Description :   Shared consts for graphocs and drawings
 #
 
-#  App colours in RGB
+from enum import IntEnum, auto
+
+
+# IDs of colours used by app.
+#
+class colourID(IntEnum):
+    ID_WINDOW_BK = 0
+    ID_FRAME_BORDER = 1    # Frame borders and bkgrnd
+    ID_FRAME_BK_EVEN = 2
+    ID_FRAME_BK_ODD = 3
+    ID_BK_FILENAME = 4
+    ID_DEFAULT_TXT = 5  # Text colours
+    ID_ORIGINAL_TXT = 6
+    ID_OBVIOUS_TXT = 7
+    ID_SEL_BK = 7      # Selected text and bkgrnd
+    ID_SEL_TXT = 9
+    ID_TAG_1 = 10
+    ID_TAG_2 = 11
+    ID_TAG_3 = 12
+    ID_TAG_4 = 13
+    ID_COLOUR_COUNT = auto()    # Last item
+
+#  Themes with colours in RGB
 #
 
-COLOUR_WND_BK = (250, 250, 250)
+colourThemes = {
+    "One Light": [
+        (250, 250, 250),
+        (250, 250, 250),
+        (239, 239, 240),
+        (202, 202, 202),
+        (220, 220, 245),
+        (80, 88, 104),
+        (192, 132, 83),
+        (104,160,91),
+        (212, 219, 244),
+        (250, 250, 250),
+        (255,255,0),
+        (0,0,255),
+        (0,255,0),
+        (255,0,0),
+        ],
+    "Zarina": [
+        (230, 230, 255),
+        (81, 154, 186),
+        (230, 230, 255),
+        (230, 230, 255),
+        (220, 220, 245),
+        (64, 64, 64),
+        (248, 128, 112),
+        (81, 154, 186),
+        (50, 50, 255),
+        (255, 255, 255),
+        (255,255,0),
+        (0,0,255),
+        (0,255,0),
+        (255,0,0),
+        ]
+    }
 
-COLOUR_BORDER = COLOUR_WND_BK
-COLOUR_BK_ODD = (239, 239, 240)
-COLOUR_BK_EVEN = (202, 202, 202)
-
-COLOUR_BK_FILENAME = (220, 220, 245)
-
-COLOUR_DEF_TXT = (80, 88, 104)
-COLOUR_ORIGINAL = (192, 132, 83)
-COLOUR_OBVIOUS = (104,160,91)
-
-COLOUR_SEL_BK = (212, 219, 244)
-COLOUR_SEL_TXT = COLOUR_DEF_TXT
-
-# Old
-"""
-COLOUR_WND_BK = (230, 230, 255)
-
-COLOUR_BORDER = (81, 154, 186)
-COLOUR_BK_ODD = (230, 230, 255)
-COLOUR_BK_EVEN = (230, 230, 255)
-
-COLOUR_BK_FILENAME = (220, 220, 245)
-
-COLOUR_TXT = (64, 64, 64)
-COLOUR_ORIGINAL = (248, 128, 112)
-COLOUR_OBVIOUS = COLOUR_BORDER
-
-COLOUR_SEL_BK = (50, 50, 255)
-COLOUR_SEL_TXT = (255, 255, 255)
-"""
-
-COLOUR_YELLOW = (255,255,0)
-COLOUR_BLUE = (0,0,255)
-COLOUR_GREEN=(0,255,0)
-COLOUR_RED=(255,0,0)
+DEF_THEME_NAME = "One Light"
 
 # Positions and dimensions in pixels
 #
