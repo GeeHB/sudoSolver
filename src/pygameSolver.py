@@ -395,7 +395,7 @@ class pygameSolver(solver.solver):
     @override
     def _draw_background(self):
         if self.win_ is not None:
-            self.win_.fill(self.colours_[self.ColourID.ID_BK].other)
+            self.win_.fill(self.colours_[self.ColourID.ID_WINDOW_BK].other)
             if 0 != self.extSquareWidth_ :
                 # thin borders ...
                 #
@@ -403,10 +403,10 @@ class pygameSolver(solver.solver):
                     for row in range(ROW_COUNT):
                         x = row * self.extSquareWidth_ + self.offsets_[0]
                         y = line * self.extSquareWidth_ + self.offsets_[1]
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x, y + self.extSquareWidth_),
                             (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
@@ -417,16 +417,16 @@ class pygameSolver(solver.solver):
                     for row in range(3):
                         x = row * lSquare + self.offsets_[0]
                         y = line * lSquare + self.offsets_[1]
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x, y),
                             (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x, y + lSquare),
                             (x + lSquare, y + lSquare), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x + lSquare, y + lSquare),
                             (x + lSquare, y), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_FRAME_BORDER].other,
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
@@ -511,8 +511,8 @@ class pygameSolver(solver.solver):
 
             # Draw on the specific surface
             self.sMessage_.setText(message,
-                self.colours_[self.ColourID.ID_TXT].other,
-                self.colours_[self.ColourID.ID_BK].other)
+                self.colours_[self.ColourID.ID_DEFAULT_TXT].other,
+                self.colours_[self.ColourID.ID_WINDOW_BK].other)
 
             # start blinking
             self.sMessage_.setVisible()
@@ -539,7 +539,7 @@ class pygameSolver(solver.solver):
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName,
-                self.colours_[self.ColourID.ID_TXT].other,
+                self.colours_[self.ColourID.ID_DEFAULT_TXT].other,
                 self.colours_[self.ColourID.ID_BK_FILENAME].other)
 
             # erase this name after a while ...
@@ -797,16 +797,16 @@ class pygameSolver(solver.solver):
 
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
-            currentElement: element = self.sudoku_.elements_[self.edition_.currentPos_.index()]
+            index:int = self.edition_.currentPos_.index()
+            currentElement: element = self.sudoku_.elements_[index]
             value : int | None = currentElement.num
             if value is not None:
+                bk, txt = self._draw_elementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
                     self.edition_.currentPos_.line(),
-                    value,
-                    self.ColourID.ID_BK,
-                    self.ColourID.ID_ORIGINAL_TXT,
+                    value,bk, txt,
                     currentElement.hypothesis,
                     )
                 self._draw_end()

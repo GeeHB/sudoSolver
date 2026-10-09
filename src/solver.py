@@ -17,16 +17,19 @@ from typing import Any
 import GUIConsts
 from element import element
 from GUIConsts import (
-    COLOUR_BK,
+    COLOUR_BK_EVEN,
     COLOUR_BK_FILENAME,
+    COLOUR_BK_ODD,
     COLOUR_BLUE,
     COLOUR_BORDER,
+    COLOUR_DEF_TXT,
     COLOUR_GREEN,
+    COLOUR_OBVIOUS,
     COLOUR_ORIGINAL,
     COLOUR_RED,
     COLOUR_SEL_BK,
     COLOUR_SEL_TXT,
-    COLOUR_TXT,
+    COLOUR_WND_BK,
     COLOUR_YELLOW,
 )
 from options import (
@@ -194,16 +197,22 @@ class solver:
     EDIT_CANCEL:int = 0
 
 
-    # Colours' ID
+    # IDs of colours used by app.
     #
     class ColourID(IntEnum):
-        ID_BORDER = 0
-        ID_BK = auto()
+        ID_WINDOW_BK = 0
+
+        ID_FRAME_BORDER = auto()    # Frame borders and bkgrnd
+        ID_FRAME_BK_EVEN = auto()
+        ID_FRAME_BK_ODD = auto()
+
         ID_BK_FILENAME = auto()
-        ID_TXT = auto()
+
+        ID_DEFAULT_TXT = auto()  # Text colours
         ID_ORIGINAL_TXT = auto()
-        ID_OBVIOUS_TXT = ID_BORDER
-        ID_SEL_BK = auto()
+        ID_OBVIOUS_TXT = auto()
+
+        ID_SEL_BK = auto()      # Selected text and bkgrnd
         ID_SEL_TXT = auto()
 
     # Constructor
@@ -234,16 +243,22 @@ class solver:
         self.colours_ : list[ownColour] = []
 
         # for array and window
+        self.colours_.append(ownColour(COLOUR_WND_BK))
+
         self.colours_.append(ownColour(COLOUR_BORDER))
-        self.colours_.append(ownColour(COLOUR_BK))
+        self.colours_.append(ownColour(COLOUR_BK_EVEN))
+        self.colours_.append(ownColour(COLOUR_BK_ODD))
+
         self.colours_.append(ownColour(COLOUR_BK_FILENAME))
-        self.colours_.append(ownColour(COLOUR_TXT))
+
+        self.colours_.append(ownColour(COLOUR_DEF_TXT))
         self.colours_.append(ownColour(COLOUR_ORIGINAL))
-        #self.colours_.append(ownColour(COLOUR_ORIGINAL))
+        self.colours_.append(ownColour(COLOUR_OBVIOUS))      # obvious
+
         self.colours_.append(ownColour(COLOUR_SEL_BK))
         self.colours_.append(ownColour(COLOUR_SEL_TXT))
 
-        # for hyptohesis
+        # for hypothesis
         self.hypColoursStart_:int =len(self.colours_) - 1
         self.colours_.append(ownColour(COLOUR_YELLOW))
         self.colours_.append(ownColour(COLOUR_BLUE))
@@ -347,7 +362,7 @@ class solver:
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
                     currentElement = elements[position.index()]
-                    bk, txt = self._draw_elementTxtColours(position.index(), False)
+                    bk, txt = self._draw_elementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num,
@@ -379,7 +394,7 @@ class solver:
         value : int | None = currentElement.num
         self._draw_startUp()
 
-        bk, txt = self._draw_elementTxtColours(index, selected)
+        bk, txt = self._draw_elementColours(index, selected)
         self._draw_singleElement(
             self.edition_.currentPos_.row(),
             self.edition_.currentPos_.line(),
@@ -440,8 +455,10 @@ class solver:
     #  @sekected : Element is selected ?
     #
     #  @return : Tuple(bk Colour, txt Colour)
-    def _draw_elementTxtColours(self, pos: int, selected:bool = False)->tuple[int,int]:
-        bkColour:int = self.ColourID.ID_SEL_BK if selected else self.ColourID.ID_BK
+    def _draw_elementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+        position:pointer = pointer(pos)
+        bkColour:int = self.ColourID.ID_SEL_BK if selected else self.ColourID.ID_FRAME_BK_ODD if position.squareID() % 2 else self.ColourID.ID_FRAME_BK_EVEN
+
         if self.edition_.creating:
             return bkColour, self.ColourID.ID_ORIGINAL_TXT   # always use "original" colour
 
@@ -451,7 +468,7 @@ class solver:
             if self.sudoku_.elements_[pos].isOriginal():
                 return bkColour, self.ColourID.ID_ORIGINAL_TXT
 
-        return bkColour, self.ColourID.ID_SEL_TXT if selected else self.ColourID.ID_TXT
+        return bkColour, self.ColourID.ID_SEL_TXT if selected else self.ColourID.ID_DEFAULT_TXT
 
     # Mouse position : screen -> array coordinates
     #
@@ -467,7 +484,7 @@ class solver:
     def end(self):
         pass
 
-    # Convert colour objects from ownColour to pygameColor
+    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
     #
     def _draw_convertColours(self):
         pass
@@ -562,7 +579,7 @@ class solver:
 
         if prevPos is not None :
             prevElement : element = self.sudoku_.elements_[prevPos.index()]
-            bk, txt = self._draw_elementTxtColours(prevPos.index_, False)
+            bk, txt = self._draw_elementColours(prevPos.index_, False)
 
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
@@ -576,7 +593,7 @@ class solver:
         # Hilight the new value
         index: int = self.edition_.currentPos_.index()
         currentElement : element = self.sudoku_.elements_[index]
-        bk, txt = self._draw_elementTxtColours(index, True)
+        bk, txt = self._draw_elementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),

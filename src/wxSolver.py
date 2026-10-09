@@ -139,7 +139,7 @@ class wxSolver(wx.Frame, solver.solver):
         #
         self.panel_.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)  # pyright: ignore[reportUnknownMemberType]
 
-        # binded twice isnce panel and frame both can intercept a click !
+        # binded twice since panel and frame both can intercept a click !
         self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
@@ -329,7 +329,7 @@ class wxSolver(wx.Frame, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
             self.memDC_.SetFont(self.font_)
-            self.memDC_.SetBackground(wx.Brush(self.colours_[self.ColourID.ID_BK].other))
+            self.memDC_.SetBackground(wx.Brush(self.colours_[self.ColourID.ID_WINDOW_BK].other))
             self.memDC_.Clear()
 
     @override
@@ -349,7 +349,7 @@ class wxSolver(wx.Frame, solver.solver):
         if self.memDC_ is not None and 0 != self.extSquareWidth_ :
             # thin borders ...
             #
-            pen = wx.Pen(self.colours_[self.ColourID.ID_BORDER].other, 1, wx.PENSTYLE_SOLID)
+            pen = wx.Pen(self.colours_[self.ColourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(pen)
 
             for line in range(LINE_COUNT):
@@ -361,7 +361,7 @@ class wxSolver(wx.Frame, solver.solver):
 
             # ... large ext. borders
             #
-            penLarge = wx.Pen(self.colours_[self.ColourID.ID_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
+            penLarge = wx.Pen(self.colours_[self.ColourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
 
