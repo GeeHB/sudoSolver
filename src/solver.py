@@ -199,7 +199,7 @@ class solver:
         self.fontsize_: int = 0
         self.tagWidth_:int = 0
 
-        self.colours_ : list[ownColour] = []
+        self.colours_: list[ownColour] = []
         self._draw_changeTheme(GUIConsts.DEF_THEME_NAME)
 
     @property

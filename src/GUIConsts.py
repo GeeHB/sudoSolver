@@ -9,24 +9,25 @@
 
 from enum import IntEnum, auto
 
+TRANSP_COLOUR = (224, 224, 224)
 
 # IDs of colours used by app.
 #
 class colourID(IntEnum):
-    ID_WINDOW_BK = 0
-    ID_FRAME_BORDER = 1    # Frame borders and bkgrnd
-    ID_FRAME_BK_EVEN = 2
-    ID_FRAME_BK_ODD = 3
-    ID_BK_FILENAME = 4
-    ID_DEFAULT_TXT = 5  # Text colours
-    ID_ORIGINAL_TXT = 6
-    ID_OBVIOUS_TXT = 7
-    ID_SEL_BK = 7      # Selected text and bkgrnd
-    ID_SEL_TXT = 9
-    ID_TAG_1 = 10
-    ID_TAG_2 = 11
-    ID_TAG_3 = 12
-    ID_TAG_4 = 13
+    ID_WINDOW_BK = auto()
+    ID_FRAME_BORDER = auto()    # Frame borders and bkgrnd
+    ID_FRAME_BK_EVEN = auto()
+    ID_FRAME_BK_ODD = auto()
+    ID_BK_FILENAME = auto()
+    ID_DEFAULT_TXT = auto()  # Text colours
+    ID_ORIGINAL_TXT = auto()
+    ID_OBVIOUS_TXT = auto()
+    ID_SEL_BK = auto()      # Selected text and bkgrnd
+    ID_SEL_TXT = auto()
+    ID_TAG_1 = auto()
+    ID_TAG_2 = auto()
+    ID_TAG_3 = auto()
+    ID_TAG_4 = auto()
     ID_COLOUR_COUNT = auto()    # Last item
 
 #  Themes with colours in RGB
