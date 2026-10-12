@@ -36,39 +36,69 @@ from pointer import (
 from sharedTools import statusbits
 
 
+# wxMainFrame
+#   abstract class
+#
+#   Allow interactions with contained toolbar/sidebar and canvas panel
+#
+class wxMainFrame(wx.Frame):
+
+    def hyp_onSelectColor(self, colID:int):
+        pass
+
+    def hyp_onReject(self, colID:int):
+        pass
+
+    def hyp_onAccept(self, colID:int):
+        pass
+
+    def onStopEdition(self, canceled:bool = False):
+        pass
+
+# wxOwnPanel - abstract class base for all panel objects
+#
+class wxOwnPanel(wx.Panel):
+    def __init__(self, parent: wxMainFrame):
+        super().__init__(parent)
+        self.parent_: wxMainFrame = parent
+    def setTheme(self):
+        pass
+
 # wxSolverApp - Abstract class for application
 #
 class wxSolverApp(wx.App, solver.solverApp):
     # Constructor
     #
-    def __init__(self, params : options):
+    def __init__(self, params: options):
+        wx.Log.SetLogLevel(wx.LOG_Error)  # pyright: ignore[reportUnknownMemberType]
         wx.App.__init__(self)  # pyright: ignore[reportUnknownMemberType]
         solver.solverApp.__init__(self, params)
 
-        self.solver_ : wxSolver = wxSolver(params)
+        self.mainFrame_ : wxSolverFrame = wxSolverFrame(params)
 
     # GUI initialization
     #
     @override
     def initialize(self):
-        self.solver_.initialize()
+        self.mainFrame_.initialize()
 
     # Start drawings / UI
     #
     @override
     def start(self):
-        self.solver_.Show()
+        self.mainFrame_.Show()
         self.MainLoop()  # pyright: ignore[reportUnknownMemberType]
 
     # End drawings
     #
     @override
     def end(self):
-        self.solver_.end()
+        self.mainFrame_.end()
 
-# wxSolver - Abstract class for GUI sudoku solvers
+
+# wxSolverCanvas - Canvas using wxPython lib
 #
-class wxSolver(wx.Frame, solver.solver):
+class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     #  Array states
     #
@@ -106,12 +136,10 @@ class wxSolver(wx.Frame, solver.solver):
 
     # Constructor
     #
-    def __init__(self, params : options):
+    def __init__(self, parent: wxMainFrame, params : options):
         self.state_ : statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
-        wx.Log.SetLogLevel(wx.LOG_Error)  # pyright: ignore[reportUnknownMemberType]
 
-        wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE)
-        self.panel_ = wx.Panel(self, wx.ID_ANY)     # to receive keyboard focus
+        wxOwnPanel.__init__(self, parent)
 
         solver.solver.__init__(self, params)
 
@@ -138,10 +166,10 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Associate event to handlers
         #
-        self.panel_.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)  # pyright: ignore[reportUnknownMemberType]
 
         # binded twice since panel and frame both can intercept a click !
-        self.panel_.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
@@ -150,7 +178,7 @@ class wxSolver(wx.Frame, solver.solver):
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
 
-        self.panel_.SetFocus()
+        self.SetFocus()
         self.Show()
 
     # End drawings
@@ -169,7 +197,7 @@ class wxSolver(wx.Frame, solver.solver):
         if len(fileName) > 0:
             title = title + " - " + fileName
 
-        self.SetTitle(title)
+        self.parent_.SetTitle(title)
 
     # Show resolution stats
     #
@@ -585,6 +613,9 @@ class wxSolver(wx.Frame, solver.solver):
         fileMenu.Append(wx.ID_SAVE)
 
         fileMenu.AppendSeparator()  # Themes management
+        fileMenu.Append(menuConsts.ID_SIDEBAR, menuConsts.IDM_SIDEBAR)
+
+        fileMenu.AppendSeparator()  # Themes management
         themesMenu = wx.Menu()
         for name in list(GUIConsts.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
@@ -631,12 +662,12 @@ class wxSolver(wx.Frame, solver.solver):
 
         # Menu bar creation
         self.menuBar_ : wx.MenuBar = wx.MenuBar()
-        self.SetMenuBar(self.menuBar_)
+        self.parent_.SetMenuBar(self.menuBar_)
         self.menuBar_.Append(fileMenu, menuConsts.IDM_FILE)
         self.menuBar_.Append(createMenu,menuConsts.IDM_CREATE)
         self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
-        self.SetMenuBar(self.menuBar_)
+        self.parent_.SetMenuBar(self.menuBar_)
         self._menu_setItemsStates()     # initial states for items
 
         # Accelerators
@@ -837,5 +868,66 @@ class wxSolver(wx.Frame, solver.solver):
         if self.sudoku_.IsOk():
             self.sudoku_.revert()
             self._draw_update()
+
+
+# wxSolverFrame - App. main frame
+#
+class wxSolverFrame(wxMainFrame):
+    def __init__(self, params: options):
+        wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE, size=wx.Size(450, 300))
+
+        # --- Barre latérale (droite) ---
+        self.sidebar_ = wx.Panel(self, size=wx.Size(220, -1))
+        self.sidebar_.SetMinSize(wx.Size(220, -1))
+        self.sidebar_.SetBackgroundColour(wx.Colour("#f0f0f0"))
+
+        sb_sizer = wx.BoxSizer(wx.VERTICAL)
+        sb_sizer.Add(wx.StaticText(self.sidebar_, label="Outils"), 0, wx.ALL, 5)
+        sb_sizer.Add(wx.Button(self.sidebar_, label="Pinceau"), 0, wx.EXPAND | wx.ALL, 5)
+        sb_sizer.AddStretchSpacer()
+        self.sidebar_.SetSizer(sb_sizer)
+
+        # sudoku solver canvas
+        self.canvas_ = wxSolverCanvas(self, params)
+
+        # --- Assemblage ---
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer.Add(self.canvas_, 1, wx.EXPAND)       # zone de dessin (gauche)
+        main_sizer.Add(self.sidebar_, 0, wx.EXPAND)       # sidebar (droite, fixe)
+
+        self.SetSizer(main_sizer)
+
+        self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
+
+        self.Centre()
+        self.Show()
+
+    # GUI initialization
+    #
+    def initialize(self):
+        self.canvas_.initialize()
+
+    # End drawings
+    #
+    def end(self):
+        self.canvas_.end()
+
+    # Click on a menu item
+    #
+    def OnMenu(self, event:wx.MenuEvent):
+        menuId = event.GetId()
+
+        match menuId:
+            case menuConsts.ID_SIDEBAR:
+                self.onToggleSidebar()
+            case wx.ID_EXIT:
+                self.Destroy()
+            case _:
+                self.canvas_.OnMenu(event)  # Other events are handled by the canvas panel
+
+
+    def onToggleSidebar(self):
+        self.sidebar_.Show(not self.sidebar_.IsShown())
+        self.Layout()
 
 # EOF

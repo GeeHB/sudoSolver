@@ -14,6 +14,9 @@ import wx  # pyright: ignore[reportMissingTypeStubs]
 IDM_FILE:str = '&File'
 IDM_THEMES:str = 'Themes'
 
+IDM_SIDEBAR:str = 'Sidebar'
+ID_SIDEBAR:int = wx.NewIdRef().GetId()
+
 # Creation
 #
 IDM_CREATE:str = '&Create'
