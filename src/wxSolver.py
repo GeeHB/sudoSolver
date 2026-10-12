@@ -485,9 +485,9 @@ class wxSolver(wx.Frame, solver.solver):
     def _edit_stop(self):
         super()._edit_stop()
 
-        self.state_.set(self.ARRAY_EDITING, False)
+        self.state_.remove(self.ARRAY_EDITING)
         if self.edition_.modified:
-            self.state_.set(self.ARRAY_MODIFIED, True)
+            self.state_.set(self.ARRAY_MODIFIED)
 
         self._menu_setItemsStates()
 
@@ -589,12 +589,15 @@ class wxSolver(wx.Frame, solver.solver):
         for name in list(GUIConsts.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             self.menuThemesID_[name] = newID
+            """
             if name == self.theme_.name:
                 themesMenu.AppendCheckItem(newID, name)  # pyright: ignore[reportUnknownArgumentType]
                 themesMenu.Check(newID, True)   # pyright: ignore[reportUnknownArgumentType]
                 self.theme_.Id = newID
             else:
                 themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
+            """
+            themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
 
         fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themesMenu)
         fileMenu.AppendSeparator()
@@ -693,7 +696,7 @@ class wxSolver(wx.Frame, solver.solver):
     # Create a new or empty array
     #
     def _menu_fileNew(self, menuId:int):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOTSAVED, GUIConsts.STR_NEW,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOT_SAVED, GUIConsts.STR_NEW,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -715,11 +718,11 @@ class wxSolver(wx.Frame, solver.solver):
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOTSAVED, GUIConsts.STR_LOAD,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOT_SAVED, GUIConsts.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
-        with wx.FileDialog(self, GUIConsts.STR_LOAD, wildcard="TXT files (*.txt)|*.txt",
+        with wx.FileDialog(self, GUIConsts.STR_LOAD, wildcard=GUIConsts.STR_WILDCARD,
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
@@ -740,7 +743,7 @@ class wxSolver(wx.Frame, solver.solver):
 
         path : str | None = self.filename
         done : bool = False
-        wildcard = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+        wildcard = GUIConsts.STR_WILDCARD
 
         with wx.FileDialog(
             self,
@@ -769,7 +772,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     def _menu_fileExit(self):
         if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
-                    GUIConsts.STR_NOTSAVED, GUIConsts.STR_EXIT,
+                    GUIConsts.STR_NOT_SAVED, GUIConsts.STR_EXIT,
                     wx.ICON_QUESTION | wx.YES_NO, self):
             return
 
@@ -814,7 +817,7 @@ class wxSolver(wx.Frame, solver.solver):
                 self._draw_update()
                 self.showStats()
             else:
-                wx.MessageBox("No solution found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
     def _menu_resolve_multiThreaded(self):
         if self.sudoku_.IsOk():
@@ -822,7 +825,7 @@ class wxSolver(wx.Frame, solver.solver):
             self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
 
             if not self.resolve():
-                wx.MessageBox("No solution found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
             self.directDraw_ = False
             self._draw_update()

@@ -116,11 +116,15 @@ MSG_HIDE_RATE: int = 2000 # Hide the filename
 #
 #  str
 #
-STR_NEW: str = "New sudoku"
-STR_LOAD: str = "Open sudoku"
-STR_SAVE: str = "Save sudoku"
+STR_NEW:str = "New sudoku"
+STR_LOAD:str = "Open sudoku"
+STR_SAVE:str = "Save sudoku"
 STR_EXIT:str = "Exiting app."
 
-STR_NOTSAVED:str = "Current content has not been saved.\nDo you want to proceed?"
+STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+
+STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
+
+STR_NO_SOLUTION:str = "No solution found."
 
 #EOF
