@@ -28,7 +28,7 @@ class ownColour:
         self.a = alpha if alpha is not None else 255
         self.other : Any = None
 
-# Information about current theme
+# Informations about graphic theme
 #
 class ownTheme:
     def __init__(self, name:str | None = None):
@@ -89,7 +89,7 @@ class ownTheme:
         else:
             self.append(value)
 
-    # len / size of internal colours' list
+    # len / size of internal colours list
     def __len__(self)->int:
         return len(self.colours_)
 # EOF

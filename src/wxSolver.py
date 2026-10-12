@@ -306,7 +306,7 @@ class wxSolver(wx.Frame, solver.solver):
         self.clientSize_ = self.GetClientSize() # Size minus menu height
 
         self._draw_newClientSize(self.clientSize_.width, self.clientSize_.height)
-        self.font_.SetPixelSize(wx.Size(0, self.fontSize_))
+        self.font_.SetPixelSize(wx.Size(0, self.canvasFontSize_))
 
         self._draw_freeMemDC()
 
@@ -343,7 +343,7 @@ class wxSolver(wx.Frame, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
             self.memDC_.SetFont(self.font_)
-            self.memDC_.SetBackground(wx.Brush(self.theme_[GUIConsts.colourID.ID_WINDOW_BK].other))
+            self.memDC_.SetBackground(wx.Brush(self.theme_[GUIConsts.colourID.ID_CANVAS_BK].other))
             self.memDC_.Clear()
 
     @override

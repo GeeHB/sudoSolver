@@ -180,7 +180,7 @@ class solver:
         self.height_: int = 0
         self.intSquareWidth_:int = 0        # Internal dims of an element
         self.extSquareWidth_:int = 0        # Ext. dims
-        self.fontsize_: int = 0
+        self.canvasFontSize_: int = 0
         self.tagWidth_:int = 0
 
         self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
@@ -224,7 +224,7 @@ class solver:
         self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
-        self.fontsize_ = GUIConsts.ELT_FONT_SIZE
+        self.canvasFontSize_ = GUIConsts.ELT_FONT_SIZE
 
     # Start drawings / UI
     #
@@ -362,7 +362,7 @@ class solver:
             self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 
         # font size in pixels
-        self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        self.canvasFontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
         # tag dims.
         self.tagWidth_ = int(GUIConsts.TAG_MIN_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)

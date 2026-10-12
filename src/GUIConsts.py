@@ -14,7 +14,9 @@ TRANSP_COLOUR = (224, 224, 224)
 # IDs of colours used by app.
 #
 class colourID(IntEnum):
-    ID_WINDOW_BK = auto()
+    ID_TB_BK = 0
+    ID_TB_BORDER = auto()
+    ID_CANVAS_BK = auto()
     ID_FRAME_BORDER = auto()    # Frame borders and bkgrnd
     ID_FRAME_BK_EVEN = auto()
     ID_FRAME_BK_ODD = auto()
@@ -36,6 +38,8 @@ class colourID(IntEnum):
 colourThemes = {
     "One Light": [
         (250, 250, 250),
+        (192, 132, 83),
+        (250, 250, 250),
         (250, 250, 250),
         (239, 239, 240),
         (202, 202, 202),
@@ -51,6 +55,8 @@ colourThemes = {
         (255,0,0),
         ],
     "Zarina": [
+        (230, 230, 255),
+        (81, 154, 186),
         (230, 230, 255),
         (81, 154, 186),
         (230, 230, 255),

@@ -395,7 +395,7 @@ class pygameSolver(solver.solver):
     @override
     def _draw_background(self):
         if self.win_ is not None:
-            self.win_.fill(self.theme_[GUIConsts.colourID.ID_WINDOW_BK].other)
+            self.win_.fill(self.theme_[GUIConsts.colourID.ID_CANVAS_BK].other)
             if 0 != self.extSquareWidth_ :
                 # thin borders ...
                 #
@@ -512,7 +512,7 @@ class pygameSolver(solver.solver):
             # Draw on the specific surface
             self.sMessage_.setText(message,
                 self.theme_[GUIConsts.colourID.ID_DEFAULT_TXT].other,
-                self.theme_[GUIConsts.colourID.ID_WINDOW_BK].other)
+                self.theme_[GUIConsts.colourID.ID_CANVAS_BK].other)
 
             # start blinking
             self.sMessage_.setVisible()
@@ -557,8 +557,8 @@ class pygameSolver(solver.solver):
 
         # Update elements'font
         if self.sElement_ is not None:
-            self.sElement_.setFont(self.theme_.canvasFontName, self.fontSize_)
-            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.fontSize_))/2), 0)
+            self.sElement_.setFont(self.theme_.canvasFontName, self.canvasFontSize_)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.canvasFontSize_))/2), 0)
 
     # Wait for an event
     #
