@@ -19,6 +19,7 @@ except ModuleNotFoundError:
 
 import element
 import GUIConsts
+import GUITheme
 import menuConsts
 import solver
 from options import (
@@ -123,7 +124,7 @@ class wxSolver(wx.Frame, solver.solver):
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
-                        faceName = GUIConsts.ELT_FONT_NAME)
+                        faceName = self.theme_.canvasFontName)
         self.blinkTimer_ : wx.Timer = wx.Timer(self, GUIConsts.BLINK_ID)
         self.menuThemesID_:dict[str,int] = {}
 
@@ -342,7 +343,7 @@ class wxSolver(wx.Frame, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
             self.memDC_.SetFont(self.font_)
-            self.memDC_.SetBackground(wx.Brush(self.colours_[GUIConsts.colourID.ID_WINDOW_BK].other))
+            self.memDC_.SetBackground(wx.Brush(self.theme_[GUIConsts.colourID.ID_WINDOW_BK].other))
             self.memDC_.Clear()
 
     @override
@@ -363,7 +364,7 @@ class wxSolver(wx.Frame, solver.solver):
 
             # thin borders ...
             #
-            pen = wx.Pen(self.colours_[GUIConsts.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
+            pen = wx.Pen(self.theme_[GUIConsts.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(pen)
 
             for line in range(LINE_COUNT):
@@ -375,7 +376,7 @@ class wxSolver(wx.Frame, solver.solver):
 
             # ... large ext. borders
             #
-            penLarge = wx.Pen(self.colours_[GUIConsts.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
+            penLarge = wx.Pen(self.theme_[GUIConsts.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
 
@@ -401,18 +402,18 @@ class wxSolver(wx.Frame, solver.solver):
         y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
         # Erase background
-        self.memDC_.SetBrush(wx.Brush(self.colours_[bkColourID].other))
+        self.memDC_.SetBrush(wx.Brush(self.theme_[bkColourID].other))
         self.memDC_.SetPen(wx.TRANSPARENT_PEN)
         self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
         if value is not None :
-            self.memDC_.SetTextForeground(self.colours_[txtColourID].other)
+            self.memDC_.SetTextForeground(self.theme_[txtColourID].other)
             self.memDC_.DrawText(str(value), x + self.textOffsets_.x, y + self.textOffsets_.y)
 
             # Hypothesis/Tag ?
             if hypColourID != element.hypColour.NO_COLOUR:
-                self.memDC_.SetBrush(wx.Brush(self.colours_[hypColourID + GUIConsts.colourID.ID_TAG_1 - 1].other))
+                self.memDC_.SetBrush(wx.Brush(self.theme_[hypColourID + GUIConsts.colourID.ID_TAG_1 - 1].other))
                 self.memDC_.SetPen(wx.TRANSPARENT_PEN)
 
                 radius = int(self.tagWidth_ / 2)
@@ -442,12 +443,13 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def _draw_convertColours(self):
-        for id in range(len(self.colours_)):
-            self.colours_[id].other = wx.Colour(
-                self.colours_[id].r,
-                self.colours_[id].g,
-                self.colours_[id].b,
-                self.colours_[id].a)
+        for id in range(len(self.theme_)):
+            basicColour:GUITheme.ownColour =self.theme_[id]
+            self.theme_[id].other = wx.Colour(
+                basicColour.r,
+                basicColour.g,
+                basicColour.b,
+                basicColour.a)
 
     # Delete current memory DC
     def _draw_freeMemDC(self):

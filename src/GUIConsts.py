@@ -95,10 +95,10 @@ TAG_PADDING:int         = 4
 ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
 ELT_FONT_SIZE           = 35                                # default size
 
-FILE_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
-FILE_FONT_SIZE          = 25
-FILE_FONT_POS_X         = 35
-FILE_FONT_POS_Y         = 5
+TXT_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
+TXT_FONT_SIZE          = 25
+TXT_FONT_POS_X         = 35
+TXT_FONT_POS_Y         = 5
 
 # Timers frequencies
 #

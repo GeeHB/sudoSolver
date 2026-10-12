@@ -9,7 +9,7 @@
 
 from typing import Any
 
-from GUIConsts import ELT_FONT_NAME
+from GUIConsts import ELT_FONT_NAME, TXT_FONT_NAME
 
 
 # ownColour - General and portable colour definition
@@ -30,10 +30,11 @@ class ownColour:
 
 # Information about current theme
 #
-class GUITheme:
+class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
-        self.fontFaceName_:str = ELT_FONT_NAME
+        self.canvasFontName_:str = ELT_FONT_NAME
+        self.textFontName_:str = TXT_FONT_NAME
         self.colours_: list[ownColour] = []
 
     # Properties
@@ -47,13 +48,21 @@ class GUITheme:
     def name(self, name: str):
         self.name_ = name
 
-    # Name of the font to use
+    # Canvas font
     @property
-    def fontName(self)->str:
-        return self.fontFaceName_
-    @fontName.setter
-    def fontName(self, name: str):
-        self.fontFaceName_ = name  if len(name)>0 else ELT_FONT_NAME
+    def canvasFontName(self)->str:
+        return self.canvasFontName_
+    @canvasFontName.setter
+    def canvasFontName(self, name: str):
+        self.canvasFontName_ = name  if len(name)>0 else ELT_FONT_NAME
+
+    # Default text font
+    @property
+    def textFontName(self)->str:
+        return self.textFontName_
+    @textFontName.setter
+    def textFontName(self, name: str):
+        self.textFontName_ = name  if len(name)>0 else TXT_FONT_NAME
 
     # Clear the list
     def clear(self):
@@ -80,5 +89,7 @@ class GUITheme:
         else:
             self.append(value)
 
-
+    # len / size of internal colours' list
+    def __len__(self)->int:
+        return len(self.colours_)
 # EOF

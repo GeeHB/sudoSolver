@@ -11,9 +11,9 @@ import copy
 import math
 import os
 import time
-from typing import Any
 
 import GUIConsts
+import GUITheme
 from element import element
 from GUIConsts import colourID, colourThemes
 from options import (
@@ -40,22 +40,6 @@ class prevValue:
         self.value_ = value if value is not None else 0
     def __repr__(self)->str:
         return f"(Id:{self.index_} - val:{self.value_})"
-
-# ownColour - General and portable colour definition
-#
-class ownColour:
-    r : int
-    g : int
-    b : int
-    a : int
-
-    def __init__(self, rgb : tuple[int,int,int] | None, alpha : int | None = None):
-        if rgb is not None:
-            self.r = rgb[0]
-            self.g = rgb[1]
-            self.b = rgb[2]
-        self.a = alpha if alpha is not None else 255
-        self.other : Any = None
 
 # editSel - Edition and selection inf.
 #
@@ -199,7 +183,7 @@ class solver:
         self.fontsize_: int = 0
         self.tagWidth_:int = 0
 
-        self.colours_: list[ownColour] = []
+        self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
         self._draw_changeTheme(GUIConsts.DEF_THEME_NAME)
 
     @property
@@ -423,10 +407,13 @@ class solver:
             print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
             name = GUIConsts.DEF_THEME_NAME
 
+        if name == self.theme_.name:
+            return
+
         # Transfer colours in internal list for conversion
-        self.colours_.clear()
+        self.theme_.clear()
         for col in colourThemes[name] :
-            self.colours_.append(ownColour(col))
+            self.theme_.append(GUITheme.ownColour(col))
 
         self._draw_convertColours() # Convert colours
 
