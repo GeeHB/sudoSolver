@@ -255,7 +255,6 @@ class pygameSolver(solver.solver):
         self.sElement_ : textSurface | None = None      # single value
         self.sFileName_ : textSurface | None = None
         self.sMessage_ : blinkingText | None = None
-        self.params_.center = True
 
     #
     # Methods from solver

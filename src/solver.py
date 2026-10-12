@@ -169,6 +169,8 @@ class solver:
     def __init__(self, params : options):
         self.initDone_ : bool = False
         self.params_ : options = params
+        self.params_.center = True
+
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
         self.edition_ : editStatus = editStatus()
@@ -184,7 +186,7 @@ class solver:
         self.tagWidth_:int = 0
 
         self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
-        self._draw_changeTheme(GUIConsts.DEF_THEME_NAME)
+        self._draw_changeTheme(GUIConsts.DEF_THEME_NAME, 0)
 
     @property
     def initialized(self)->bool:
@@ -398,7 +400,7 @@ class solver:
 
     # Change colour's theme
     #
-    def _draw_changeTheme(self, name:str):
+    def _draw_changeTheme(self, name:str, id:int)->bool:
         if name not in list(colourThemes.keys()):
             print(f"Error - '{name}' is not a valid theme name. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
             name = GUIConsts.DEF_THEME_NAME
@@ -408,14 +410,17 @@ class solver:
             name = GUIConsts.DEF_THEME_NAME
 
         if name == self.theme_.name:
-            return
+            return False    # Theme has not changed
 
         # Transfer colours in internal list for conversion
+        self.theme_.name = name
+        self.theme_.Id= id
         self.theme_.clear()
         for col in colourThemes[name] :
             self.theme_.append(GUITheme.ownColour(col))
 
         self._draw_convertColours() # Convert colours
+        return True
 
     # Mouse position : client -> array coordinates
     #

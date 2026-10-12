@@ -33,6 +33,7 @@ class ownColour:
 class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
+        self.Id_:int= 0 # Id or menu item ID
         self.canvasFontName_:str = ELT_FONT_NAME
         self.textFontName_:str = TXT_FONT_NAME
         self.colours_: list[ownColour] = []
@@ -47,6 +48,14 @@ class ownTheme:
     @name.setter
     def name(self, name: str):
         self.name_ = name
+
+    # Id
+    @property
+    def Id(self)->int:
+        return self.Id_
+    @Id.setter
+    def Id(self, Id: int):
+        self.Id_ = Id
 
     # Canvas font
     @property

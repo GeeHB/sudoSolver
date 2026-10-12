@@ -157,7 +157,7 @@ class wxSolver(wx.Frame, solver.solver):
     #
     @override
     def end(self):
-        self._draw_freeMemDC()
+        self._draw_freeMemoryDC()
 
     # Set/change the current array's filename
     #
@@ -235,9 +235,9 @@ class wxSolver(wx.Frame, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           self._draw_changeTheme(keys[0])
-           self._draw_freeMemDC()
-           self.draw(redrawBackground=True)
+           if self._draw_changeTheme(keys[0], menuId):
+               self._draw_freeMemoryDC()
+               self.draw(redrawBackground=True)
 
     # Keyboard events
     #
@@ -308,7 +308,7 @@ class wxSolver(wx.Frame, solver.solver):
         self._draw_newClientSize(self.clientSize_.width, self.clientSize_.height)
         self.font_.SetPixelSize(wx.Size(0, self.canvasFontSize_))
 
-        self._draw_freeMemDC()
+        self._draw_freeMemoryDC()
 
         # Create memory DC with bitmap
         self._draw_startUp()
@@ -452,7 +452,7 @@ class wxSolver(wx.Frame, solver.solver):
                 basicColour.a)
 
     # Delete current memory DC
-    def _draw_freeMemDC(self):
+    def _draw_freeMemoryDC(self):
         if self.memDC_ :
             self.memDC_.SelectObject(wx.NullBitmap) # Free previous bitmap if any
             self.memDC_ = None
@@ -577,24 +577,31 @@ class wxSolver(wx.Frame, solver.solver):
     # Create the menubar and accelerators
     #
     def _menu_create(self):
-        # Files popup
+        # Files
+        #
         fileMenu = wx.Menu()
 
         fileMenu.Append(wx.ID_OPEN)
         fileMenu.Append(wx.ID_SAVE)
 
-        fileMenu.AppendSeparator()
-        themeMenu = wx.Menu()
+        fileMenu.AppendSeparator()  # Themes management
+        themesMenu = wx.Menu()
         for name in list(GUIConsts.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             self.menuThemesID_[name] = newID
-            themeMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
+            if name == self.theme_.name:
+                themesMenu.AppendCheckItem(newID, name)  # pyright: ignore[reportUnknownArgumentType]
+                themesMenu.Check(newID, True)   # pyright: ignore[reportUnknownArgumentType]
+                self.theme_.Id = newID
+            else:
+                themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
 
-        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themeMenu)
+        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themesMenu)
         fileMenu.AppendSeparator()
         fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
 
         # Creation
+        #
         createMenu = wx.Menu()
         createMenu.Append(menuConsts.ID_CREATE_EMPTY, menuConsts.IDM_CREATE_EMPTY)
         createMenu.Append(menuConsts.ID_CREATE_EASY, menuConsts.IDM_CREATE_EASY)
