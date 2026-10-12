@@ -15,7 +15,6 @@ import time
 import GUIConsts
 import GUITheme
 from element import element
-from GUIConsts import colourID, colourThemes
 from options import (
     options,
     stats,
@@ -186,7 +185,7 @@ class solver:
         self.tagWidth_:int = 0
 
         self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
-        self._draw_changeTheme(GUIConsts.DEF_THEME_NAME, 0)
+        self._draw_changeTheme(GUITheme.DEF_THEME_NAME, 0)
 
     @property
     def initialized(self)->bool:
@@ -380,18 +379,18 @@ class solver:
     #  @return : Tuple(bk Colour, txt Colour)
     def _draw_elementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
-        bkColour:int = colourID.ID_SEL_BK if selected else colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else colourID.ID_FRAME_BK_EVEN
+        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
 
         if self.edition_.creating:
-            return bkColour, colourID.ID_ORIGINAL_TXT   # always use "original" colour
+            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
         if self.sudoku_.elements_[pos].isObvious():
-            return bkColour, colourID.ID_OBVIOUS_TXT
+            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
         else:
             if self.sudoku_.elements_[pos].isOriginal():
-                return bkColour, colourID.ID_ORIGINAL_TXT
+                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
 
-        return bkColour, colourID.ID_SEL_TXT if selected else colourID.ID_DEFAULT_TXT
+        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
 
     # Convert colour objects from ownColour to specific (to GUI tools)  colour format
     #
@@ -401,13 +400,13 @@ class solver:
     # Change colour's theme
     #
     def _draw_changeTheme(self, name:str, id:int)->bool:
-        if name not in list(colourThemes.keys()):
-            print(f"Error - '{name}' is not a valid theme name. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
-            name = GUIConsts.DEF_THEME_NAME
+        if name not in list(GUITheme.colourThemes.keys()):
+            print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
 
-        if len(colourThemes[name]) != colourID.ID_COLOUR_COUNT:
-            print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUIConsts.DEF_THEME_NAME}' will be use instead")
-            name = GUIConsts.DEF_THEME_NAME
+        if len(GUITheme.colourThemes[name]) != GUITheme.colourID.ID_COLOUR_COUNT:
+            print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
 
         if name == self.theme_.name:
             return False    # Theme has not changed
@@ -416,7 +415,7 @@ class solver:
         self.theme_.name = name
         self.theme_.Id= id
         self.theme_.clear()
-        for col in colourThemes[name] :
+        for col in GUITheme.colourThemes[name] :
             self.theme_.append(GUITheme.ownColour(col))
 
         self._draw_convertColours() # Convert colours

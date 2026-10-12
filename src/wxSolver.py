@@ -43,15 +43,22 @@ from sharedTools import statusbits
 #
 class wxMainFrame(wx.Frame):
 
+    # Theme just changed
+    #
+    def themeChanged(self):
+        pass
+
+    # Hypothesis / tag management
+    #
     def hyp_onSelectColor(self, colID:int):
         pass
-
     def hyp_onReject(self, colID:int):
         pass
-
     def hyp_onAccept(self, colID:int):
         pass
 
+    # End of edition
+    #
     def onStopEdition(self, canceled:bool = False):
         pass
 
@@ -94,7 +101,6 @@ class wxSolverApp(wx.App, solver.solverApp):
     @override
     def end(self):
         self.mainFrame_.end()
-
 
 # wxSolverCanvas - Canvas using wxPython lib
 #
@@ -140,7 +146,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.state_ : statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
 
         wxOwnPanel.__init__(self, parent)
-
         solver.solver.__init__(self, params)
 
         # Display
@@ -266,6 +271,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
            if self._draw_changeTheme(keys[0], menuId):
                self._draw_freeMemoryDC()
                self.draw(redrawBackground=True)
+               self.parent_.themeChanged()
 
     # Keyboard events
     #
@@ -320,7 +326,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         event.Skip()  # Allow other handlers to process the key
 
-    # Draw the window
+    # Draw the canvas and its content
     #
     def OnPaint(self, event : wx.Event):
         if self.memDC_ is not None and self.memDC_.IsOk():
@@ -371,7 +377,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
             self.memDC_.SetFont(self.font_)
-            self.memDC_.SetBackground(wx.Brush(self.theme_[GUIConsts.colourID.ID_CANVAS_BK].other))
+            self.memDC_.SetBackground(wx.Brush(self.theme_[GUITheme.colourID.ID_CANVAS_BK].other))
             self.memDC_.Clear()
 
     @override
@@ -392,7 +398,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             # thin borders ...
             #
-            pen = wx.Pen(self.theme_[GUIConsts.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
+            pen = wx.Pen(self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(pen)
 
             for line in range(LINE_COUNT):
@@ -404,7 +410,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             # ... large ext. borders
             #
-            penLarge = wx.Pen(self.theme_[GUIConsts.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
+            penLarge = wx.Pen(self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
 
@@ -441,7 +447,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             # Hypothesis/Tag ?
             if hypColourID != element.hypColour.NO_COLOUR:
-                self.memDC_.SetBrush(wx.Brush(self.theme_[hypColourID + GUIConsts.colourID.ID_TAG_1 - 1].other))
+                self.memDC_.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
                 self.memDC_.SetPen(wx.TRANSPARENT_PEN)
 
                 radius = int(self.tagWidth_ / 2)
@@ -617,7 +623,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         fileMenu.AppendSeparator()  # Themes management
         themesMenu = wx.Menu()
-        for name in list(GUIConsts.colourThemes.keys()):
+        for name in list(GUITheme.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             self.menuThemesID_[name] = newID
             """
@@ -869,6 +875,27 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.sudoku_.revert()
             self._draw_update()
 
+# wxSidebarPanel - Sidebar
+#
+class wxSidebarPanel(wxOwnPanel):
+
+    # Constructor
+    def __init__(self, parent: wxMainFrame):
+        wxOwnPanel.__init__(self, parent)
+
+        self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
+
+    # Set child canvas
+    def setCanvas(self, canvas: wxSolverCanvas):
+        self.canvas_ = canvas
+
+    # Redraw the panel
+    def OnPaint(self, event : wx.Event):
+        dc = wx.PaintDC(self)
+        pen = wx.Pen(self.canvas_.theme_[GUITheme.colourID.ID_TB_BORDER].other, 1, wx.PENSTYLE_SOLID)
+        dc.SetPen(pen)
+        size = self.GetClientSize()
+        dc.DrawLine(0, 0, 0, size.height-1)     # draw the left border using using defined colour
 
 # wxSolverFrame - App. main frame
 #
@@ -876,10 +903,14 @@ class wxSolverFrame(wxMainFrame):
     def __init__(self, params: options):
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE, size=wx.Size(450, 300))
 
-        # --- Barre latérale (droite) ---
-        self.sidebar_ = wx.Panel(self, size=wx.Size(220, -1))
+        # sudoku solver canvas
+        self.canvas_ = wxSolverCanvas(self, params)
+
+        # Sidebar
+        self.sidebar_ = wxSidebarPanel(self)
+        self.sidebar_.setCanvas(self.canvas_)
         self.sidebar_.SetMinSize(wx.Size(220, -1))
-        self.sidebar_.SetBackgroundColour(wx.Colour("#f0f0f0"))
+        self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
 
         sb_sizer = wx.BoxSizer(wx.VERTICAL)
         sb_sizer.Add(wx.StaticText(self.sidebar_, label="Outils"), 0, wx.ALL, 5)
@@ -887,18 +918,16 @@ class wxSolverFrame(wxMainFrame):
         sb_sizer.AddStretchSpacer()
         self.sidebar_.SetSizer(sb_sizer)
 
-        # sudoku solver canvas
-        self.canvas_ = wxSolverCanvas(self, params)
+        # Add the 2 panels to the frame's sizer
+        mainSizer = wx.BoxSizer(wx.HORIZONTAL)
+        mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
+        mainSizer.Add(self.sidebar_, 0, wx.EXPAND)# pyright: ignore[reportUnknownMemberType]
+        self.SetSizer(mainSizer)
 
-        # --- Assemblage ---
-        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.Add(self.canvas_, 1, wx.EXPAND)       # zone de dessin (gauche)
-        main_sizer.Add(self.sidebar_, 0, wx.EXPAND)       # sidebar (droite, fixe)
-
-        self.SetSizer(main_sizer)
-
+        # Bind menu events to handler
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
 
+        # Let's go !!!
         self.Centre()
         self.Show()
 
@@ -906,6 +935,11 @@ class wxSolverFrame(wxMainFrame):
     #
     def initialize(self):
         self.canvas_.initialize()
+
+    # Theme just changed
+    #
+    def themeChanged(self):
+        self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
 
     # End drawings
     #
@@ -926,6 +960,8 @@ class wxSolverFrame(wxMainFrame):
                 self.canvas_.OnMenu(event)  # Other events are handled by the canvas panel
 
 
+    # Show / hide the side bar
+    #
     def onToggleSidebar(self):
         self.sidebar_.Show(not self.sidebar_.IsShown())
         self.Layout()
