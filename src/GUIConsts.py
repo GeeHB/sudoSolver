@@ -36,7 +36,25 @@ class colourID(IntEnum):
 #
 
 colourThemes = {
-    "One Light": [
+    "Kosmos": [
+        (53, 57, 68),
+        (83, 86, 93),
+        (53, 57, 68),
+        (53, 57, 68),
+        (54, 80, 101),     # even
+        (36, 40, 53),      # odd
+        (216, 187, 204),
+        (216, 187, 204),    # Def. text
+        (234, 150, 69),
+        (135,220,127),
+        (83, 86, 83),    # Selected text and bkgrnd
+        (216, 187, 204),
+        (255,255,0),
+        (0,0,255),
+        (0,255,0),
+        (255,0,0),
+        ],
+   "One Light": [
         (235, 235, 236),
         (201, 201, 202),
         (250, 250, 250),
@@ -71,7 +89,7 @@ colourThemes = {
         (0,0,255),
         (0,255,0),
         (255,0,0),
-        ]
+        ],
     }
 
 DEF_THEME_NAME = "One Light"
@@ -122,9 +140,7 @@ STR_SAVE:str = "Save sudoku"
 STR_EXIT:str = "Exiting app."
 
 STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
-
 STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
-
 STR_NO_SOLUTION:str = "No solution found."
 
 #EOF
