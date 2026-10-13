@@ -158,7 +158,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
                         faceName = self.theme_.canvasFontName)
-        self.blinkTimer_ : wx.Timer = wx.Timer(self, GUIConsts.BLINK_ID)
+        self.selectedTimer_ : wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.menuThemesID_:dict[str,int] = {}
 
     # GUI initialization
@@ -181,7 +181,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.blinkTimer_) # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_TIMER, self.OnTimer) # pyright: ignore[reportUnknownMemberType]
 
         self.SetFocus()
         self.Show()
@@ -361,8 +361,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnTimer(self, event : wx.Event):
         match event.Id:
-            case GUIConsts.BLINK_ID:
-                self._edit_blink()
+            case GUIConsts.TIMER_ID_SELECTED:
+                self._edit_selectionBlink()
             case _ :
                 event.Skip()
 
@@ -507,11 +507,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if initPos:
             self.edition_.clear()    # move to cursor to (0,0)
         else:
-            self.edition_.blink = False
+            self.edition_.selected = False
 
-        self._edit_blink()
-        if not self.blinkTimer_.IsRunning():
-            self.blinkTimer_.Start(GUIConsts.BLINK_RATE)
+        self._edit_selectionBlink()
+        if not self.selectedTimer_.IsRunning():
+            self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
 
     # End of edition mode
     #
@@ -525,8 +525,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self._menu_setItemsStates()
 
-        if self.blinkTimer_.IsRunning():
-            self.blinkTimer_.Stop()
+        if self.selectedTimer_.IsRunning():
+            self.selectedTimer_.Stop()
 
         self._draw_startUp()
         self._draw_selectedElement(False)
@@ -540,9 +540,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
         #self._edit_start(False)
 
-    def _edit_blink(self):
+    def _edit_selectionBlink(self):
         self._draw_startUp()
-        self._draw_selectedElement(self.edition_.changeBlink())
+        self._draw_selectedElement(self.edition_.changeSelectedStatus())
         self._draw_end()
 
     # Edition of current array

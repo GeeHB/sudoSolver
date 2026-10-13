@@ -56,16 +56,16 @@ class editStatus:
     EDIT_NO_REDRAW:int = 64  # don't redraw at previous pos value
 
     def __init__(self):
-        self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
-        self.currentPos_ : pointer = pointer(0)
-        self.prevPos_ : pointer | None = None
-        self.blink_ : bool = False
+        self.status_: statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
+        self.currentPos_: pointer = pointer(0)
+        self.prevPos_: pointer | None = None
+        self.selected_: bool = False
 
     def clear(self, status : int = EDIT_NO_EDITION):
         self.status_.set(status)
         self.currentPos_.clear(False)
         self.prevPos_ = None
-        self.blink_ = False
+        self.selected_ = False
 
     def move(self):
         self.prevPos_ = copy.deepcopy(self.currentPos_)
@@ -88,20 +88,20 @@ class editStatus:
     def manualSolving(self)->bool:
         return self.status_.isSet(self.EDIT_MODE_RESOLUTION)
     @manualSolving.setter
-    def manualSolving(self, set : bool = True):
+    def manualSolving(self, set: bool = True):
         if set : self.creating = False
         self.status_.set(self.EDIT_MODE_RESOLUTION, set)
 
-    # Blinking effect
+    # Selection status
     @property
-    def blink(self)->bool:
-        return self.blink_
-    @blink.setter
-    def blink(self, set : bool = True):
-        self.blink_ = set
-    def changeBlink(self)->bool:
-        self.blink_ = not self.blink_
-        return self.blink_
+    def selected(self)->bool:
+        return self.selected_
+    @selected.setter
+    def selected(self, set: bool = True):
+        self.selected_ = set
+    def changeSelectedStatus(self)->bool:
+        self.selected_ = not self.selected_
+        return self.selected_
 
     # Value modified ?
     @property

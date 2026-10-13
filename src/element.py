@@ -27,10 +27,11 @@ class hypColour(IntEnum):
 # element - a single sudoku element
 #
 class element:
-    STATUS_EMPTY: int = 0
-    STATUS_SET: int  = 1
-    STATUS_OBVIOUS: int  = 2         # An obvious value found at runtime (option -o / --obvious)
-    STATUS_ORIGINAL: int  = 4        # Can't be changed (except in edition mode)
+    STATUS_EMPTY:int = 0
+    STATUS_SET:int  = 1
+    STATUS_OBVIOUS:int  = 2         # An obvious value found at runtime (option -o / --obvious)
+    STATUS_ORIGINAL:int  = 4        # Can't be changed (except in edition mode)
+    STATUS_NOTIFYING:int = 8        # The current elementnis notifying the user (creation, help, obvious value, ...)
 
     # Construction
     def __init__(self, value:int | None = None):
@@ -74,6 +75,18 @@ class element:
     @solution.setter
     def solution(self, newVal : int | None):
         self.solution_ = newVal
+
+    # In the notifying state ?
+    #
+    @property
+    def notifying(self)->bool:
+        return self.status_.isSet(self.STATUS_NOTIFYING)
+    @notifying.setter
+    def notifying(self, status:bool):
+        if status:
+            self.status_.set(self.STATUS_NOTIFYING)
+        else:
+            self.status_.remove(self.STATUS_NOTIFYING)
 
     # hypothesis's colour ID
     #

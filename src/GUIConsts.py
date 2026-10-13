@@ -39,10 +39,10 @@ TXT_FONT_SIZE          = 25
 TXT_FONT_POS_X         = 35
 TXT_FONT_POS_Y         = 5
 
-# Timers frequencies
+# Timers
 #
-BLINK_ID:int = 100
-BLINK_RATE: int = 750 # Blinking rate in ms
+TIMER_ID_SELECTED:int = 100
+TIMER_RATE_SELECTED:int = 750 # Blinking rate in ms
 
 MSG_HIDE_RATE: int = 2000 # Hide the filename
 
