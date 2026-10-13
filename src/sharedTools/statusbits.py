@@ -34,7 +34,7 @@ class statusBits:
         if set:
             if not inPlace:
                 # on le met
-                self.value_ = self.value_ | bit
+                self.value_|=bit
         else:
             if inPlace:
                 # on le retire

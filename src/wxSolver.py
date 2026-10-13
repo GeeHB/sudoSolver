@@ -297,7 +297,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             self.edition_.move()
-            newPos : tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            newPos: tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
 
             if self.edition_.currentPos_.moveTo(pos=newPos):
                 self._edit_selChanged()
@@ -632,21 +632,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         fileMenu.Append(wx.ID_SAVE)
 
         fileMenu.AppendSeparator()  # Themes management
-        fileMenu.Append(menuConsts.ID_SIDEBAR, menuConsts.IDM_SIDEBAR)
+        fileMenu.AppendCheckItem(menuConsts.ID_SIDEBAR, menuConsts.IDM_SIDEBAR)
+        fileMenu.Check(menuConsts.ID_SIDEBAR, True)
 
         fileMenu.AppendSeparator()  # Themes management
         themesMenu = wx.Menu()
         for name in list(GUITheme.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             self.menuThemesID_[name] = newID
-            """
-            if name == self.theme_.name:
-                themesMenu.AppendCheckItem(newID, name)  # pyright: ignore[reportUnknownArgumentType]
-                themesMenu.Check(newID, True)   # pyright: ignore[reportUnknownArgumentType]
-                self.theme_.Id = newID
-            else:
-                themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
-            """
             themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
 
         fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themesMenu)
@@ -893,12 +886,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #  Element(s)' notifications
     #
     @override
-    def _notify_start(self):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
         super()._notify_start()
         self.notify_ = False
-        self.notifyCount_ = GUIConsts.BLINK_COUNT_MODIFYING
+        self.notifyCount_ = max
         if not self.notifyTimer_.IsRunning():
-            self.notifyTimer_.Start(GUIConsts.TIMER_RATE_NOTIFYING)
+            self.notifyTimer_.Start(freq)
 
     def _notify_showElements(self):
         super()._notify_showElements()

@@ -381,6 +381,7 @@ class solver:
         position:pointer = pointer(pos)
         bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
 
+        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
         if self.edition_.creating:
             return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
@@ -531,7 +532,7 @@ class solver:
                 prevElement.hypothesis
             )
 
-        # Hilight the new value
+        # Select the new value
         index: int = self.edition_.currentPos_.index()
         currentElement : element = self.sudoku_.elements_[index]
         bk, txt = self._draw_elementColours(index, True)
@@ -639,14 +640,14 @@ class solver:
     #  Element(s)' notifications
     #
 
-    def _notify_start(self):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
         pass
 
     def _notify_showElements(self):
         pass
 
     def _notify_stop(self, endApp:bool = False):
-        self.sudoku_.endNotifying() # remove elements statusbit
+        self.sudoku_.notify_end() # remove elements statusbit
 
     #
     # Resolution

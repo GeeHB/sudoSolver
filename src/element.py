@@ -154,6 +154,6 @@ class element:
 
     # At least can we modifiy this particular value ?
     def isChangeable(self)->bool:
-        #return self.status_ <= self.STATUS_SET    # just SET or EMPTY ?
-        return self.status_.value in [self.STATUS_EMPTY, self.STATUS_SET]
+        return self.status_.isSet(self.STATUS_SET) or self.isEmpty()
+
 # EOF
