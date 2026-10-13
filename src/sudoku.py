@@ -119,6 +119,7 @@ class sudoku(threading.Thread):
                 if not self.elements_[index].isEmpty():
                     return False
 
+        self.count_ = 0;
         return True  # yes (empty or not initialized)
 
     # Count of non-empty elements ?
@@ -148,12 +149,19 @@ class sudoku(threading.Thread):
     def isFull(self)->bool:
         return (self.count_ == ARRAY_SIZE)
 
-    # Return to the original state
+    # Return to the "original" state
     #
     def revert(self):
         for index in range(ARRAY_SIZE):
             if not self.elements_[index].isOriginal():
                 self.elements_[index].empty(deep = False)
+
+    # End of notification(s)
+    #
+    def endNotifying(self):
+        for index in range(ARRAY_SIZE):
+            if self.elements_[index].notifying:
+                self.elements_[index].notifying = False
 
     # Single value
     #
@@ -721,7 +729,7 @@ class sudoku(threading.Thread):
                 if value is not None:
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(
-                        value, element.STATUS_OBVIOUS
+                        value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING
                     )
                     #print(self.elements_[position.index()])
                     found += 1
@@ -830,7 +838,7 @@ class sudoku(threading.Thread):
         # Did we find a position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS)
+            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING)
             return 1
 
         # No ...
@@ -918,7 +926,7 @@ class sudoku(threading.Thread):
         # Did we find a valid position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS)
+            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING)
             #print(f"Row - Position : {foundPos} - {self.elements_[foundPos.index()]}")
             return 1
 

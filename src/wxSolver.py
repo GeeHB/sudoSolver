@@ -32,6 +32,7 @@ from pointer import (
     LINE_COUNT,
     ROW_COUNT,
     VALUE_MAX,
+    pointer,
 )
 from sharedTools import statusbits
 
@@ -143,22 +144,27 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Constructor
     #
     def __init__(self, parent: wxMainFrame, params : options):
-        self.state_ : statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
-
         wxOwnPanel.__init__(self, parent)
         solver.solver.__init__(self, params)
 
+        self.state_: statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
+
         # Display
         self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
-        self.directDraw_ = False
-        self.clientSize_ : wx.Size = wx.Size(0,0)
-        self.textOffsets_ : wx.Size = wx.Size(0,0)  # for text in array
+        self.directDraw_:bool = False
+        self.clientSize_: wx.Size = wx.Size(0,0)
+        self.textOffsets_: wx.Size = wx.Size(0,0)  # for text in array
         self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
                         faceName = self.theme_.canvasFontName)
-        self.selectedTimer_ : wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
+
+        self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
+        self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
+        self.notify_:bool = False
+        self.notifyCount_:int = 0
+
         self.menuThemesID_:dict[str,int] = {}
 
     # GUI initialization
@@ -190,7 +196,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def end(self):
+        self._notify_stop(True)
+        self._edit_stop(True)
+
         self._draw_freeMemoryDC()
+
 
     # Set/change the current array's filename
     #
@@ -363,6 +373,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         match event.Id:
             case GUIConsts.TIMER_ID_SELECTED:
                 self._edit_selectionBlink()
+
+            case GUIConsts.TIMER_ID_NOTIFYING:
+                self._notify_showElements()
+
             case _ :
                 event.Skip()
 
@@ -441,7 +455,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
-        if value is not None :
+        if value is not None and value > 0:
             self.memDC_.SetTextForeground(self.theme_[txtColourID].other)
             self.memDC_.DrawText(str(value), x + self.textOffsets_.x, y + self.textOffsets_.y)
 
@@ -470,7 +484,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         points,
                         x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
                         y + GUIConsts.TAG_PADDING)
-
 
 
     # Convert colour objects from ownColour to wx.Colour
@@ -516,22 +529,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # End of edition mode
     #
     @override
-    def _edit_stop(self):
-        super()._edit_stop()
+    def _edit_stop(self, endApp:bool = False):
+        super()._edit_stop(endApp)
 
-        self.state_.remove(self.ARRAY_EDITING)
-        if self.edition_.modified:
-            self.state_.set(self.ARRAY_MODIFIED)
+        if not endApp:
+            self.state_.remove(self.ARRAY_EDITING)
+            if self.edition_.modified:
+                self.state_.set(self.ARRAY_MODIFIED)
 
-        self._menu_setItemsStates()
+            self._menu_setItemsStates()
 
-        if self.selectedTimer_.IsRunning():
-            self.selectedTimer_.Stop()
+            if self.selectedTimer_.IsRunning():
+                self.selectedTimer_.Stop()
 
-        self._draw_startUp()
-        self._draw_selectedElement(False)
-        self._draw_end()
-
+            self._draw_startUp()
+            self._draw_selectedElement(False)
+            self._draw_end()
 
     # Selected item has just changed
     #
@@ -841,6 +854,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.sudoku_.IsOk():
             if self.findObviousValues():
                 self._draw_update()
+                self._notify_start()
                 wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
                     APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
             else:
@@ -874,6 +888,53 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.sudoku_.IsOk():
             self.sudoku_.revert()
             self._draw_update()
+
+    #
+    #  Element(s)' notifications
+    #
+    @override
+    def _notify_start(self):
+        super()._notify_start()
+        self.notify_ = False
+        self.notifyCount_ = GUIConsts.BLINK_COUNT_MODIFYING
+        if not self.notifyTimer_.IsRunning():
+            self.notifyTimer_.Start(GUIConsts.TIMER_RATE_NOTIFYING)
+
+    def _notify_showElements(self):
+        super()._notify_showElements()
+
+        self.notifyCount_-=1
+        if 1 == self.notifyCount_:
+            self._notify_stop()
+
+        self._draw_startUp()
+        position: pointer = pointer(game = False)
+        for line in range(LINE_COUNT):
+            for row in range(ROW_COUNT):
+                currentElement = self.sudoku_.elements_[position.index()]
+                if currentElement.notifying:
+                    bk, txt = self._draw_elementColours(position.index(), False)
+                    self._draw_singleElement(
+                        row, line,
+                        currentElement.num if self.notify_ else 0,
+                        bk, txt,
+                        currentElement.hypothesis,
+                    )
+
+                # next element ...
+                position+=1
+        self._draw_end()
+
+        self.notify_ = not self.notify_
+
+    @override
+    def _notify_stop(self, endApp:bool = False):
+        super()._notify_stop(endApp)
+
+        if self.notifyTimer_.IsRunning():
+            self.notifyTimer_.Stop()
+
+
 
 # wxSidebarPanel - Sidebar
 #

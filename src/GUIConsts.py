@@ -44,7 +44,11 @@ TXT_FONT_POS_Y         = 5
 TIMER_ID_SELECTED:int = 100
 TIMER_RATE_SELECTED:int = 750 # Blinking rate in ms
 
-MSG_HIDE_RATE: int = 2000 # Hide the filename
+TIMER_ID_NOTIFYING:int = 101
+TIMER_RATE_NOTIFYING:int = 500 # Blinking rate in ms
+BLINK_COUNT_MODIFYING:int = 20 # Max. count of blinking for notifications
+
+PY_MSG_HIDE_RATE: int = 2000 # Hide the filename (for pygame only)
 
 #
 #  str

@@ -279,7 +279,7 @@ class solver:
             if redrawBackground:
                 self._draw_background()
 
-            position : pointer = pointer(game = False)
+            position: pointer = pointer(game = False)
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
@@ -510,7 +510,7 @@ class solver:
 
     # End of edition mode
     #
-    def _edit_stop(self):
+    def _edit_stop(self, endApp:bool = False):
         pass
 
     # Update array during edition
@@ -635,6 +635,18 @@ class solver:
         self.prevValues_.clear()
         return True
 
+    #
+    #  Element(s)' notifications
+    #
+
+    def _notify_start(self):
+        pass
+
+    def _notify_showElements(self):
+        pass
+
+    def _notify_stop(self, endApp:bool = False):
+        self.sudoku_.endNotifying() # remove elements statusbit
 
     #
     # Resolution

@@ -286,11 +286,11 @@ class pygameSolver(solver.solver):
         # fileName displays
         self.sFileName_ = textSurface(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE)
         self.sFileName_.moveTo(GUIConsts.TXT_FONT_POS_X, GUIConsts.TXT_FONT_POS_Y)
-        self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.MSG_HIDE_RATE)   # event for text hiding
+        self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.PY_MSG_HIDE_RATE)   # event for text hiding
 
         # Messages
         self.sMessage_ = blinkingText(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE)
-        self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.BLINK_RATE)
+        self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.PY_MSG_HIDE_RATE)
 
         self._draw_background()
 
