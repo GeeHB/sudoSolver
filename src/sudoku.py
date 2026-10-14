@@ -39,12 +39,12 @@ from tinySquare import tinySquare
 class sudoku(threading.Thread):
     # Construction
     def __init__(self):
-        self.fileName_: str | None = None
+        self.fileName_:str | None = None
         self.attempts_:int = 0
         self.start_:float = 0.0  # Resolution start-time
-        self.elements_: list[element] = []
+        self.elements_:list[element] = []
         self.count_:int = 0
-        self.complexity_: int = arrayComplexity.Empty.value
+        self.complexity_:int = arrayComplexity.Empty.value
         self.found_:bool = False
         random.seed()
 
@@ -122,6 +122,29 @@ class sudoku(threading.Thread):
         self.count_ = 0;
         return True  # yes (empty or not initialized)
 
+    # Has the sudoku been modified ?
+    #   ie. at least one element is not original
+    #
+    def isModified(self) -> bool:
+        if self.IsOk():
+            for index in range(ARRAY_SIZE):
+                if self.elements_[index].isChangeable(False):
+                    return True
+
+        return False
+
+    # Turn all array's elements to 'original'
+    #
+    # @return : at least one element's status has changed ?
+    def setOriginal(self)->bool:
+        done:bool = False
+        if self.IsOk():
+            for index in range(ARRAY_SIZE):
+                if not self.elements_[index].isChangeable(False):   # don't take into account empty elements !
+                    self.elements_[index].setOriginal()
+                    done = True
+        return done
+
     # Count of non-empty elements ?
     #
     def nonEmptyItems(self) -> int:
@@ -143,11 +166,15 @@ class sudoku(threading.Thread):
 
         raise IndexError
 
-
     # Is the array full
     #
     def isFull(self)->bool:
         return (self.count_ == ARRAY_SIZE)
+
+    # Count of elements in the array
+    #
+    def __len__(self):
+        return len(self.elements_)
 
     # Return to the "original" state
     #
@@ -158,8 +185,8 @@ class sudoku(threading.Thread):
 
     # End of notification(s)
     #
-    def endNotifying(self):
-        for index in range(ARRAY_SIZE):
+    def notify_end(self):
+        for index in range(len(self.elements_)):    # sudoku can be empty !
             if self.elements_[index].notifying:
                 self.elements_[index].notifying = False
 
@@ -291,8 +318,6 @@ class sudoku(threading.Thread):
         if not self.IsOk():
             return None
 
-        print(f"Fichier : {self.fileName_}")
-
         fileName : str = ""
 
         if newFileName is not None and len(newFileName)>0:
@@ -306,8 +331,6 @@ class sudoku(threading.Thread):
             extension = pathlib.Path(fileName).suffix
             if len(extension) == 0:
                 fileName += addExtent
-
-        print(f"Fichier : {fileName}")
 
         try:
             with open(fileName, "w") as file:

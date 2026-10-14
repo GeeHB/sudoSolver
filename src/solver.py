@@ -21,6 +21,7 @@ from options import (
 )
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
+    ARRAY_SIZE,
     LINE_COUNT,
     ROW_COUNT,
     pointer,
@@ -284,7 +285,7 @@ class solver:
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
                     currentElement = elements[position.index()]
-                    bk, txt = self._draw_elementColours(position.index(), False)
+                    bk, txt = self._draw_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num,
@@ -297,13 +298,13 @@ class solver:
 
             self._draw_end()
 
-    def _draw_startUp(self):
-        pass
-
     # Update the whole window
     #
-    def _draw_update(self):
+    def draw_update(self):
         self.draw(redrawBackground=True)
+
+    def _draw_startUp(self):
+        pass
 
     def _draw_end(self):
         pass
@@ -316,7 +317,7 @@ class solver:
         value : int | None = currentElement.num
         self._draw_startUp()
 
-        bk, txt = self._draw_elementColours(index, selected)
+        bk, txt = self._draw_getElementColours(index, selected)
         self._draw_singleElement(
             self.edition_.currentPos_.row(),
             self.edition_.currentPos_.line(),
@@ -371,13 +372,13 @@ class solver:
             self.tagWidth_+=1
         self.tagWidth_ = min(self.tagWidth_, GUIConsts.TAG_MAX_SIZE)
 
-    # Get elementss text and bk colours for edition or creation
+    # Get elements text and bk colours for edition or creation
     #
     #  @pos : Element's position
     #  @sekected : Element is selected ?
     #
     #  @return : Tuple(bk Colour, txt Colour)
-    def _draw_elementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+    def _draw_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
         bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
 
@@ -424,12 +425,24 @@ class solver:
 
     # Mouse position : client -> array coordinates
     #
-    def _mouse_translatePosition(self, pos : tuple[int,int])->tuple[int, int]:
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int]:
+        ret:list[int] = [-1,-1]
+        if len(self.sudoku_) == ARRAY_SIZE:
+            for index in range(2):
+                if pos[index] > self.offsets_[index]:
+                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
+                else:
+                    return (-1, -1)
+
+        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else -1, ret[1])
+        """
         if pos[1] > self.offsets_[1] :
             x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
             y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
             return (x,y)
         return (-1,-1)
+        """
+
 
     #
     #  Other "shared" methods
@@ -521,7 +534,7 @@ class solver:
 
         if prevPos is not None :
             prevElement : element = self.sudoku_.elements_[prevPos.index()]
-            bk, txt = self._draw_elementColours(prevPos.index_, False)
+            bk, txt = self._draw_getElementColours(prevPos.index_, False)
 
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
@@ -535,7 +548,7 @@ class solver:
         # Select the new value
         index: int = self.edition_.currentPos_.index()
         currentElement : element = self.sudoku_.elements_[index]
-        bk, txt = self._draw_elementColours(index, True)
+        bk, txt = self._draw_getElementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
@@ -643,7 +656,7 @@ class solver:
     def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
         pass
 
-    def _notify_showElements(self):
+    def _notify_drawElements(self):
         pass
 
     def _notify_stop(self, endApp:bool = False):

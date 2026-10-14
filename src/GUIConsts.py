@@ -53,13 +53,22 @@ PY_MSG_HIDE_RATE: int = 2000 # Hide the filename (for pygame only)
 #
 #  str
 #
-STR_NEW:str = "New sudoku"
-STR_LOAD:str = "Open sudoku"
-STR_SAVE:str = "Save sudoku"
+STR_CREATE:str = "Sudoku creation"
 STR_EXIT:str = "Exiting app."
+STR_LOAD:str = "Open sudoku"
+STR_NEW:str = "New sudoku"
+STR_SAVE:str = "Save sudoku"
 
+
+STR_MODIFIED_ARRAY:str= "The array has been modified. All modified elements will be turned into 'original' elements.\nDo you want to proceed?"
 STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
 STR_NO_SOLUTION:str = "No solution found."
+
+STR_MODE:str = "Mode"
+STR_MODE_CREATION:str = "creation"
+STR_MODE_RESOLUTION:str = "resolution"
+
+STR_FILLED:str = "Filled"
 
 #EOF

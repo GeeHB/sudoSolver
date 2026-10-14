@@ -29,6 +29,7 @@ from options import (
     options,
 )
 from pointer import (
+    ARRAY_SIZE,
     LINE_COUNT,
     ROW_COUNT,
     VALUE_MAX,
@@ -179,10 +180,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)  # pyright: ignore[reportUnknownMemberType]
 
-        # binded twice since panel and frame both can intercept a click !
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
+        #self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonDown)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_LEFT_UP, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_RIGHT_UP, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
@@ -292,6 +292,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         event.Skip()  # Allow other handlers to process the key
 
+    # User press left button
+    #
+    """
+    def OnLButtonDown(self, event : wx.MouseEvent):
+        newPos: tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+        print(f"Position : {newPos}")
+        if newPos[0] != -1 :
+            position:pointer = pointer()
+            position.moveTo(pos=newPos)
+            print(self.sudoku_.elements_[position.index()])
+
+        event.Skip()  # Allow other handlers to process the key
+    """
+
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
@@ -299,7 +313,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.edition_.move()
             newPos: tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
 
-            if self.edition_.currentPos_.moveTo(pos=newPos):
+            if newPos[0]!=-1 and self.edition_.currentPos_.moveTo(pos=newPos):
                 self._edit_selChanged()
 
             return
@@ -375,7 +389,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._edit_selectionBlink()
 
             case GUIConsts.TIMER_ID_NOTIFYING:
-                self._notify_showElements()
+                self._notify_drawElements()
 
             case _ :
                 event.Skip()
@@ -508,7 +522,16 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_start(self, initPos:bool = True):
+        if self.sudoku_.isModified():
+            if wx.MessageBox(GUIConsts.STR_MODIFIED_ARRAY, GUIConsts.STR_CREATE,
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
+
+            if self.sudoku_.setOriginal():
+                self.draw_update()
+
         super()._edit_start(initPos)
+        self._notify_stop() # Don't forget to stop notification timer !
 
         self.state_.set(self.ARRAY_EDITING)
         self._menu_setItemsStates()
@@ -756,7 +779,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.state_.assign(self.ARRAY_NEW)
         self._menu_setItemsStates()
 
-        self._draw_update()
+        self.draw_update()
 
     # Load an array
     #
@@ -846,7 +869,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _menu_findOviousValues(self):
         if self.sudoku_.IsOk():
             if self.findObviousValues():
-                self._draw_update()
+                self.draw_update()
                 self._notify_start()
                 wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
                     APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
@@ -858,7 +881,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
 
             if self.resolve():
-                self._draw_update()
+                self.draw_update()
                 self.showStats()
             else:
                 wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
@@ -872,7 +895,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
             self.directDraw_ = False
-            self._draw_update()
+            self.draw_update()
             self.showStats()
 
     # Return to original array's state (remove added values)
@@ -880,7 +903,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _menu_revertArray(self):
         if self.sudoku_.IsOk():
             self.sudoku_.revert()
-            self._draw_update()
+            self.draw_update()
 
     #
     #  Element(s)' notifications
@@ -893,8 +916,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if not self.notifyTimer_.IsRunning():
             self.notifyTimer_.Start(freq)
 
-    def _notify_showElements(self):
-        super()._notify_showElements()
+    def _notify_drawElements(self):
+        super()._notify_drawElements()
 
         self.notifyCount_-=1
         if 1 == self.notifyCount_:
@@ -906,7 +929,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             for row in range(ROW_COUNT):
                 currentElement = self.sudoku_.elements_[position.index()]
                 if currentElement.notifying:
-                    bk, txt = self._draw_elementColours(position.index(), False)
+                    bk, txt = self._draw_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num if self.notify_ else 0,
@@ -923,21 +946,37 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     @override
     def _notify_stop(self, endApp:bool = False):
         super()._notify_stop(endApp)
-
         if self.notifyTimer_.IsRunning():
             self.notifyTimer_.Stop()
-
-
 
 # wxSidebarPanel - Sidebar
 #
 class wxSidebarPanel(wxOwnPanel):
+    MODE_NONE:int = 0
+    MODE_CREATION:int = 1
+    MODE_RESOLUTION:int = 2
 
     # Constructor
     def __init__(self, parent: wxMainFrame):
         wxOwnPanel.__init__(self, parent)
+        self.mode_ = self.MODE_NONE
 
+        mySizer = wx.BoxSizer(wx.VERTICAL)
+        self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_MODE)
+        mySizer.Add(self.labelMode_, 0, wx.ALIGN_CENTER, 50)  # pyright: ignore[reportUnknownMemberType]
+        self.labelCount_ = wx.StaticText(self, label="Outils")
+        mySizer.Add(self.labelCount_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+        mySizer.Add(wx.Button(self, label="Pinceau"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+        mySizer.AddStretchSpacer()
+        self.SetSizer(mySizer)
+
+        # Needs to draw panel's border
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
+
+    # Set app; mode => set controls' state
+    def setMode(self, mode:int = MODE_NONE):
+        self.mode_ = mode
+        self.labelMode_.SetLabel(f"{GUIConsts.STR_MODE}" if self.mode_ == self.MODE_NONE else f"{GUIConsts.STR_MODE} : {GUIConsts.STR_MODE_CREATION if self.mode_ == self.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION}")
 
     # Set child canvas
     def setCanvas(self, canvas: wxSolverCanvas):
@@ -945,6 +984,8 @@ class wxSidebarPanel(wxOwnPanel):
 
     # Redraw the panel
     def OnPaint(self, event : wx.Event):
+        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.count_} / {ARRAY_SIZE}")
+
         dc = wx.PaintDC(self)
         pen = wx.Pen(self.canvas_.theme_[GUITheme.colourID.ID_TB_BORDER].other, 1, wx.PENSTYLE_SOLID)
         dc.SetPen(pen)
@@ -966,11 +1007,6 @@ class wxSolverFrame(wxMainFrame):
         self.sidebar_.SetMinSize(wx.Size(220, -1))
         self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
 
-        sb_sizer = wx.BoxSizer(wx.VERTICAL)
-        sb_sizer.Add(wx.StaticText(self.sidebar_, label="Outils"), 0, wx.ALL, 5)
-        sb_sizer.Add(wx.Button(self.sidebar_, label="Pinceau"), 0, wx.EXPAND | wx.ALL, 5)
-        sb_sizer.AddStretchSpacer()
-        self.sidebar_.SetSizer(sb_sizer)
 
         # Add the 2 panels to the frame's sizer
         mainSizer = wx.BoxSizer(wx.HORIZONTAL)

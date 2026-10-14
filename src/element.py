@@ -152,8 +152,8 @@ class element:
     def isObvious(self)->bool:
         return self.status_.isSet(self.STATUS_OBVIOUS)
 
-    # At least can we modifiy this particular value ?
-    def isChangeable(self)->bool:
-        return self.status_.isSet(self.STATUS_SET) or self.isEmpty()
+    # At least can we modifiy or set this element ?
+    def isChangeable(self, allowEmpty:bool = True)->bool:
+        return not self.status_.isSet(self.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.value == self.STATUS_SET)
 
 # EOF

@@ -430,14 +430,14 @@ class pygameSolver(solver.solver):
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
-            self._draw_update()
+            self.draw_update()
         #else:
             #return (False, False, None, None)
 
     # Update the whole window
     #
     @override
-    def _draw_update(self):
+    def draw_update(self):
         if self.win_ is not None:
                 # Display filename ?
             if self.sFileName_ is not None and self.sFileName_.isValid():
@@ -458,7 +458,7 @@ class pygameSolver(solver.solver):
 
     @override
     def _draw_end(self):
-        self._draw_update()
+        self.draw_update()
         pygame.display.update()
 
     # Refresh the whole window
@@ -801,7 +801,7 @@ class pygameSolver(solver.solver):
             currentElement: element = self.sudoku_.elements_[index]
             value : int | None = currentElement.num
             if value is not None:
-                bk, txt = self._draw_elementColours(index, False)
+                bk, txt = self._draw_getElementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
