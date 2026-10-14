@@ -770,6 +770,7 @@ class sudoku(threading.Thread):
             position += 1
 
         # End of search loop
+        self.count_+=found
         return found
 
     # Is there an obvious value for the given position ?

@@ -9,6 +9,7 @@
 #
 import math
 import sys
+from enum import IntEnum
 from typing import override
 
 try :
@@ -38,6 +39,13 @@ from pointer import (
 from sharedTools import statusbits
 
 
+# Edition mode
+#
+class wxEditionMode(IntEnum):
+    MODE_NONE = 0
+    MODE_CREATION = 1
+    MODE_RESOLUTION = 2
+
 # wxMainFrame
 #   abstract class
 #
@@ -45,9 +53,16 @@ from sharedTools import statusbits
 #
 class wxMainFrame(wx.Frame):
 
+    # edition mode changed
+    def modeChanged(self, mode:wxEditionMode):
+        pass
+
     # Theme just changed
-    #
     def themeChanged(self):
+        pass
+
+    # count of elements changed
+    def countChanged(self):
         pass
 
     # Hypothesis / tag management
@@ -250,6 +265,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
                 self.edition_.creating = True
+                self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
                 self._edit_start()
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
@@ -260,6 +276,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             case menuConsts.ID_SOLVE_MANUAL:
                 self.edition_.manualSolving = True
+                self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
                 self._edit_start()
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._menu_findOviousValues()
@@ -530,8 +547,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if self.sudoku_.setOriginal():
                 self.draw_update()
 
-        super()._edit_start(initPos)
         self._notify_stop() # Don't forget to stop notification timer !
+        super()._edit_start(initPos)
 
         self.state_.set(self.ARRAY_EDITING)
         self._menu_setItemsStates()
@@ -779,6 +796,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.state_.assign(self.ARRAY_NEW)
         self._menu_setItemsStates()
 
+        self.parent_.countChanged() # new elements have values
         self.draw_update()
 
     # Load an array
@@ -798,6 +816,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
         self.state_.assign(self.ARRAY_NEW)
         self._menu_setItemsStates()
+        self.parent_.countChanged() # new elements have values
+
 
     # Save current array
     #
@@ -869,6 +889,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _menu_findOviousValues(self):
         if self.sudoku_.IsOk():
             if self.findObviousValues():
+                self.parent_.countChanged() # new elements have values
                 self.draw_update()
                 self._notify_start()
                 wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
@@ -952,18 +973,15 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 # wxSidebarPanel - Sidebar
 #
 class wxSidebarPanel(wxOwnPanel):
-    MODE_NONE:int = 0
-    MODE_CREATION:int = 1
-    MODE_RESOLUTION:int = 2
-
     # Constructor
     def __init__(self, parent: wxMainFrame):
         wxOwnPanel.__init__(self, parent)
-        self.mode_ = self.MODE_NONE
+        self.mode_:wxEditionMode = wxEditionMode.MODE_NONE
 
         mySizer = wx.BoxSizer(wx.VERTICAL)
         self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_MODE)
-        mySizer.Add(self.labelMode_, 0, wx.ALIGN_CENTER, 50)  # pyright: ignore[reportUnknownMemberType]
+        mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
+
         self.labelCount_ = wx.StaticText(self, label="Outils")
         mySizer.Add(self.labelCount_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
         mySizer.Add(wx.Button(self, label="Pinceau"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
@@ -974,18 +992,27 @@ class wxSidebarPanel(wxOwnPanel):
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
 
     # Set app; mode => set controls' state
-    def setMode(self, mode:int = MODE_NONE):
+    def setMode(self, mode:wxEditionMode):
         self.mode_ = mode
-        self.labelMode_.SetLabel(f"{GUIConsts.STR_MODE}" if self.mode_ == self.MODE_NONE else f"{GUIConsts.STR_MODE} : {GUIConsts.STR_MODE_CREATION if self.mode_ == self.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION}")
+        self.labelMode_.SetLabel(f"{GUIConsts.STR_MODE}" if self.mode_ == wxEditionMode.MODE_NONE
+            else f"{GUIConsts.STR_MODE} : {GUIConsts.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION}")
 
     # Set child canvas
     def setCanvas(self, canvas: wxSolverCanvas):
         self.canvas_ = canvas
+        font = wx.Font(GUIConsts.TXT_FONT_SIZE,
+                        wx.FONTFAMILY_DEFAULT,
+                        wx.FONTSTYLE_NORMAL,
+                        wx.FONTWEIGHT_BOLD,
+                        faceName = self.canvas_.theme_.textFontName)
+        self.labelMode_.SetFont(font)
+
+
+    def updateCounter(self):
+        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.count_} / {ARRAY_SIZE}")
 
     # Redraw the panel
     def OnPaint(self, event : wx.Event):
-        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.count_} / {ARRAY_SIZE}")
-
         dc = wx.PaintDC(self)
         pen = wx.Pen(self.canvas_.theme_[GUITheme.colourID.ID_TB_BORDER].other, 1, wx.PENSTYLE_SOLID)
         dc.SetPen(pen)
@@ -1027,9 +1054,19 @@ class wxSolverFrame(wxMainFrame):
         self.canvas_.initialize()
 
     # Theme just changed
-    #
+    @override
     def themeChanged(self):
         self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
+
+    # count of elements changed
+    @override
+    def countChanged(self):
+        self.sidebar_.updateCounter()
+
+    # edition mode changed
+    @override
+    def modeChanged(self, mode:wxEditionMode):
+        self.sidebar_.setMode(mode)
 
     # End drawings
     #
