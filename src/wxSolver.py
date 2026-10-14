@@ -85,7 +85,9 @@ class wxOwnPanel(wx.Panel):
     def __init__(self, parent: wxMainFrame):
         super().__init__(parent)
         self.parent_: wxMainFrame = parent
-    def setTheme(self):
+
+    # Theme just changed
+    def themeChanged(self):
         pass
 
 # wxSolverApp - Abstract class for application
@@ -295,10 +297,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           if self._draw_changeTheme(keys[0], menuId):
-               self._draw_freeMemoryDC()
-               self.draw(redrawBackground=True)
-               self.parent_.themeChanged()
+           self._draw_changeTheme(keys[0], menuId)
 
     # Keyboard events
     #
@@ -434,6 +433,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 bmpSize : wx.Size = self.memDC_.GetSize()
                 clientDC = wx.ClientDC(self)
                 clientDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
+
+    # Change colour's theme
+    #
+    @override
+    def _draw_changeTheme(self, name:str, id:int)->bool:
+        ret: bool = solver.solver._draw_changeTheme(self, name, id)
+        if ret:
+            self._draw_freeMemoryDC()
+            self.draw(redrawBackground=True)
+            self.parent_.themeChanged()
+        return ret
 
     # Draw background, frames and borders
     #
@@ -1000,6 +1010,13 @@ class wxSidebarPanel(wxOwnPanel):
     # Set child canvas
     def setCanvas(self, canvas: wxSolverCanvas):
         self.canvas_ = canvas
+
+    # Theme just changed
+    @override
+    def themeChanged(self):
+        self.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
+        self.labelMode_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
+        self.labelCount_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
         font = wx.Font(GUIConsts.TXT_FONT_SIZE,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
@@ -1032,8 +1049,6 @@ class wxSolverFrame(wxMainFrame):
         self.sidebar_ = wxSidebarPanel(self)
         self.sidebar_.setCanvas(self.canvas_)
         self.sidebar_.SetMinSize(wx.Size(220, -1))
-        self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
-
 
         # Add the 2 panels to the frame's sizer
         mainSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1056,7 +1071,7 @@ class wxSolverFrame(wxMainFrame):
     # Theme just changed
     @override
     def themeChanged(self):
-        self.sidebar_.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
+        self.sidebar_.themeChanged()
 
     # count of elements changed
     @override

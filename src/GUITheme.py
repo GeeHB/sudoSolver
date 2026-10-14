@@ -17,6 +17,7 @@ from GUIConsts import ELT_FONT_NAME, TXT_FONT_NAME
 class colourID(IntEnum):
     ID_TB_BK = 0
     ID_TB_BORDER = auto()
+    ID_TB_TXT = auto()
     ID_CANVAS_BK = auto()
     ID_FRAME_BORDER = auto()    # Frame borders and bkgrnd
     ID_FRAME_BK_EVEN = auto()
@@ -44,6 +45,7 @@ colourThemes = {
     "Kosmos": [
         (53, 57, 68),
         (83, 86, 93),
+        (216, 187, 204),
         (53, 57, 68),
         (53, 57, 68),
         (54, 80, 101),     # even
@@ -62,6 +64,7 @@ colourThemes = {
    DEF_THEME_NAME: [
         (235, 235, 236),
         (201, 201, 202),
+        (80, 88, 104),
         (250, 250, 250),
         (250, 250, 250),
         (239, 239, 240),
@@ -80,6 +83,7 @@ colourThemes = {
     "Zarina": [
         (230, 230, 255),
         (81, 154, 186),
+        (255,255,255),
         (230, 230, 255),
         (81, 154, 186),
         (230, 230, 255),

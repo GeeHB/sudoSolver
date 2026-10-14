@@ -186,7 +186,6 @@ class solver:
         self.tagWidth_:int = 0
 
         self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
-        self._draw_changeTheme(GUITheme.DEF_THEME_NAME, 0)
 
     @property
     def initialized(self)->bool:
@@ -227,6 +226,9 @@ class solver:
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
         self.canvasFontSize_ = GUIConsts.ELT_FONT_SIZE
+
+        self._draw_changeTheme(GUITheme.DEF_THEME_NAME, 0)
+
 
     # Start drawings / UI
     #
