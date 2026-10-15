@@ -43,13 +43,24 @@ class sudoku(threading.Thread):
         self.attempts_:int = 0
         self.start_:float = 0.0  # Resolution start-time
         self.elements_:list[element] = []
-        self.count_:int = 0
+        self.nonEmptyCount_:int = 0
         self.complexity_:int = arrayComplexity.Empty.value
         self.found_:bool = False
         random.seed()
 
     def IsOk(self)->bool:
         return (len(self.elements_) == ARRAY_SIZE)
+
+    #
+    # count of non empty elements
+    #
+
+    @property
+    def nonEmpty(self)->int:
+        return self.nonEmptyCount_
+    def finished(self):
+        #self.nonEmptyItems()
+        return (self.nonEmptyCount_ == ARRAY_SIZE)
 
     # Complexity (for new arrays created from scratch)
     @property
@@ -109,7 +120,7 @@ class sudoku(threading.Thread):
         else:
             for _ in range(ARRAY_SIZE):
                 self.elements_.append(element())    # create an empty array
-        self.count_ = 0
+        self.nonEmptyCount_ = 0
 
     # Is the array fully empty ?
     #
@@ -119,7 +130,7 @@ class sudoku(threading.Thread):
                 if not self.elements_[index].isEmpty():
                     return False
 
-        self.count_ = 0;
+        self.nonEmptyCount_ = 0;
         return True  # yes (empty or not initialized)
 
     # Has the sudoku been modified ?
@@ -148,12 +159,12 @@ class sudoku(threading.Thread):
     # Count of non-empty elements ?
     #
     def nonEmptyItems(self) -> int:
-        self.count_ = 0;
+        self.nonEmptyCount_ = 0;
         if self.IsOk():
             for index in range(ARRAY_SIZE):
                 if not self.elements_[index].isEmpty():
-                    self.count_+=1
-        return self.count_
+                    self.nonEmptyCount_+=1
+        return self.nonEmptyCount_
 
     # Clear (empty) an element
     #   returns the previous value
@@ -161,7 +172,7 @@ class sudoku(threading.Thread):
         if index>=0 and index < ARRAY_SIZE:
             pValue: int = self.elements_[index].empty(deep)
             if pValue > 0:
-                self.count_-=1
+                self.nonEmptyCount_-=1
             return pValue
 
         raise IndexError
@@ -169,7 +180,7 @@ class sudoku(threading.Thread):
     # Is the array full
     #
     def isFull(self)->bool:
-        return (self.count_ == ARRAY_SIZE)
+        return (self.nonEmptyCount_ == ARRAY_SIZE)
 
     # Return to the "original" state
     #
@@ -234,7 +245,7 @@ class sudoku(threading.Thread):
             self.elements_[position.line() * ROW_COUNT + position.row()].setValue(
                 value, element.STATUS_ORIGINAL
             )
-            self.count_+=1
+            self.nonEmptyCount_+=1
             return True
 
         return False  # Value not set
@@ -244,18 +255,18 @@ class sudoku(threading.Thread):
     def modifyAt(self, position: pointer, value: int, status:int | None = None):
         currentVal: int | None = self.elements_[position.index()].num
 
-        if value :
+        if value>0 :
             self.elements_[position.index()].num = value
             if status is not None:
                 self.elements_[position.index()].status_.assign(status)
 
             # A new val ?
             if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
-                self.count_+=1
+                self.nonEmptyCount_+=1
         else:
             self.elements_[position.index()].empty(True)
             if currentVal is not None and currentVal > 0:
-                self.count_-=1  # element's value has beeen removed
+                self.nonEmptyCount_-=1  # element's value has beeen removed
 
     #
     #  I O
@@ -765,7 +776,7 @@ class sudoku(threading.Thread):
             position += 1
 
         # End of search loop
-        self.count_+=found
+        self.nonEmptyCount_+=found
         return found
 
     # Is there an obvious value for the given position ?

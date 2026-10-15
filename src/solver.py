@@ -220,12 +220,12 @@ class solver:
     #
     def initialize(self):
         # Default dimensions
-        self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH
+        self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W
         self.height_ = LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
         self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
-        self.canvasFontSize_ = GUIConsts.ELT_FONT_SIZE
+        self.canvasFontSize_ = GUIConsts.CANVAS_FONT_SIZE
 
         self._draw_changeTheme(GUITheme.DEF_THEME_NAME, 0)
 
@@ -345,7 +345,7 @@ class solver:
         self.height_ = newHeight
 
         # Compute new square sizes
-        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
+        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W) / ROW_COUNT)
         squareH = math.floor((newHeight - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
 
         if squareW < GUIConsts.SQUARE_MIN or squareH < GUIConsts.SQUARE_MIN :
@@ -366,7 +366,7 @@ class solver:
             self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 
         # font size in pixels
-        self.canvasFontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        self.canvasFontSize_ = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
         # tag dims.
         self.tagWidth_ = int(GUIConsts.TAG_MIN_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)

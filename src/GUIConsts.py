@@ -11,17 +11,14 @@ TRANSP_COLOUR = (224, 224, 224)
 
 # Positions and dimensions in pixels
 #
-SQUARE_SIDE_BASE        = 60
-SQUARE_SIDE             = 60   # Initial external size of a square element
+SQUARE_SIDE_BASE:int    = 60
+SQUARE_SIDE:int         = 60   # Initial external size of a square element
+SQUARE_MIN:int          = 10   # Minimal square size
 
-STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
+DELTA_W:int             = 10   # Offsets
+DELTA_H:int             = 10
 
-SQUARE_MIN              = 10   # Minimal square size
-
-DELTA_W                 = 10   # Offsets
-DELTA_H                 = 10
-
-EXT_BORDER_THICK        = 3    # Thickness of external border
+EXT_BORDER_THICK:int    = 3    # Thickness of external border
 
 # Tags / Hypothesis
 TAG_MIN_SIZE:int        = 6     # Dims
@@ -31,24 +28,25 @@ TAG_PADDING:int         = 4
 
 # Elements'text font sizes (in pixels) and names
 #
-ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
-ELT_FONT_SIZE           = 35                                # default size
+#CANVAS_FONT_NAME:str    = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
+CANVAS_FONT_NAME:str    = 'Source Code Pro'
+CANVAS_FONT_SIZE:int    = 35                                # default size
 
-TXT_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
-TXT_FONT_SIZE          = 12
-TXT_FONT_POS_X         = 35
-TXT_FONT_POS_Y         = 5
+TXT_FONT_NAME:str       = 'Helvetica,Arial'                 # for the filename
+TXT_FONT_SIZE:int       = 12
+TXT_FONT_POS_X:int      = 35
+TXT_FONT_POS_Y:int      = 5
 
 # Timers
 #
-TIMER_ID_SELECTED:int = 100
-TIMER_RATE_SELECTED:int = 750 # Blinking rate in ms
+TIMER_ID_SELECTED:int     = 100
+TIMER_RATE_SELECTED:int   = 750 # Blinking rate in ms
 
-TIMER_ID_NOTIFYING:int = 101
-TIMER_RATE_NOTIFYING:int = 500 # Blinking rate in ms
+TIMER_ID_NOTIFYING:int    = 101
+TIMER_RATE_NOTIFYING:int  = 500 # Blinking rate in ms
 BLINK_COUNT_MODIFYING:int = 20 # Max. count of blinking for notifications
 
-PY_MSG_HIDE_RATE: int = 2000 # Hide the filename (for pygame only)
+PY_MSG_HIDE_RATE:int      = 750 # Hide the filename (for pygame only)
 
 #
 #  str

@@ -273,7 +273,7 @@ class pygameSolver(solver.solver):
         self.initialized = True
 
         # font for drawing elements
-        fontSize = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
+        fontSize = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
         self.sElement_ = textSurface(self.theme_.canvasFontName, fontSize)
         self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
 
@@ -284,12 +284,12 @@ class pygameSolver(solver.solver):
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
-        self.sFileName_ = textSurface(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE)
+        self.sFileName_ = textSurface(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
         self.sFileName_.moveTo(GUIConsts.TXT_FONT_POS_X, GUIConsts.TXT_FONT_POS_Y)
         self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.PY_MSG_HIDE_RATE)   # event for text hiding
 
         # Messages
-        self.sMessage_ = blinkingText(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE)
+        self.sMessage_ = blinkingText(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.PY_MSG_HIDE_RATE)
 
         self._draw_background()

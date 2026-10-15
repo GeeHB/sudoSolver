@@ -145,7 +145,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     KEY_REMOVE_VALUE_BIS:int = wx.WXK_BACK
 
     KEY_VALUE_DEC:int = wx.WXK_PAGEDOWN
+    KEY_VALUE_DEC_PAD:int = wx.WXK_NUMPAD_PAGEDOWN
     KEY_VALUE_INC:int = wx.WXK_PAGEUP
+    KEY_VALUE_INC_PAD:int = wx.WXK_NUMPAD_PAGEUP
 
     # Set value
     KEY_VALUE_1:int = 325 #ord('1')
@@ -171,8 +173,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
         self.directDraw_:bool = False
         self.clientSize_: wx.Size = wx.Size(0,0)
-        self.textOffsets_: wx.Size = wx.Size(0,0)  # for text in array
-        self.font_ = wx.Font(GUIConsts.ELT_FONT_SIZE,
+        self.textOffsets_: list[wx.Size] = []  # for text in array
+        self.font_ = wx.Font(self.theme_.canvasFontSize,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_NORMAL,
@@ -390,8 +392,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Numbers are centered !
         if self.memDC_ is not None and self.memDC_.IsOk() :
             self.memDC_.SetFont(self.font_)
-            dims : wx.Size = self.memDC_.GetTextExtent("O")
-            self.textOffsets_ = wx.Size(math.floor((self.extSquareWidth_ - dims.width) / 2), math.floor((self.extSquareWidth_ - dims.height) / 2))
+            dims : wx.Size
+            self.textOffsets_.clear()
+            for index in range(VALUE_MAX):
+                dims = self.memDC_.GetTextExtent(f"{index+1}")
+                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
 
         # Redraw the whole array
         self._draw_background()
@@ -481,7 +486,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int, selectionBox:bool = False):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
         # too small to be drawn ?
         if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return
@@ -492,13 +497,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # Erase background
         self.memDC_.SetBrush(wx.Brush(self.theme_[bkColourID].other))
-        self.memDC_.SetPen(wx.TRANSPARENT_PEN if selectionBox else wx.Pen(self.theme_[bkColourID].other))
+        self.memDC_.SetPen(wx.TRANSPARENT_PEN)
         self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
         if value is not None and value > 0:
             self.memDC_.SetTextForeground(self.theme_[txtColourID].other)
-            self.memDC_.DrawText(str(value), x + self.textOffsets_.x, y + self.textOffsets_.y)
+            self.memDC_.DrawText(str(value), x + self.textOffsets_[value-1].x, y + self.textOffsets_[value-1].y)
 
             # Hypothesis/Tag ?
             if hypColourID != element.hypColour.NO_COLOUR:
@@ -623,10 +628,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case self.KEY_MOVE_DOWN:
                 self.edition_.currentPos_.incLine()
 
-            case self.KEY_VALUE_DEC:
-            #case 333:
+            case self.KEY_VALUE_DEC | self.KEY_VALUE_DEC_PAD:
                 if self._edit_decValue() : self.parent_.countChanged()
-            case self.KEY_VALUE_INC:
+            case self.KEY_VALUE_INC | self.KEY_VALUE_INC_PAD:
                 if self._edit_incValue() : self.parent_.countChanged()
             case self.KEY_REMOVE_VALUE:
                 if self._edit_removeValue() : self.parent_.countChanged()
@@ -1025,7 +1029,7 @@ class wxSidebarPanel(wxOwnPanel):
         self.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
         self.labelMode_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
         self.labelCount_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
-        font = wx.Font(GUIConsts.TXT_FONT_SIZE,
+        font = wx.Font(self.canvas_.theme_.textFontSize,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_BOLD,
@@ -1034,7 +1038,7 @@ class wxSidebarPanel(wxOwnPanel):
 
 
     def updateCounter(self):
-        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.count_} / {ARRAY_SIZE}")
+        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
 
     # Redraw the panel
     def OnPaint(self, event : wx.Event):

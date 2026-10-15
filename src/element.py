@@ -14,14 +14,14 @@ from typing_extensions import override
 from sharedTools import statusbits
 
 
-# Array complexity - ie. count of filled elements
+# Tag/hypothesis colours
 #
 class hypColour(IntEnum):
     NO_COLOUR = 0
-    YELLOW = auto()
-    BLUE = auto()
-    GREEN = auto()
-    RED = auto()
+    HYP_1 = auto()
+    HYP_2 = auto()
+    HYP_3 = auto()
+    HYP_4 = auto()
 
 #
 # element - a single sudoku element
@@ -95,7 +95,7 @@ class element:
         return self.hyp_
     @hypothesis.setter
     def hypothesis(self, newVal : int):
-        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.RED:
+        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.HYP_4:
             self.hyp_ = newVal
 
     # Set/modify the value

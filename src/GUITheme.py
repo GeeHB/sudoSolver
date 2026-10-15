@@ -9,7 +9,7 @@
 from enum import IntEnum, auto
 from typing import Any
 
-from GUIConsts import ELT_FONT_NAME, TXT_FONT_NAME
+from GUIConsts import CANVAS_FONT_NAME, CANVAS_FONT_SIZE, TXT_FONT_NAME, TXT_FONT_SIZE
 
 
 # IDs of colours used by app.
@@ -123,8 +123,10 @@ class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
         self.Id_:int= 0 # Id or menu item ID
-        self.canvasFontName_:str = ELT_FONT_NAME
+        self.canvasFontName_:str = CANVAS_FONT_NAME
+        self.canvasFontSize_:int= CANVAS_FONT_SIZE
         self.textFontName_:str = TXT_FONT_NAME
+        self.textFontSize_:int = TXT_FONT_SIZE
         self.colours_: list[ownColour] = []
 
     # Properties
@@ -152,7 +154,10 @@ class ownTheme:
         return self.canvasFontName_
     @canvasFontName.setter
     def canvasFontName(self, name: str):
-        self.canvasFontName_ = name  if len(name)>0 else ELT_FONT_NAME
+        self.canvasFontName_ = name  if len(name)>0 else CANVAS_FONT_NAME
+    @property
+    def canvasFontSize(self)->int:
+        return self.canvasFontSize_
 
     # Default text font
     @property
@@ -161,6 +166,9 @@ class ownTheme:
     @textFontName.setter
     def textFontName(self, name: str):
         self.textFontName_ = name  if len(name)>0 else TXT_FONT_NAME
+    @property
+    def textFontSize(self)->int:
+        return self.textFontSize_
 
     # Clear the list
     def clear(self):
