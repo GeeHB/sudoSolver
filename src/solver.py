@@ -366,7 +366,7 @@ class solver:
             self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 
         # font size in pixels
-        self.canvasFontSize_ = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        self.theme_.canvasFontSize = int(GUIConsts.CANVAS_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
         # tag dims.
         self.tagWidth_ = int(GUIConsts.TAG_MIN_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
@@ -408,8 +408,8 @@ class solver:
             print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
             name = GUITheme.DEF_THEME_NAME
 
-        if len(GUITheme.colourThemes[name]) != GUITheme.colourID.ID_COLOUR_COUNT:
-            print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+        if len(GUITheme.colourThemes[name]["colours"]) != GUITheme.colourID.ID_COLOUR_COUNT:
+            print(f"Error - The colour-list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
             name = GUITheme.DEF_THEME_NAME
 
         if name == self.theme_.name:
@@ -417,10 +417,13 @@ class solver:
 
         # Transfer colours in internal list for conversion
         self.theme_.name = name
-        self.theme_.Id= id
-        self.theme_.clear()
-        for col in GUITheme.colourThemes[name] :
-            self.theme_.append(GUITheme.ownColour(col))
+        self.theme_.canvasFontName = GUITheme.colourThemes[name]["fonts"]["canvas"]  # pyright: ignore[reportCallIssue, reportArgumentType]
+        #print(self.theme_.canvasFontName)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+        self.theme_.clear() # clear the colours list
+        for col in GUITheme.colourThemes[name]["colours"] :
+            if isinstance(col, tuple) and len(col) == 3:
+                    self.theme_.append(GUITheme.ownColour(col)) # col is a tuple !!!
+
 
         self._draw_convertColours() # Convert colours
         return True

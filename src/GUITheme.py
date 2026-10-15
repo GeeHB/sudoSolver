@@ -42,64 +42,82 @@ DEF_THEME_NAME = "One Light"
 # Dict. of themes
 #
 colourThemes = {
-    "Kosmos": [
-        (53, 57, 68),
-        (83, 86, 93),
-        (216, 187, 204),
-        (53, 57, 68),
-        (53, 57, 68),
-        (54, 80, 101),     # even
-        (36, 40, 53),      # odd
-        (216, 187, 204),
-        (216, 187, 204),    # Def. text
-        (234, 150, 69),
-        (135,220,127),
-        (83, 86, 83),    # Selected text and bkgrnd
-        (216, 187, 204),
-        (255,255,0),
-        (0,0,255),
-        (0,255,0),
-        (255,0,0),
-        ],
-   DEF_THEME_NAME: [
-        (235, 235, 236),
-        (201, 201, 202),
-        (80, 88, 104),
-        (250, 250, 250),
-        (250, 250, 250),
-        (239, 239, 240),
-        (202, 202, 202),
-        (220, 220, 245),
-        (80, 88, 104),
-        (192, 132, 83),
-        (104,160,91),
-        (212, 219, 244),
-        (250, 250, 250),
-        (255,255,0),
-        (0,0,255),
-        (0,255,0),
-        (255,0,0),
-        ],
-    "Zarina": [
-        (230, 230, 255),
-        (81, 154, 186),
-        (255,255,255),
-        (230, 230, 255),
-        (81, 154, 186),
-        (230, 230, 255),
-        (230, 230, 255),
-        (220, 220, 245),
-        (64, 64, 64),
-        (248, 128, 112),
-        (81, 154, 186),
-        (50, 50, 255),
-        (255, 255, 255),
-        (255,255,0),
-        (0,0,255),
-        (0,255,0),
-        (255,0,0),
-        ],
+    "Kosmos": {
+        "fonts" : {
+            "canvas" : "Helvetica",
+            "message" : "Helvetica"
+            },
+        "colours" : [
+            (53, 57, 68),
+            (83, 86, 93),
+            (216, 187, 204),
+            (53, 57, 68),
+            (53, 57, 68),
+            (54, 80, 101),     # even
+            (36, 40, 53),      # odd
+            (216, 187, 204),
+            (216, 187, 204),    # Def. text
+            (234, 150, 69),
+            (135,220,127),
+            (83, 86, 83),       # Selected text and bkgrnd
+            (216, 187, 204),
+            (255,255,0),
+            (0,0,255),
+            (0,255,0),
+            (255,0,0),
+            ],
+    },
+    "One Light": {
+        "fonts" : {
+            "canvas" : "Source Code Pro",
+                "message" : "Helvetica"
+            },
+        "colours" : [
+            (235, 235, 236),
+            (201, 201, 202),
+            (80, 88, 104),
+            (250, 250, 250),
+            (250, 250, 250),
+            (239, 239, 240),
+            (202, 202, 202),
+            (220, 220, 245),
+            (80, 88, 104),
+            (192, 132, 83),
+            (104,160,91),
+            (212, 219, 244),
+            (250, 250, 250),
+            (255,255,0),
+            (0,0,255),
+            (0,255,0),
+            (255,0,0),
+            ],
+    },
+    "Zarina": {
+        "fonts" : {
+            "canvas" : "DejaVu",
+            "message" : "Helvetica"
+            },
+        "colours" : [
+            (230, 230, 255),
+            (81, 154, 186),
+            (255,255,255),
+            (230, 230, 255),
+            (81, 154, 186),
+            (230, 230, 255),
+            (230, 230, 255),
+            (220, 220, 245),
+            (64, 64, 64),
+            (248, 128, 112),
+            (81, 154, 186),
+            (50, 50, 255),
+            (255, 255, 255),
+            (255,255,0),
+            (0,0,255),
+            (0,255,0),
+            (255,0,0),
+            ],
     }
+}
 
 # ownColour - General and portable colour definition
 #
@@ -122,7 +140,6 @@ class ownColour:
 class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
-        self.Id_:int= 0 # Id or menu item ID
         self.canvasFontName_:str = CANVAS_FONT_NAME
         self.canvasFontSize_:int= CANVAS_FONT_SIZE
         self.textFontName_:str = TXT_FONT_NAME
@@ -140,14 +157,6 @@ class ownTheme:
     def name(self, name: str):
         self.name_ = name
 
-    # Id
-    @property
-    def Id(self)->int:
-        return self.Id_
-    @Id.setter
-    def Id(self, Id: int):
-        self.Id_ = Id
-
     # Canvas font
     @property
     def canvasFontName(self)->str:
@@ -158,6 +167,9 @@ class ownTheme:
     @property
     def canvasFontSize(self)->int:
         return self.canvasFontSize_
+    @canvasFontSize.setter
+    def canvasFontSize(self, value: int):
+        self.canvasFontSize_ = value
 
     # Default text font
     @property
