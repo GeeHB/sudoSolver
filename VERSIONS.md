@@ -23,7 +23,7 @@
 * add getters and setters : pygameOutputs.py
 * 'Esc' from edit mode -> return to array's previous state
 
-#### Version 4.0.3
+#### Version 4.0.4
 * oct. 2026
 * Added :
   * sudoku <- gridMaker + sudoku

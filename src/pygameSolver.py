@@ -20,6 +20,7 @@ except ModuleNotFoundError:
 import pygame.event
 
 import GUIConsts
+import GUITheme
 import solver
 from element import element
 from options import (
@@ -255,7 +256,6 @@ class pygameSolver(solver.solver):
         self.sElement_ : textSurface | None = None      # single value
         self.sFileName_ : textSurface | None = None
         self.sMessage_ : blinkingText | None = None
-        self.params_.center = True
 
     #
     # Methods from solver
@@ -273,8 +273,8 @@ class pygameSolver(solver.solver):
         self.initialized = True
 
         # font for drawing elements
-        fontSize = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
-        self.sElement_ = textSurface(GUIConsts.ELT_FONT_NAME, fontSize)
+        fontSize = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
+        self.sElement_ = textSurface(self.theme_.canvasFontName, fontSize)
         self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
 
         # Main window creation
@@ -284,13 +284,13 @@ class pygameSolver(solver.solver):
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
-        self.sFileName_ = textSurface(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
-        self.sFileName_.moveTo(GUIConsts.FILE_FONT_POS_X, GUIConsts.FILE_FONT_POS_Y)
-        self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.MSG_HIDE_RATE)   # event for text hiding
+        self.sFileName_ = textSurface(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
+        self.sFileName_.moveTo(GUIConsts.TXT_FONT_POS_X, GUIConsts.TXT_FONT_POS_Y)
+        self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.PY_MSG_HIDE_RATE)   # event for text hiding
 
         # Messages
-        self.sMessage_ = blinkingText(GUIConsts.FILE_FONT_NAME, GUIConsts.FILE_FONT_SIZE)
-        self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.BLINK_RATE)
+        self.sMessage_ = blinkingText(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
+        self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.PY_MSG_HIDE_RATE)
 
         self._draw_background()
 
@@ -395,7 +395,7 @@ class pygameSolver(solver.solver):
     @override
     def _draw_background(self):
         if self.win_ is not None:
-            self.win_.fill(self.colours_[self.ColourID.ID_BK].other)
+            self.win_.fill(self.theme_[GUITheme.colourID.ID_CANVAS_BK].other)
             if 0 != self.extSquareWidth_ :
                 # thin borders ...
                 #
@@ -403,10 +403,10 @@ class pygameSolver(solver.solver):
                     for row in range(ROW_COUNT):
                         x = row * self.extSquareWidth_ + self.offsets_[0]
                         y = line * self.extSquareWidth_ + self.offsets_[1]
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x, y),
                             (x, y + self.extSquareWidth_))
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x, y + self.extSquareWidth_),
                             (x + self.extSquareWidth_, y + self.extSquareWidth_))
 
@@ -417,27 +417,27 @@ class pygameSolver(solver.solver):
                     for row in range(3):
                         x = row * lSquare + self.offsets_[0]
                         y = line * lSquare + self.offsets_[1]
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x, y),
                             (x, y + lSquare), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x, y + lSquare),
                             (x + lSquare, y + lSquare), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x + lSquare, y + lSquare),
                             (x + lSquare, y), GUIConsts.EXT_BORDER_THICK)
-                        pygame.draw.line(self.win_, self.colours_[self.ColourID.ID_BORDER].other,
+                        pygame.draw.line(self.win_, self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other,
                             (x + lSquare, y),
                             (x, y), GUIConsts.EXT_BORDER_THICK)
 
-            self._draw_update()
+            self.draw_update()
         #else:
             #return (False, False, None, None)
 
     # Update the whole window
     #
     @override
-    def _draw_update(self):
+    def draw_update(self):
         if self.win_ is not None:
                 # Display filename ?
             if self.sFileName_ is not None and self.sFileName_.isValid():
@@ -458,7 +458,7 @@ class pygameSolver(solver.solver):
 
     @override
     def _draw_end(self):
-        self._draw_update()
+        self.draw_update()
         pygame.display.update()
 
     # Refresh the whole window
@@ -489,11 +489,11 @@ class pygameSolver(solver.solver):
         y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
         # Erase background
-        pygame.draw.rect(self.win_, self.colours_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
+        pygame.draw.rect(self.win_, self.theme_[bkColourID].other, (x, y, self.intSquareWidth_, self.intSquareWidth_))
 
         # The value (if valid)
         if value is not None and self.sElement_ is not None:
-            self.sElement_.setText(str(value), self.colours_[txtColourID].other)
+            self.sElement_.setText(str(value), self.theme_[txtColourID].other)
 
             # Center the text
             mySurface = self.sElement_.surface()
@@ -511,8 +511,8 @@ class pygameSolver(solver.solver):
 
             # Draw on the specific surface
             self.sMessage_.setText(message,
-                self.colours_[self.ColourID.ID_TXT].other,
-                self.colours_[self.ColourID.ID_BK].other)
+                self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
+                self.theme_[GUITheme.colourID.ID_CANVAS_BK].other)
 
             # start blinking
             self.sMessage_.setVisible()
@@ -539,8 +539,8 @@ class pygameSolver(solver.solver):
 
         if self.sFileName_ is not None :
             self.sFileName_.setText(fileName,
-                self.colours_[self.ColourID.ID_TXT].other,
-                self.colours_[self.ColourID.ID_BK_FILENAME].other)
+                self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
+                self.theme_[GUITheme.colourID.ID_BK_FILENAME].other)
 
             # erase this name after a while ...
             self.sFileName_.startTimer()
@@ -557,8 +557,8 @@ class pygameSolver(solver.solver):
 
         # Update elements'font
         if self.sElement_ is not None:
-            self.sElement_.setFont(GUIConsts.ELT_FONT_NAME, self.fontSize_)
-            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.fontSize_))/2), 0)
+            self.sElement_.setFont(self.theme_.canvasFontName, self.canvasFontSize_)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.canvasFontSize_))/2), 0)
 
     # Wait for an event
     #
@@ -797,16 +797,16 @@ class pygameSolver(solver.solver):
 
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
-            currentElement: element = self.sudoku_.elements_[self.edition_.currentPos_.index()]
+            index:int = self.edition_.currentPos_.index()
+            currentElement: element = self.sudoku_[index]
             value : int | None = currentElement.num
             if value is not None:
+                bk, txt = self._draw_getElementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
                     self.edition_.currentPos_.line(),
-                    value,
-                    self.ColourID.ID_BK,
-                    self.ColourID.ID_HILITE,
+                    value,bk, txt,
                     currentElement.hypothesis,
                     )
                 self._draw_end()
@@ -829,11 +829,11 @@ class pygameSolver(solver.solver):
     #
     @override
     def _draw_convertColours(self):
-        for id in range(len(self.colours_)):
-            self.colours_[id].other = pygame.Color(
-                self.colours_[id].r,
-                self.colours_[id].g,
-                self.colours_[id].b,
-                self.colours_[id].a)
+        for id in range(len(self.theme_)):
+            self.theme_[id].other = pygame.Color(
+                self.theme_[id].r,
+                self.theme_[id].g,
+                self.theme_[id].b,
+                self.theme_[id].a)
 
 # EOF

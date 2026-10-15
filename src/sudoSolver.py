@@ -45,7 +45,7 @@ if "__main__" == __name__:
 
     print(params.version())
 
-    mySolverApp : solver.solverApp = solver.solverApp(params)
+    mySolverApp: solver.solverApp = solver.solverApp(params)
     try:
         if params.wxGUI:
             mySolverApp = wxSolverApp(params)

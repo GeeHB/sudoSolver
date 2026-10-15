@@ -11,30 +11,17 @@ import copy
 import math
 import os
 import time
-from enum import IntEnum, auto
-from typing import Any
 
 import GUIConsts
+import GUITheme
 from element import element
-from GUIConsts import (
-    COLOUR_BK,
-    COLOUR_BK_FILENAME,
-    COLOUR_BLUE,
-    COLOUR_BORDER,
-    GREEN_COLOUR,
-    COLOUR_HILITE,
-    COLOUR_RED,
-    COLOUR_SEL_BK,
-    COLOUR_SEL_TXT,
-    COLOUR_TXT,
-    COLOUR_YELLOW,
-)
 from options import (
     options,
     stats,
 )
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
+    ARRAY_SIZE,
     LINE_COUNT,
     ROW_COUNT,
     pointer,
@@ -54,62 +41,68 @@ class prevValue:
     def __repr__(self)->str:
         return f"(Id:{self.index_} - val:{self.value_})"
 
-# ownColour - General and portable colour definition
-#
-class ownColour:
-    r : int
-    g : int
-    b : int
-    a : int
-
-    def __init__(self, rgb : tuple[int,int,int] | None, alpha : int | None = None):
-        if rgb is not None:
-            self.r = rgb[0]
-            self.g = rgb[1]
-            self.b = rgb[2]
-        self.a = alpha if alpha is not None else 255
-        self.other : Any = None
-
 # editSel - Edition and selection inf.
 #
 class editStatus:
     # Edition status
     #
     EDIT_NO_EDITION:int = statusbits.STATUS_NONE
-    EDIT_CONTINUE:int = 2
-    EDIT_MODIFIED:int = 4  # The sudoku has been modified (at least once)
-    EDIT_STOP:int = 8  # Stop edition
-    EDIT_ESCAPE:int = 16  # Escape edition
+    EDIT_MODE_CREATION:int = 1
+    EDIT_MODE_RESOLUTION:int = 2
+    EDIT_CONTINUE:int = 4
+    EDIT_MODIFIED:int = 8  # The sudoku has been modified (at least once)
+    EDIT_STOP:int = 16  # Stop edition
+    EDIT_ESCAPE:int = 32  # Escape edition
     EDIT_ESCAPED:int = EDIT_STOP | EDIT_ESCAPE
-    EDIT_NO_REDRAW:int = 32  # don't redraw at previous pos value
+    EDIT_NO_REDRAW:int = 64  # don't redraw at previous pos value
 
     def __init__(self):
-        self.status_ : statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
-        self.currentPos_ : pointer = pointer(0)
-        self.prevPos_ : pointer | None = None
-        self.blink_ : bool = False
+        self.status_: statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
+        self.currentPos_: pointer = pointer(0)
+        self.prevPos_: pointer | None = None
+        self.selected_: bool = False
 
-    def clear(self, status : int = EDIT_NO_EDITION, editable:bool = False):
+    def clear(self, status : int = EDIT_NO_EDITION):
         self.status_.set(status)
         self.currentPos_.clear(False)
         self.prevPos_ = None
-        self.blink_ = False
-        self.editable = editable
+        self.selected_ = False
 
     def move(self):
         self.prevPos_ = copy.deepcopy(self.currentPos_)
         self.status_.remove(self.EDIT_NO_REDRAW)
 
-    # Blinking effect
+    # Edition modes
+    #
+
+    # in creation mode ?
     @property
-    def blink(self)->bool:
-        return self.blink_
-    @blink.setter
-    def blink(self, set : bool = True):
-        self.blink_ = set
-    def changeBlink(self)->bool:
-        self.blink_ = not self.blink_
-        return self.blink_
+    def creating(self)->bool:
+        return self.status_.isSet(self.EDIT_MODE_CREATION)
+    @creating.setter
+    def creating(self, set : bool = True):
+        if set: self.manualSolving = False
+        self.status_.set(self.EDIT_MODE_CREATION, set)
+
+    # or in manual solving mode ?
+    @property
+    def manualSolving(self)->bool:
+        return self.status_.isSet(self.EDIT_MODE_RESOLUTION)
+    @manualSolving.setter
+    def manualSolving(self, set: bool = True):
+        if set : self.creating = False
+        self.status_.set(self.EDIT_MODE_RESOLUTION, set)
+
+    # Selection status
+    @property
+    def selected(self)->bool:
+        return self.selected_
+    @selected.setter
+    def selected(self, set: bool = True):
+        self.selected_ = set
+    def changeSelectedStatus(self)->bool:
+        self.selected_ = not self.selected_
+        return self.selected_
 
     # Value modified ?
     @property
@@ -171,65 +164,28 @@ class solver:
 
     EDIT_CANCEL:int = 0
 
-
-    # Colours' ID
-    #
-    class ColourID(IntEnum):
-        ID_BORDER = 0
-        ID_BK = auto()
-        ID_BK_FILENAME = auto()
-        ID_TXT = auto()
-        ID_HILITE = auto()
-        ID_HILITE_TXT = ID_TXT
-        ID_OBVIOUS = ID_BORDER
-        ID_SEL_BK = auto()
-        ID_SEL_TXT = auto()
-
     # Constructor
     #
     def __init__(self, params : options):
         self.initDone_ : bool = False
         self.params_ : options = params
+        self.params_.center = True
+
         self.sudoku_ : sudoku = sudoku()    # First, the array is empty
         self.stats_ : stats = stats()
         self.edition_ : editStatus = editStatus()
+        self.prevValues_: list[prevValue] = []   # List of prev. values during edition
 
         # Dimensions
-        #
-        self.offsets_ : tuple[int,int] = (0,0)
-        self.width_ :int = 0        # Window's dimensions
-        self.height_ : int = 0
-        self.intSquareWidth_ :int = 0        # Internal dims of an element
-        self.extSquareWidth_ :int = 0        # Ext. dims
-        self.fontsize_ : int = 0
+        self.offsets_: tuple[int,int] = (0,0)
+        self.width_:int = 0        # Window's dimensions
+        self.height_: int = 0
+        self.intSquareWidth_:int = 0        # Internal dims of an element
+        self.extSquareWidth_:int = 0        # Ext. dims
+        self.canvasFontSize_: int = 0
+        self.tagWidth_:int = 0
 
-        self.prevValues_:list[prevValue] = []   # List of prev. values during edition
-
-        # Default colours
-        #
-        #   A list of  colours
-        #
-        self.colours_ : list[ownColour] = []
-
-        # for array and window
-        self.colours_.append(ownColour(COLOUR_BORDER))
-        self.colours_.append(ownColour(COLOUR_BK))
-        self.colours_.append(ownColour(COLOUR_BK_FILENAME))
-        self.colours_.append(ownColour(COLOUR_TXT))
-        self.colours_.append(ownColour(COLOUR_HILITE))
-        #self.colours_.append(ownColour(COLOUR_HILITE))
-        self.colours_.append(ownColour(COLOUR_SEL_BK))
-        self.colours_.append(ownColour(COLOUR_SEL_TXT))
-
-        # for hyptohesis
-        self.hypColoursStart_:int =len(self.colours_)
-        self.colours_.append(ownColour(COLOUR_YELLOW))
-        self.colours_.append(ownColour(COLOUR_BLUE))
-        self.colours_.append(ownColour(GREEN_COLOUR))
-        self.colours_.append(ownColour(COLOUR_RED))
-
-
-        # self.params_.center = True
+        self.theme_: GUITheme.ownTheme = GUITheme.ownTheme()
 
     @property
     def initialized(self)->bool:
@@ -264,18 +220,24 @@ class solver:
     #
     def initialize(self):
         # Default dimensions
-        self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W + GUIConsts.STATS_FRAME_WIDTH
+        self.width_ = ROW_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_W
         self.height_ = LINE_COUNT * GUIConsts.SQUARE_SIDE + 2 * GUIConsts.DELTA_H
         self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
-        self.fontsize_ = GUIConsts.ELT_FONT_SIZE
+        self.canvasFontSize_ = GUIConsts.CANVAS_FONT_SIZE
 
-        self._draw_convertColours() # Convert colours
+        self._draw_changeTheme(GUITheme.DEF_THEME_NAME, 0)
+
 
     # Start drawings / UI
     #
     def startUI(self):
+        pass
+
+    # End drawings
+    #
+    def end(self):
         pass
 
     # Load a sudoku stored in a file
@@ -320,16 +282,16 @@ class solver:
             if redrawBackground:
                 self._draw_background()
 
-            position : pointer = pointer(game = False)
+            position: pointer = pointer(game = False)
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
                     currentElement = elements[position.index()]
+                    bk, txt = self._draw_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num,
-                        self.ColourID.ID_BK,
-                        self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+                        bk, txt,
                         currentElement.hypothesis,
                     )
 
@@ -338,29 +300,31 @@ class solver:
 
             self._draw_end()
 
-    def _draw_startUp(self):
-        pass
-
     # Update the whole window
     #
-    def _draw_update(self):
+    def draw_update(self):
         self.draw(redrawBackground=True)
+
+    def _draw_startUp(self):
+        pass
 
     def _draw_end(self):
         pass
 
     # Draw selected element (on edit mode)
     #
-    def _draw_elementSelected(self, hilite : bool = True):
-        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
+    def _draw_selectedElement(self, selected : bool = True):
+        index:int = self.edition_.currentPos_.index()
+        currentElement : element =self.sudoku_[index]
         value : int | None = currentElement.num
         self._draw_startUp()
+
+        bk, txt = self._draw_getElementColours(index, selected)
         self._draw_singleElement(
             self.edition_.currentPos_.row(),
             self.edition_.currentPos_.line(),
             value,
-            self.ColourID.ID_SEL_BK if hilite else self.ColourID.ID_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            bk, txt,
             currentElement.hypothesis
         )
 
@@ -381,7 +345,7 @@ class solver:
         self.height_ = newHeight
 
         # Compute new square sizes
-        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.STATS_FRAME_WIDTH) / ROW_COUNT)
+        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W) / ROW_COUNT)
         squareH = math.floor((newHeight - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
 
         if squareW < GUIConsts.SQUARE_MIN or squareH < GUIConsts.SQUARE_MIN :
@@ -402,27 +366,85 @@ class solver:
             self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 
         # font size in pixels
-        self.fontSize_ = int(GUIConsts.ELT_FONT_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        self.canvasFontSize_ = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
+        # tag dims.
+        self.tagWidth_ = int(GUIConsts.TAG_MIN_SIZE * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
+        if self.tagWidth_ % 2 != 0:
+            self.tagWidth_+=1
+        self.tagWidth_ = min(self.tagWidth_, GUIConsts.TAG_MAX_SIZE)
 
-    # Mouse position : screen -> array coordinates
+    # Get elements text and bk colours for edition or creation
     #
-    def _mouse_translatePosition(self, pos : tuple[int,int])->tuple[int, int]:
+    #  @pos : Element's position
+    #  @sekected : Element is selected ?
+    #
+    #  @return : Tuple(bk Colour, txt Colour)
+    def _draw_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+        position:pointer = pointer(pos)
+        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+
+        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
+        if self.edition_.creating:
+            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
+
+        if self.sudoku_[pos].isObvious():
+            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
+        else:
+            if self.sudoku_[pos].isOriginal():
+                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
+
+        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
+
+    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
+    #
+    def _draw_convertColours(self):
+        pass
+
+    # Change colour's theme
+    #
+    def _draw_changeTheme(self, name:str, id:int)->bool:
+        if name not in list(GUITheme.colourThemes.keys()):
+            print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
+
+        if len(GUITheme.colourThemes[name]) != GUITheme.colourID.ID_COLOUR_COUNT:
+            print(f"Error - The list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
+
+        if name == self.theme_.name:
+            return False    # Theme has not changed
+
+        # Transfer colours in internal list for conversion
+        self.theme_.name = name
+        self.theme_.Id= id
+        self.theme_.clear()
+        for col in GUITheme.colourThemes[name] :
+            self.theme_.append(GUITheme.ownColour(col))
+
+        self._draw_convertColours() # Convert colours
+        return True
+
+    # Mouse position : client -> array coordinates
+    #
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int]:
+        ret:list[int] = [-1,-1]
+        if len(self.sudoku_) == ARRAY_SIZE:
+            for index in range(2):
+                if pos[index] > self.offsets_[index]:
+                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
+                else:
+                    return (-1, -1)
+
+        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else -1, ret[1])
+        """
         if pos[1] > self.offsets_[1] :
             x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
             y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
             return (x,y)
         return (-1,-1)
+        """
 
-    # End drawings
-    #
-    def end(self):
-        pass
-
-    # Convert colour objects from ownColour to pygameColor
-    #
-    def _draw_convertColours(self):
-        pass
 
     #
     #  Other "shared" methods
@@ -438,7 +460,7 @@ class solver:
         start : float = time.time()
         values = 1
         while 0 < values:
-            values = self.sudoku_.findObviousValues()
+            values = self.sudoku_.obvious_findValues()
             found += values
 
         if found>0:
@@ -504,7 +526,7 @@ class solver:
 
     # End of edition mode
     #
-    def _edit_stop(self):
+    def _edit_stop(self, endApp:bool = False):
         pass
 
     # Update array during edition
@@ -513,25 +535,27 @@ class solver:
         self._draw_startUp()
 
         if prevPos is not None :
-            prevElement : element = self.sudoku_.elements_[prevPos.index()]
+            prevElement : element = self.sudoku_[prevPos.index()]
+            bk, txt = self._draw_getElementColours(prevPos.index_, False)
+
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
                 prevPos.row(),
                 prevPos.line(),
                 self.sudoku_.elements_[prevPos.index()].num,
-                self.ColourID.ID_BK,
-                self.ColourID.ID_HILITE if prevElement.isOriginal() else self.ColourID.ID_OBVIOUS if prevElement.isObvious() else self.ColourID.ID_TXT,
+                bk, txt,
                 prevElement.hypothesis
             )
 
-        # Hilight the new value
-        currentElement : element =self.sudoku_.elements_[self.edition_.currentPos_.index()]
+        # Select the new value
+        index: int = self.edition_.currentPos_.index()
+        currentElement : element = self.sudoku_[index]
+        bk, txt = self._draw_getElementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
-            self.sudoku_.elements_[currentPos.index()].num,
-            self.ColourID.ID_SEL_BK,
-            self.ColourID.ID_HILITE if currentElement.isOriginal() else self.ColourID.ID_OBVIOUS if currentElement.isObvious() else self.ColourID.ID_TXT,
+            self.sudoku_[currentPos.index()].num,
+            bk, txt,
             currentElement.hypothesis
         )
 
@@ -539,45 +563,69 @@ class solver:
 
     # (try to) set a value
     #
-    def _edit_setValue(self, val: int):
-        if self.sudoku_.checkValue(self.edition_.currentPos_, val):
-            self._edit_setValueEx(val)
+    #  @return : Index of modified item or -1 if nothing has been done
+    #
+    def _edit_setValue(self, val: int)->int:
+        index:int = self.edition_.currentPos_.index()
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return -1
 
-    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True):
+        if self.sudoku_.checkValue(self.edition_.currentPos_, val):
+            return self._edit_setValueEx(val, id= index)
+
+        return -1
+
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
-            self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
+            self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
         #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
-        self.sudoku_.modifyAt(pointer(index,False), val, element.STATUS_ORIGINAL | element.STATUS_SET)
+        self.sudoku_.modifyAt(pointer(index, False), value=val,
+            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
+        return index
 
     # Decrease value
     #
-    def _edit_decValue(self):
-        val : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
+    def _edit_decValue(self)->bool:
+        index:int = self.edition_.currentPos_.index()
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
+
+        val : int | None = self.sudoku_[index].num
         if val is None:
             val = 0
 
         newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit_setValueEx(newVal)
+            return (-1 != self._edit_setValueEx(newVal, index))
+        return False
 
     # Inc value
     #
-    def _edit_incValue(self):
-        val : int | None = self.sudoku_.elements_[self.edition_.currentPos_.index()].num
+    def _edit_incValue(self)->bool:
+        index:int = self.edition_.currentPos_.index()
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
+        val : int | None = self.sudoku_[index].num
         if val is None:
             val = 0
 
         newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit_setValueEx(newVal)
+            return (self._edit_setValueEx(newVal, index) != -1)
+
+        return False
 
     # Remove current value
     #
-    def _edit_removeValue(self):
-        #self._edit_setValueEx(0)
+    def _edit_removeValue(self)->bool:
+        index:int = self.edition_.currentPos_.index()
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
+
         self.sudoku_.clearAt(self.edition_.currentPos_.index(), True)
+        return True
 
     # Undo
     #
@@ -585,7 +633,10 @@ class solver:
     def _edit_undo(self)->int:
         if len(self.prevValues_) > 0:
             prev:prevValue = self.prevValues_.pop()
-            self._edit_setValueEx(prev.value_, prev.index_, keep=False)
+            if prev.value_ > 0 :
+                self._edit_setValueEx(prev.value_, prev.index_, keep=False)
+            else:
+                self.sudoku_.clearAt(prev.index_, True)
             return prev.index_
         return -1
 
@@ -597,13 +648,25 @@ class solver:
 
         for val in reversed(self.prevValues_):
             if val.value_ > 0:
-                self.sudoku_.elements_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
+                self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
             else:
-                self.sudoku_.elements_[val.index_].empty(True)
+                self.sudoku_[val.index_].empty(True)
 
         self.prevValues_.clear()
         return True
 
+    #
+    #  Element(s)' notifications
+    #
+
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
+        pass
+
+    def _notify_drawElements(self):
+        pass
+
+    def _notify_stop(self, endApp:bool = False):
+        self.sudoku_.notify_end() # remove elements statusbit
 
     #
     # Resolution
@@ -614,7 +677,7 @@ class solver:
     # returns True if a solution has been founded
     def _resolve_SingleThreaded(self)->bool:
         try:
-            self.sudoku_.resolveSingleThreaded()
+            self.sudoku_.resolve_singleThreaded()
         except reachedEndOfList:
             # Found a solution !!!
             return True
@@ -626,7 +689,7 @@ class solver:
     #
     # returns True if a solution has been founded
     def _resolve_AndDisplay(self)->bool:
-        for _ in self.sudoku_.resolveGenerator() :
+        for _ in self.sudoku_.resolve_singleThreadGenerator() :
             self.draw()
 
         return self.sudoku_.found
@@ -635,9 +698,10 @@ class solver:
     #
     # returns True if a solution has been founded
     def _resolve_MultiThreaded(self)->bool:
-        self.sudoku_.resolveMultiThreaded() # start resolution thread
+        self.sudoku_.resolve_multiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
+
 # EOF

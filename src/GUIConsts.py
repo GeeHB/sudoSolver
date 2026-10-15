@@ -7,63 +7,66 @@
 #   Description :   Shared consts for graphocs and drawings
 #
 
-#  App colours in RGB
-#
-
-COLOUR_BORDER = (81, 154, 186)
-COLOUR_BK = (230, 230, 255)
-COLOUR_BK_FILENAME = (220, 220, 245)
-COLOUR_TXT = (64, 64, 64)
-COLOUR_HILITE = (248, 128, 112)
-COLOUR_OBVIOUS = COLOUR_BORDER
-COLOUR_SEL_BK = (50, 50, 255)
-COLOUR_SEL_TXT = (255, 255, 255)
-
-COLOUR_YELLOW = (255,255,0)
-COLOUR_BLUE = (0,0,255)
-COLOUR_GREEN=(0,255,0)
-COLOUR_RED=(255,0,0)
+TRANSP_COLOUR = (224, 224, 224)
 
 # Positions and dimensions in pixels
 #
-SQUARE_SIDE_BASE        = 60
-SQUARE_SIDE             = 60   # Initial external size of a square element
+SQUARE_SIDE_BASE:int    = 60
+SQUARE_SIDE:int         = 60   # Initial external size of a square element
+SQUARE_MIN:int          = 10   # Minimal square size
 
-STATS_FRAME_WIDTH       = 0    # Width in pixels of stats'frame
+DELTA_W:int             = 10   # Offsets
+DELTA_H:int             = 10
 
-SQUARE_MIN              = 10   # Minimal square size
+EXT_BORDER_THICK:int    = 3    # Thickness of external border
 
-DELTA_W                 = 10   # Offsets
-DELTA_H                 = 10
+# Tags / Hypothesis
+TAG_MIN_SIZE:int        = 6     # Dims
+TAG_MAX_SIZE:int        = 20
 
-EXT_BORDER_THICK        = 3    # Thickness of external border
-
-TAG_MIN_SIZE:int        = 6
-
+TAG_PADDING:int         = 4
 
 # Elements'text font sizes (in pixels) and names
 #
-ELT_FONT_NAME           = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
-ELT_FONT_SIZE           = 35                                # default size
+#CANVAS_FONT_NAME:str    = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
+CANVAS_FONT_NAME:str    = 'Source Code Pro'
+CANVAS_FONT_SIZE:int    = 35                                # default size
 
-FILE_FONT_NAME          = 'Helvetica,Arial'                 # for the filename
-FILE_FONT_SIZE          = 25
-FILE_FONT_POS_X         = 35
-FILE_FONT_POS_Y         = 5
+TXT_FONT_NAME:str       = 'Helvetica,Arial'                 # for the filename
+TXT_FONT_SIZE:int       = 12
+TXT_FONT_POS_X:int      = 35
+TXT_FONT_POS_Y:int      = 5
 
-# Timers frequencies
+# Timers
 #
-BLINK_RATE : int = 750 # Blinking rate in ms
-MSG_HIDE_RATE : int = 2000 # Hide the filename
+TIMER_ID_SELECTED:int     = 100
+TIMER_RATE_SELECTED:int   = 750 # Blinking rate in ms
+
+TIMER_ID_NOTIFYING:int    = 101
+TIMER_RATE_NOTIFYING:int  = 500 # Blinking rate in ms
+BLINK_COUNT_MODIFYING:int = 20 # Max. count of blinking for notifications
+
+PY_MSG_HIDE_RATE:int      = 750 # Hide the filename (for pygame only)
 
 #
 #  str
 #
-STR_NEW: str = "New sudoku"
-STR_LOAD: str = "Open sudoku"
-STR_SAVE: str = "Save sudoku"
+STR_CREATE:str = "Sudoku creation"
 STR_EXIT:str = "Exiting app."
+STR_LOAD:str = "Open sudoku"
+STR_NEW:str = "New sudoku"
+STR_SAVE:str = "Save sudoku"
 
-STR_NOTSAVED:str = "Current content has not been saved.\nDo you want to proceed?"
+
+STR_MODIFIED_ARRAY:str= "The array has been modified. All modified elements will be turned into 'original' elements.\nDo you want to proceed?"
+STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
+STR_NO_SOLUTION:str = "No solution found."
+
+STR_MODE:str = "Mode"
+STR_MODE_CREATION:str = "creation"
+STR_MODE_RESOLUTION:str = "resolution"
+
+STR_FILLED:str = "Filled"
 
 #EOF

@@ -14,23 +14,24 @@ from typing_extensions import override
 from sharedTools import statusbits
 
 
-# Array complexity - ie. count of filled elements
+# Tag/hypothesis colours
 #
 class hypColour(IntEnum):
     NO_COLOUR = 0
-    YELLOW = auto()
-    BLUE = auto()
-    GREEN = auto()
-    RED = auto()
+    HYP_1 = auto()
+    HYP_2 = auto()
+    HYP_3 = auto()
+    HYP_4 = auto()
 
 #
 # element - a single sudoku element
 #
 class element:
-    STATUS_EMPTY: int = 0
-    STATUS_SET: int  = 1
-    STATUS_OBVIOUS: int  = 2         # An obvious value found at runtime (option -o / --obvious)
-    STATUS_ORIGINAL: int  = 4        # Can't be changed (except in edition mode)
+    STATUS_EMPTY:int = 0
+    STATUS_SET:int  = 1
+    STATUS_OBVIOUS:int  = 2         # An obvious value found at runtime (option -o / --obvious)
+    STATUS_ORIGINAL:int  = 4        # Can't be changed (except in edition mode)
+    STATUS_NOTIFYING:int = 8        # The current elementnis notifying the user (creation, help, obvious value, ...)
 
     # Construction
     def __init__(self, value:int | None = None):
@@ -75,6 +76,18 @@ class element:
     def solution(self, newVal : int | None):
         self.solution_ = newVal
 
+    # In the notifying state ?
+    #
+    @property
+    def notifying(self)->bool:
+        return self.status_.isSet(self.STATUS_NOTIFYING)
+    @notifying.setter
+    def notifying(self, status:bool):
+        if status:
+            self.status_.set(self.STATUS_NOTIFYING)
+        else:
+            self.status_.remove(self.STATUS_NOTIFYING)
+
     # hypothesis's colour ID
     #
     @property
@@ -82,7 +95,7 @@ class element:
         return self.hyp_
     @hypothesis.setter
     def hypothesis(self, newVal : int):
-        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.RED:
+        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.HYP_4:
             self.hyp_ = newVal
 
     # Set/modify the value
@@ -122,6 +135,7 @@ class element:
         self.value_ = 0
         if deep:
             self.solution_ = 0
+        self.hyp_ = hypColour.NO_COLOUR
         return pValue
 
     # Element's status
@@ -138,8 +152,8 @@ class element:
     def isObvious(self)->bool:
         return self.status_.isSet(self.STATUS_OBVIOUS)
 
-    # At least can we modifiy this particular value ?
-    def isChangeable(self)->bool:
-        #return self.status_ <= self.STATUS_SET    # just SET or EMPTY ?
-        return self.status_.value in [self.STATUS_EMPTY, self.STATUS_SET]
+    # At least can we modifiy or set this element ?
+    def isChangeable(self, allowEmpty:bool = True)->bool:
+        return not self.status_.isSet(self.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.value == self.STATUS_SET)
+
 # EOF
