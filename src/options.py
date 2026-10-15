@@ -91,7 +91,7 @@ class arrayComplexity(IntEnum):
     Empty = 0
     Easy = 30
     Medium = 23
-    Hard = 18
+    Hard = 15
 
 #
 #   options object : command-line parsing and parameters management

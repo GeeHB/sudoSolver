@@ -171,11 +171,6 @@ class sudoku(threading.Thread):
     def isFull(self)->bool:
         return (self.count_ == ARRAY_SIZE)
 
-    # Count of elements in the array
-    #
-    def __len__(self):
-        return len(self.elements_)
-
     # Return to the "original" state
     #
     def revert(self):
@@ -248,19 +243,19 @@ class sudoku(threading.Thread):
     #
     def modifyAt(self, position: pointer, value: int, status:int | None = None):
         currentVal: int | None = self.elements_[position.index()].num
-        self.elements_[position.index()].num = value
 
-        if status is not None:
-            self.elements_[position.index()].status_.assign(status)
+        if value :
+            self.elements_[position.index()].num = value
+            if status is not None:
+                self.elements_[position.index()].status_.assign(status)
 
-        # A new val ?
-        if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
-            self.count_+=1
-
-        if value == 0 and currentVal is not None and currentVal > 0:
-            self.count_-=1  # element's value has beeen removed
-
-        #print(self.elements_[position.index()])
+            # A new val ?
+            if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
+                self.count_+=1
+        else:
+            self.elements_[position.index()].empty(True)
+            if currentVal is not None and currentVal > 0:
+                self.count_-=1  # element's value has beeen removed
 
     #
     #  I O
@@ -1017,5 +1012,21 @@ class sudoku(threading.Thread):
                     count+=1
 
         return count
+
+    #
+    # operators override
+    #
+
+    # Count of elements in the array
+    #
+    def __len__(self):
+        return len(self.elements_)
+
+    # Accessing an element
+    #
+    def __getitem__(self, index: int):
+        if index < 0 or index>=len(self.elements_):
+            raise IndexError
+        return self.elements_[index]
 
 # EOF

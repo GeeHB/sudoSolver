@@ -798,7 +798,7 @@ class pygameSolver(solver.solver):
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
             index:int = self.edition_.currentPos_.index()
-            currentElement: element = self.sudoku_.elements_[index]
+            currentElement: element = self.sudoku_[index]
             value : int | None = currentElement.num
             if value is not None:
                 bk, txt = self._draw_getElementColours(index, False)

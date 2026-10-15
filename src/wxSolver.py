@@ -336,7 +336,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         event.Skip()  # Allow other handlers to process the key
 
-    # User clicked  with right button => display contextual menu
+    # User pressed the right button => display contextual menu
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
@@ -352,7 +352,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             # Generate a contextual menu at mouse pos with all possible values
             popUp: wx.Menu = wx.Menu()
             popUp.Append(menuConsts.ID_POPUP_VALUES[9], menuConsts.IDM_POPUP_EMPTY)
-            popUp.Enable(menuConsts.ID_POPUP_VALUES[9], not self.sudoku_.elements_[self.edition_.currentPos_.index_].isEmpty())
+            popUp.Enable(menuConsts.ID_POPUP_VALUES[9], not self.sudoku_[self.edition_.currentPos_.index_].isEmpty())
             for index in range(1,10):
                 id = menuConsts.ID_POPUP_VALUES[index-1]
                 popUp.Append(id, f"{index}")
@@ -481,7 +481,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int, selectionBox:bool = False):
         # too small to be drawn ?
         if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return
@@ -492,7 +492,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # Erase background
         self.memDC_.SetBrush(wx.Brush(self.theme_[bkColourID].other))
-        self.memDC_.SetPen(wx.TRANSPARENT_PEN)
+        self.memDC_.SetPen(wx.TRANSPARENT_PEN if selectionBox else wx.Pen(self.theme_[bkColourID].other))
         self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
@@ -612,7 +612,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _edit_array(self, event: wx.KeyEvent):
         keyCode = event.GetKeyCode()
-
         self.edition_.move()
         match keyCode:
             case self.KEY_MOVE_LEFT:
@@ -623,18 +622,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.edition_.currentPos_.decLine()
             case self.KEY_MOVE_DOWN:
                 self.edition_.currentPos_.incLine()
+
+            case self.KEY_VALUE_DEC:
+            #case 333:
+                if self._edit_decValue() : self.parent_.countChanged()
+            case self.KEY_VALUE_INC:
+                if self._edit_incValue() : self.parent_.countChanged()
+            case self.KEY_REMOVE_VALUE:
+                if self._edit_removeValue() : self.parent_.countChanged()
+
             case key if key in range(
                 self.KEY_VALUE_1, self.KEY_VALUE_9 + 1
-            ):
-                _ = self._edit_setValue(key - self.KEY_VALUE_1 + 1)
+                ):
+                if -1 != self._edit_setValue(key - self.KEY_VALUE_1 + 1)  : self.parent_.countChanged()
                 #if key == (self.KEY_VALUE_1 + 6):
                 #    self.sudoku_.elements_[index].hyp_ = 1
-            case self.KEY_VALUE_DEC:
-                self._edit_decValue()
-            case self.KEY_VALUE_INC:
-                self._edit_incValue()
-            case self.KEY_REMOVE_VALUE:
-                self._edit_removeValue()
+
             case self.KEY_ENTER | self.KEY_NUM_ENTER:
                 self._edit_stop()
                 return
@@ -878,19 +881,24 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     #   return True if item has been handled
     def _menu_handleContextualItems(self, menuId:int)->bool:
+        done:bool = False
+
         # Check values
         for index in range(VALUE_MAX):
             if menuConsts.ID_POPUP_VALUES[index] == menuId:
                 self._edit_setValue(index+1)
-                return True
+                done = True
 
         # Empty ?
         if menuConsts.ID_POPUP_VALUES[VALUE_MAX] == menuId:
                 self._edit_removeValue()
-                return True
+                done = True
+
+        if done:
+            self.parent_.countChanged()
 
         # Not found
-        return False
+        return done
 
     #
     # Resolving
@@ -958,7 +966,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         position: pointer = pointer(game = False)
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
-                currentElement = self.sudoku_.elements_[position.index()]
+                currentElement = self.sudoku_[position.index()]
                 if currentElement.notifying:
                     bk, txt = self._draw_getElementColours(position.index(), False)
                     self._draw_singleElement(

@@ -315,7 +315,7 @@ class solver:
     #
     def _draw_selectedElement(self, selected : bool = True):
         index:int = self.edition_.currentPos_.index()
-        currentElement : element =self.sudoku_.elements_[index]
+        currentElement : element =self.sudoku_[index]
         value : int | None = currentElement.num
         self._draw_startUp()
 
@@ -388,10 +388,10 @@ class solver:
         if self.edition_.creating:
             return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
-        if self.sudoku_.elements_[pos].isObvious():
+        if self.sudoku_[pos].isObvious():
             return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
         else:
-            if self.sudoku_.elements_[pos].isOriginal():
+            if self.sudoku_[pos].isOriginal():
                 return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
 
         return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
@@ -535,7 +535,7 @@ class solver:
         self._draw_startUp()
 
         if prevPos is not None :
-            prevElement : element = self.sudoku_.elements_[prevPos.index()]
+            prevElement : element = self.sudoku_[prevPos.index()]
             bk, txt = self._draw_getElementColours(prevPos.index_, False)
 
             # if sel. changed, erase previously selected element
@@ -549,12 +549,12 @@ class solver:
 
         # Select the new value
         index: int = self.edition_.currentPos_.index()
-        currentElement : element = self.sudoku_.elements_[index]
+        currentElement : element = self.sudoku_[index]
         bk, txt = self._draw_getElementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
-            self.sudoku_.elements_[currentPos.index()].num,
+            self.sudoku_[currentPos.index()].num,
             bk, txt,
             currentElement.hypothesis
         )
@@ -563,11 +563,11 @@ class solver:
 
     # (try to) set a value
     #
-    #  @return : Index of modified item or -1
+    #  @return : Index of modified item or -1 if nothing has been done
     #
     def _edit_setValue(self, val: int)->int:
         index:int = self.edition_.currentPos_.index()
-        if self.edition_.manualSolving and not self.sudoku_.elements_[index].isChangeable():
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return -1
 
         if self.sudoku_.checkValue(self.edition_.currentPos_, val):
@@ -578,50 +578,54 @@ class solver:
     def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
-            self.prevValues_.append(prevValue(index, self.sudoku_.elements_[index].num))
+            self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
         #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
-        self.sudoku_.modifyAt(pointer(index,False), val,
-            (element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET)
+        self.sudoku_.modifyAt(pointer(index, False), value=val,
+            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
         return index
 
     # Decrease value
     #
-    def _edit_decValue(self):
+    def _edit_decValue(self)->bool:
         index:int = self.edition_.currentPos_.index()
-        if self.edition_.manualSolving and not self.sudoku_.elements_[index].isChangeable():
-            return
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
 
-        val : int | None = self.sudoku_.elements_[index].num
+        val : int | None = self.sudoku_[index].num
         if val is None:
             val = 0
 
         newVal : int = self.sudoku_.findPreviousValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit_setValueEx(newVal, index)
+            return (-1 != self._edit_setValueEx(newVal, index))
+        return False
 
     # Inc value
     #
-    def _edit_incValue(self):
+    def _edit_incValue(self)->bool:
         index:int = self.edition_.currentPos_.index()
-        if self.edition_.manualSolving and not self.sudoku_.elements_[index].isChangeable():
-            return
-        val : int | None = self.sudoku_.elements_[index].num
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
+        val : int | None = self.sudoku_[index].num
         if val is None:
             val = 0
 
         newVal : int = self.sudoku_.findNextValue(self.edition_.currentPos_, val)
         if newVal != val:
-            self._edit_setValueEx(newVal, index)
+            return (self._edit_setValueEx(newVal, index) != -1)
+
+        return False
 
     # Remove current value
     #
-    def _edit_removeValue(self):
+    def _edit_removeValue(self)->bool:
         index:int = self.edition_.currentPos_.index()
-        if self.edition_.manualSolving and not self.sudoku_.elements_[index].isChangeable():
-            return
+        if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
+            return False
 
         self.sudoku_.clearAt(self.edition_.currentPos_.index(), True)
+        return True
 
     # Undo
     #
@@ -644,9 +648,9 @@ class solver:
 
         for val in reversed(self.prevValues_):
             if val.value_ > 0:
-                self.sudoku_.elements_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
+                self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
             else:
-                self.sudoku_.elements_[val.index_].empty(True)
+                self.sudoku_[val.index_].empty(True)
 
         self.prevValues_.clear()
         return True
