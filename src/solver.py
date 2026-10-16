@@ -204,7 +204,7 @@ class solver:
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
 
-        self._draw_changeTheme(GUITheme.DEF_THEME_NAME)
+        self._theme_setName(GUITheme.DEF_THEME_NAME)
         self._draw_fontSize2PixelSize()
 
     # Filename
@@ -399,9 +399,9 @@ class solver:
     def _draw_convertColours(self):
         pass
 
-    # Change colour's theme
+    # Change current GUI theme
     #
-    def _draw_changeTheme(self, name:str)->bool:
+    def _theme_setName(self, name:str)->bool:
         if name not in list(GUITheme.colourThemes.keys()):
             print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
             name = GUITheme.DEF_THEME_NAME
@@ -419,9 +419,13 @@ class solver:
         try:
             self.theme_.canvasFont_.faceName = GUITheme.colourThemes[name]["fonts"]["canvas"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
             self.theme_.canvasFont_.size = GUITheme.colourThemes[name]["fonts"]["canvas"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.canvasFont_.weight = self._theme_getFontWeight(name, "canvas")
+            self.theme_.canvasFont_.italic = self._theme_isItalic(name, "canvas")
 
             self.theme_.textFont_.faceName = GUITheme.colourThemes[name]["fonts"]["messages"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
             self.theme_.textFont_.size = GUITheme.colourThemes[name]["fonts"]["messages"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.textFont_.weight = self._theme_getFontWeight(name, "messages")
+            self.theme_.textFont_.italic = self._theme_isItalic(name, "messages")
 
             # Transfer colours in internal list for conversion
             self.theme_.clear() # clear the colours list
@@ -438,6 +442,44 @@ class solver:
             print(f"Error - The theme '{name}' doesn't contain enough clours.")
 
         return False
+
+    # Get font's weight from theme
+    #
+    def _theme_getFontWeight(self, themeName:str, fontName:str)->GUITheme.ownWeight:
+        weight:GUITheme.ownWeight = GUITheme.ownWeight.NORMAL
+
+        if "weight" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
+            style:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["weight"]  # pyright: ignore[reportArgumentType, reportCallIssue, reportAssignmentType, reportUnknownVariableType]
+
+            match style:
+                case "extra thin":
+                    weight = GUITheme.ownWeight.EXTRA_THIN
+                case "thin":
+                    weight = GUITheme.ownWeight.THIN
+                case "light":
+                    weight = GUITheme.ownWeight.LIGHT
+                case "medium":
+                    weight=GUITheme.ownWeight.MEDIUM
+                case "bold":
+                    weight=GUITheme.ownWeight.BOLD
+                case "extra bold":
+                    weight = GUITheme.ownWeight.EXTRA_BOLD
+
+                case "normal" | _:
+                    pass
+
+        return weight
+
+    # Is font italic ?
+    #
+    def _theme_isItalic(self, themeName:str, fontName:str)->bool:
+        italic=False
+
+        if "italic" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
+            response:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["italic"]  # pyright: ignore[reportArgumentType, reportAssignmentType, reportCallIssue, reportUnusedVariable, reportUnknownVariableType]
+            italic = response in ('True', 'true', 'yes')
+
+        return italic
 
     # Mouse position : client -> array coordinates
     #

@@ -21,14 +21,23 @@
 #### todo
 
 
-#### Version 4.0.5
-* oct. 2026
+#### Version 4.1.0
+* 16 oct. 2026
 * Added :
-  * GUITheme <- Themes (font and colours) management
+  * GUITheme <- Portable themes management (fonts and colours) 
+    * ownTheme - A full GUI theme with fonts and colours
+    * colourID : Enum. of used colours
+    * ownColour - portable colour object
+    * ownWeight - fonts weight
+    * ownFont - portable font object
   * sudoku <- gridMaker + sudoku
+    * sudoky array 
+    * creation
+    * resolution / help
   * solver <- abstract class for GUI solver app.
-  * pygameSolver <- GUI and sudoku's calls using pygame
-  * wxSolver <- GUI and menu with wxPython lib
+    * edition
+    * pygameSolver <- GUI and sudoku's calls using pygame
+    * wxSolver <- GUI and menu with wxPython lib
   * prepare code for manual solving (wxPython mode only)
     * tag and hyptothesis
     * colours management
