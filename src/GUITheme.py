@@ -37,7 +37,7 @@ class colourID(IntEnum):
 #  Themes with colours in RGB
 #
 
-DEF_THEME_NAME = "One Light"
+DEF_THEME_NAME = "One Light Heavy"
 
 # Dict. of themes
 #
@@ -47,7 +47,7 @@ colourThemes = {
             "canvas" : {
                 "faceName" : "Helvetica",
                 "size" : 30,
-                "style" : "extrabold",
+                "weight" : "bold",
             },
             "messages" : {
                 "faceName" : "Helvetica",
@@ -78,8 +78,41 @@ colourThemes = {
         "fonts" : {
             "canvas" : {
                 "faceName" : "Source Code Pro",
-                "size" : 25,
-                "style" : "thin",
+                "size" : 28,
+                "weight" : "thin",
+                "italic" : "true",
+            },
+            "messages" : {
+                "faceName" : "Helvetica",
+                "size" : 12,
+            },
+        },
+        "colours" : [
+            (235, 235, 236),
+            (201, 201, 202),
+            (80, 88, 104),
+            (250, 250, 250),
+            (250, 250, 250),
+            (239, 239, 240),
+            (202, 202, 202),
+            (220, 220, 245),
+            (80, 88, 104),
+            (192, 132, 83),
+            (104,160,91),
+            (212, 219, 244),
+            (250, 250, 250),
+            (255,255,0),
+            (0,0,255),
+            (0,255,0),
+            (255,0,0),
+            ],
+    },
+    "One Light Heavy" : {
+        "fonts" : {
+            "canvas" : {
+                "faceName" : "Source Code Pro",
+                "size" : 30,
+                "italic" : "true",
             },
             "messages" : {
                 "faceName" : "Helvetica",
@@ -109,10 +142,10 @@ colourThemes = {
     "Zarina" : {
         "fonts" : {
             "canvas" : {
-                "faceName" : "D050000L",
-                "faceName.old" : "Comfortaa",
-                "size" : 6,
-                "style" : "bold",
+                "faceName.text" : "D050000L",
+                "faceName" : "Comfortaa",
+                "size" : 26,
+                "weight" : "bold",
             },
             "messages" : {
                 "faceName" : "Helvetica",
@@ -122,7 +155,7 @@ colourThemes = {
         "colours" : [
             (230, 230, 255),
             (81, 154, 186),
-            (255,255,255),
+            (61,61,61),
             (230, 230, 255),
             (81, 154, 186),
             (230, 230, 255),
@@ -140,6 +173,15 @@ colourThemes = {
             ],
     }
 }
+
+# 'weights" for fonts
+#
+class ownWeight(IntEnum):
+    EXTRA_THIN = 50     # "extrathin"
+    THIN = 100          # "thin"
+    NORMAL = 400        # "normal" | "medium"
+    BOLD = 700          # "bold"
+    EXTRA_BOLD = 800    # "extrabold"
 
 # ownColour - General and portable colour definition
 #
@@ -166,10 +208,13 @@ class ownColour:
 #
 class ownFont:
     def __init__(self):
-        self.faceName = DEFAULT_FONT_NAME
-        self.size = DEFAULT_FONT_SIZE
-        self.bold = False
-        self.italic = False
+        self.faceName:str = DEFAULT_FONT_NAME
+        self.size:int = DEFAULT_FONT_SIZE
+        self.weight:ownWeight = ownWeight.NORMAL
+        self.italic:bool = False
+
+    def __repr__(self):
+        return f"Font : {self.faceName} x {self.size} pt\n\tWeight : {self.weight} - italic : {'yes' if self.italic else 'no'}"
 
 # Informations about graphic theme
 #

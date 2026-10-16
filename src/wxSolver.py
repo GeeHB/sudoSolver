@@ -297,7 +297,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           self._draw_changeTheme(keys[0])
+           self._theme_setName(keys[0])
 
     # Keyboard events
     #
@@ -435,10 +435,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_fontSize2PixelSize()
 
             self.memDC_.SetFont(NullFont)
-            self.font_ = wx.Font(self.canvasFontSize_,
-                            wx.FONTFAMILY_DEFAULT,
-                            wx.FONTSTYLE_NORMAL,
-                            wx.FONTWEIGHT_NORMAL,
+            self.font_ = wx.Font(pointSize=self.canvasFontSize_,
+                            family=wx.FONTFAMILY_DEFAULT,
+                            style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
+                            weight=self.theme_.canvasFont_.weight,
                             faceName = self.theme_.canvasFont_.faceName)
             self.memDC_.SetFont(self.font_)
 
@@ -451,8 +451,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Change colour's theme
     #
     @override
-    def _draw_changeTheme(self, name:str)->bool:
-        ret: bool = solver.solver._draw_changeTheme(self, name)
+    def _theme_setName(self, name:str)->bool:
+        ret: bool = solver.solver._theme_setName(self, name)
         if ret:
             self._draw_freeMemoryDC()
             self._draw_fontChanged()
@@ -1039,10 +1039,10 @@ class wxSidebarPanel(wxOwnPanel):
         self.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
         self.labelMode_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
         self.labelCount_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
-        font = wx.Font(self.canvas_.theme_.textFont_.size,
-                        wx.FONTFAMILY_DEFAULT,
-                        wx.FONTSTYLE_NORMAL,
-                        wx.FONTWEIGHT_BOLD,
+        font = wx.Font(pointSize=self.canvas_.theme_.textFont_.size,
+                        family=wx.FONTFAMILY_DEFAULT,
+                        style=wx.FONTSTYLE_ITALIC if self.canvas_.theme_.textFont_.italic else wx.FONTSTYLE_NORMAL,
+                        weight=self.canvas_.theme_.textFont_.weight,
                         faceName = self.canvas_.theme_.textFont_.faceName)
         self.labelMode_.SetFont(font)
 
