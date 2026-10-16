@@ -19,13 +19,12 @@
    * PyGame 2.1.2
 
 #### todo
-* Resize "new grid" combo ? https://stackoverflow.com/questions/39915275/change-width-of-dropdown-listbox-of-a-ttk-combobox
-* add getters and setters : pygameOutputs.py
-* 'Esc' from edit mode -> return to array's previous state
 
-#### Version 4.0.4
+
+#### Version 4.0.5
 * oct. 2026
 * Added :
+  * GUITheme <- Themes (font and colours) management
   * sudoku <- gridMaker + sudoku
   * solver <- abstract class for GUI solver app.
   * pygameSolver <- GUI and sudoku's calls using pygame

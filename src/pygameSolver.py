@@ -272,10 +272,9 @@ class pygameSolver(solver.solver):
         # PYGame init. is ok
         self.initialized = True
 
-        # font for drawing elements
-        fontSize = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
-        self.sElement_ = textSurface(self.theme_.canvasFontName, fontSize)
-        self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
+        # Font for drawing texts
+        self.sElement_ = textSurface(self.theme_.canvasFont_.faceName, self.theme_.canvasFont_.size)
+        self.sElement_.moveTo(int((self.extSquareWidth_ - self.theme_.canvasFont_.size) / 2), 0)
 
         # Main window creation
         myDict = systeminfos.getSystemInformations()
@@ -284,12 +283,12 @@ class pygameSolver(solver.solver):
         pygame.display.set_caption(APP_SHORT_NAME)
 
         # fileName displays
-        self.sFileName_ = textSurface(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
+        self.sFileName_ = textSurface(self.theme_.textFont_.faceName, self.theme_.textFont_.size * 2)
         self.sFileName_.moveTo(GUIConsts.TXT_FONT_POS_X, GUIConsts.TXT_FONT_POS_Y)
         self.sFileName_.setEventID(pygame.USEREVENT + 1, GUIConsts.PY_MSG_HIDE_RATE)   # event for text hiding
 
         # Messages
-        self.sMessage_ = blinkingText(self.theme_.textFontName, GUIConsts.TXT_FONT_SIZE * 2)
+        self.sMessage_ = blinkingText(self.theme_.textFont_.faceName, self.theme_.textFont_.size * 2)
         self.sMessage_.setEventID(pygame.USEREVENT + 2, GUIConsts.PY_MSG_HIDE_RATE)
 
         self._draw_background()
@@ -557,8 +556,8 @@ class pygameSolver(solver.solver):
 
         # Update elements'font
         if self.sElement_ is not None:
-            self.sElement_.setFont(self.theme_.canvasFontName, self.canvasFontSize_)
-            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.canvasFontSize_))/2), 0)
+            self.sElement_.setFont(self.theme_.canvasFont_.faceName, self.theme_.canvasFont_.size)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.theme_.canvasFont_.size))/2), 0)
 
     # Wait for an event
     #

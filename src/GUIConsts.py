@@ -28,12 +28,16 @@ TAG_PADDING:int         = 4
 
 # Elements'text font sizes (in pixels) and names
 #
-#CANVAS_FONT_NAME:str    = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
-CANVAS_FONT_NAME:str    = 'Source Code Pro'
-CANVAS_FONT_SIZE:int    = 35                                # default size
 
-TXT_FONT_NAME:str       = 'Helvetica,Arial'                 # for the filename
-TXT_FONT_SIZE:int       = 12
+DEFAULT_FONT_NAME:str = "Helvetica"
+DEFAULT_FONT_SIZE:int = 25
+
+#CANVAS_FONT_NAME:str    = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
+#CANVAS_FONT_NAME:str    = 'Source Code Pro'
+#CANVAS_FONT_SIZE:int    = 25                                # default size
+
+#TXT_FONT_NAME:str       = 'Helvetica,Arial'                 # for the filename
+#TXT_FONT_SIZE:int       = 12
 TXT_FONT_POS_X:int      = 35
 TXT_FONT_POS_Y:int      = 5
 

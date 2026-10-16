@@ -12,6 +12,8 @@ import sys
 from enum import IntEnum
 from typing import override
 
+from wx.core import NullFont
+
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
 except ModuleNotFoundError:
@@ -170,15 +172,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.state_: statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
 
         # Display
-        self.memDC_ : wx.MemoryDC | None = None # all display are made in a memory DC
+        self.memDC_: wx.MemoryDC | None = None # all display are made in a memory DC
+        self.font_: wx.Font = wx.Font()
         self.directDraw_:bool = False
         self.clientSize_: wx.Size = wx.Size(0,0)
         self.textOffsets_: list[wx.Size] = []  # for text in array
-        self.font_ = wx.Font(self.theme_.canvasFontSize,
-                        wx.FONTFAMILY_DEFAULT,
-                        wx.FONTSTYLE_NORMAL,
-                        wx.FONTWEIGHT_NORMAL,
-                        faceName = self.theme_.canvasFontName)
 
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
@@ -299,7 +297,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           self._draw_changeTheme(keys[0], menuId)
+           self._draw_changeTheme(keys[0])
 
     # Keyboard events
     #
@@ -380,23 +378,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnSize(self, event : wx.SizeEvent):
         self.clientSize_ = self.GetClientSize() # Size minus menu height
-
         self._draw_newClientSize(self.clientSize_.width, self.clientSize_.height)
-        self.font_.SetPixelSize(wx.Size(0, self.canvasFontSize_))
 
         self._draw_freeMemoryDC()
 
         # Create memory DC with bitmap
         self._draw_startUp()
 
-        # Numbers are centered !
-        if self.memDC_ is not None and self.memDC_.IsOk() :
-            self.memDC_.SetFont(self.font_)
-            dims : wx.Size
-            self.textOffsets_.clear()
-            for index in range(VALUE_MAX):
-                dims = self.memDC_.GetTextExtent(f"{index+1}")
-                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
+        self._draw_fontChanged()       # update with newly computed font size
 
         # Redraw the whole array
         self._draw_background()
@@ -425,7 +414,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             bmp = wx.Bitmap()
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
-            self.memDC_.SetFont(self.font_)
+
+            self._draw_fontChanged()    # Apply theme
             self.memDC_.SetBackground(wx.Brush(self.theme_[GUITheme.colourID.ID_CANVAS_BK].other))
             self.memDC_.Clear()
 
@@ -439,13 +429,33 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 clientDC = wx.ClientDC(self)
                 clientDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
 
+    # set a new font (new name or new size)
+    def _draw_fontChanged(self):
+        if self.memDC_ is not None and self.memDC_.IsOk():
+            self._draw_fontSize2PixelSize()
+
+            self.memDC_.SetFont(NullFont)
+            self.font_ = wx.Font(self.canvasFontSize_,
+                            wx.FONTFAMILY_DEFAULT,
+                            wx.FONTSTYLE_NORMAL,
+                            wx.FONTWEIGHT_NORMAL,
+                            faceName = self.theme_.canvasFont_.faceName)
+            self.memDC_.SetFont(self.font_)
+
+            dims : wx.Size
+            self.textOffsets_.clear()       # (re)compute offset to center texts in array
+            for index in range(VALUE_MAX):
+                dims = self.memDC_.GetTextExtent(f"{index+1}")
+                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
+
     # Change colour's theme
     #
     @override
-    def _draw_changeTheme(self, name:str, id:int)->bool:
-        ret: bool = solver.solver._draw_changeTheme(self, name, id)
+    def _draw_changeTheme(self, name:str)->bool:
+        ret: bool = solver.solver._draw_changeTheme(self, name)
         if ret:
             self._draw_freeMemoryDC()
+            self._draw_fontChanged()
             self.draw(redrawBackground=True)
             self.parent_.themeChanged()
         return ret
@@ -1029,13 +1039,12 @@ class wxSidebarPanel(wxOwnPanel):
         self.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
         self.labelMode_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
         self.labelCount_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
-        font = wx.Font(self.canvas_.theme_.textFontSize,
+        font = wx.Font(self.canvas_.theme_.textFont_.size,
                         wx.FONTFAMILY_DEFAULT,
                         wx.FONTSTYLE_NORMAL,
                         wx.FONTWEIGHT_BOLD,
-                        faceName = self.canvas_.theme_.textFontName)
+                        faceName = self.canvas_.theme_.textFont_.faceName)
         self.labelMode_.SetFont(font)
-
 
     def updateCounter(self):
         self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
