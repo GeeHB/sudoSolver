@@ -79,12 +79,13 @@ colourThemes = {
             "canvas" : {
                 "faceName" : "Source Code Pro",
                 "size" : 28,
-                "weight" : "thin",
+                "weight" : "light",
                 "italic" : "true",
             },
             "messages" : {
                 "faceName" : "Helvetica",
                 "size" : 12,
+                "weight" : "bold"
             },
         },
         "colours" : [
@@ -117,6 +118,7 @@ colourThemes = {
             "messages" : {
                 "faceName" : "Helvetica",
                 "size" : 12,
+                "weight" : "bold"
             },
         },
         "colours" : [
@@ -177,11 +179,13 @@ colourThemes = {
 # 'weights" for fonts
 #
 class ownWeight(IntEnum):
-    EXTRA_THIN = 50     # "extrathin"
+    EXTRA_THIN = 50     # "extra thin"
     THIN = 100          # "thin"
-    NORMAL = 400        # "normal" | "medium"
+    LIGHT = 200         # "light"
+    NORMAL = 400        # "normal"
+    MEDIUM = 500        # medium
     BOLD = 700          # "bold"
-    EXTRA_BOLD = 800    # "extrabold"
+    EXTRA_BOLD = 800    # "extra bold"
 
 # ownColour - General and portable colour definition
 #

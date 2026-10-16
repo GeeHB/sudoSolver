@@ -452,16 +452,20 @@ class solver:
             style:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["weight"]  # pyright: ignore[reportArgumentType, reportCallIssue, reportAssignmentType, reportUnknownVariableType]
 
             match style:
-                case "extrathin":
+                case "extra thin":
                     weight = GUITheme.ownWeight.EXTRA_THIN
                 case "thin":
                     weight = GUITheme.ownWeight.THIN
+                case "light":
+                    weight = GUITheme.ownWeight.LIGHT
+                case "medium":
+                    weight=GUITheme.ownWeight.MEDIUM
                 case "bold":
                     weight=GUITheme.ownWeight.BOLD
-                case "extrabold":
+                case "extra bold":
                     weight = GUITheme.ownWeight.EXTRA_BOLD
 
-                case "normal" | "medium" | _:
+                case "normal" | _:
                     pass
 
         return weight
