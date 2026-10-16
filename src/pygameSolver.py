@@ -362,7 +362,7 @@ class pygameSolver(solver.solver):
 
                 # A few stats.
                 if found:
-                    self.showStats()
+                    self._resolve_showStats()
                 else:
                     print(f"No solution found for '{self.params_.fileName_}'")
         except sudokuError as e:
@@ -800,7 +800,7 @@ class pygameSolver(solver.solver):
             currentElement: element = self.sudoku_[index]
             value : int | None = currentElement.num
             if value is not None:
-                bk, txt = self._draw_getElementColours(index, False)
+                bk, txt = self._theme_getElementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
@@ -827,7 +827,7 @@ class pygameSolver(solver.solver):
     # Convert colour objects from ownColour to pygameColor
     #
     @override
-    def _draw_convertColours(self):
+    def _theme_convertColours(self):
         for id in range(len(self.theme_)):
             self.theme_[id].other = pygame.Color(
                 self.theme_[id].r,

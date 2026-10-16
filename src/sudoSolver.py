@@ -7,7 +7,7 @@
 #
 #   Author      :   GeeHB
 #
-#   Description :   Display, edit and solve sudokus
+#   Description :   Create, display, edit and solve sudokus
 
 #                   Command line version
 #

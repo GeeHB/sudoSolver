@@ -204,7 +204,7 @@ class solver:
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
 
-        self._theme_setName(GUITheme.DEF_THEME_NAME)
+        self._theme_changeByName(GUITheme.DEF_THEME_NAME)
         self._draw_fontSize2PixelSize()
 
     # Filename
@@ -282,7 +282,7 @@ class solver:
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
                     currentElement = elements[position.index()]
-                    bk, txt = self._draw_getElementColours(position.index(), False)
+                    bk, txt = self._theme_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num,
@@ -314,7 +314,7 @@ class solver:
         value : int | None = currentElement.num
         self._draw_startUp()
 
-        bk, txt = self._draw_getElementColours(index, selected)
+        bk, txt = self._theme_getElementColours(index, selected)
         self._draw_singleElement(
             self.edition_.currentPos_.row(),
             self.edition_.currentPos_.line(),
@@ -372,115 +372,6 @@ class solver:
     def _draw_fontSize2PixelSize(self):
         self.canvasFontSize_ = int(self.theme_.canvasFont_.size * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
-    # Get elements text and bk colours for edition or creation
-    #
-    #  @pos : Element's position
-    #  @sekected : Element is selected ?
-    #
-    #  @return : Tuple(bk Colour, txt Colour)
-    def _draw_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
-        position:pointer = pointer(pos)
-        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
-
-        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
-        if self.edition_.creating:
-            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
-
-        if self.sudoku_[pos].isObvious():
-            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
-        else:
-            if self.sudoku_[pos].isOriginal():
-                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
-
-        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
-
-    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
-    #
-    def _draw_convertColours(self):
-        pass
-
-    # Change current GUI theme
-    #
-    def _theme_setName(self, name:str)->bool:
-        if name not in list(GUITheme.colourThemes.keys()):
-            print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
-            name = GUITheme.DEF_THEME_NAME
-
-        if len(GUITheme.colourThemes[name]["colours"]) != GUITheme.colourID.ID_COLOUR_COUNT:
-            print(f"Error - The colour-list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
-            name = GUITheme.DEF_THEME_NAME
-
-        if name == self.theme_.name:
-            return False    # Theme has not changed
-
-        # Retreive fonts informations
-        self.theme_.name = name
-
-        try:
-            self.theme_.canvasFont_.faceName = GUITheme.colourThemes[name]["fonts"]["canvas"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
-            self.theme_.canvasFont_.size = GUITheme.colourThemes[name]["fonts"]["canvas"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
-            self.theme_.canvasFont_.weight = self._theme_getFontWeight(name, "canvas")
-            self.theme_.canvasFont_.italic = self._theme_isItalic(name, "canvas")
-
-            self.theme_.textFont_.faceName = GUITheme.colourThemes[name]["fonts"]["messages"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
-            self.theme_.textFont_.size = GUITheme.colourThemes[name]["fonts"]["messages"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
-            self.theme_.textFont_.weight = self._theme_getFontWeight(name, "messages")
-            self.theme_.textFont_.italic = self._theme_isItalic(name, "messages")
-
-            # Transfer colours in internal list for conversion
-            self.theme_.clear() # clear the colours list
-            for col in GUITheme.colourThemes[name]["colours"] :
-                if isinstance(col, tuple) and len(col) == 3:
-                        self.theme_.append(GUITheme.ownColour(col)) # col is a tuple !!!
-
-            self._draw_convertColours() # Convert colours
-            return True
-
-        except KeyError:
-            print(f"Error - The theme '{name}' is incomplete or invalid.")
-        except IndexError:
-            print(f"Error - The theme '{name}' doesn't contain enough clours.")
-
-        return False
-
-    # Get font's weight from theme
-    #
-    def _theme_getFontWeight(self, themeName:str, fontName:str)->GUITheme.ownWeight:
-        weight:GUITheme.ownWeight = GUITheme.ownWeight.NORMAL
-
-        if "weight" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
-            style:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["weight"]  # pyright: ignore[reportArgumentType, reportCallIssue, reportAssignmentType, reportUnknownVariableType]
-
-            match style:
-                case "extra thin":
-                    weight = GUITheme.ownWeight.EXTRA_THIN
-                case "thin":
-                    weight = GUITheme.ownWeight.THIN
-                case "light":
-                    weight = GUITheme.ownWeight.LIGHT
-                case "medium":
-                    weight=GUITheme.ownWeight.MEDIUM
-                case "bold":
-                    weight=GUITheme.ownWeight.BOLD
-                case "extra bold":
-                    weight = GUITheme.ownWeight.EXTRA_BOLD
-
-                case "normal" | _:
-                    pass
-
-        return weight
-
-    # Is font italic ?
-    #
-    def _theme_isItalic(self, themeName:str, fontName:str)->bool:
-        italic=False
-
-        if "italic" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
-            response:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["italic"]  # pyright: ignore[reportArgumentType, reportAssignmentType, reportCallIssue, reportUnusedVariable, reportUnknownVariableType]
-            italic = response in ('True', 'true', 'yes')
-
-        return italic
-
     # Mouse position : client -> array coordinates
     #
     def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int]:
@@ -526,51 +417,6 @@ class solver:
 
         return False
 
-    # Resolve current sudoku using local parameters
-    #
-    # returns found a solution ?
-    def resolve(self)->bool:
-        found:bool = False
-        self.stats_.clear(False)
-
-        # for stats
-        start : float = time.time()
-
-        # Let's go
-        match self.params_.progressMode_ :
-            case self.params_.PROGRESS_MULTITHREADED:
-                found = self._resolve_MultiThreaded()
-
-            case self.params_.PROGRESS_SHOW_SAME_THREAD:
-                found = self._resolve_AndDisplay()
-
-            case _:
-                found = self._resolve_SingleThreaded()
-
-        if found:
-            self.stats_.bruteAttempts_ = self.sudoku_.attempts
-            self.stats_.bruteDuration_ = time.time() - start
-
-        # Finished (anyway)
-        return found
-
-    # Show resolution stats
-    #
-    #   Print stats on console (by default)
-    #
-    def showStats(self):
-        print(f"\n\t- {self.filename}")
-
-        # Found obvious values ?
-        if self.params_.obviousValues:
-            if self.stats_.obvValues_:
-                print("\t- Found " + str(self.stats_.obvValues_) + " obvious value(s) in " + str(round(self.stats_.obvDuration_, 2)) + " second(s)")
-            else:
-                print("\t- No obvious value found")
-
-        print("\t- Solved in " + str(round(self.stats_.bruteDuration_, 2)) + " second(s)")
-        print("\t- " + str(self.stats_.bruteAttempts_) + " attempt(s)\n")
-
     #
     # Array edition
     #
@@ -592,7 +438,7 @@ class solver:
 
         if prevPos is not None :
             prevElement : element = self.sudoku_[prevPos.index()]
-            bk, txt = self._draw_getElementColours(prevPos.index_, False)
+            bk, txt = self._theme_getElementColours(prevPos.index_, False)
 
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
@@ -606,7 +452,7 @@ class solver:
         # Select the new value
         index: int = self.edition_.currentPos_.index()
         currentElement : element = self.sudoku_[index]
-        bk, txt = self._draw_getElementColours(index, True)
+        bk, txt = self._theme_getElementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
@@ -728,6 +574,52 @@ class solver:
     # Resolution
     #
 
+    # Resolve current sudoku using local parameters
+    #
+    # returns found a solution ?
+    def resolve(self)->bool:
+        found:bool = False
+        self.stats_.clear(False)
+
+        # for stats
+        start : float = time.time()
+
+        # Let's go
+        match self.params_.progressMode_ :
+            case self.params_.PROGRESS_MULTITHREADED:
+                found = self._resolve_MultiThreaded()
+
+            case self.params_.PROGRESS_SHOW_SAME_THREAD:
+                found = self._resolve_AndDisplay()
+
+            case _:
+                found = self._resolve_SingleThreaded()
+
+        if found:
+            self.stats_.bruteAttempts_ = self.sudoku_.attempts
+            self.stats_.bruteDuration_ = time.time() - start
+
+        # Finished (anyway)
+        return found
+
+    # Show resolution stats
+    #
+    #   Print stats on console (by default)
+    #
+    def _resolve_showStats(self):
+        print(f"\n\t- {self.filename}")
+
+        # Found obvious values ?
+        if self.params_.obviousValues:
+            if self.stats_.obvValues_:
+                print("\t- Found " + str(self.stats_.obvValues_) + " obvious value(s) in " + str(round(self.stats_.obvDuration_, 2)) + " second(s)")
+            else:
+                print("\t- No obvious value found")
+
+        print("\t- Solved in " + str(round(self.stats_.bruteDuration_, 2)) + " second(s)")
+        print("\t- " + str(self.stats_.bruteAttempts_) + " attempt(s)\n")
+
+
     # Single-threaded mode
     #
     # returns True if a solution has been founded
@@ -759,5 +651,118 @@ class solver:
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
 
         return self.sudoku_.found
+
+    #
+    # Themes
+    #
+
+    # Get elements text and bk colours for edition or creation
+    #
+    #  @pos : Element's position
+    #  @sekected : Element is selected ?
+    #
+    #  @return : Tuple(bk Colour, txt Colour)
+    def _theme_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+        position:pointer = pointer(pos)
+        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+
+        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
+        if self.edition_.creating:
+            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
+
+        if self.sudoku_[pos].isObvious():
+            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
+        else:
+            if self.sudoku_[pos].isOriginal():
+                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
+
+        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
+
+    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
+    #
+    def _theme_convertColours(self):
+        pass
+
+    # Change current GUI theme
+    #
+    def _theme_changeByName(self, name:str)->bool:
+        if name not in list(GUITheme.colourThemes.keys()):
+            print(f"Error - '{name}' is not a valid theme name. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
+
+        if len(GUITheme.colourThemes[name]["colours"]) != GUITheme.colourID.ID_COLOUR_COUNT:
+            print(f"Error - The colour-list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            name = GUITheme.DEF_THEME_NAME
+
+        if name == self.theme_.name:
+            return False    # Theme has not changed
+
+        # Retreive fonts informations
+        self.theme_.name = name
+
+        try:
+            self.theme_.canvasFont_.faceName = GUITheme.colourThemes[name]["fonts"]["canvas"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.canvasFont_.size = GUITheme.colourThemes[name]["fonts"]["canvas"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.canvasFont_.weight = self._theme_getFontWeight(name, "canvas")
+            self.theme_.canvasFont_.italic = self._theme_isItalic(name, "canvas")
+
+            self.theme_.textFont_.faceName = GUITheme.colourThemes[name]["fonts"]["messages"]["faceName"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.textFont_.size = GUITheme.colourThemes[name]["fonts"]["messages"]["size"]  # pyright: ignore[reportCallIssue, reportArgumentType, reportAttributeAccessIssue]
+            self.theme_.textFont_.weight = self._theme_getFontWeight(name, "messages")
+            self.theme_.textFont_.italic = self._theme_isItalic(name, "messages")
+
+            # Transfer colours in internal list for conversion
+            self.theme_.clear() # clear the colours list
+            for col in GUITheme.colourThemes[name]["colours"] :
+                if isinstance(col, tuple) and len(col) == 3:
+                        self.theme_.append(GUITheme.ownColour(col)) # col is a tuple !!!
+
+            self._theme_convertColours() # Convert colours
+            return True
+
+        except KeyError:
+            print(f"Error - The theme '{name}' is incomplete or invalid.")
+        except IndexError:
+            print(f"Error - The theme '{name}' doesn't contain enough clours.")
+
+        return False
+
+    # Get font's weight from theme
+    #
+    def _theme_getFontWeight(self, themeName:str, fontName:str)->GUITheme.ownWeight:
+        weight:GUITheme.ownWeight = GUITheme.ownWeight.NORMAL
+
+        if "weight" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
+            style:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["weight"]  # pyright: ignore[reportArgumentType, reportCallIssue, reportAssignmentType, reportUnknownVariableType]
+
+            match style:
+                case "extra thin":
+                    weight = GUITheme.ownWeight.EXTRA_THIN
+                case "thin":
+                    weight = GUITheme.ownWeight.THIN
+                case "light":
+                    weight = GUITheme.ownWeight.LIGHT
+                case "medium":
+                    weight=GUITheme.ownWeight.MEDIUM
+                case "bold":
+                    weight=GUITheme.ownWeight.BOLD
+                case "extra bold":
+                    weight = GUITheme.ownWeight.EXTRA_BOLD
+
+                case "normal" | _:
+                    pass
+
+        return weight
+
+    # Is font italic ?
+    #
+    def _theme_isItalic(self, themeName:str, fontName:str)->bool:
+        italic=False
+
+        if "italic" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
+            response:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["italic"]  # pyright: ignore[reportArgumentType, reportAssignmentType, reportCallIssue, reportUnusedVariable, reportUnknownVariableType]
+            italic = response in ('True', 'true', 'yes')
+
+        return italic
 
 # EOF

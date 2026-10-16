@@ -231,13 +231,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.parent_.SetTitle(title)
 
-    # Show resolution stats
-    #
-    @override
-    def showStats(self):
-        wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
-            APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-
     #
     # Event handlers
     #
@@ -297,7 +290,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           self._theme_setName(keys[0])
+           self._theme_changeByName(keys[0])
 
     # Keyboard events
     #
@@ -385,7 +378,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Create memory DC with bitmap
         self._draw_startUp()
 
-        self._draw_fontChanged()       # update with newly computed font size
+        self._theme_fontChanged()       # update with newly computed font size
 
         # Redraw the whole array
         self._draw_background()
@@ -415,7 +408,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             bmp.CreateWithDIPSize(self.clientSize_, self.GetDPIScaleFactor())
             self.memDC_ = wx.MemoryDC(bmp)
 
-            self._draw_fontChanged()    # Apply theme
+            self._theme_fontChanged()    # Apply theme
             self.memDC_.SetBackground(wx.Brush(self.theme_[GUITheme.colourID.ID_CANVAS_BK].other))
             self.memDC_.Clear()
 
@@ -428,37 +421,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 bmpSize : wx.Size = self.memDC_.GetSize()
                 clientDC = wx.ClientDC(self)
                 clientDC.Blit(0, 0, bmpSize.width, bmpSize.height, self.memDC_, 0, 0)    # blit memory bitmap onto dc
-
-    # set a new font (new name or new size)
-    def _draw_fontChanged(self):
-        if self.memDC_ is not None and self.memDC_.IsOk():
-            self._draw_fontSize2PixelSize()
-
-            self.memDC_.SetFont(NullFont)
-            self.font_ = wx.Font(pointSize=self.canvasFontSize_,
-                            family=wx.FONTFAMILY_DEFAULT,
-                            style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
-                            weight=self.theme_.canvasFont_.weight,
-                            faceName = self.theme_.canvasFont_.faceName)
-            self.memDC_.SetFont(self.font_)
-
-            dims : wx.Size
-            self.textOffsets_.clear()       # (re)compute offset to center texts in array
-            for index in range(VALUE_MAX):
-                dims = self.memDC_.GetTextExtent(f"{index+1}")
-                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
-
-    # Change colour's theme
-    #
-    @override
-    def _theme_setName(self, name:str)->bool:
-        ret: bool = solver.solver._theme_setName(self, name)
-        if ret:
-            self._draw_freeMemoryDC()
-            self._draw_fontChanged()
-            self.draw(redrawBackground=True)
-            self.parent_.themeChanged()
-        return ret
 
     # Draw background, frames and borders
     #
@@ -540,19 +502,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         points,
                         x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
                         y + GUIConsts.TAG_PADDING)
-
-
-    # Convert colour objects from ownColour to wx.Colour
-    #
-    @override
-    def _draw_convertColours(self):
-        for id in range(len(self.theme_)):
-            basicColour:GUITheme.ownColour =self.theme_[id]
-            self.theme_[id].other = wx.Colour(
-                basicColour.r,
-                basicColour.g,
-                basicColour.b,
-                basicColour.a)
 
     # Delete current memory DC
     def _draw_freeMemoryDC(self):
@@ -935,7 +884,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             if self.resolve():
                 self.draw_update()
-                self.showStats()
+                self._resolve_showStats()
             else:
                 wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
@@ -949,7 +898,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.directDraw_ = False
             self.draw_update()
-            self.showStats()
+            self._resolve_showStats()
 
     # Return to original array's state (remove added values)
     #
@@ -982,7 +931,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             for row in range(ROW_COUNT):
                 currentElement = self.sudoku_[position.index()]
                 if currentElement.notifying:
-                    bk, txt = self._draw_getElementColours(position.index(), False)
+                    bk, txt = self._theme_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num if self.notify_ else 0,
@@ -1001,6 +950,59 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         super()._notify_stop(endApp)
         if self.notifyTimer_.IsRunning():
             self.notifyTimer_.Stop()
+
+    # Show resolution stats
+    #
+    @override
+    def _resolve_showStats(self):
+        wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
+            APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+    #
+    # Themes
+    #
+
+    # Change colour's theme
+    #
+    @override
+    def _theme_changeByName(self, name:str)->bool:
+        ret: bool = solver.solver._theme_changeByName(self, name)
+        if ret:
+            self._draw_freeMemoryDC()
+            self._theme_fontChanged()
+            self.draw(redrawBackground=True)
+            self.parent_.themeChanged()
+        return ret
+
+    # Convert colour objects from ownColour to wx.Colour
+    #
+    @override
+    def _theme_convertColours(self):
+        for id in range(len(self.theme_)):
+            basicColour:GUITheme.ownColour =self.theme_[id]
+            self.theme_[id].other = wx.Colour(
+                basicColour.r,
+                basicColour.g,
+                basicColour.b,
+                basicColour.a)
+
+    # set a new font (new name or new size)
+    def _theme_fontChanged(self):
+        if self.memDC_ is not None and self.memDC_.IsOk():
+            self._draw_fontSize2PixelSize()
+
+            self.memDC_.SetFont(NullFont)
+            self.font_ = wx.Font(pointSize=self.canvasFontSize_,
+                            family=wx.FONTFAMILY_DEFAULT,
+                            style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
+                            weight=self.theme_.canvasFont_.weight,
+                            faceName = self.theme_.canvasFont_.faceName)
+            self.memDC_.SetFont(self.font_)
+
+            dims : wx.Size
+            self.textOffsets_.clear()       # (re)compute offset to center texts in array
+            for index in range(VALUE_MAX):
+                dims = self.memDC_.GetTextExtent(f"{index+1}")
+                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
 
 # wxSidebarPanel - Sidebar
 #
