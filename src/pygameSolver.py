@@ -272,10 +272,10 @@ class pygameSolver(solver.solver):
         # PYGame init. is ok
         self.initialized = True
 
-        # font for drawing elements
-        fontSize = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
-        self.sElement_ = textSurface(self.theme_.canvasFontName, fontSize)
-        self.sElement_.moveTo(int(int(self.extSquareWidth_) - fontSize / 2), 0)
+        # font for drawing texts
+        fSize = int(self.theme_.canvasFontSize * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE_BASE)
+        self.sElement_ = textSurface(fontName=self.theme_.canvasFontName, fontSize=fSize)
+        self.sElement_.moveTo(int((self.extSquareWidth_ - fSize) / 2), 0)
 
         # Main window creation
         myDict = systeminfos.getSystemInformations()
@@ -557,8 +557,8 @@ class pygameSolver(solver.solver):
 
         # Update elements'font
         if self.sElement_ is not None:
-            self.sElement_.setFont(self.theme_.canvasFontName, self.canvasFontSize_)
-            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.canvasFontSize_))/2), 0)
+            self.sElement_.setFont(self.theme_.canvasFontName, self.theme_.canvasFontSize)
+            self.sElement_.moveTo(int((self.extSquareWidth_ - float(self.theme_.canvasFontSize))/2), 0)
 
     # Wait for an event
     #

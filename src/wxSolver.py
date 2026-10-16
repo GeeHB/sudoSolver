@@ -297,7 +297,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Change theme ?
         if menuId in self.menuThemesID_.values():
            keys:list[str] = [k for k, v in self.menuThemesID_.items() if v == menuId]
-           self._draw_changeTheme(keys[0], menuId)
+           self._draw_changeTheme(keys[0])
 
     # Keyboard events
     #
@@ -385,7 +385,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Create memory DC with bitmap
         self._draw_startUp()
 
-        self._draw_fontChanged(fontSize=self.theme_.canvasFontSize)
+        self._draw_fontChanged(fontSize=self.canvasFontSize_)       # update with newly computed font size
 
         # Redraw the whole array
         self._draw_background()
@@ -434,7 +434,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.memDC_ is not None and self.memDC_.IsOk():
             if fontName is not None:
                 self.memDC_.SetFont(NullFont)
-                self.font_ = wx.Font(self.theme_.canvasFontSize,
+                self.font_ = wx.Font(self.canvasFontSize_,
                                 wx.FONTFAMILY_DEFAULT,
                                 wx.FONTSTYLE_NORMAL,
                                 wx.FONTWEIGHT_NORMAL,
@@ -454,8 +454,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Change colour's theme
     #
     @override
-    def _draw_changeTheme(self, name:str, id:int)->bool:
-        ret: bool = solver.solver._draw_changeTheme(self, name, id)
+    def _draw_changeTheme(self, name:str)->bool:
+        ret: bool = solver.solver._draw_changeTheme(self, name)
         if ret:
             self._draw_freeMemoryDC()
             self._draw_fontChanged(fontName = self.theme_.canvasFontName)

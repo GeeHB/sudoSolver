@@ -9,7 +9,7 @@
 from enum import IntEnum, auto
 from typing import Any
 
-from GUIConsts import CANVAS_FONT_NAME, CANVAS_FONT_SIZE, TXT_FONT_NAME, TXT_FONT_SIZE
+from GUIConsts import DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE
 
 
 # IDs of colours used by app.
@@ -44,8 +44,10 @@ DEF_THEME_NAME = "One Light"
 colourThemes = {
     "Kosmos": {
         "fonts" : {
-            "canvas" : "Helvetica",
-            "message" : "Helvetica"
+            "canvasFacename" : "Helvetica",
+            "canvasSize" : 25,
+            "messageFacename" : "Helvetica",
+            "messageSize" : 12
             },
         "colours" : [
             (53, 57, 68),
@@ -69,8 +71,10 @@ colourThemes = {
     },
     "One Light": {
         "fonts" : {
-            "canvas" : "Source Code Pro",
-                "message" : "Helvetica"
+            "canvasFacename" : "Source Code Pro",
+            "canvasSize" : 25,
+            "messageFacename" : "Helvetica",
+            "messageSize" : 12
             },
         "colours" : [
             (235, 235, 236),
@@ -94,8 +98,10 @@ colourThemes = {
     },
     "Zarina": {
         "fonts" : {
-            "canvas" : "DejaVu",
-            "message" : "Helvetica"
+            "canvasFacename" : "DejaVu",
+            "canvasSize" : 25,
+            "messageFacename" : "Helvetica",
+            "messageSize" : 12
             },
         "colours" : [
             (230, 230, 255),
@@ -140,10 +146,10 @@ class ownColour:
 class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
-        self.canvasFontName_:str = CANVAS_FONT_NAME
-        self.canvasFontSize_:int= CANVAS_FONT_SIZE
-        self.textFontName_:str = TXT_FONT_NAME
-        self.textFontSize_:int = TXT_FONT_SIZE
+        self.canvasFontName_:str = DEFAULT_FONT_NAME
+        self.canvasFontSize_:int= DEFAULT_FONT_SIZE
+        self.textFontName_:str = DEFAULT_FONT_NAME
+        self.textFontSize_:int = DEFAULT_FONT_SIZE
         self.colours_: list[ownColour] = []
 
     # Properties
@@ -181,6 +187,9 @@ class ownTheme:
     @property
     def textFontSize(self)->int:
         return self.textFontSize_
+    @textFontSize.setter
+    def textFontSize(self, value: int):
+        self.textFontSize_ = value
 
     # Clear the list
     def clear(self):
