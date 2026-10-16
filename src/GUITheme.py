@@ -42,13 +42,18 @@ DEF_THEME_NAME = "One Light"
 # Dict. of themes
 #
 colourThemes = {
-    "Kosmos": {
+    "Kosmos" : {
         "fonts" : {
-            "canvasFacename" : "Helvetica",
-            "canvasSize" : 25,
-            "messageFacename" : "Helvetica",
-            "messageSize" : 12
+            "canvas" : {
+                "faceName" : "Helvetica",
+                "size" : 30,
+                "style" : "extrabold",
             },
+            "messages" : {
+                "faceName" : "Helvetica",
+                "size" : 12,
+            },
+        },
         "colours" : [
             (53, 57, 68),
             (83, 86, 93),
@@ -69,13 +74,18 @@ colourThemes = {
             (255,0,0),
             ],
     },
-    "One Light": {
+    "One Light" : {
         "fonts" : {
-            "canvasFacename" : "Source Code Pro",
-            "canvasSize" : 25,
-            "messageFacename" : "Helvetica",
-            "messageSize" : 12
+            "canvas" : {
+                "faceName" : "Source Code Pro",
+                "size" : 25,
+                "style" : "thin",
             },
+            "messages" : {
+                "faceName" : "Helvetica",
+                "size" : 12,
+            },
+        },
         "colours" : [
             (235, 235, 236),
             (201, 201, 202),
@@ -96,13 +106,19 @@ colourThemes = {
             (255,0,0),
             ],
     },
-    "Zarina": {
+    "Zarina" : {
         "fonts" : {
-            "canvasFacename" : "DejaVu",
-            "canvasSize" : 25,
-            "messageFacename" : "Helvetica",
-            "messageSize" : 12
+            "canvas" : {
+                "faceName" : "D050000L",
+                "faceName.old" : "Comfortaa",
+                "size" : 6,
+                "style" : "bold",
             },
+            "messages" : {
+                "faceName" : "Helvetica",
+                "size" : 12,
+            },
+        },
         "colours" : [
             (230, 230, 255),
             (81, 154, 186),
@@ -128,28 +144,40 @@ colourThemes = {
 # ownColour - General and portable colour definition
 #
 class ownColour:
-    r : int
-    g : int
-    b : int
-    a : int
+    r:int
+    g:int
+    b:int
+    a:int
 
-    def __init__(self, rgb : tuple[int,int,int] | None, alpha : int | None = None):
+    def __init__(self, rgb:tuple[int,int,int] | None, alpha:int | None = None):
         if rgb is not None:
             self.r = rgb[0]
             self.g = rgb[1]
             self.b = rgb[2]
+        else:
+            self.r = 255
+            self.g = 255
+            self.b = 255
+
         self.a = alpha if alpha is not None else 255
-        self.other : Any = None
+        self.other:Any = None
+
+# ownFont - Information about a font
+#
+class ownFont:
+    def __init__(self):
+        self.faceName = DEFAULT_FONT_NAME
+        self.size = DEFAULT_FONT_SIZE
+        self.bold = False
+        self.italic = False
 
 # Informations about graphic theme
 #
 class ownTheme:
     def __init__(self, name:str | None = None):
         self.name_:str = "" if name is None else name
-        self.canvasFontName_:str = DEFAULT_FONT_NAME
-        self.canvasFontSize_:int= DEFAULT_FONT_SIZE
-        self.textFontName_:str = DEFAULT_FONT_NAME
-        self.textFontSize_:int = DEFAULT_FONT_SIZE
+        self.canvasFont_:ownFont = ownFont()
+        self.textFont_:ownFont = ownFont()
         self.colours_: list[ownColour] = []
 
     # Properties
@@ -163,35 +191,7 @@ class ownTheme:
     def name(self, name: str):
         self.name_ = name
 
-    # Canvas font
-    @property
-    def canvasFontName(self)->str:
-        return self.canvasFontName_
-    @canvasFontName.setter
-    def canvasFontName(self, name: str):
-        self.canvasFontName_ = name  if len(name)>0 else CANVAS_FONT_NAME
-    @property
-    def canvasFontSize(self)->int:
-        return self.canvasFontSize_
-    @canvasFontSize.setter
-    def canvasFontSize(self, value: int):
-        self.canvasFontSize_ = value
-
-    # Default text font
-    @property
-    def textFontName(self)->str:
-        return self.textFontName_
-    @textFontName.setter
-    def textFontName(self, name: str):
-        self.textFontName_ = name  if len(name)>0 else TXT_FONT_NAME
-    @property
-    def textFontSize(self)->int:
-        return self.textFontSize_
-    @textFontSize.setter
-    def textFontSize(self, value: int):
-        self.textFontSize_ = value
-
-    # Clear the list
+    # Clear the list of colours
     def clear(self):
         self.colours_.clear()
 
@@ -199,8 +199,10 @@ class ownTheme:
     def append(self, value:ownColour):
         self.colours_.append(value)
 
-    # Access
     #
+    # Access to a colour by index (theme as a list)
+    #
+
     def __getitem__(self, index:int)->ownColour:
         if index < 0 or index>=len(self.colours_):
             raise IndexError
