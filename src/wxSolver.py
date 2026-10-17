@@ -55,7 +55,10 @@ class wxEditionMode(IntEnum):
 #
 class wxMainFrame(wx.Frame):
 
-    # edition mode changed
+    # App. states
+    #
+
+    # Edition mode changed
     def modeChanged(self, mode:wxEditionMode):
         pass
 
@@ -75,6 +78,11 @@ class wxMainFrame(wx.Frame):
         pass
     def hyp_onAccept(self, colID:int):
         pass
+
+    # Sidebar
+    #
+    def sidebar_isVisible(self)->bool:
+        return False
 
     # End of edition
     #
@@ -649,7 +657,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         fileMenu.AppendSeparator()  # Themes management
         fileMenu.AppendCheckItem(menuConsts.ID_SIDEBAR, menuConsts.IDM_SIDEBAR)
-        fileMenu.Check(menuConsts.ID_SIDEBAR, True)
+        fileMenu.Check(menuConsts.ID_SIDEBAR, self.parent_.sidebar_isVisible())
 
         fileMenu.AppendSeparator()  # Themes management
         themesMenu = wx.Menu()
@@ -793,7 +801,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.state_.assign(self.ARRAY_NEW)
         self._menu_setItemsStates()
         self.parent_.countChanged() # new elements have values
-
 
     # Save current array
     #
@@ -1012,28 +1019,40 @@ class wxSidebarPanel(wxOwnPanel):
         wxOwnPanel.__init__(self, parent)
         self.mode_:wxEditionMode = wxEditionMode.MODE_NONE
 
+        # Controls creation
+        #
         mySizer = wx.BoxSizer(wx.VERTICAL)
         self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_MODE)
         mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
 
         self.labelCount_ = wx.StaticText(self, label="Outils")
         mySizer.Add(self.labelCount_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
-        mySizer.Add(wx.Button(self, label="Pinceau"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+        mySizer.Add(wx.Button(self, label="End"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+        mySizer.Add(wx.Button(self, label="Exit"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
         mySizer.AddStretchSpacer()
+
         self.SetSizer(mySizer)
 
         # Needs to draw panel's border
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
 
-    # Set app; mode => set controls' state
-    def setMode(self, mode:wxEditionMode):
+    # App. canvas
+    @property
+    def canvas(self)->wxSolverCanvas:
+        return self.canvas_
+    @canvas.setter
+    def canvas(self, newCanvas: wxSolverCanvas):
+        self.canvas_ = newCanvas
+
+    # App. mode => set controls' state
+    @property
+    def mode(self)->wxEditionMode:
+        return self.mode_
+    @mode.setter
+    def mode(self, mode:wxEditionMode):
         self.mode_ = mode
         self.labelMode_.SetLabel(f"{GUIConsts.STR_MODE}" if self.mode_ == wxEditionMode.MODE_NONE
             else f"{GUIConsts.STR_MODE} : {GUIConsts.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION}")
-
-    # Set child canvas
-    def setCanvas(self, canvas: wxSolverCanvas):
-        self.canvas_ = canvas
 
     # Theme just changed
     @override
@@ -1070,7 +1089,7 @@ class wxSolverFrame(wxMainFrame):
 
         # Sidebar
         self.sidebar_ = wxSidebarPanel(self)
-        self.sidebar_.setCanvas(self.canvas_)
+        self.sidebar_.canvas = self.canvas_
         self.sidebar_.SetMinSize(wx.Size(220, -1))
 
         # Add the 2 panels to the frame's sizer
@@ -1082,14 +1101,15 @@ class wxSolverFrame(wxMainFrame):
         # Bind menu events to handler
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
 
-        # Let's go !!!
-        self.Centre()
-        self.Show()
-
     # GUI initialization
     #
     def initialize(self):
+        self.sidebar_show(force=True, visible=False)  # not visible at startup
         self.canvas_.initialize()
+
+        # Let's go !!!
+        self.Centre()
+        self.Show()
 
     # Theme just changed
     @override
@@ -1104,7 +1124,9 @@ class wxSolverFrame(wxMainFrame):
     # edition mode changed
     @override
     def modeChanged(self, mode:wxEditionMode):
-        self.sidebar_.setMode(mode)
+        if mode!=wxEditionMode.MODE_NONE:
+            self.sidebar_show(force=True, visible=True)  # always show sidebar when entering edition process
+        self.sidebar_.mode = mode
 
     # End drawings
     #
@@ -1118,7 +1140,7 @@ class wxSolverFrame(wxMainFrame):
 
         match menuId:
             case menuConsts.ID_SIDEBAR:
-                self.onToggleSidebar()
+                self.sidebar_show()
             case wx.ID_EXIT:
                 self.Destroy()
             case _:
@@ -1127,8 +1149,16 @@ class wxSolverFrame(wxMainFrame):
 
     # Show / hide the side bar
     #
-    def onToggleSidebar(self):
-        self.sidebar_.Show(not self.sidebar_.IsShown())
-        self.Layout()
+    def sidebar_show(self, force:bool = False, visible:bool = False):
+        isOpen:bool = self.sidebar_.IsShown()
+        newState:bool = visible if force else not isOpen
+
+        if newState != isOpen:
+            self.sidebar_.Show(newState)
+            self.Layout()
+
+    @override
+    def sidebar_isVisible(self)->bool:
+        return self.sidebar_.IsShown()
 
 # EOF
