@@ -31,7 +31,7 @@ class element:
     STATUS_SET:int  = 1
     STATUS_OBVIOUS:int  = 2         # An obvious value found at runtime (option -o / --obvious)
     STATUS_ORIGINAL:int  = 4        # Can't be changed (except in edition mode)
-    STATUS_NOTIFYING:int = 8        # The current elementnis notifying the user (creation, help, obvious value, ...)
+    STATUS_NOTIFYING:int = 8        # The current element is notifying the user (creation, help, obvious value, mistake, ...)
 
     # Construction
     def __init__(self, value:int | None = None):

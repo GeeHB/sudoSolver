@@ -1022,7 +1022,7 @@ class wxSidebarPanel(wxOwnPanel):
         # Controls creation
         #
         mySizer = wx.BoxSizer(wx.VERTICAL)
-        self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_MODE)
+        self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_SIDEBAR)
         mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
 
         self.labelCount_ = wx.StaticText(self, label="Outils")
@@ -1051,8 +1051,8 @@ class wxSidebarPanel(wxOwnPanel):
     @mode.setter
     def mode(self, mode:wxEditionMode):
         self.mode_ = mode
-        self.labelMode_.SetLabel(f"{GUIConsts.STR_MODE}" if self.mode_ == wxEditionMode.MODE_NONE
-            else f"{GUIConsts.STR_MODE} : {GUIConsts.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION}")
+        self.labelMode_.SetLabel(f"{GUIConsts.STR_SIDEBAR}" if self.mode_ == wxEditionMode.MODE_NONE
+            else f"{GUIConsts.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION} {GUIConsts.STR_MODE}")
 
     # Theme just changed
     @override

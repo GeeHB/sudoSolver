@@ -1,11 +1,11 @@
 # coding=UTF-8
 #
-#   File        :   sudoku.py
+#   File        :   solver.py
 #
 #   Author      :   GeeHB
 #
 #   Description :   solver and ownColour objects
-#                       - GUI for sudoku solver
+#                       - abstract classe for GUIed sudoku solver
 #
 import copy
 import math

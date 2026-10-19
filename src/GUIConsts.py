@@ -67,9 +67,10 @@ STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
 STR_NO_SOLUTION:str = "No solution found."
 
-STR_MODE:str = "Mode"
-STR_MODE_CREATION:str = "creation"
-STR_MODE_RESOLUTION:str = "resolution"
+STR_SIDEBAR:str = "Sidebar"
+STR_MODE:str = "mode"
+STR_MODE_CREATION:str = "Creation"
+STR_MODE_RESOLUTION:str = "Resolution"
 
 STR_FILLED:str = "Filled"
 
