@@ -12,10 +12,10 @@ import sys
 from enum import IntEnum
 from typing import override
 
-from wx.core import NullFont
-
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
+    import wx.adv
+    from wx.core import NullFont
 except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
@@ -95,6 +95,9 @@ class wxOwnPanel(wx.Panel):
     def __init__(self, parent: wxMainFrame):
         super().__init__(parent)
         self.parent_: wxMainFrame = parent
+
+    def initialize(self):
+        pass
 
     # Theme just changed
     def themeChanged(self):
@@ -1011,12 +1014,102 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 dims = self.memDC_.GetTextExtent(f"{index+1}")
                 self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
 
+#
+#  Owner-drawn combobox
+#
+
+# Own datas stored with combo's tiems
+#
+class wxOwnComboData:
+    def __init__(self, id:int, colour:GUITheme.ownColour):
+        self.id_:int = id   # Id of the hyp. colour
+        self.colour_:wx.Colour = colour.other
+
+# Owner-drawn combobox for hypothesis management
+#
+class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
+    # Construction
+    def __init__(self, parent:wxOwnPanel, canvas: wxSolverCanvas):
+        super().__init__(parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
+            size=wx.Size(120, -1),style=wx.CB_READONLY )
+
+        self.parent_:wxOwnPanel = parent
+        self.canvas_:wxSolverCanvas = canvas
+        self.hyps_:list[wxOwnComboData] = []    # no colours at startup !
+
+    # Set or change colours
+    def updateColours(self):
+        sel:int = self.GetSelection()  # pyright: ignore[reportAssignmentType]
+        self.Clear()
+        self.hyps_.clear()
+
+        data = wxOwnComboData(id=0, colour=GUITheme.ownColour(rgb=(255,255,255)))
+        self.hyps_.append(data)
+        self.Append(f"{data.id_}", data)  # pyright: ignore[reportUnknownMemberType]
+
+        for index in range(4):
+            id:int = index + GUITheme.colourID.ID_TAG_1
+            data = wxOwnComboData(id, self.canvas_.theme_[id])
+
+            self.hyps_.append(data)
+            self.Append(f"{data.id_}", data)  # pyright: ignore[reportUnknownMemberType]
+
+        if sel!= wx.NOT_FOUND and sel <= self.GetCount():
+            self.SetSelection(sel)  # pyright: ignore[reportCallIssue]
+
+    # Draw single element
+    def OnDrawItem(self, dc: wx.DC, rect: wx.Rect, item:int, flags:int):
+        if item == wx.NOT_FOUND:
+            return
+
+        data:wxOwnComboData = self.GetClientData(item)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+        if data is not None and isinstance(data, wxOwnComboData):
+            r = rect
+            boxSize = r.height - 2 * GUIConsts.TAG_COMBO_BORDER
+            col:wx.Colour = data.colour_
+
+            if data.id_ != 0:
+                # Draw a small colored recctangle
+                dc.SetBrush(wx.Brush(colour=col))
+                dc.SetPen(wx.Pen(col, 1))
+                dc.DrawRectangle(r.x + GUIConsts.TAG_COMBO_BORDER, r.y + GUIConsts.TAG_COMBO_BORDER, r.width - 2 * GUIConsts.TAG_COMBO_BORDER, boxSize)
+            else:
+                # if not a color draw text ...
+                dc.SetFont(self.GetFont())
+                textPosX = r.x + boxSize + GUIConsts.TAG_COMBO_BORDER
+                if flags & wx.adv.ODCB_PAINTING_CONTROL:
+                    dc.SetTextForeground(self.GetForegroundColour())
+                elif flags & wx.adv.ODCB_PAINTING_SELECTED:
+                    dc.SetTextForeground(wx.WHITE)
+                else:
+                    dc.SetTextForeground(col)
+                dc.DrawLabel(GUIConsts.TAG_COMBO_NO_COLOUR_STR,
+                                wx.Rect(textPosX, r.y, r.width - textPosX, r.height),
+                                wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+
+    def OnDrawBackground(self, dc:wx.DC, rect:wx.Rect, item:int, flags:int):
+        if flags & wx.adv.ODCB_PAINTING_SELECTED and not (flags & wx.adv.ODCB_PAINTING_CONTROL):
+            dc.SetBrush(wx.Brush(wx.Colour(GUIConsts.TAG_COMBO_SEL_COLOUR)))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.DrawRectangle(rect)
+        else:
+            super().OnDrawBackground(dc, rect, item, flags)
+
+    # Item's height
+    def OnMeasureItem(self, item:int):
+        return GUIConsts.TAG_COMBO_HEIGHT
+
+    # Item's height
+    def OnMeasureItemWidth(self, item:int):
+        return -1  # use default width
+
 # wxSidebarPanel - Sidebar
 #
 class wxSidebarPanel(wxOwnPanel):
     # Constructor
-    def __init__(self, parent: wxMainFrame):
+    def __init__(self, parent: wxMainFrame, canvas:wxSolverCanvas):
         wxOwnPanel.__init__(self, parent)
+        self.canvas_:wxSolverCanvas = canvas
         self.mode_:wxEditionMode = wxEditionMode.MODE_NONE
 
         # Controls creation
@@ -1025,9 +1118,13 @@ class wxSidebarPanel(wxOwnPanel):
         self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_SIDEBAR)
         mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
 
-        self.labelCount_ = wx.StaticText(self, label="Outils")
+        self.labelCount_ = wx.StaticText(self, label="Filled")
         mySizer.Add(self.labelCount_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
-        mySizer.Add(wx.Button(self, label="End"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+
+        self.combo_ = wxOwnCombo(self, self.canvas_)
+        mySizer.Add(self.combo_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
+
+        mySizer.Add(wx.Button(self, label="End"), proportion = 0, flag = wx.LEFT, border=5)  # pyright: ignore[reportUnknownMemberType]
         mySizer.Add(wx.Button(self, label="Exit"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
         mySizer.AddStretchSpacer()
 
@@ -1035,6 +1132,11 @@ class wxSidebarPanel(wxOwnPanel):
 
         # Needs to draw panel's border
         self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
+
+    @override
+    def initialize(self):
+        self.combo_.updateColours()
+        self.combo_.SetSelection(0)  # pyright: ignore[reportCallIssue]
 
     # App. canvas
     @property
@@ -1088,14 +1190,14 @@ class wxSolverFrame(wxMainFrame):
         self.canvas_ = wxSolverCanvas(self, params)
 
         # Sidebar
-        self.sidebar_ = wxSidebarPanel(self)
+        self.sidebar_ = wxSidebarPanel(self, self.canvas_)
         self.sidebar_.canvas = self.canvas_
         self.sidebar_.SetMinSize(wx.Size(220, -1))
 
         # Add the 2 panels to the frame's sizer
-        mainSizer = wx.BoxSizer(wx.HORIZONTAL)
-        mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.sidebar_, 0, wx.EXPAND)# pyright: ignore[reportUnknownMemberType]
+        mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
         self.SetSizer(mainSizer)
 
         # Bind menu events to handler
@@ -1106,6 +1208,7 @@ class wxSolverFrame(wxMainFrame):
     def initialize(self):
         self.sidebar_show(force=True, visible=False)  # not visible at startup
         self.canvas_.initialize()
+        self.sidebar_.initialize()
 
         # Let's go !!!
         self.Centre()

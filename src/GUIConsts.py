@@ -23,8 +23,13 @@ EXT_BORDER_THICK:int    = 3    # Thickness of external border
 # Tags / Hypothesis
 TAG_MIN_SIZE:int        = 6     # Dims
 TAG_MAX_SIZE:int        = 20
-
 TAG_PADDING:int         = 4
+
+TAG_COMBO_BORDER:int    = 6     # border in the combobox
+TAG_COMBO_HEIGHT:int    = 26
+TAG_COMBO_SEL_COLOUR    = (195, 195, 195)
+TAG_COMBO_NO_COLOUR_STR:str = "no tag"
+
 
 # Elements'text font sizes (in pixels) and names
 #

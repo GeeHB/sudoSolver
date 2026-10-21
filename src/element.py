@@ -23,7 +23,6 @@ class hypColour(IntEnum):
     HYP_3 = auto()
     HYP_4 = auto()
 
-#
 # element - a single sudoku element
 #
 class element:
@@ -82,11 +81,8 @@ class element:
     def notifying(self)->bool:
         return self.status_.isSet(self.STATUS_NOTIFYING)
     @notifying.setter
-    def notifying(self, status:bool):
-        if status:
-            self.status_.set(self.STATUS_NOTIFYING)
-        else:
-            self.status_.remove(self.STATUS_NOTIFYING)
+    def notifying(self, set:bool):
+        self.status_.set(self.STATUS_NOTIFYING, set)
 
     # hypothesis's colour ID
     #
