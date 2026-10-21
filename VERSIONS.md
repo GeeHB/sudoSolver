@@ -20,6 +20,12 @@
 
 #### todo
 
+#### Version 4.1.1
+* 22 oct. 2026
+* Added :
+  * GUITheme <- Portable themes management (fonts and colours) 
+    * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
+
 
 #### Version 4.1.0
 * 16 oct. 2026
