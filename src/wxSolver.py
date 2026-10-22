@@ -351,7 +351,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._edit_selChanged()
 
             # possible values
-            values: list[int] =self.sudoku_.getValues(self.edition_.currentPos_)
+            values: list[int] =self.sudoku_.getAllowedValues(self.edition_.currentPos_)
 
             # Generate a contextual menu at mouse pos with all possible values
             popUp: wx.Menu = wx.Menu()
@@ -360,8 +360,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             for index in range(1,10):
                 id = menuConsts.ID_POPUP_VALUES[index-1]
                 popUp.Append(id, f"{index}")
-                if index not in values :
-                    popUp.Enable(id, False)
+                popUp.Enable(id, index in values)
 
             self.PopupMenu(popUp, event.GetPosition())
             popUp.Destroy()
@@ -478,41 +477,54 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         x = row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
         y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
+        self._draw_singleValue(self.memDC_, value, x, y, bkColourID, txtColourID, hypColourID)
+
+        # Hypothesis/Tag ?
+        if hypColourID != element.hypColour.NO_COLOUR:
+            self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
+
+    # Draw/erase a single value (element or proposed value) and its background
+    #
+    def _draw_singleValue(self, memDC:wx.DC, value:int | None, x:int, y:int,bkColourID:int, txtColourID:int, ratio:int = 1):
         # Erase background
-        self.memDC_.SetBrush(wx.Brush(self.theme_[bkColourID].other))
-        self.memDC_.SetPen(wx.TRANSPARENT_PEN)
-        self.memDC_.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
+        memDC.SetBrush(wx.Brush(self.theme_[bkColourID].other))
+        memDC.SetPen(wx.TRANSPARENT_PEN)
+        memDC.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
 
         # The value (if valid)
         if value is not None and value > 0:
-            self.memDC_.SetTextForeground(self.theme_[txtColourID].other)
-            self.memDC_.DrawText(str(value), x + self.textOffsets_[value-1].x, y + self.textOffsets_[value-1].y)
+            memDC.SetTextForeground(self.theme_[txtColourID].other)
+            memDC.DrawText(str(value), x + self.textOffsets_[value-1].x, y + self.textOffsets_[value-1].y)
 
-            # Hypothesis/Tag ?
-            if hypColourID != element.hypColour.NO_COLOUR:
-                self.memDC_.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
-                self.memDC_.SetPen(wx.TRANSPARENT_PEN)
 
-                radius = int(self.tagWidth_ / 2)
+    # Draw a coloured tag
+    def _draw_singleElementTag(self, memDC:wx.DC, x:int, y:int, hypColourID:int):
+        memDC.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
+        # Hypothesis/Tag ?
+        if hypColourID != element.hypColour.NO_COLOUR:
+            memDC.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
+            memDC.SetPen(wx.TRANSPARENT_PEN)
 
-                if self.tagWidth_ == GUIConsts.TAG_MIN_SIZE:
-                    self.memDC_.DrawCircle(
-                        x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - radius,
-                        y + GUIConsts.TAG_PADDING + radius,
-                        radius)
-                else:
-                    points = [
-                        (0, 0),
-                        (0, self.tagWidth_ + radius),
-                        (radius, self.tagWidth_),
-                        (self.tagWidth_, self.tagWidth_+radius),
-                        (self.tagWidth_, 0)
-                    ]
+            radius = int(self.tagWidth_ / 2)
 
-                    self.memDC_.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
-                        points,
-                        x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
-                        y + GUIConsts.TAG_PADDING)
+            if self.tagWidth_ == GUIConsts.TAG_MIN_SIZE:
+                memDC.DrawCircle(
+                    x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - radius,
+                    y + GUIConsts.TAG_PADDING + radius,
+                    radius)
+            else:
+                points = [
+                    (0, 0),
+                    (0, self.tagWidth_ + radius),
+                    (radius, self.tagWidth_),
+                    (self.tagWidth_, self.tagWidth_+radius),
+                    (self.tagWidth_, 0)
+                ]
+
+                memDC.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
+                    points,
+                    x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
+                    y + GUIConsts.TAG_PADDING)
 
     # Delete current memory DC
     def _draw_freeMemoryDC(self):
@@ -1178,7 +1190,8 @@ class wxSidebarPanel(wxOwnPanel):
         pen = wx.Pen(self.canvas_.theme_[GUITheme.colourID.ID_TB_BORDER].other, 1, wx.PENSTYLE_SOLID)
         dc.SetPen(pen)
         size = self.GetClientSize()
-        dc.DrawLine(0, 0, 0, size.height-1)     # draw the left border using using defined colour
+        #dc.DrawLine(0, 0, 0, size.height-1)     # draw the left border using using defined colour
+        dc.DrawLine(0, size.height-1, size.width, size.height-1)     # draw the bottom border using using defined colour
 
 # wxSolverFrame - App. main frame
 #
