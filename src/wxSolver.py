@@ -12,7 +12,7 @@ import sys
 from enum import IntEnum
 from typing import override
 
-from wx.core import GUIEventLoop
+#from wx.core import GUIEventLoop
 
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
@@ -186,11 +186,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # Display
         self.memDC_: wx.MemoryDC | None = None # all display are made in a memory DC
-        self.font_: wx.Font = wx.Font()
+        self.elementFont_: wx.Font
         self.directDraw_:bool = False
         self.clientSize_: wx.Size = wx.Size(0,0)
         self.textOffsets_: list[tuple[wx.Size,wx.Size]] = []  # for text in array (0 : element size, 1 : help size)
+
         self.canvasHelpFontSize_:int = 0
+        self.intHelpSquareWidth_:int = 0
 
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
@@ -468,6 +470,47 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.memDC_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
                     self.memDC_.DrawLine(x + lSquare, y, x, y)
 
+            self._draw_helpMatrix()
+
+    # Draw the proposed values matrix
+    #
+    def _draw_helpMatrix(self):
+        if self.memDC_ is not None and self.sudoku_.IsOk():
+            values : list[int] = self.sudoku_.getAllowedValues(self.edition_.currentPos_) if self.edition_.editing else []
+            value:int = 0
+
+            self.memDC_.SetFont(self.helpFont_) # use small font
+
+            y = self.offsets_[1] + GUIConsts.HELP_BORDER
+
+            for _ in range(3):
+                x = self.width_ - 3 * (self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]
+                for _ in range(3):
+                    value+=1
+                    self._draw_singleValue(self.memDC_,
+                        value if value in values else 0,
+                        x, y,
+                        self.intHelpSquareWidth_,
+                        GUITheme.colourID.ID_FRAME_BK_EVEN,
+                        GUITheme.colourID.ID_DEFAULT_TXT,
+                        1)
+                    x+=(self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
+                y+=(self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
+
+            self.memDC_.SetFont(self.elementFont_)
+
+    # The window's size has changed
+    #
+    @override
+    def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
+        boxWidth = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.HELP_SPACE) / (ROW_COUNT + 2))
+        solver.solver._draw_newClientSize(self, newWidth, newHeight, boxWidth)
+        self.intHelpSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
+
+        # update vertical offset
+        if self.params_.center :
+            self.offsets_ = (math.floor((self.width_ - GUIConsts.HELP_SPACE - ((self.extSquareWidth_ + 2) * ROW_COUNT)) / 2), self.offsets_[1])
+
     # Draw/erase a single element and its background
     #
     @override
@@ -495,10 +538,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         memDC.DrawRectangle(x, y, squareWidth, squareWidth)
 
         # The value (if valid)
+        #
+        #   the 'valid' font is already selected onto the DC !!!
+        #
         if value is not None and value > 0:
             memDC.SetTextForeground(self.theme_[txtColourID].other)
             memDC.DrawText(str(value), x + self.textOffsets_[value-1][ratioId].x, y + self.textOffsets_[value-1][ratioId].y)
-
 
     # Draw a coloured tag
     def _draw_singleElementTag(self, memDC:wx.DC, x:int, y:int, hypColourID:int):
@@ -658,6 +703,16 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self._edit_stop()
         return done
+
+    # Update array during edition
+    #
+    @override
+    def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
+        super()._edit_updatePos(prevPos, currentPos)
+
+        self._draw_startUp()
+        self._draw_helpMatrix()
+        self._draw_end()
 
     #
     #  Menus
@@ -1019,12 +1074,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.canvasHelpFontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
 
             self.memDC_.SetFont(NullFont)
-            self.font_ = wx.Font(pointSize=self.canvasFontSize_,
+            self.elementFont_ = wx.Font(pointSize=self.canvasFontSize_,
                             family=wx.FONTFAMILY_DEFAULT,
                             style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
                             weight=self.theme_.canvasFont_.weight,
                             faceName = self.theme_.canvasFont_.faceName)
-            self.memDC_.SetFont(self.font_)
+            self.memDC_.SetFont(self.elementFont_)
 
             # create a smaller font for element's value help
             self.helpFont_ = wx.Font(pointSize=self.canvasHelpFontSize_,

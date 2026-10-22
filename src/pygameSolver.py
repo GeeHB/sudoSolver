@@ -92,7 +92,7 @@ class textSurface:
         # Members
         self.surface_ : pygame.Surface | None = None
         self.position_ : tuple[int,int] = (0,0)
-        self.font_ : pygame.font.Font | None = None      # Font used for drawing the text
+        self.elementFont_ : pygame.font.Font | None = None      # Font used for drawing the text
         self.eventID_ : int = 0         # Event ID - optionnal
         self.eventFreq_ : int = 0
         self.setFont(fontName, fontSize)
@@ -111,16 +111,16 @@ class textSurface:
 
     # Create / change the font
     def setFont(self, fontName:str, fontSize:int):
-        if self.font_:
-            del self.font_
-        self.font_ = pygame.font.SysFont(fontName, fontSize)
+        if self.elementFont_:
+            del self.elementFont_
+        self.elementFont_ = pygame.font.SysFont(fontName, fontSize)
 
     # Create a surface with the associated text
     def setText(self, text : str, txtColour : pygame.Color, bkColour : pygame.Color | None = None):
         self.erase()
 
-        if self.font_ is not None:
-            self.surface_ = self.font_.render(text, 1, txtColour, bkColour)
+        if self.elementFont_ is not None:
+            self.surface_ = self.elementFont_.render(text, 1, txtColour, bkColour)
 
     # Erases the surface
     def erase(self):
@@ -132,7 +132,7 @@ class textSurface:
     def end(self):
         self.killTimer()
         self.erase()
-        del self.font_
+        del self.elementFont_
 
     # Position
     #

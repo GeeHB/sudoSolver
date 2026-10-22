@@ -93,6 +93,12 @@ class editStatus:
         if set : self.creating = False
         self.status_.set(self.EDIT_MODE_RESOLUTION, set)
 
+    # in edition (creation or solving) mode ?
+    @property
+    def editing(self)->bool:
+        return (self.status_.isSet(self.EDIT_MODE_CREATION) or self.status_.isSet(self.EDIT_MODE_RESOLUTION))
+
+
     # Selection status
     @property
     def selected(self)->bool:
@@ -335,12 +341,12 @@ class solver:
 
     # The window's size has changed
     #
-    def _draw_newClientSize(self, newWidth:int, newHeight:int):
+    def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
         self.width_ = newWidth
         self.height_ = newHeight
 
         # Compute new square sizes
-        squareW = math.floor((newWidth - 2 * GUIConsts.DELTA_W) / ROW_COUNT)
+        squareW = boxWidth if boxWidth is not None else math.floor((newWidth - 2 * GUIConsts.DELTA_W) / ROW_COUNT)
         squareH = math.floor((newHeight - 2 * GUIConsts.DELTA_H) / LINE_COUNT)
 
         if squareW < GUIConsts.SQUARE_MIN or squareH < GUIConsts.SQUARE_MIN :

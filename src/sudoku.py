@@ -380,7 +380,7 @@ class sudoku(threading.Thread):
 
     # Get the list of possible values at a given position
     #
-    def getValues(self, position:pointer)->list[int]:
+    def getAllowedValues(self, position:pointer)->list[int]:
         values : list[int] = []
         for value in range(VALUE_MIN, VALUE_MAX+1):
             if self.checkValue(position, value):

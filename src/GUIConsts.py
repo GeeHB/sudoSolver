@@ -20,6 +20,10 @@ DELTA_H:int             = 10
 
 EXT_BORDER_THICK:int    = 3    # Thickness of external border
 
+# Help matrix
+#
+HELP_SPACE:int          = 150
+HELP_BORDER:int         = 2
 HELP_RATIO:int          = 2
 
 # Tags / Hypothesis
