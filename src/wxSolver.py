@@ -12,6 +12,8 @@ import sys
 from enum import IntEnum
 from typing import override
 
+from wx.core import GUIEventLoop
+
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
     import wx.adv
@@ -187,7 +189,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.font_: wx.Font = wx.Font()
         self.directDraw_:bool = False
         self.clientSize_: wx.Size = wx.Size(0,0)
-        self.textOffsets_: list[wx.Size] = []  # for text in array
+        self.textOffsets_: list[tuple[wx.Size,wx.Size]] = []  # for text in array (0 : element size, 1 : help size)
+        self.canvasHelpFontSize_:int = 0
 
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
@@ -477,7 +480,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         x = row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
         y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
-        self._draw_singleValue(self.memDC_, value, x, y, bkColourID, txtColourID, hypColourID)
+        self._draw_singleValue(self.memDC_, value, x, y, self.intSquareWidth_, bkColourID, txtColourID, hypColourID)
 
         # Hypothesis/Tag ?
         if hypColourID != element.hypColour.NO_COLOUR:
@@ -485,16 +488,16 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Draw/erase a single value (element or proposed value) and its background
     #
-    def _draw_singleValue(self, memDC:wx.DC, value:int | None, x:int, y:int,bkColourID:int, txtColourID:int, ratio:int = 1):
+    def _draw_singleValue(self, memDC:wx.DC, value:int | None, x:int, y:int, squareWidth:int,bkColourID:int, txtColourID:int, ratioId:int = 0):
         # Erase background
         memDC.SetBrush(wx.Brush(self.theme_[bkColourID].other))
         memDC.SetPen(wx.TRANSPARENT_PEN)
-        memDC.DrawRectangle(x, y, self.intSquareWidth_, self.intSquareWidth_)
+        memDC.DrawRectangle(x, y, squareWidth, squareWidth)
 
         # The value (if valid)
         if value is not None and value > 0:
             memDC.SetTextForeground(self.theme_[txtColourID].other)
-            memDC.DrawText(str(value), x + self.textOffsets_[value-1].x, y + self.textOffsets_[value-1].y)
+            memDC.DrawText(str(value), x + self.textOffsets_[value-1][ratioId].x, y + self.textOffsets_[value-1][ratioId].y)
 
 
     # Draw a coloured tag
@@ -1012,6 +1015,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.memDC_ is not None and self.memDC_.IsOk():
             self._draw_fontSize2PixelSize()
 
+            # small font size
+            self.canvasHelpFontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
+
             self.memDC_.SetFont(NullFont)
             self.font_ = wx.Font(pointSize=self.canvasFontSize_,
                             family=wx.FONTFAMILY_DEFAULT,
@@ -1020,11 +1026,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                             faceName = self.theme_.canvasFont_.faceName)
             self.memDC_.SetFont(self.font_)
 
+            # create a smaller font for element's value help
+            self.helpFont_ = wx.Font(pointSize=self.canvasHelpFontSize_,
+                            family=wx.FONTFAMILY_DEFAULT,
+                            style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
+                            weight=self.theme_.canvasFont_.weight,
+                            faceName = self.theme_.canvasFont_.faceName)
+
             dims : wx.Size
-            self.textOffsets_.clear()       # (re)compute offset to center texts in array
+            self.textOffsets_.clear()       # (re)compute offsets to center texts in array and help matrix
             for index in range(VALUE_MAX):
                 dims = self.memDC_.GetTextExtent(f"{index+1}")
-                self.textOffsets_.append(wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2)))
+                realOffset = wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2))
+                smallOffset = wx.Size(math.floor(realOffset.x/GUIConsts.HELP_RATIO), math.floor(realOffset.y/GUIConsts.HELP_RATIO))
+                self.textOffsets_.append((realOffset, smallOffset))
 
 #
 #  Owner-drawn combobox

@@ -20,6 +20,8 @@ DELTA_H:int             = 10
 
 EXT_BORDER_THICK:int    = 3    # Thickness of external border
 
+HELP_RATIO:int          = 2
+
 # Tags / Hypothesis
 TAG_MIN_SIZE:int        = 6     # Dims
 TAG_MAX_SIZE:int        = 20
