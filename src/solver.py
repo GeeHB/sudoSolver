@@ -362,7 +362,7 @@ class solver:
 
         if self.params_.center :
             self.offsets_ = (math.floor((self.width_ - (self.extSquareWidth_ * ROW_COUNT)) / 2),
-                math.floor((self.height_ - self.extSquareWidth_ * LINE_COUNT) / 2))
+                            math.floor((self.height_ - self.extSquareWidth_ * LINE_COUNT) / 2))
         else:
             self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)  # aligned with top left corner
 

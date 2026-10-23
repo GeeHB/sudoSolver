@@ -191,8 +191,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.clientSize_: wx.Size = wx.Size(0,0)
         self.textOffsets_: list[tuple[wx.Size,wx.Size]] = []  # for text in array (0 : element size, 1 : help size)
 
-        self.canvasHelpFontSize_:int = 0
-        self.intHelpSquareWidth_:int = 0
+        self.helpCanvasFontSize_:int = 0
+        self.helpIntSquareWidth_:int = 0
+        self.helpOffsets_:tuple[int,int] = (0,0)
 
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
@@ -481,21 +482,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.memDC_.SetFont(self.helpFont_) # use small font
 
-            y = self.offsets_[1] + GUIConsts.HELP_BORDER
+            y = self.helpOffsets_[1]
 
             for _ in range(3):
-                x = self.width_ - 3 * (self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]
+                #x = self.width_ - 3 * (self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]   # stick to the right border
+                x = self.helpOffsets_[0]
                 for _ in range(3):
                     value+=1
                     self._draw_singleValue(self.memDC_,
                         value if value in values else 0,
                         x, y,
-                        self.intHelpSquareWidth_,
+                        self.helpIntSquareWidth_,
                         GUITheme.colourID.ID_FRAME_BK_EVEN,
                         GUITheme.colourID.ID_DEFAULT_TXT,
                         1)
-                    x+=(self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
-                y+=(self.intHelpSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
+                    x+=(self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
+                y+=(self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
 
             self.memDC_.SetFont(self.elementFont_)
 
@@ -505,11 +507,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
         boxWidth = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.HELP_SPACE) / (ROW_COUNT + 2))
         solver.solver._draw_newClientSize(self, newWidth, newHeight, boxWidth)
-        self.intHelpSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
+        self.helpIntSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
 
         # update vertical offset
         if self.params_.center :
-            self.offsets_ = (math.floor((self.width_ - GUIConsts.HELP_SPACE - ((self.extSquareWidth_ + 2) * ROW_COUNT)) / 2), self.offsets_[1])
+            self.offsets_ = (GUIConsts.DELTA_W + math.floor((self.width_ - GUIConsts.HELP_SPACE - self.extSquareWidth_ * (2 + ROW_COUNT)) / 2), self.offsets_[1])
+
+        # Help matrix position
+        self.helpOffsets_ = (self.offsets_[0] + ROW_COUNT * self.extSquareWidth_ + GUIConsts.HELP_SPACE, self.offsets_[1] + GUIConsts.HELP_SPACE)
 
     # Draw/erase a single element and its background
     #
@@ -1071,7 +1076,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_fontSize2PixelSize()
 
             # small font size
-            self.canvasHelpFontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
+            self.helpCanvasFontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
 
             self.memDC_.SetFont(NullFont)
             self.elementFont_ = wx.Font(pointSize=self.canvasFontSize_,
@@ -1082,7 +1087,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.memDC_.SetFont(self.elementFont_)
 
             # create a smaller font for element's value help
-            self.helpFont_ = wx.Font(pointSize=self.canvasHelpFontSize_,
+            self.helpFont_ = wx.Font(pointSize=self.helpCanvasFontSize_,
                             family=wx.FONTFAMILY_DEFAULT,
                             style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
                             weight=self.theme_.canvasFont_.weight,
