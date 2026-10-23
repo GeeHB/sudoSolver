@@ -25,6 +25,9 @@
 * Added :
   * GUITheme <- Portable themes management (fonts and colours) 
     * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
+  * Help matrix
+    * show (on demand) possibles element's values in side small matrix
+  * Add 'Display' menu
 
 
 #### Version 4.1.0

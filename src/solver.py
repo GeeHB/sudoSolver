@@ -80,7 +80,7 @@ class editStatus:
     def creating(self)->bool:
         return self.status_.isSet(self.EDIT_MODE_CREATION)
     @creating.setter
-    def creating(self, set : bool = True):
+    def creating(self, set:bool = True):
         if set: self.manualSolving = False
         self.status_.set(self.EDIT_MODE_CREATION, set)
 
@@ -89,7 +89,7 @@ class editStatus:
     def manualSolving(self)->bool:
         return self.status_.isSet(self.EDIT_MODE_RESOLUTION)
     @manualSolving.setter
-    def manualSolving(self, set: bool = True):
+    def manualSolving(self, set:bool = True):
         if set : self.creating = False
         self.status_.set(self.EDIT_MODE_RESOLUTION, set)
 
@@ -97,7 +97,11 @@ class editStatus:
     @property
     def editing(self)->bool:
         return (self.status_.isSet(self.EDIT_MODE_CREATION) or self.status_.isSet(self.EDIT_MODE_RESOLUTION))
-
+    @editing.setter
+    def editing(self, active: bool = True):
+        if not active:
+            self.status_.set(self.EDIT_MODE_CREATION, False)
+            self.status_.set(self.EDIT_MODE_RESOLUTION, False)
 
     # Selection status
     @property
@@ -380,23 +384,21 @@ class solver:
 
     # Mouse position : client -> array coordinates
     #
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int]:
+    # @return : (None | (array or help x coordinate) , array or help y coordinate)
+    #           None is returned when mouse is outside array and outside help matrix
+    #           x & y > 0 : coordinates in the array
+    #           x & y < 0 : coordinated in the help matrix
+    #
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
         ret:list[int] = [-1,-1]
         if len(self.sudoku_) == ARRAY_SIZE:
             for index in range(2):
                 if pos[index] > self.offsets_[index]:
                     ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
                 else:
-                    return (-1, -1)
+                    return (None, -1)
 
-        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else -1, ret[1])
-        """
-        if pos[1] > self.offsets_[1] :
-            x : int = int((pos[0] - GUIConsts.EXT_BORDER_THICK - self.offsets_[0]) / self.extSquareWidth_)
-            y : int = int((pos[1] - GUIConsts.EXT_BORDER_THICK - self.offsets_[1]) / self.extSquareWidth_)
-            return (x,y)
-        return (-1,-1)
-        """
+        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else None, ret[1])
 
 
     #
@@ -435,7 +437,7 @@ class solver:
     # End of edition mode
     #
     def _edit_stop(self, endApp:bool = False):
-        pass
+        self.edition_.editing = False   # !!!
 
     # Update array during edition
     #

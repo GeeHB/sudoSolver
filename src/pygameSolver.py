@@ -551,7 +551,7 @@ class pygameSolver(solver.solver):
     # Handle window's resize
     #
     @override
-    def _draw_newClientSize(self, newWidth:int, newHeight:int):
+    def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
         solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
         # Update elements'font
@@ -761,7 +761,9 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    _ = self.edition_.currentPos_.moveTo(pos=self._mouse_translatePosition(pos))
+                    res:tuple[int|None,int] = self._mouse_translatePosition(pos)
+                    if res[0] is not None:
+                        _ = self.edition_.currentPos_.moveTo(pos=(res[0], res[1]))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:

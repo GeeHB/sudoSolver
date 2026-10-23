@@ -354,10 +354,19 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             self.edition_.move()
-            newPos: tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            newPos: tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
 
-            if newPos[0]!=-1 and self.edition_.currentPos_.moveTo(pos=newPos):
-                self._edit_selChanged()
+            if newPos[0] is not None :
+                if newPos[0] > 0:
+                    if  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):   # click on the array
+                        self._edit_selChanged()
+                else:
+                    value:int = 1 - 3 * newPos[1] - newPos[0]
+                    #print(f"At {newPos} : {value}")
+                    if -1 == self._edit_setValue(value)  :
+                        self._edit_setValue(0)  # click on empty proposal
+                    self.parent_.countChanged()
+                    self._draw_helpMatrix_ex()
 
             return
 
@@ -368,9 +377,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             self.edition_.move()
-            newPos : tuple[int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            newPos : tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
 
-            if self.edition_.currentPos_.moveTo(pos=newPos):
+            if newPos[0] is not None and  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):
                 self._edit_selChanged()
 
             # possible values
@@ -533,6 +542,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.memDC_.SetFont(self.elementFont_)
 
+    def _draw_helpMatrix_ex(self):
+        self._draw_startUp()
+        self._draw_helpMatrix()
+        self._draw_end()
+
     # The window's size has changed
     #
     @override
@@ -669,6 +683,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self._draw_startUp()
             self._draw_selectedElement(False)
+            self._draw_helpMatrix()
             self._draw_end()
 
     # Selected item has just changed
@@ -751,9 +766,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         super()._edit_updatePos(prevPos, currentPos)
 
         if self.helpVisible_:
-            self._draw_startUp()
-            self._draw_helpMatrix()
-            self._draw_end()
+            self._draw_helpMatrix_ex()
 
     #
     #  Menus
@@ -1038,6 +1051,27 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.sudoku_.IsOk():
             self.sudoku_.revert()
             self.draw_update()
+
+    # Mouse position : client -> array coordinates
+    #
+    # @return : (None | (array or help x coordinate) , array or help y coordinate)
+    #           None is returned when mouse is outside array and outside help matrix
+    #           x & y > 0 : coordinates in the array
+    #           x & y < 0 : coordinates in the help matrix
+    #
+    @override
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
+        ret:tuple[int|None, int] = solver.solver._mouse_translatePosition(self, pos)
+        if self.helpVisible_ and ret[0] is None:
+            # not in the array -> in the matrix ?
+            elementWidth = self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
+            matrixWidth:int = 3 * elementWidth
+
+            if pos[0] >= self.helpOffsets_[0] and pos[1] >= self.helpOffsets_[1] and pos[0] < (self.helpOffsets_[0] + matrixWidth) and pos[1] < (self.helpOffsets_[1] + matrixWidth):
+                return (math.floor((pos[0] - self.helpOffsets_[0]) / elementWidth) * -1,
+                    math.floor((pos[1] - self.helpOffsets_[1]) / elementWidth) * -1)
+
+        return ret
 
     #
     #  Element(s)' notifications
