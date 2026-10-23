@@ -1364,6 +1364,8 @@ class wxSolverFrame(wxMainFrame):
     def modeChanged(self, mode:wxEditionMode):
         if mode!=wxEditionMode.MODE_NONE:
             self.sidebar_show(force=True, visible=True)  # always show sidebar when entering edition process
+            self.GetMenuBar().Check(menuConsts.ID_DISPLAY_SIDEBAR, True)
+
         self.sidebar_.mode = mode
 
     # End drawings
