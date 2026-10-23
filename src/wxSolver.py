@@ -191,10 +191,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.clientSize_: wx.Size = wx.Size(0,0)
         self.textOffsets_: list[tuple[wx.Size,wx.Size]] = []  # for text in array (0 : element size, 1 : help size)
 
+        # Help matrix
+        self.helpVisible_:bool = False
         self.helpCanvasFontSize_:int = 0
         self.helpIntSquareWidth_:int = 0
         self.helpOffsets_:tuple[int,int] = (0,0)
 
+        # Timers (selection and notification)
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
         self.notify_:bool = False
@@ -272,6 +275,19 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._menu_fileOpen()
             case wx.ID_SAVE:
                 self._menu_fileSave()
+
+            case menuConsts.ID_DISPLAY_CENTER:
+                actual:bool = self.params_.center
+                self.params_.center = not actual
+
+                self._draw_newClientSize(self.width_, self.height_)     # compute new dims
+                self.draw_update()
+
+            case menuConsts.ID_DISPLAY_HELP:
+                self.helpVisible_ = not self.helpVisible_
+
+                self._draw_newClientSize(self.width_, self.height_)     # compute new dims
+                self.draw_update()
 
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
@@ -444,6 +460,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _draw_background(self):
         if self.memDC_ is not None and 0 != self.extSquareWidth_ :
 
+            self.memDC_.Clear()
+
             # thin borders ...
             #
             pen = wx.Pen(self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
@@ -471,7 +489,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.memDC_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
                     self.memDC_.DrawLine(x + lSquare, y, x, y)
 
-            self._draw_helpMatrix()
+            if self.helpVisible_:
+                self._draw_helpMatrix()
 
     # Draw the proposed values matrix
     #
@@ -505,16 +524,19 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
-        boxWidth = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.HELP_SPACE) / (ROW_COUNT + 2))
-        solver.solver._draw_newClientSize(self, newWidth, newHeight, boxWidth)
-        self.helpIntSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
+        if self.helpVisible_:
+            boxWidth = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.HELP_SPACE) / (ROW_COUNT + 2))
+            solver.solver._draw_newClientSize(self, newWidth, newHeight, boxWidth)
+            self.helpIntSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
 
-        # update vertical offset
-        if self.params_.center :
-            self.offsets_ = (GUIConsts.DELTA_W + math.floor((self.width_ - GUIConsts.HELP_SPACE - self.extSquareWidth_ * (2 + ROW_COUNT)) / 2), self.offsets_[1])
+            # update vertical offset
+            if self.params_.center :
+                self.offsets_ = (GUIConsts.DELTA_W + math.floor((self.width_ - GUIConsts.HELP_SPACE - self.extSquareWidth_ * (2 + ROW_COUNT)) / 2), self.offsets_[1])
 
-        # Help matrix position
-        self.helpOffsets_ = (self.offsets_[0] + ROW_COUNT * self.extSquareWidth_ + GUIConsts.HELP_SPACE, self.offsets_[1] + GUIConsts.HELP_SPACE)
+            # Help matrix position
+            self.helpOffsets_ = (self.offsets_[0] + ROW_COUNT * self.extSquareWidth_ + GUIConsts.HELP_SPACE, self.offsets_[1] + GUIConsts.HELP_SPACE)
+        else:
+            solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
     # Draw/erase a single element and its background
     #
@@ -715,9 +737,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
         super()._edit_updatePos(prevPos, currentPos)
 
-        self._draw_startUp()
-        self._draw_helpMatrix()
-        self._draw_end()
+        if self.helpVisible_:
+            self._draw_startUp()
+            self._draw_helpMatrix()
+            self._draw_end()
 
     #
     #  Menus
@@ -733,20 +756,30 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         fileMenu.Append(wx.ID_OPEN)
         fileMenu.Append(wx.ID_SAVE)
 
-        fileMenu.AppendSeparator()  # Themes management
-        fileMenu.AppendCheckItem(menuConsts.ID_SIDEBAR, menuConsts.IDM_SIDEBAR)
-        fileMenu.Check(menuConsts.ID_SIDEBAR, self.parent_.sidebar_isVisible())
+        fileMenu.AppendSeparator()
+        fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
 
-        fileMenu.AppendSeparator()  # Themes management
+        # Display
+        #
+        displayMenu = wx.Menu()
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_SIDEBAR, menuConsts.IDM_DISPLAY_SIDEBAR)
+        displayMenu.Check(menuConsts.ID_DISPLAY_SIDEBAR, self.parent_.sidebar_isVisible())
+
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_CENTER, menuConsts.IDM_DISPLAY_CENTER)
+        displayMenu.Check(menuConsts.ID_DISPLAY_CENTER, self.params_.center)
+
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP, menuConsts.IDM_DISPLAY_HELP)
+        displayMenu.Check(menuConsts.ID_DISPLAY_HELP, self.helpVisible_)
+
+        displayMenu.AppendSeparator()  # Themes management
         themesMenu = wx.Menu()
         for name in list(GUITheme.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             self.menuThemesID_[name] = newID
             themesMenu.Append(newID, name)  # pyright: ignore[reportUnknownArgumentType]
 
-        fileMenu.Append(wx.ID_ANY, menuConsts.IDM_THEMES, themesMenu)
-        fileMenu.AppendSeparator()
-        fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
+        displayMenu.Append(wx.ID_ANY, menuConsts.IDM_DISPLAY_THEMES, themesMenu)
+
 
         # Creation
         #
@@ -778,6 +811,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.menuBar_ : wx.MenuBar = wx.MenuBar()
         self.parent_.SetMenuBar(self.menuBar_)
         self.menuBar_.Append(fileMenu, menuConsts.IDM_FILE)
+        self.menuBar_.Append(displayMenu, menuConsts.IDM_DISPLAY)
         self.menuBar_.Append(createMenu,menuConsts.IDM_CREATE)
         self.menuBar_.Append(solveMenu, menuConsts.IDM_SOLVE)
 
@@ -1330,13 +1364,13 @@ class wxSolverFrame(wxMainFrame):
         menuId = event.GetId()
 
         match menuId:
-            case menuConsts.ID_SIDEBAR:
+            case menuConsts.ID_DISPLAY_SIDEBAR:
                 self.sidebar_show()
+
             case wx.ID_EXIT:
                 self.Destroy()
             case _:
                 self.canvas_.OnMenu(event)  # Other events are handled by the canvas panel
-
 
     # Show / hide the side bar
     #
