@@ -287,6 +287,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.helpVisible_ = not self.helpVisible_
 
                 self._draw_newClientSize(self.width_, self.height_)     # compute new dims
+                self._theme_fontChanged()
                 self.draw_update()
 
             case menuConsts.ID_EDIT_UNDO:
@@ -462,8 +463,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.memDC_.Clear()
 
-            # thin borders ...
+            # Sudoku
             #
+
+            # thin borders ...
             pen = wx.Pen(self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other, 1, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(pen)
 
@@ -474,8 +477,21 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.memDC_.DrawLine(x, y, x, y + self.extSquareWidth_)
                     self.memDC_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
+            if self.helpVisible_:
+                x = self.helpOffsets_[0]
+                y = self.helpOffsets_[1]
+
+                elementWidth = self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
+                matrixWidth:int = 3 * elementWidth
+                offset:int = 0
+                for _ in range(4):
+                    self.memDC_.DrawLine(x + offset, y, x + offset, y + matrixWidth) # Vert.
+                    self.memDC_.DrawLine(x, y + offset, x + matrixWidth, y + offset) # Horz.
+                    offset+=elementWidth
+
+                self._draw_helpMatrix()
+
             # ... large ext. borders
-            #
             penLarge = wx.Pen(self.theme_[GUITheme.colourID.ID_FRAME_BORDER].other, GUIConsts.EXT_BORDER_THICK, wx.PENSTYLE_SOLID)
             self.memDC_.SetPen(penLarge)
             lSquare = self.extSquareWidth_ * 3
@@ -489,9 +505,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.memDC_.DrawLine(x + lSquare, y + lSquare,x + lSquare, y)
                     self.memDC_.DrawLine(x + lSquare, y, x, y)
 
-            if self.helpVisible_:
-                self._draw_helpMatrix()
-
     # Draw the proposed values matrix
     #
     def _draw_helpMatrix(self):
@@ -501,11 +514,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.memDC_.SetFont(self.helpFont_) # use small font
 
-            y = self.helpOffsets_[1]
+            y = self.helpOffsets_[1] + GUIConsts.EXT_BORDER_THICK
 
             for _ in range(3):
                 #x = self.width_ - 3 * (self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]   # stick to the right border
-                x = self.helpOffsets_[0]
+                x = self.helpOffsets_[0] + GUIConsts.EXT_BORDER_THICK
                 for _ in range(3):
                     value+=1
                     self._draw_singleValue(self.memDC_,
@@ -515,8 +528,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         GUITheme.colourID.ID_FRAME_BK_EVEN,
                         GUITheme.colourID.ID_DEFAULT_TXT,
                         1)
-                    x+=(self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
-                y+=(self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK)
+                    x+=(self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
+                y+=(self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
 
             self.memDC_.SetFont(self.elementFont_)
 
