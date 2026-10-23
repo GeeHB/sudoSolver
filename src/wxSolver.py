@@ -361,7 +361,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     if  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):   # click on the array
                         self._edit_selChanged()
                 else:
-                    value:int = 1 - 3 * newPos[1] - newPos[0]
+                    value:int = 1 - 3 * newPos[1] - newPos[0]   # Value in the help matrix
                     #print(f"At {newPos} : {value}")
                     if -1 == self._edit_setValue(value)  :
                         self._edit_setValue(0)  # click on empty proposal
@@ -370,7 +370,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             return
 
-        event.Skip()  # Allow other handlers to process the key
+        event.Skip()  # Allow other handlers to process the event
 
     # User pressed the right button => display contextual menu
     #
@@ -399,7 +399,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             return
 
-        event.Skip()  # Allow other handlers to process the key
+        event.Skip()  # Allow other handlers to process the event
 
     # Draw the canvas and its content
     #

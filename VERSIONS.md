@@ -26,9 +26,11 @@
   * GUITheme <- Portable themes management (fonts and colours) 
     * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
   * Help matrix
-    * show (on demand) possibles element's values in side small matrix
+    * show (on demand) possible element's values in sided small clickable matrix
   * Add 'Display' menu
-
+* Corrections
+  * Flickering effect on pygame displays
+  * Error in centering calculation
 
 #### Version 4.1.0
 * 16 oct. 2026
