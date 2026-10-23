@@ -20,11 +20,22 @@ DELTA_H:int             = 10
 
 EXT_BORDER_THICK:int    = 3    # Thickness of external border
 
+# Help matrix
+#
+HELP_SPACE:int          = 80
+HELP_BORDER:int         = 2
+HELP_RATIO:int          = 2
+
 # Tags / Hypothesis
 TAG_MIN_SIZE:int        = 6     # Dims
 TAG_MAX_SIZE:int        = 20
-
 TAG_PADDING:int         = 4
+
+TAG_COMBO_BORDER:int    = 6     # border in the combobox
+TAG_COMBO_HEIGHT:int    = 26
+TAG_COMBO_SEL_COLOUR    = (195, 195, 195)
+TAG_COMBO_NO_COLOUR_STR:str = "no tag"
+
 
 # Elements'text font sizes (in pixels) and names
 #
@@ -67,9 +78,10 @@ STR_WILDCARD:str= "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed?"
 STR_NO_SOLUTION:str = "No solution found."
 
-STR_MODE:str = "Mode"
-STR_MODE_CREATION:str = "creation"
-STR_MODE_RESOLUTION:str = "resolution"
+STR_SIDEBAR:str = "Sidebar"
+STR_MODE:str = "mode"
+STR_MODE_CREATION:str = "Creation"
+STR_MODE_RESOLUTION:str = "Resolution"
 
 STR_FILLED:str = "Filled"
 

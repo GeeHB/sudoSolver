@@ -12,10 +12,23 @@ import wx  # pyright: ignore[reportMissingTypeStubs]
 # Files
 #
 IDM_FILE:str = '&File'
-IDM_THEMES:str = 'Themes'
 
-IDM_SIDEBAR:str = 'Sidebar'
-ID_SIDEBAR:int = wx.NewIdRef().GetId()
+
+# Display
+#
+IDM_DISPLAY:str = '&Display'
+
+IDM_DISPLAY_SIDEBAR:str = 'Sidebar'
+ID_DISPLAY_SIDEBAR:int = wx.NewIdRef().GetId()
+
+IDM_DISPLAY_CENTER:str = 'Center'
+ID_DISPLAY_CENTER:int = wx.NewIdRef().GetId()
+
+IDM_DISPLAY_HELP:str = 'Help matrix'
+ID_DISPLAY_HELP:int = wx.NewIdRef().GetId()
+
+IDM_DISPLAY_THEMES:str = 'Themes'
+
 
 # Creation
 #

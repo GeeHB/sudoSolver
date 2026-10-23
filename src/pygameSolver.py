@@ -92,7 +92,7 @@ class textSurface:
         # Members
         self.surface_ : pygame.Surface | None = None
         self.position_ : tuple[int,int] = (0,0)
-        self.font_ : pygame.font.Font | None = None      # Font used for drawing the text
+        self.elementFont_ : pygame.font.Font | None = None      # Font used for drawing the text
         self.eventID_ : int = 0         # Event ID - optionnal
         self.eventFreq_ : int = 0
         self.setFont(fontName, fontSize)
@@ -111,16 +111,16 @@ class textSurface:
 
     # Create / change the font
     def setFont(self, fontName:str, fontSize:int):
-        if self.font_:
-            del self.font_
-        self.font_ = pygame.font.SysFont(fontName, fontSize)
+        if self.elementFont_:
+            del self.elementFont_
+        self.elementFont_ = pygame.font.SysFont(fontName, fontSize)
 
     # Create a surface with the associated text
     def setText(self, text : str, txtColour : pygame.Color, bkColour : pygame.Color | None = None):
         self.erase()
 
-        if self.font_ is not None:
-            self.surface_ = self.font_.render(text, 1, txtColour, bkColour)
+        if self.elementFont_ is not None:
+            self.surface_ = self.elementFont_.render(text, 1, txtColour, bkColour)
 
     # Erases the surface
     def erase(self):
@@ -132,7 +132,7 @@ class textSurface:
     def end(self):
         self.killTimer()
         self.erase()
-        del self.font_
+        del self.elementFont_
 
     # Position
     #
@@ -362,7 +362,7 @@ class pygameSolver(solver.solver):
 
                 # A few stats.
                 if found:
-                    self.showStats()
+                    self._resolve_showStats()
                 else:
                     print(f"No solution found for '{self.params_.fileName_}'")
         except sudokuError as e:
@@ -551,7 +551,7 @@ class pygameSolver(solver.solver):
     # Handle window's resize
     #
     @override
-    def _draw_newClientSize(self, newWidth:int, newHeight:int):
+    def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
         solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
         # Update elements'font
@@ -761,7 +761,9 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    _ = self.edition_.currentPos_.moveTo(pos=self._mouse_translatePosition(pos))
+                    res:tuple[int|None,int] = self._mouse_translatePosition(pos)
+                    if res[0] is not None:
+                        _ = self.edition_.currentPos_.moveTo(pos=(res[0], res[1]))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:
@@ -800,7 +802,7 @@ class pygameSolver(solver.solver):
             currentElement: element = self.sudoku_[index]
             value : int | None = currentElement.num
             if value is not None:
-                bk, txt = self._draw_getElementColours(index, False)
+                bk, txt = self._theme_getElementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
                     self.edition_.currentPos_.row(),
@@ -827,7 +829,7 @@ class pygameSolver(solver.solver):
     # Convert colour objects from ownColour to pygameColor
     #
     @override
-    def _draw_convertColours(self):
+    def _theme_convertColours(self):
         for id in range(len(self.theme_)):
             self.theme_[id].other = pygame.Color(
                 self.theme_[id].r,
