@@ -761,9 +761,9 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    res:tuple[int|None,int] = self._mouse_translatePosition(pos)
-                    if res[0] is not None:
-                        _ = self.edition_.currentPos_.moveTo(pos=(res[0], res[1]))
+                    res:tuple[int,int,int] = self._mouse_translatePosition(pos)
+                    if res[0] != solver.ownZone.ZONE_NOWHERE:
+                        _ = self.edition_.currentPos_.moveTo(pos=(res[1], res[2]))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:

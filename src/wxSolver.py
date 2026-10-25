@@ -12,12 +12,11 @@ import sys
 from enum import IntEnum
 from typing import override
 
-#from wx.core import GUIEventLoop
-
 try :
     import wx  # pyright: ignore[reportMissingTypeStubs]
     import wx.adv
     from wx.core import NullFont
+    #from wx.core import GUIEventLoop
 except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
@@ -259,8 +258,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
-        #menu = event.GetEventObject()
-        #print(f"Item : {menu.GetLabelText(menuId)}")
 
         # From the contextual menu ?
         if self._menu_handleContextualItems(menuId):
@@ -353,31 +350,32 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
-            newPos: tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            newPos: tuple[int,int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
             #print(f"Click on {newPos}")
-            if newPos[0] is not None :
-                if newPos[0] >= 0:
+            match newPos[0]:
+                case solver.ownZone.ZONE_ARRAY:
                     self.edition_.move()
-                    if  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):   # click on the array
+                    if  self.edition_.currentPos_.moveTo(pos=(newPos[1], newPos[2])):   # click on the array
                         self._edit_selChanged()
-                else:
-                    value:int = - 3 * (newPos[1] + 1) - newPos[0]   # Value in the help matrix
+
+                case solver.ownZone.ZONE_HELP_MATRIX:
+                    value:int = 1 + 3 * newPos[2] + newPos[1]   # Value in the help matrix
                     #print(f"At {newPos} : {value}")
                     if -1 == self._edit_setValue(value)  :
                         self._edit_setValue(0)  # click on empty proposal
                     self.parent_.countChanged()
                     self._draw_helpMatrix_ex()
-            return
 
-        event.Skip()  # Allow other handlers to process the event
+                case _:
+                    event.Skip()  # Allow other handlers to process the event
 
     # User pressed the right button => display contextual menu
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             self.edition_.move()
-            clickPos : tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
-            if clickPos[0] is not None and self.edition_.currentPos_.moveTo(pos=(clickPos[0], clickPos[1])):
+            clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):
                 self._edit_selChanged()
 
             # possible values
@@ -1052,22 +1050,19 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Mouse position : client -> array coordinates
     #
-    # @return : (None | (array or help x coordinate) , array or help y coordinate)
-    #           None is returned when mouse is outside array and outside help matrix
-    #           x & y > 0 : coordinates in the array
-    #           x & y <= -1 : coordinates in the help matrix
-    #
-    @override
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
-        ret:tuple[int|None, int] = solver.solver._mouse_translatePosition(self, pos)
-        if self.helpVisible_ and ret[0] is None:
+    # @return : (ZoneID, x coordinate, y coordinate)
+    #           If ZoneID == ZONE_NOWHERE, x and y are undefined
+    #@override
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int, int]:
+        ret:tuple[int, int, int] = solver.solver._mouse_translatePosition(self, pos)
+        if ret[0] == solver.ownZone.ZONE_NOWHERE and self.helpVisible_:
             # not in the array -> in the matrix ?
             elementWidth = self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
             matrixWidth:int = 3 * elementWidth
 
             if pos[0] >= self.helpOffsets_[0] and pos[1] >= self.helpOffsets_[1] and pos[0] < (self.helpOffsets_[0] + matrixWidth) and pos[1] < (self.helpOffsets_[1] + matrixWidth):
-                return (math.floor(1 + (pos[0] - self.helpOffsets_[0]) / elementWidth) * -1,
-                    math.floor(1 + (pos[1] - self.helpOffsets_[1]) / elementWidth) * -1)
+                return (solver.ownZone.ZONE_HELP_MATRIX, math.floor((pos[0] - self.helpOffsets_[0]) / elementWidth),
+                    math.floor((pos[1] - self.helpOffsets_[1]) / elementWidth))
 
         return ret
 

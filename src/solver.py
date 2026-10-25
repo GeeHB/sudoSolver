@@ -11,6 +11,7 @@ import copy
 import math
 import os
 import time
+from enum import IntEnum
 
 import GUIConsts
 import GUITheme
@@ -31,6 +32,13 @@ from sharedTools import (
 )
 from sudoku import sudoku
 
+
+# A zone in the game area
+#
+class ownZone(IntEnum):
+    ZONE_NOWHERE = 0
+    ZONE_ARRAY = 1
+    ZONE_HELP_MATRIX = 2
 
 # A "previous" value in the array
 #
@@ -382,25 +390,6 @@ class solver:
     def _draw_fontSize2PixelSize(self):
         self.canvasFontSize_ = int(self.theme_.canvasFont_.size * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
-    # Mouse position : client -> array coordinates
-    #
-    # @return : (None | (array or help x coordinate) , array or help y coordinate)
-    #           None is returned when mouse is outside array and outside help matrix
-    #           x & y > 0 : coordinates in the array
-    #           x & y < 0 : coordinated in the help matrix
-    #
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
-        ret:list[int] = [-1,-1]
-        if len(self.sudoku_) == ARRAY_SIZE:
-            for index in range(2):
-                if pos[index] > self.offsets_[index]:
-                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
-                else:
-                    return (None, -1)
-
-        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else None, ret[1])
-
-
     #
     #  Other "shared" methods
     #
@@ -564,6 +553,21 @@ class solver:
 
         self.prevValues_.clear()
         return True
+
+    # Mouse position : client -> array coordinates
+    #
+    # @return : (ZoneID, x coordinate, y coordinate)
+    #           If ZoneID == ZONE_NOWHERE, x and y are undefined
+    #
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int, int]:
+        ret:list[int] = [-1,-1]
+        if len(self.sudoku_) == ARRAY_SIZE:
+            for index in range(2):
+                if pos[index] > self.offsets_[index]:
+                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
+                else:
+                    return (ownZone.ZONE_NOWHERE, 0, 0)
+        return (ownZone.ZONE_ARRAY, ret[0], ret[1]) if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else (ownZone.ZONE_NOWHERE, 0, 0)
 
     #
     #  Element(s)' notifications
