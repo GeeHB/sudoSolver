@@ -353,21 +353,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
-            self.edition_.move()
             newPos: tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
-
+            #print(f"Click on {newPos}")
             if newPos[0] is not None :
-                if newPos[0] > 0:
+                if newPos[0] >= 0:
+                    self.edition_.move()
                     if  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):   # click on the array
                         self._edit_selChanged()
                 else:
-                    value:int = 1 - 3 * newPos[1] - newPos[0]   # Value in the help matrix
+                    value:int = - 3 * (newPos[1] + 1) - newPos[0]   # Value in the help matrix
                     #print(f"At {newPos} : {value}")
                     if -1 == self._edit_setValue(value)  :
                         self._edit_setValue(0)  # click on empty proposal
                     self.parent_.countChanged()
                     self._draw_helpMatrix_ex()
-
             return
 
         event.Skip()  # Allow other handlers to process the event
@@ -377,13 +376,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             self.edition_.move()
-            newPos : tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
-
-            if newPos[0] is not None and  self.edition_.currentPos_.moveTo(pos=(newPos[0], newPos[1])):
+            clickPos : tuple[int | None,int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            if clickPos[0] is not None and self.edition_.currentPos_.moveTo(pos=(clickPos[0], clickPos[1])):
                 self._edit_selChanged()
 
             # possible values
-            values: list[int] =self.sudoku_.getAllowedValues(self.edition_.currentPos_)
+            values:list[int] =self.sudoku_.getAllowedValues(self.edition_.currentPos_)
 
             # Generate a contextual menu at mouse pos with all possible values
             popUp: wx.Menu = wx.Menu()
@@ -1057,7 +1055,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # @return : (None | (array or help x coordinate) , array or help y coordinate)
     #           None is returned when mouse is outside array and outside help matrix
     #           x & y > 0 : coordinates in the array
-    #           x & y < 0 : coordinates in the help matrix
+    #           x & y <= -1 : coordinates in the help matrix
     #
     @override
     def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
@@ -1068,8 +1066,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             matrixWidth:int = 3 * elementWidth
 
             if pos[0] >= self.helpOffsets_[0] and pos[1] >= self.helpOffsets_[1] and pos[0] < (self.helpOffsets_[0] + matrixWidth) and pos[1] < (self.helpOffsets_[1] + matrixWidth):
-                return (math.floor((pos[0] - self.helpOffsets_[0]) / elementWidth) * -1,
-                    math.floor((pos[1] - self.helpOffsets_[1]) / elementWidth) * -1)
+                return (math.floor(1 + (pos[0] - self.helpOffsets_[0]) / elementWidth) * -1,
+                    math.floor(1 + (pos[1] - self.helpOffsets_[1]) / elementWidth) * -1)
 
         return ret
 
