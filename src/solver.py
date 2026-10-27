@@ -237,11 +237,12 @@ class solver:
 
     # Set/change the current array's filename
     #
-    def setFilename(self, fileName:str, create:bool = False):
-        # the file must exists
-        if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
-        self.filename = fileName
+    def setFilename(self, fileName:str | None, create:bool = False):
+        if fileName is not None:
+            # the file must exists
+            if False == create and False == os.path.isfile(fileName):
+                raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
+            self.filename = fileName
 
     # Start drawings / UI
     #

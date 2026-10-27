@@ -241,14 +241,15 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def setFilename(self, fileName:str, create:bool = False):
-        solver.solver.setFilename(self, fileName, create)
+    def setFilename(self, fileName:str | None, create:bool = False):
+        if fileName is not None:
+            solver.solver.setFilename(self, fileName, create)
 
-        title : str = APP_SHORT_NAME
-        if len(fileName) > 0:
-            title = title + " - " + fileName
+            title : str = APP_SHORT_NAME
+            if len(fileName) > 0:
+                title = title + " - " + fileName
 
-        self.parent_.SetTitle(title)
+            self.parent_.SetTitle(title)
 
     #
     # Event handlers
@@ -365,6 +366,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         self._edit_setValue(0)  # click on empty proposal
                     self.parent_.countChanged()
                     self._draw_helpMatrix_ex()
+                    self._draw_selectedElement()    # update selected item (don't wait for 'blink')
 
                 case _:
                     event.Skip()  # Allow other handlers to process the event
@@ -427,7 +429,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnTimer(self, event : wx.Event):
         match event.Id:
             case GUIConsts.TIMER_ID_SELECTED:
-                self._edit_selectionBlink()
+                self._draw_selectionBlink()
 
             case GUIConsts.TIMER_ID_NOTIFYING:
                 self._notify_drawElements()
@@ -561,6 +563,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
+    # Redraw selected element
+    #
+    def _draw_selectionBlink(self):
+        self._draw_startUp()
+        self._draw_selectedElement(self.edition_.changeSelectedStatus())
+        self._draw_end()
+
     # Draw/erase a single element and its background
     #
     @override
@@ -657,7 +666,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             self.edition_.selected = False
 
-        self._edit_selectionBlink()
+        self._draw_selectionBlink()
         if not self.selectedTimer_.IsRunning():
             self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
 
@@ -688,11 +697,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #self._edit_stop()
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
         #self._edit_start(False)
-
-    def _edit_selectionBlink(self):
-        self._draw_startUp()
-        self._draw_selectedElement(self.edition_.changeSelectedStatus())
-        self._draw_end()
 
     # Edition of current array
     #
@@ -772,7 +776,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _menu_create(self):
         # Files
-        #
         fileMenu = wx.Menu()
 
         fileMenu.Append(wx.ID_OPEN)
@@ -782,7 +785,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         fileMenu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
 
         # Display
-        #
         displayMenu = wx.Menu()
         displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_SIDEBAR, menuConsts.IDM_DISPLAY_SIDEBAR)
         displayMenu.Check(menuConsts.ID_DISPLAY_SIDEBAR, self.parent_.sidebar_isVisible())
@@ -793,7 +795,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP, menuConsts.IDM_DISPLAY_HELP)
         displayMenu.Check(menuConsts.ID_DISPLAY_HELP, self.helpVisible_)
 
-        displayMenu.AppendSeparator()  # Themes management
+        # Themes management
+        displayMenu.AppendSeparator()
         themesMenu = wx.Menu()
         for name in list(GUITheme.colourThemes.keys()):
             newID:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
@@ -802,9 +805,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         displayMenu.Append(wx.ID_ANY, menuConsts.IDM_DISPLAY_THEMES, themesMenu)
 
-
         # Creation
-        #
         createMenu = wx.Menu()
         createMenu.Append(menuConsts.ID_CREATE_EMPTY, menuConsts.IDM_CREATE_EMPTY)
         createMenu.Append(menuConsts.ID_CREATE_EASY, menuConsts.IDM_CREATE_EASY)
@@ -825,7 +826,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         resolveMenu = wx.Menu()
         resolveMenu.Append(menuConsts.ID_SOLVE_RESOLVE_SINGLE, menuConsts.IDM_SOLVE_RESOLVE_SINGLE)
         resolveMenu.Append(menuConsts.ID_SOLVE_RESOLVE_MULTI, menuConsts.IDM_SOLVE_RESOLVE_MULTI)
-        solveMenu.Append(wx.ID_ANY, menuConsts.IDM_SOLVE_RESOLVE, resolveMenu)
+        solveMenu.Append(menuConsts.ID_SOLVE, menuConsts.IDM_SOLVE_RESOLVE, resolveMenu)
 
         solveMenu.Append(menuConsts.ID_SOLVE_REVERT, menuConsts.IDM_SOLVE_REVERT)
 
@@ -844,7 +845,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #
         entries:list[wx.AcceleratorEntry] = []
 
-        # New
+        # Create
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_CREATE_EMPTY))
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD0, menuConsts.ID_CREATE_EMPTY))
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('1'), menuConsts.ID_CREATE_EASY))
@@ -863,36 +864,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         accel = wx.AcceleratorTable(entries)
         self.SetAcceleratorTable(accel)
-
-    # Change items ' states
-    # '
-    def _menu_setItemsStates(self):
-        #modified : bool = self.state_.isSet(self.ARRAY_MODIFIED)
-        valid : bool = self.sudoku_.IsOk()
-        editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
-        solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
-
-        self.menuBar_.Enable(menuConsts.ID_EDIT_UNDO, editOn)
-        self.menuBar_.Enable(menuConsts.ID_EDIT_DONE, editOn)
-        self.menuBar_.Enable(menuConsts.ID_EDIT_CANCEL, editOn)
-
-        state : bool = not (editOn or solving)
-
-        self.menuBar_.Enable(menuConsts.ID_CREATE_EMPTY, state)
-        self.menuBar_.Enable(menuConsts.ID_CREATE_EASY, state)
-        self.menuBar_.Enable(menuConsts.ID_CREATE_MEDIUM, state)
-        self.menuBar_.Enable(menuConsts.ID_CREATE_HARD, state)
-        self.menuBar_.Enable(wx.ID_OPEN, state)
-        self.menuBar_.Enable(wx.ID_SAVE, state)
-
-        self.menuBar_.Enable(menuConsts.ID_EDIT_MODIFY, state)
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_MANUAL, state)
-
-        state = state and valid
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, state)
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_SINGLE, state)
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_MULTI, state)
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_REVERT, state)
 
     # Create a new or empty array
     #
@@ -928,7 +899,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
-                return     # the user changed their mind
+                return     # the user changed its mind
 
         # New file just loaded
         self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
@@ -963,13 +934,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
 
         if done :
-            self.setFilename(path)  # pyright: ignore[reportUnknownArgumentType, reportArgumentType]
+            self.setFilename(path)
             self.state_.assign(self.ARRAY_NEW)
             self._menu_setItemsStates()
 
             wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
                         GUIConsts.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
-
 
     # Quit
     #
@@ -981,7 +951,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.Close(True)
 
-    # Check/handle menu event from contextualmenu
+    # Check/handle menu event from contextual menu
     #
     #   return True if item has been handled
     def _menu_handleContextualItems(self, menuId:int)->bool:
@@ -992,6 +962,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if menuConsts.ID_POPUP_VALUES[index] == menuId:
                 self._edit_setValue(index+1)
                 done = True
+                break
 
         # Empty ?
         if menuConsts.ID_POPUP_VALUES[VALUE_MAX] == menuId:
@@ -1047,6 +1018,38 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.sudoku_.IsOk():
             self.sudoku_.revert()
             self.draw_update()
+
+    # Change items ' states
+    #
+    def _menu_setItemsStates(self):
+        #modified : bool = self.state_.isSet(self.ARRAY_MODIFIED)
+        valid : bool = self.sudoku_.IsOk()
+        editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
+        solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
+
+        self.menuBar_.Enable(menuConsts.ID_EDIT_UNDO, editOn)
+        self.menuBar_.Enable(menuConsts.ID_EDIT_DONE, editOn)
+        self.menuBar_.Enable(menuConsts.ID_EDIT_CANCEL, editOn)
+
+        state : bool = not (editOn or solving)
+
+        self.menuBar_.Enable(menuConsts.ID_CREATE_EMPTY, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_EASY, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_MEDIUM, state)
+        self.menuBar_.Enable(menuConsts.ID_CREATE_HARD, state)
+        self.menuBar_.Enable(wx.ID_OPEN, state)
+        self.menuBar_.Enable(wx.ID_SAVE, state)
+
+        state = state and valid
+
+        self.menuBar_.Enable(menuConsts.ID_EDIT_MODIFY, state)
+        self.menuBar_.Enable(menuConsts.ID_SOLVE_MANUAL, state)
+
+        self.menuBar_.Enable(menuConsts.ID_SOLVE, state)
+        self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, state)
+        #self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_SINGLE, state)
+        #self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_MULTI, state)
+        self.menuBar_.Enable(menuConsts.ID_SOLVE_REVERT, state)
 
     # Mouse position : client -> array coordinates
     #

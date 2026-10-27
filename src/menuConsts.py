@@ -13,7 +13,6 @@ import wx  # pyright: ignore[reportMissingTypeStubs]
 #
 IDM_FILE:str = '&File'
 
-
 # Display
 #
 IDM_DISPLAY:str = '&Display'
@@ -21,10 +20,10 @@ IDM_DISPLAY:str = '&Display'
 IDM_DISPLAY_SIDEBAR:str = 'Sidebar'
 ID_DISPLAY_SIDEBAR:int = wx.NewIdRef().GetId()
 
-IDM_DISPLAY_CENTER:str = 'Center'
+IDM_DISPLAY_CENTER:str = 'Center array'
 ID_DISPLAY_CENTER:int = wx.NewIdRef().GetId()
 
-IDM_DISPLAY_HELP:str = 'Help matrix'
+IDM_DISPLAY_HELP:str = 'Show help matrix'
 ID_DISPLAY_HELP:int = wx.NewIdRef().GetId()
 
 IDM_DISPLAY_THEMES:str = 'Themes'
@@ -54,6 +53,7 @@ IDM_CREATE_CANCEL:str = 'Cancel\tEsc'
 
 # Resolution
 #
+ID_SOLVE:int = wx.NewIdRef().GetId()
 IDM_SOLVE:str = '&Solve'
 ID_SOLVE_MANUAL:int =  wx.NewIdRef().GetId()
 IDM_SOLVE_MANUAL:str = 'Manually'
