@@ -503,7 +503,7 @@ class pygameSolver(solver.solver):
 
     # Show text message (on top of the sudoku)
     #
-    def _showMessage(self, message : str):
+    def _showMessage(self, message: str):
         if self.sMessage_:
             # Remove previous message (if any)
             self._clearMessage()
@@ -533,16 +533,17 @@ class pygameSolver(solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def setFilename(self, fileName:str, create:bool = False):
-        solver.solver.setFilename(self, fileName, create)
+    def setFilename(self, fileName:str | None, create:bool = False):
+        if fileName is not None:
+            solver.solver.setFilename(self, fileName, create)
 
-        if self.sFileName_ is not None :
-            self.sFileName_.setText(fileName,
-                self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
-                self.theme_[GUITheme.colourID.ID_BK_FILENAME].other)
+            if self.sFileName_ is not None :
+                self.sFileName_.setText(fileName,
+                    self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
+                    self.theme_[GUITheme.colourID.ID_BK_FILENAME].other)
 
-            # erase this name after a while ...
-            self.sFileName_.startTimer()
+                # erase this name after a while ...
+                self.sFileName_.startTimer()
 
     #
     # Events
