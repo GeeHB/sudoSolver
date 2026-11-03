@@ -893,14 +893,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Start edition
     #
-    def _menu_createModify(self, x: int | None, y: int | None):
+    def _menu_createModify(self, row: int | None = None, line: int | None = None):
         self.edition_.creating = True
         self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
 
-        if x is not None and y is not None:
-            self.edition_.currentPos_.moveTo(y,x)
+        if row is not None and line is not None:
+            self.edition_.currentPos_.moveTo(line,row)
             self.edition_.prevPos_ = None
-        self._edit_start(x == None)
+        self._edit_start(row is None)
 
     # Create a new or empty array
     #
