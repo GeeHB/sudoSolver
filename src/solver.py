@@ -70,6 +70,17 @@ class editStatus:
         self.prevPos_: pointer | None = None
         self.selected_: bool = False
 
+    def __repr__(self)->str:
+        out:str = "editStatus = ["
+        out+=f"\n - Status : {self.status_}"
+        if self.editing:
+            out+="\n - edition on"
+        out+=f"\n - currentPos : {self.currentPos_}"
+        out+=f"\n - prevPos : {self.prevPos_}"
+        out+=f"\n - Selected : {'yes' if self.selected_ else 'No'}"
+        out+="\n]"
+        return out
+
     def clear(self, status : int = EDIT_NO_EDITION):
         self.status_.set(status)
         self.currentPos_.clear(False)

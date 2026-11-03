@@ -16,6 +16,10 @@ STATUS_NONE:int = 0
 class statusBits:
     def __init__(self, value: int = STATUS_NONE):
         self.value_: int = value
+
+    def __repr__(self)->str:
+        return f"statusBits::Value : {self.value_}"
+
     # Access
     #
     @property

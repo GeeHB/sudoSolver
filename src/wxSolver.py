@@ -218,6 +218,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         #self.Bind(wx.EVT_LEFT_DOWN, self.OnLButtonDown)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_LEFT_UP, self.OnLButtonUp)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLButtonDClick)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_RIGHT_UP, self.OnRButtonUp)  # pyright: ignore[reportUnknownMemberType]
 
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
@@ -370,6 +371,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
                 case _:
                     event.Skip()  # Allow other handlers to process the event
+
+    # Double click with left button
+    #
+    def OnLButtonDClick(self, event : wx.MouseEvent):
+        if self.sudoku_.IsOk() and not self.edition_.editing :
+            clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
+            if clickPos[0] == solver.ownZone.ZONE_ARRAY:
+                print("vu")
 
     # User pressed the right button => display contextual menu
     #

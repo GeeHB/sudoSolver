@@ -27,7 +27,6 @@ from wxSolver import wxSolverApp
 # Entry point
 if "__main__" == __name__:
     # Check python ver.
-    #
     ver = sys.version_info
     if (
         ver.major < PYTHON_VER_MAJ
@@ -40,7 +39,6 @@ if "__main__" == __name__:
         sys.exit(2)
 
     # Parse command line
-    #
     params = options()
     if not params.parse():
         sys.exit(1)

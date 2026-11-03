@@ -40,7 +40,7 @@ class pointer:
 
 
     def __repr__(self)->str:
-        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}\n\t-{"Game" if self.gameMode_ else "not game"}"
+        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t- square ID : {self.squareID_}\n\t- {"Game" if self.gameMode_ else "not game"}"
 
     def clear(self, game:bool):
         self.index_ = INDEX_MIN
