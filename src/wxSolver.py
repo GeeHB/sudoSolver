@@ -21,6 +21,7 @@ except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
 
+import appStrings
 import element
 import GUIConsts
 import GUITheme
@@ -292,9 +293,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
-                self.edition_.creating = True
-                self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
-                self._edit_start()
+                self._menu_createModify()
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
                 self.edition_.creating = False
@@ -372,13 +371,31 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 case _:
                     event.Skip()  # Allow other handlers to process the event
 
-    # Double click with left button
+    # Double click with left button -> start edition or resolution
     #
     def OnLButtonDClick(self, event : wx.MouseEvent):
         if self.sudoku_.IsOk() and not self.edition_.editing :
             clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
             if clickPos[0] == solver.ownZone.ZONE_ARRAY:
-                print("vu")
+                dlg = wx.MessageDialog(
+                    self,
+                    appStrings.STR_EDIT_OR_SOLVE,
+                    appStrings.STR_EDITION,
+                    wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION
+                )
+
+                dlg.SetYesNoLabels(appStrings.STR_MODIFY, menuConsts.IDM_SOLVE_RESOLVE)  # pyright: ignore[reportUnknownMemberType]
+                result = dlg.ShowModal()
+
+                match result:
+                    case wx.ID_YES:
+                        self._menu_createModify(clickPos[1], clickPos[2])
+                    case wx.ID_NO:
+                        print("User clicked Resolve")
+                    case _:
+                        pass
+
+                dlg.Destroy()
 
     # User pressed the right button => display contextual menu
     #
@@ -653,7 +670,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     @override
     def _edit_start(self, initPos:bool = True):
         if self.sudoku_.isModified():
-            if wx.MessageBox(GUIConsts.STR_MODIFIED_ARRAY, GUIConsts.STR_CREATE,
+            if wx.MessageBox(appStrings.STR_MODIFIED_ARRAY, appStrings.STR_CREATE,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -874,10 +891,21 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         accel = wx.AcceleratorTable(entries)
         self.SetAcceleratorTable(accel)
 
+    # Start edition
+    #
+    def _menu_createModify(self, x: int | None, y: int | None):
+        self.edition_.creating = True
+        self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
+
+        if x is not None and y is not None:
+            self.edition_.currentPos_.moveTo(y,x)
+            self.edition_.prevPos_ = None
+        self._edit_start(x == None)
+
     # Create a new or empty array
     #
     def _menu_fileNew(self, menuId:int):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOT_SAVED, GUIConsts.STR_NEW,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(appStrings.STR_NOT_SAVED, appStrings.STR_NEW,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -900,11 +928,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIConsts.STR_NOT_SAVED, GUIConsts.STR_LOAD,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(appStrings.STR_NOT_SAVED, appStrings.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
-        with wx.FileDialog(self, GUIConsts.STR_LOAD, wildcard=GUIConsts.STR_WILDCARD,
+        with wx.FileDialog(self, appStrings.STR_LOAD, wildcard=appStrings.STR_WILDCARD,
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
@@ -920,17 +948,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _menu_fileSave(self):
         if self.sudoku_.isEmpty():
-            wx.MessageBox("The current sudoku array is empty.", GUIConsts.STR_SAVE,
+            wx.MessageBox("The current sudoku array is empty.", appStrings.STR_SAVE,
                         wx.ICON_EXCLAMATION | wx.OK, self)
             return
 
         path : str | None = self.filename
         done : bool = False
-        wildcard = GUIConsts.STR_WILDCARD
+        wildcard = appStrings.STR_WILDCARD
 
         with wx.FileDialog(
             self,
-            message=GUIConsts.STR_SAVE,
+            message=appStrings.STR_SAVE,
             defaultFile=path,
             wildcard=wildcard,
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
@@ -948,13 +976,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._menu_setItemsStates()
 
             wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
-                        GUIConsts.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
+                        appStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
 
     # Quit
     #
     def _menu_fileExit(self):
         if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
-                    GUIConsts.STR_NOT_SAVED, GUIConsts.STR_EXIT,
+                    appStrings.STR_NOT_SAVED, appStrings.STR_EXIT,
                     wx.ICON_QUESTION | wx.YES_NO, self):
             return
 
@@ -1007,7 +1035,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.draw_update()
                 self._resolve_showStats()
             else:
-                wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(appStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
     def _menu_resolve_multiThreaded(self):
         if self.sudoku_.IsOk():
@@ -1015,7 +1043,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
 
             if not self.resolve():
-                wx.MessageBox(GUIConsts.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(appStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
             self.directDraw_ = False
             self.draw_update()
@@ -1288,7 +1316,7 @@ class wxSidebarPanel(wxOwnPanel):
         # Controls creation
         #
         mySizer = wx.BoxSizer(wx.VERTICAL)
-        self.labelMode_ = wx.StaticText(self, label=GUIConsts.STR_SIDEBAR)
+        self.labelMode_ = wx.StaticText(self, label=appStrings.STR_SIDEBAR)
         mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
 
         self.labelCount_ = wx.StaticText(self, label="Filled")
@@ -1326,8 +1354,8 @@ class wxSidebarPanel(wxOwnPanel):
     @mode.setter
     def mode(self, mode:wxEditionMode):
         self.mode_ = mode
-        self.labelMode_.SetLabel(f"{GUIConsts.STR_SIDEBAR}" if self.mode_ == wxEditionMode.MODE_NONE
-            else f"{GUIConsts.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else GUIConsts.STR_MODE_RESOLUTION} {GUIConsts.STR_MODE}")
+        self.labelMode_.SetLabel(f"{appStrings.STR_SIDEBAR}" if self.mode_ == wxEditionMode.MODE_NONE
+            else f"{appStrings.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else appStrings.STR_MODE_RESOLUTION} {appStrings.STR_MODE}")
 
     # Theme just changed
     @override
@@ -1343,7 +1371,7 @@ class wxSidebarPanel(wxOwnPanel):
         self.labelMode_.SetFont(font)
 
     def updateCounter(self):
-        self.labelCount_.SetLabel(f"{GUIConsts.STR_FILLED} : {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
+        self.labelCount_.SetLabel(f"{appStrings.STR_FILLED} : {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
 
     # Redraw the panel
     def OnPaint(self, event : wx.Event):

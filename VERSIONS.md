@@ -21,8 +21,9 @@
 #### todo
 
 #### Version 4.1.1
-* 22 oct. 2026
+* 3 nov. 2026
 * Added :
+  * Action on left muse button dblclk = edit or solve
   * GUITheme <- Portable themes management (fonts and colours) 
     * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
   * Help matrix
