@@ -683,15 +683,17 @@ class solver:
     # Get elements text and bk colours for edition or creation
     #
     #  @pos : Element's position
-    #  @sekected : Element is selected ?
+    #  @selected : Is element selected ?
     #
     #  @return : Tuple(bk Colour, txt Colour)
     def _theme_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
-        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+        creating:bool = self.edition_.creating
+        solving:bool = self.edition_.manualSolving and selected
 
-        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
-        if self.edition_.creating:
+        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+
+        if creating:
             return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
         if self.sudoku_[pos].isObvious():
@@ -700,7 +702,7 @@ class solver:
             if self.sudoku_[pos].isOriginal():
                 return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
 
-        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
+        return bkColour, GUITheme.colourID.ID_SEL_SOLVE_TXT if solving else GUITheme.colourID.ID_SEL_CREATE_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
 
     # Convert colour objects from ownColour to specific (to GUI tools)  colour format
     #
