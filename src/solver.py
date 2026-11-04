@@ -571,7 +571,7 @@ class solver:
     # @return : (ZoneID, x coordinate, y coordinate)
     #           If ZoneID == ZONE_NOWHERE, x and y are undefined
     #
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int, int]:
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[ownZone, int, int]:
         ret:list[int] = [-1,-1]
         if len(self.sudoku_) == ARRAY_SIZE:
             for index in range(2):

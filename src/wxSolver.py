@@ -285,7 +285,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             case menuConsts.ID_DISPLAY_HELP:
                 self.helpVisible_ = not self.helpVisible_
-
                 self._draw_newClientSize(self.width_, self.height_)     # compute new dims
                 self._theme_fontChanged()
                 self.draw_update()
@@ -293,7 +292,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
-                self._menu_createModify()
+                self._menu_editOrResolve(edit = True)
             case menuConsts.ID_EDIT_DONE:
                 self._edit_stop()
                 self.edition_.creating = False
@@ -302,9 +301,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.edition_.creating = False
 
             case menuConsts.ID_SOLVE_MANUAL:
-                self.edition_.manualSolving = True
-                self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-                self._edit_start()
+                self._menu_editOrResolve(edit = False)
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._menu_findOviousValues()
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
@@ -384,14 +381,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION
                 )
 
-                dlg.SetYesNoLabels(appStrings.STR_MODIFY, menuConsts.IDM_SOLVE_RESOLVE)  # pyright: ignore[reportUnknownMemberType]
+                dlg.SetYesNoLabels(menuConsts.IDM_SOLVE_RESOLVE, appStrings.STR_MODIFY)  # pyright: ignore[reportUnknownMemberType]
                 result = dlg.ShowModal()
 
                 match result:
                     case wx.ID_YES:
-                        self._menu_createModify(clickPos[1], clickPos[2])
+                        self._menu_editOrResolve(edit = False, row = clickPos[1], line = clickPos[2])
                     case wx.ID_NO:
-                        print("User clicked Resolve")
+                        self._menu_editOrResolve(edit = True, row = clickPos[1], line = clickPos[2])
                     case _:
                         pass
 
@@ -891,15 +888,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         accel = wx.AcceleratorTable(entries)
         self.SetAcceleratorTable(accel)
 
-    # Start edition
+    # Start edition or resolution
     #
-    def _menu_createModify(self, row: int | None = None, line: int | None = None):
-        self.edition_.creating = True
-        self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
+    def _menu_editOrResolve(self, edit: bool, row: int | None = None, line: int | None = None):
+        if edit:
+            self.edition_.creating = True
+            self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
+        else:
+            self.edition_.manualSolving = True
+            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
 
-        if row is not None and line is not None:
+        if row is not None and line is not None:    # selected item has just been clicked (or not)
             self.edition_.currentPos_.moveTo(line,row)
             self.edition_.prevPos_ = None
+
         self._edit_start(row is None)
 
     # Create a new or empty array
@@ -1093,7 +1095,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # @return : (ZoneID, x coordinate, y coordinate)
     #           If ZoneID == ZONE_NOWHERE, x and y are undefined
     #@override
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int, int, int]:
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[solver.ownZone, int, int]:
         ret:tuple[int, int, int] = solver.solver._mouse_translatePosition(self, pos)
         if ret[0] == solver.ownZone.ZONE_NOWHERE and self.helpVisible_:
             # not in the array -> in the matrix ?
