@@ -70,8 +70,8 @@ colourThemes = {
             (135,220,127),
             (83, 86, 83),       # Selected bkgrnd & txt
             (216, 187, 204),
-            (212, 219, 244),    # Selected bkgrnd & txt for creation
-            (250, 250, 250),
+            (83, 86, 83),       # Selected bkgrnd & txt
+            (216, 187, 204),
             (255,255,0),
             (0,0,255),
             (0,255,0),
