@@ -48,7 +48,7 @@ class sudoku(threading.Thread):
         self.found_:bool = False
         random.seed()
 
-    def IsOk(self)->bool:
+    def isOk(self)->bool:
         return (len(self.elements_) == ARRAY_SIZE)
 
     #
@@ -100,7 +100,7 @@ class sudoku(threading.Thread):
     @override
     def __str__(self)->str:
         output : str = ""
-        if self.IsOk() :
+        if self.isOk() :
             position : pointer = pointer(game=False)
             for _ in range(LINE_COUNT):
                 output += "\n"
@@ -125,7 +125,7 @@ class sudoku(threading.Thread):
     # Is the array fully empty ?
     #
     def isEmpty(self) -> bool:
-        if self.IsOk():
+        if self.isOk():
             for index in range(ARRAY_SIZE):
                 if not self.elements_[index].isEmpty():
                     return False
@@ -137,7 +137,7 @@ class sudoku(threading.Thread):
     #   ie. at least one element is not original
     #
     def isModified(self) -> bool:
-        if self.IsOk():
+        if self.isOk():
             for index in range(ARRAY_SIZE):
                 if self.elements_[index].isChangeable(False):
                     return True
@@ -149,7 +149,7 @@ class sudoku(threading.Thread):
     # @return : at least one element's status has changed ?
     def setOriginal(self)->bool:
         done:bool = False
-        if self.IsOk():
+        if self.isOk():
             for index in range(ARRAY_SIZE):
                 if not self.elements_[index].isChangeable(False):   # don't take into account empty elements !
                     self.elements_[index].setOriginal()
@@ -160,7 +160,7 @@ class sudoku(threading.Thread):
     #
     def nonEmptyItems(self) -> int:
         self.nonEmptyCount_ = 0;
-        if self.IsOk():
+        if self.isOk():
             for index in range(ARRAY_SIZE):
                 if not self.elements_[index].isEmpty():
                     self.nonEmptyCount_+=1
@@ -321,7 +321,7 @@ class sudoku(threading.Thread):
     #   return the name of the saved file or None if an error occured
     #
     def save(self, addExtent:str | None = None, fileComments:list[str] | None = None, newFileName:str | None = None)->str | None:
-        if not self.IsOk():
+        if not self.isOk():
             return None
 
         fileName : str = ""

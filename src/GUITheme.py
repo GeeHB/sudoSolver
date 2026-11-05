@@ -26,9 +26,9 @@ class colourID(IntEnum):
     ID_DEFAULT_TXT = auto()  # Text colours
     ID_ORIGINAL_TXT = auto()
     ID_OBVIOUS_TXT = auto()
-    ID_SEL_CREATE_BK = auto()      # Selected text and bkgrnd
+    ID_SEL_CREATE_BK = auto()      # Selected text and bkgrnd - edition
     ID_SEL_CREATE_TXT = auto()
-    ID_SEL_SOLVE_BK = auto()      # Selected text and bkgrnd
+    ID_SEL_SOLVE_BK = auto()      # Selected text and bkgrnd - solving
     ID_SEL_SOLVE_TXT = auto()
     ID_TAG_1 = auto()
     ID_TAG_2 = auto()
@@ -70,7 +70,7 @@ colourThemes = {
             (135,220,127),
             (83, 86, 83),       # Selected bkgrnd & txt
             (216, 187, 204),
-            (83, 86, 83),       # Selected bkgrnd & txt
+            (83, 86, 83),       # Selected bkgrnd & txt for solving
             (216, 187, 204),
             (255,255,0),
             (0,0,255),
@@ -106,7 +106,7 @@ colourThemes = {
             (104,160,91),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (243, 223, 246),    # Selected bkgrnd & txt for creation
+            (234, 227, 253),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
@@ -141,7 +141,7 @@ colourThemes = {
             (104,160,91),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (243, 223, 246),    # Selected bkgrnd & txt for creation - D3B020
+            (234, 227, 253),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
