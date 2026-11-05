@@ -1235,11 +1235,11 @@ class wxOwnComboData:
 #
 class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
     # Construction
-    def __init__(self, parent:wxOwnPanel, canvas: wxSolverCanvas):
+    def __init__(self, parent:wx.ToolBar, canvas: wxSolverCanvas):
         super().__init__(parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
             size=wx.Size(120, -1),style=wx.CB_READONLY )
 
-        self.parent_:wxOwnPanel = parent
+        #self.parent_:wxOwnPanel = parent
         self.canvas_:wxSolverCanvas = canvas
         self.hyps_:list[wxOwnComboData] = []    # no colours at startup !
 
@@ -1309,91 +1309,17 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
     def OnMeasureItemWidth(self, item:int):
         return -1  # use default width
 
-# wxSidebarPanel - Sidebar
-#
-class wxSidebarPanel(wxOwnPanel):
-    # Constructor
-    def __init__(self, parent: wxMainFrame, canvas:wxSolverCanvas):
-        wxOwnPanel.__init__(self, parent)
-        self.canvas_:wxSolverCanvas = canvas
-        self.mode_:wxEditionMode = wxEditionMode.MODE_NONE
-
-        # Controls creation
-        #
-        mySizer = wx.BoxSizer(wx.VERTICAL)
-        self.labelMode_ = wx.StaticText(self, label=appStrings.STR_SIDEBAR)
-        mySizer.Add(self.labelMode_, 0, wx.ALL, 20)  # pyright: ignore[reportUnknownMemberType]
-
-        self.labelCount_ = wx.StaticText(self, label="Filled")
-        mySizer.Add(self.labelCount_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
-
-        self.combo_ = wxOwnCombo(self, self.canvas_)
-        mySizer.Add(self.combo_, 0, wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
-
-        mySizer.Add(wx.Button(self, label="End"), proportion = 0, flag = wx.LEFT, border=5)  # pyright: ignore[reportUnknownMemberType]
-        mySizer.Add(wx.Button(self, label="Exit"), 0, wx.EXPAND | wx.ALL, 5)  # pyright: ignore[reportUnknownMemberType]
-        mySizer.AddStretchSpacer()
-
-        self.SetSizer(mySizer)
-
-        # Needs to draw panel's border
-        self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
-
-    @override
-    def initialize(self):
-        self.combo_.updateColours()
-        self.combo_.SetSelection(0)  # pyright: ignore[reportCallIssue]
-
-    # App. canvas
-    @property
-    def canvas(self)->wxSolverCanvas:
-        return self.canvas_
-    @canvas.setter
-    def canvas(self, newCanvas: wxSolverCanvas):
-        self.canvas_ = newCanvas
-
-    # App. mode => set controls' state
-    @property
-    def mode(self)->wxEditionMode:
-        return self.mode_
-    @mode.setter
-    def mode(self, mode:wxEditionMode):
-        self.mode_ = mode
-        self.labelMode_.SetLabel(f"{appStrings.STR_SIDEBAR}" if self.mode_ == wxEditionMode.MODE_NONE
-            else f"{appStrings.STR_MODE_CREATION if self.mode_ == wxEditionMode.MODE_CREATION else appStrings.STR_MODE_RESOLUTION} {appStrings.STR_MODE}")
-
-    # Theme just changed
-    @override
-    def themeChanged(self):
-        self.SetBackgroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_BK].other)
-        self.labelMode_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
-        self.labelCount_.SetForegroundColour(self.canvas_.theme_[GUITheme.colourID.ID_TB_TXT].other)
-        font = wx.Font(pointSize=self.canvas_.theme_.textFont_.size,
-                        family=wx.FONTFAMILY_DEFAULT,
-                        style=wx.FONTSTYLE_ITALIC if self.canvas_.theme_.textFont_.italic else wx.FONTSTYLE_NORMAL,
-                        weight=self.canvas_.theme_.textFont_.weight,
-                        faceName = self.canvas_.theme_.textFont_.faceName)
-        self.labelMode_.SetFont(font)
-
-    def updateCounter(self):
-        self.labelCount_.SetLabel(f"{appStrings.STR_FILLED}{self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
-
-    # Redraw the panel
-    def OnPaint(self, event : wx.Event):
-        dc = wx.PaintDC(self)
-        pen = wx.Pen(self.canvas_.theme_[GUITheme.colourID.ID_TB_BORDER].other, 1, wx.PENSTYLE_SOLID)
-        dc.SetPen(pen)
-        size = self.GetClientSize()
-        #dc.DrawLine(0, 0, 0, size.height-1)     # draw the left border using using defined colour
-        dc.DrawLine(0, size.height-1, size.width, size.height-1)     # draw the bottom border using using defined colour
-
 # wxSolverFrame - App. main frame
 #
 class wxSolverFrame(wxMainFrame):
     def __init__(self, params: options):
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE, size=wx.Size(450, 300))
 
+        # sudoku solver canvas
+        self.canvas_ = wxSolverCanvas(self, params)
+
         # Create the toolbar
+        #
         self.toolBar_:wx.ToolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.TB_FLAT | wx.TB_TEXT)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         self.toolBar_.SetToolBitmapSize(wx.Size(16, 16))  # default bitmaps size
 
@@ -1405,10 +1331,12 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_.AddSeparator()
 
         # Hypothesis and flags
+        """
         self.combo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY, choices=["Projet A", "Projet B", "Projet C"],
                                  style=wx.CB_DROPDOWN | wx.CB_READONLY, size=wx.Size(170, -1))
-        self.combo_.SetSelection(0)
-        self.toolBar_.AddControl(self.combo_, "Projet actif : ")
+        """
+        self.combo_ = wxOwnCombo(self.toolBar_, self.canvas_)
+        self.toolBar_.AddControl(self.combo_, menuConsts.IDS_TIP_HYP_COMBO)
 
         self.toolBar_.AddTool(menuConsts.ID_HYP_VALIDATE, menuConsts.IDS_HYP_VALIDATE, wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_HYP_VALIDATE)
@@ -1421,10 +1349,7 @@ class wxSolverFrame(wxMainFrame):
                    menuConsts.IDS_TIP_EDIT_END)
         self.toolBar_.Realize()  # indispensable pour afficher la barre
 
-        # sudoku solver canvas
-        self.canvas_ = wxSolverCanvas(self, params)
-
-        # Add the canvs to the frame's sizer
+        # Add the canvas to the frame's sizer
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
         self.SetSizer(mainSizer)
@@ -1437,6 +1362,9 @@ class wxSolverFrame(wxMainFrame):
     def initialize(self):
         #self.sidebar_show(force=True, visible=False)  # not visible at startup
         self.canvas_.initialize()
+
+        self.combo_.updateColours()
+        self.combo_.SetSelection(0)  # pyright: ignore[reportCallIssue]
 
         # updates ...
         self.themeChanged()

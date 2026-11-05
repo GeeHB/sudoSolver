@@ -66,6 +66,8 @@ IDS_SOLVE_RESOLVE_MULTI:str= 'Multi-threaded'
 ID_SOLVE_REVERT:int =  wx.NewIdRef().GetId()
 IDS_SOLVE_REVERT:str =  'Revert\tCtrl+R'
 
+IDS_TIP_HYP_COMBO:str = "List of colored hyptothesis"
+
 ID_HYP_VALIDATE:int =  wx.NewIdRef().GetId()
 IDS_HYP_VALIDATE:str =  'Validate'
 IDS_TIP_HYP_VALIDATE:str = 'Validate current colored hyptothesis'
