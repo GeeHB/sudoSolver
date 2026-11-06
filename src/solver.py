@@ -487,13 +487,15 @@ class solver:
 
         return -1
 
-    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True, hypID:hypColour = hypColour.NO_COLOUR)->int:
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
         #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index, False), value=val,
-            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET)
+            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET,
+            hypColourID=self.hyps_[len(self.hyps_) - 1]
+        )
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
         return index
 

@@ -605,7 +605,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         x = row * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[0]
         y = line * self.extSquareWidth_ + GUIConsts.EXT_BORDER_THICK + self.offsets_[1]
 
-        self._draw_singleValue(self.memDC_, value, x, y, self.intSquareWidth_, bkColourID, txtColourID, hypColourID)
+        self._draw_singleValue(self.memDC_, value, x, y, self.intSquareWidth_, bkColourID, txtColourID, 0)
 
         # Hypothesis/Tag ?
         if hypColourID != element.hypColour.NO_COLOUR:
@@ -625,7 +625,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #
         if value is not None and value > 0:
             memDC.SetTextForeground(self.theme_[txtColourID].other)
-            memDC.DrawText(str(value), x + self.textOffsets_[value-1][ratioId].x, y + self.textOffsets_[value-1][ratioId].y)
+            try:
+                memDC.DrawText(str(value), x + self.textOffsets_[value-1][ratioId].x, y + self.textOffsets_[value-1][ratioId].y)
+            except IndexError:
+                print(f"IndexError - value = {value} - ratioId = {ratioId}")
 
     # Draw a coloured tag
     def _draw_singleElementTag(self, memDC:wx.DC, x:int, y:int, hypColourID:int):
@@ -1487,9 +1490,6 @@ class wxSolverFrame(wxMainFrame):
 
     # Hypothesis / tag management
     #
-    @override
-    def hyp_onSelectColour(self, colID:int):
-        pass
 
     @override
     def hyp_onReject(self, colours: list[element.hypColour]):
