@@ -1263,7 +1263,7 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
         if sel!= wx.NOT_FOUND and sel <= self.GetCount():
             self.SetSelection(sel)  # pyright: ignore[reportCallIssue]
 
-    # Draw single element
+    # Draw a single element in the drop list
     def OnDrawItem(self, dc: wx.DC, rect: wx.Rect, item:int, flags:int):
         if item == wx.NOT_FOUND:
             return
@@ -1323,7 +1323,7 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_:wx.ToolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.TB_FLAT | wx.TB_TEXT)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         self.toolBar_.SetToolBitmapSize(wx.Size(16, 16))  # default bitmaps size
 
-        self.labelMode_ = wx.StaticText(self.toolBar_, label=appStrings.STR_SIDEBAR)
+        self.labelMode_ = wx.StaticText(self.toolBar_, label=appStrings.STR_TOOLBAR)
         self.toolBar_.AddControl(self.labelMode_)
         #self.toolBar_.AddSeparator()
         self.labelCount_ = wx.StaticText(self.toolBar_, label="Filled")
@@ -1340,13 +1340,16 @@ class wxSolverFrame(wxMainFrame):
 
         self.toolBar_.AddTool(menuConsts.ID_HYP_VALIDATE, menuConsts.IDS_HYP_VALIDATE, wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_HYP_VALIDATE)
-        self.toolBar_.AddTool(menuConsts.ID_HYP_REJECT, menuConsts.IDS_HYP_REJECT, wx.ArtProvider.GetBitmap(wx.ART_DEL_BOOKMARK, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
+        self.toolBar_.AddTool(menuConsts.ID_HYP_REJECT, menuConsts.IDS_HYP_REJECT, wx.ArtProvider.GetBitmap(wx.ART_UNDO, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_HYP_REJECT)
         self.toolBar_.AddSeparator()
 
         # End edition / creation
         self.toolBar_.AddTool(menuConsts.ID_EDIT_END, menuConsts.IDS_EDIT_END, wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR),    # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_EDIT_END)
+        self.toolBar_.AddTool(menuConsts.ID_EDIT_CANCEL, menuConsts.IDS_EDIT_CANCEL, wx.ArtProvider.GetBitmap(wx.ART_DEL_BOOKMARK, wx.ART_TOOLBAR),    # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
+                   menuConsts.IDS_TIP_EDIT_CANCEL)
+
         self.toolBar_.Realize()  # indispensable pour afficher la barre
 
         # Add the canvas to the frame's sizer
@@ -1400,7 +1403,7 @@ class wxSolverFrame(wxMainFrame):
     # edition mode changed
     @override
     def modeChanged(self, mode:wxEditionMode):
-        self.labelMode_.SetLabel(f"{appStrings.STR_SIDEBAR}" if mode == wxEditionMode.MODE_NONE
+        self.labelMode_.SetLabel(f"{appStrings.STR_TOOLBAR}" if mode == wxEditionMode.MODE_NONE
             else f"{appStrings.STR_MODE_CREATION if mode == wxEditionMode.MODE_CREATION else appStrings.STR_MODE_RESOLUTION}")
 
         create:bool = (mode == wxEditionMode.MODE_CREATION)
@@ -1411,6 +1414,7 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_.EnableTool(menuConsts.ID_HYP_REJECT, solve)
 
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
+        self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
 
     # End drawings
     #
