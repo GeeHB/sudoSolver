@@ -74,17 +74,12 @@ class wxMainFrame(wx.Frame):
 
     # Hypothesis / tag management
     #
-    def hyp_onSelectColor(self, colID:int):
+    def hyp_onSelectColour(self, colID:int):
         pass
-    def hyp_onReject(self, colID:int):
+    def hyp_onReject(self, colours: list[element.hypColour]):
         pass
-    def hyp_onAccept(self, colID:int):
+    def hyp_onValidate(self, colours: list[element.hypColour]):
         pass
-
-    # Sidebar
-    #
-    def sidebar_isVisible(self)->bool:
-        return False
 
     # End of edition
     #
@@ -310,6 +305,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self._menu_resolve_multiThreaded()
             case menuConsts.ID_SOLVE_REVERT:
                     self._menu_revertArray()
+
+            case menuConsts.ID_HYP_VALIDATE:
+                self._hyp_validate()
+            case menuConsts.ID_HYP_REJECT:
+                self._hyp_reject()
 
             case wx.ID_EXIT:
                 self._menu_fileExit()
@@ -797,6 +797,35 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_helpMatrix_ex()
 
     #
+    # Hyptohesis and tags
+    #
+
+    # Click on the combo list
+    def hyp_onComboSelect(self, event: wx.Event):
+        #index:int =
+        print(f"Click : {event.GetId()}")
+
+    # Accept the current hyp. => all tagged values will get prev. hyp. tag if exists or no tag (final validation)
+    def _hyp_validate(self):
+        id:int = len(self.hyps_)
+        if id > 1:
+            self.sudoku_.hyp_accept(self.hyps_[id-1], self.hyps_[id-2])
+            id-=1
+
+            self.parent_.hyp_onValidate(self.hyps_)
+            self.draw_update()
+
+    # Reject current hyp. => all values tagged will loose their tag
+    def _hyp_reject(self):
+        id:int = len(self.hyps_)
+        if id > 1:
+            self.sudoku_.hyp_reject(self.hyps_[id-1])   # notifies combo
+            id-=1
+
+            self.parent_.hyp_onReject(self.hyps_)   # notifies combo
+            self.draw_update()
+
+    #
     #  Menus
     #
 
@@ -1243,13 +1272,13 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
         self.canvas_:wxSolverCanvas = canvas
         self.hyps_:list[wxOwnComboData] = []    # no colours at startup !
 
-    # Set or change colours
-    def updateColours(self):
+    # Set or change colour list
+    def setColours(self)->int:
         sel:int = self.GetSelection()  # pyright: ignore[reportAssignmentType]
         self.Clear()
         self.hyps_.clear()
 
-        data = wxOwnComboData(id=0, colour=GUITheme.ownColour(rgb=(255,255,255)))
+        data = wxOwnComboData(id=0, colour=GUITheme.ownColour(rgb=(255,255,255)))   # No hyp / No Colour
         self.hyps_.append(data)
         self.Append(f"{data.id_}", data)  # pyright: ignore[reportUnknownMemberType]
 
@@ -1262,6 +1291,34 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
 
         if sel!= wx.NOT_FOUND and sel <= self.GetCount():
             self.SetSelection(sel)  # pyright: ignore[reportCallIssue]
+
+        return self.GetSelection()  # pyright: ignore[reportReturnType]
+
+    # Update the combo to reflect user's hyp.
+    def updateColours(self, colours: list[element.hypColour])->int:
+        self.setColours()
+
+        count:int = len(colours)
+        if count <= 1:  # should never be equal to 0 !!!!
+            return self.GetSelection()  # pyright: ignore[reportReturnType]
+
+        index:int = 0
+        position:int
+        while index < self.GetCount():
+            data:wxOwnComboData = self.GetClientData(index)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+
+            try:
+                position = colours.index(data.id_)  # pyright: ignore[reportArgumentType, reportUnknownMemberType]
+            except ValueError:
+                position = -1
+
+            if position != -1 :
+                if position != count:
+                    self.Delete(position)
+                else:
+                    self.SetSelection(position)  # pyright: ignore[reportCallIssue]
+
+        return self.GetSelection()  # pyright: ignore[reportReturnType]
 
     # Draw a single element in the drop list
     def OnDrawItem(self, dc: wx.DC, rect: wx.Rect, item:int, flags:int):
@@ -1336,6 +1393,7 @@ class wxSolverFrame(wxMainFrame):
                                  style=wx.CB_DROPDOWN | wx.CB_READONLY, size=wx.Size(170, -1))
         """
         self.combo_ = wxOwnCombo(self.toolBar_, self.canvas_)
+        self.comboSel_:int = 0
         self.toolBar_.AddControl(self.combo_, menuConsts.IDS_TIP_HYP_COMBO)
 
         self.toolBar_.AddTool(menuConsts.ID_HYP_VALIDATE, menuConsts.IDS_HYP_VALIDATE, wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
@@ -1357,8 +1415,9 @@ class wxSolverFrame(wxMainFrame):
         mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
         self.SetSizer(mainSizer)
 
-        # Bind menu events to handler
+        # Bind events to handlers
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_COMBOBOX, self.hyp_onComboSelect, self.combo_)  # pyright: ignore[reportUnknownMemberType]
 
     # GUI initialization
     #
@@ -1366,8 +1425,9 @@ class wxSolverFrame(wxMainFrame):
         #self.sidebar_show(force=True, visible=False)  # not visible at startup
         self.canvas_.initialize()
 
-        self.combo_.updateColours()
+        self.combo_.setColours()
         self.combo_.SetSelection(0)  # pyright: ignore[reportCallIssue]
+        self.comboSel_ = 0
 
         # updates ...
         self.themeChanged()
@@ -1415,6 +1475,29 @@ class wxSolverFrame(wxMainFrame):
 
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
+
+    # Hypothesis / tag management
+    #
+    @override
+    def hyp_onSelectColour(self, colID:int):
+        pass
+
+    @override
+    def hyp_onReject(self, colours: list[element.hypColour]):
+        self.combo_.updateColours(colours)
+
+    @override
+    def hyp_onValidate(self, colours: list[element.hypColour]):
+        self.combo_.updateColours(colours)
+
+    # Click on the combo list
+    def hyp_onComboSelect(self, event: wx.Event):
+        index:int = self.combo_.GetSelection()  # pyright: ignore[reportAssignmentType]
+
+        if index != wx.NOT_FOUND:
+            data:wxOwnComboData | None = self.combo_.GetClientData(index)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+            if data is not None and data.id_ != 0 :  # pyright: ignore[reportUnknownMemberType]
+                print(f"Choose colour id : {data.id_}")  # pyright: ignore[reportUnknownMemberType]
 
     # End drawings
     #

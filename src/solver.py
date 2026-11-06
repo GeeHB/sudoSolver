@@ -15,7 +15,7 @@ from enum import IntEnum
 
 import GUIConsts
 import GUITheme
-from element import element
+from element import element, hypColour
 from options import (
     options,
     stats,
@@ -204,6 +204,7 @@ class solver:
         self.stats_: stats = stats()
         self.edition_: editStatus = editStatus()
         self.prevValues_: list[prevValue] = []   # List of prev. values during edition
+        self.hyps_:list[hypColour] = [hypColour.NO_COLOUR]  # 'empty' hyp. list for solving process
 
         # Dimensions
         self.offsets_: tuple[int,int] = (0,0)
@@ -486,7 +487,7 @@ class solver:
 
         return -1
 
-    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
+    def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True, hypID:hypColour = hypColour.NO_COLOUR)->int:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
@@ -717,7 +718,7 @@ class solver:
             name = GUITheme.DEF_THEME_NAME
 
         if len(GUITheme.colourThemes[name]["colours"]) != GUITheme.colourID.ID_COLOUR_COUNT:
-            print(f"Error - The colour-list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            print(f"Error - The colour list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
             name = GUITheme.DEF_THEME_NAME
 
         if name == self.theme_.name:
@@ -749,7 +750,7 @@ class solver:
         except KeyError:
             print(f"Error - The theme '{name}' is incomplete or invalid.")
         except IndexError:
-            print(f"Error - The theme '{name}' doesn't contain enough clours.")
+            print(f"Error - The theme '{name}' doesn't contain enough colours.")
 
         return False
 
@@ -787,7 +788,7 @@ class solver:
 
         if "italic" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
             response:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["italic"]  # pyright: ignore[reportArgumentType, reportAssignmentType, reportCallIssue, reportUnusedVariable, reportUnknownVariableType]
-            italic = response in ('True', 'true', 'yes')
+            italic = response in ('True', 'true', 'yes', 'Yes')
 
         return italic
 

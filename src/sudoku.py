@@ -252,13 +252,15 @@ class sudoku(threading.Thread):
 
     # Modify the given element's value
     #
-    def modifyAt(self, position: pointer, value: int, status:int | None = None):
+    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColourID:hypColour = hypColour.NO_COLOUR):
         currentVal: int | None = self.elements_[position.index()].num
 
         if value>0 :
             self.elements_[position.index()].num = value
             if status is not None:
                 self.elements_[position.index()].status_.assign(status)
+            if hypColourID != hypColour.NO_COLOUR:
+                self.elements_[position.index()].hypothesis = hypColourID
 
             # A new val ?
             if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
@@ -995,7 +997,7 @@ class sudoku(threading.Thread):
     #
     #  @return : Count of elements whose colour have changed
     #
-    def _hyp_accept(self, colFrom:int , colTo:int)->int:
+    def hyp_accept(self, colFrom:int , colTo:int)->int:
         count:int = 0
         if colFrom != colTo and colFrom != hypColour.NO_COLOUR:
             for index in range(ARRAY_SIZE):
@@ -1014,7 +1016,7 @@ class sudoku(threading.Thread):
     #
     #  @return : count of elements concerned
     #
-    def _hyp_reject(self, colFrom:int)->int:
+    def hyp_reject(self, colFrom:int)->int:
         count:int = 0
         if colFrom != hypColour.NO_COLOUR:
             for index in range(ARRAY_SIZE):
