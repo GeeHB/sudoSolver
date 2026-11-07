@@ -557,16 +557,14 @@ class solver:
     # Cancel current edition process (and whole changes)
     #
     def _edit_cancel(self)->bool:
-        if len(self.prevValues_) == 0:
-            return False
+        if len(self.prevValues_) > 0:
+            for val in reversed(self.prevValues_):
+                if val.value_ > 0:
+                    self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
+                else:
+                    self.sudoku_[val.index_].empty(True)
 
-        for val in reversed(self.prevValues_):
-            if val.value_ > 0:
-                self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
-            else:
-                self.sudoku_[val.index_].empty(True)
-
-        self.prevValues_.clear()
+            self.prevValues_.clear()
         return True
 
     # Mouse position : client -> array coordinates

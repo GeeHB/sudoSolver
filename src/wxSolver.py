@@ -128,7 +128,7 @@ class wxTagsPanel(wxOwnPanel):
         self.Refresh()
 
     # Draw a coloured tag
-    def drawTag(self, destDC:wx.DC, x:int, y:int, width:int, squareWidth:int, colour:GUITheme.ownColour):
+    def drawTag(self, destDC:wx.DC, colour:GUITheme.ownColour, x:int, y:int, width:int):
         destDC.SetBrush(wx.Brush(colour.other))
         destDC.SetPen(wx.TRANSPARENT_PEN)
 
@@ -136,8 +136,8 @@ class wxTagsPanel(wxOwnPanel):
 
         if width == GUIConsts.TAG_MIN_SIZE:
             destDC.DrawCircle(
-                x + squareWidth - GUIConsts.TAG_PADDING - radius,
-                y + GUIConsts.TAG_PADDING + radius,
+                x - radius,
+                y + radius,
                 radius)
         else:
             points = [
@@ -148,10 +148,7 @@ class wxTagsPanel(wxOwnPanel):
                 (width, 0)
             ]
 
-            destDC.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
-                points,
-                x + squareWidth - GUIConsts.TAG_PADDING - width,
-                y + GUIConsts.TAG_PADDING)
+            destDC.DrawPolygon(points, x - width, y)  # pyright: ignore[reportUnknownMemberType]
 
     # Draw the tags
     def OnPaint(self, event : wx.Event):
@@ -349,7 +346,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_MODIFY:
                 self._menu_editOrResolve(edit = True)
             case menuConsts.ID_EDIT_DONE:
-                self.sudoku_.hyp_acceptAll()
+                if self.sudoku_.edit_acceptAll() > 0 :
+                    self._hyp_updateNonEmptyCount()
                 self._edit_stop()
                 self.edition_.creating = False
             case menuConsts.ID_EDIT_CANCEL:
@@ -368,9 +366,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self._menu_revertArray()
 
             case menuConsts.ID_HYP_VALIDATE:
-                self._hyp_validate()
+                if self._hyp_validate():
+                    self._hyp_updateNonEmptyCount()
             case menuConsts.ID_HYP_REJECT:
-                self._hyp_reject()
+                if self._hyp_reject():
+                    self._hyp_updateNonEmptyCount()
 
             case wx.ID_EXIT:
                 self._menu_fileExit()
@@ -671,7 +671,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Hypothesis/Tag ?
         if hypColourID != element.hypColour.NO_COLOUR:
             #self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
-            self.hypsPanel_.drawTag(self.memDC_, x, y, self.tagWidth_, self.intSquareWidth_, self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1])
+            self.hypsPanel_.drawTag(self.memDC_, self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1], x + self.intSquareWidth_ - GUIConsts.TAG_PADDING, y + GUIConsts.TAG_PADDING, self.tagWidth_)
 
     # Draw/erase a single value (element or proposed value) and its background
     #
@@ -817,10 +817,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         done:bool = False
         if super()._edit_cancel():
             self.state_.remove(self.ARRAY_MODIFIED) # !!!
-            self.sudoku_.hyp_rejectAll()
             self.draw()
             done = True
 
+        if self.sudoku_.edit_rejectAll() > 0 :
+            self._hyp_updateNonEmptyCount()
         self._edit_stop()
         return done
 
@@ -853,24 +854,33 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         return None
 
     # Accept the current hyp. => all tagged values will get prev. hyp. tag if exists or no tag (final validation)
-    def _hyp_validate(self):
+    def _hyp_validate(self)->int:
         id:int = len(self.hyps_)
+        count:int=0
         if id > 1:
-            self.sudoku_.hyp_accept(self.hyps_[id-1], self.hyps_[id-2])
+            count = self.sudoku_.hyp_accept(self.hyps_[id-1], self.hyps_[id-2])
             id-=1
 
             self.parent_.hyp_onValidate(self.hyps_)
             self.draw_update()
+        return count
 
     # Reject current hyp. => all values tagged will loose their tag
-    def _hyp_reject(self):
+    def _hyp_reject(self)->int:
         id:int = len(self.hyps_)
+        count:int = 0
         if id > 1:
-            self.sudoku_.hyp_reject(self.hyps_[id-1])   # notifies combo
+            count = self.sudoku_.hyp_reject(self.hyps_[id-1])
             id-=1
 
-            self.parent_.hyp_onReject(self.hyps_)   # notifies combo
+            self.parent_.hyp_onReject(self.hyps_)
             self.draw_update()
+        return count
+
+    # Update setted elements count
+    def _hyp_updateNonEmptyCount(self):
+        self.sudoku_.nonEmptyItems()
+        self.parent_.countChanged()
 
     #
     #  Menus
