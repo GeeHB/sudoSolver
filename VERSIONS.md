@@ -1,7 +1,7 @@
 # *sudoSolver* releases informations
 
 #### Known issues
-* No multithread on MacOS
+* No multi-thread on MacOS
 * Refresh error when resizing window on ChromeOS
 
 #### Dependencies
@@ -20,9 +20,13 @@
 
 #### todo
 
-#### Version 4.1.1
-* 3 nov. 2026
+#### Version 4.1.2
+* 7 nov. 2026
 * Added :
+  * add a toolbar to the main frame
+  * Hypothesis / tags
+    * Tag Panel to display used hypothesis
+    * choose hyp's colour using owner drawn combobox
   * Action on left muse button dblclk = edit or solve
   * GUITheme <- Portable themes management (fonts and colours) 
     * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
