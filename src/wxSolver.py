@@ -96,9 +96,67 @@ class wxOwnPanel(wx.Panel):
     def initialize(self):
         pass
 
-    # Theme just changed
-    def themeChanged(self):
-        pass
+# wxTagsPanel - Show selected tags
+#
+class wxTagsPanel(wxOwnPanel):
+    # Construction
+    def __init__(self, parent: wxMainFrame):
+        wxOwnPanel.__init__(self, parent)
+
+        self.colours_ : list[GUITheme.ownColour] = []   # tags colours
+
+    # GUI initialization
+    @override
+    def initialize(self):
+        self.Bind(wx.EVT_PAINT, self.OnPaint)  # pyright: ignore[reportUnknownMemberType]
+        self.Show()
+
+    # Set theme colours
+    #
+    def setBackgroundColour(self, colour: GUITheme.ownColour):
+        super().SetBackgroundColour(colour.other)
+
+    def setHypothesisColours(self, colours: list[GUITheme.ownColour]):
+        if len(colours) == 4:
+            self.colours_.clear()
+            for col in colours:
+                self.colours_.append(col)
+            self.Refresh()
+
+    # New hyp. list
+    def setHypothesis(self, colours: list[element.hypColour]):
+        self.Refresh()
+
+    # Draw a coloured tag
+    def drawTag(self, destDC:wx.DC, x:int, y:int, width:int, squareWidth:int, colour:GUITheme.ownColour):
+        destDC.SetBrush(wx.Brush(colour.other))
+        destDC.SetPen(wx.TRANSPARENT_PEN)
+
+        radius = int(width / 2)
+
+        if width == GUIConsts.TAG_MIN_SIZE:
+            destDC.DrawCircle(
+                x + squareWidth - GUIConsts.TAG_PADDING - radius,
+                y + GUIConsts.TAG_PADDING + radius,
+                radius)
+        else:
+            points = [
+                (0, 0),
+                (0, width + radius),
+                (radius, width),
+                (width, width+radius),
+                (width, 0)
+            ]
+
+            destDC.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
+                points,
+                x + squareWidth - GUIConsts.TAG_PADDING - width,
+                y + GUIConsts.TAG_PADDING)
+
+    # Draw the tags
+    def OnPaint(self, event : wx.Event):
+        if len(self.colours_) == 4 :
+            paintDC = wx.PaintDC(self)
 
 # wxSolverApp - Abstract class for application
 #
@@ -173,9 +231,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Constructor
     #
-    def __init__(self, parent: wxMainFrame, params : options):
+    def __init__(self, parent: wxMainFrame, hypsPanel: wxTagsPanel, params : options):
         wxOwnPanel.__init__(self, parent)
         solver.solver.__init__(self, params)
+
+        self.hypsPanel_ = hypsPanel
 
         self.state_: statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
 
@@ -610,7 +670,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # Hypothesis/Tag ?
         if hypColourID != element.hypColour.NO_COLOUR:
-            self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
+            #self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
+            self.hypsPanel_.drawTag(self.memDC_, x, y, self.tagWidth_, self.intSquareWidth_, self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1])
 
     # Draw/erase a single value (element or proposed value) and its background
     #
@@ -630,35 +691,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 memDC.DrawText(str(value), x + self.textOffsets_[value-1][ratioId].x, y + self.textOffsets_[value-1][ratioId].y)
             except IndexError:
                 print(f"IndexError - value = {value} - ratioId = {ratioId}")
-
-    # Draw a coloured tag
-    def _draw_singleElementTag(self, memDC:wx.DC, x:int, y:int, hypColourID:int):
-        memDC.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
-        # Hypothesis/Tag ?
-        if hypColourID != element.hypColour.NO_COLOUR:
-            memDC.SetBrush(wx.Brush(self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1].other))
-            memDC.SetPen(wx.TRANSPARENT_PEN)
-
-            radius = int(self.tagWidth_ / 2)
-
-            if self.tagWidth_ == GUIConsts.TAG_MIN_SIZE:
-                memDC.DrawCircle(
-                    x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - radius,
-                    y + GUIConsts.TAG_PADDING + radius,
-                    radius)
-            else:
-                points = [
-                    (0, 0),
-                    (0, self.tagWidth_ + radius),
-                    (radius, self.tagWidth_),
-                    (self.tagWidth_, self.tagWidth_+radius),
-                    (self.tagWidth_, 0)
-                ]
-
-                memDC.DrawPolygon(  # pyright: ignore[reportUnknownMemberType]
-                    points,
-                    x + self.intSquareWidth_ - GUIConsts.TAG_PADDING - self.tagWidth_,
-                    y + GUIConsts.TAG_PADDING)
 
     # Delete current memory DC
     def _draw_freeMemoryDC(self):
@@ -1215,6 +1247,15 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _theme_changeByName(self, name:str)->bool:
         ret: bool = solver.solver._theme_changeByName(self, name)
         if ret:
+            # Apply nex colours to hyp. panel
+            self.hypsPanel_.setBackgroundColour(self.theme_.colours_[GUITheme.colourID.ID_CANVAS_BK])
+            colours: list[GUITheme.ownColour] = [self.theme_.colours_[GUITheme.colourID.ID_TAG_1],
+                    self.theme_.colours_[GUITheme.colourID.ID_TAG_2],
+                    self.theme_.colours_[GUITheme.colourID.ID_TAG_3],
+                    self.theme_.colours_[GUITheme.colourID.ID_TAG_4]
+                    ]
+            self.hypsPanel_.setHypothesisColours(colours)
+
             self._draw_freeMemoryDC()
             self._theme_fontChanged()
             self.draw(redrawBackground=True)
@@ -1288,8 +1329,7 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
         self.hyps_:list[wxOwnComboData] = []    # no colours at startup !
 
     # Set or change colour list
-    def setColours(self)->int:
-        sel:int = self.GetSelection()  # pyright: ignore[reportAssignmentType]
+    def setColours(self):
         self.Clear()
         self.hyps_.clear()
 
@@ -1303,10 +1343,7 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
             self.hyps_.append(data)
             self.Append(f"{data.id_}", data)  # pyright: ignore[reportUnknownMemberType]
 
-        if sel!= wx.NOT_FOUND and sel <= self.GetCount():
-            self.SetSelection(sel)  # pyright: ignore[reportCallIssue]
-
-        return self.GetSelection()  # pyright: ignore[reportReturnType]
+        self.SetSelection(0)  # pyright: ignore[reportCallIssue]
 
     # Update the combo to reflect user's hyp.
     def updateColours(self, colours: list[element.hypColour])->int:
@@ -1388,11 +1425,46 @@ class wxSolverFrame(wxMainFrame):
     def __init__(self, params: options):
         wx.Frame.__init__(self, None, title = APP_SHORT_NAME, style = wx.DEFAULT_FRAME_STYLE, size=wx.Size(450, 300))
 
-        # sudoku solver canvas
-        self.canvas_ = wxSolverCanvas(self, params)
+        # Hypothesis and tag panel
+        self.hypsPanel_ = wxTagsPanel(self)
+        self.hypsPanel_.SetMinSize(wx.Size(-1, GUIConsts.TAG_PANEL_HEIGHT))
 
-        # Create the toolbar
-        #
+        # sudoku solver canvas
+        self.canvas_ = wxSolverCanvas(self, self.hypsPanel_, params)
+
+        self._createToolBar()
+
+        # Add the canvas to the frame's sizer
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        mainSizer.Add(self.hypsPanel_, 0, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
+        mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
+        self.SetSizer(mainSizer)
+
+        # Bind events to handlers
+        self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_COMBOBOX, self.hyp_onComboSelect, self.combo_)  # pyright: ignore[reportUnknownMemberType]
+
+    # GUI initialization
+    #
+    def initialize(self):
+        #self.sidebar_show(force=True, visible=False)  # not visible at startup
+        self.canvas_.initialize()
+
+        self.combo_.setColours()
+        self.comboSel_ = 0
+
+        # updates ...
+        self.themeChanged()
+        self.countChanged()
+        self.modeChanged(wxEditionMode.MODE_NONE)
+
+        # Let's go !!!
+        self.Centre()
+        self.Show()
+
+    # Create the toolbar
+    #
+    def _createToolBar(self):
         self.toolBar_:wx.ToolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.TB_FLAT | wx.TB_TEXT)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         self.toolBar_.SetToolBitmapSize(wx.Size(16, 16))  # default bitmaps size
 
@@ -1404,10 +1476,6 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_.AddSeparator()
 
         # Hypothesis and flags
-        """
-        self.combo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY, choices=["Projet A", "Projet B", "Projet C"],
-                                 style=wx.CB_DROPDOWN | wx.CB_READONLY, size=wx.Size(170, -1))
-        """
         self.combo_ = wxOwnCombo(self.toolBar_, self.canvas_)
         self.comboSel_:int = 0
         self.toolBar_.AddControl(self.combo_, menuConsts.IDS_TIP_HYP_COMBO)
@@ -1424,35 +1492,7 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_.AddTool(menuConsts.ID_EDIT_CANCEL, menuConsts.IDS_EDIT_CANCEL, wx.ArtProvider.GetBitmap(wx.ART_DEL_BOOKMARK, wx.ART_TOOLBAR),    # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_EDIT_CANCEL)
 
-        self.toolBar_.Realize()  # indispensable pour afficher la barre
-
-        # Add the canvas to the frame's sizer
-        mainSizer = wx.BoxSizer(wx.VERTICAL)
-        mainSizer.Add(self.canvas_, 1, wx.EXPAND)       # pyright: ignore[reportUnknownMemberType]
-        self.SetSizer(mainSizer)
-
-        # Bind events to handlers
-        self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
-        self.Bind(wx.EVT_COMBOBOX, self.hyp_onComboSelect, self.combo_)  # pyright: ignore[reportUnknownMemberType]
-
-    # GUI initialization
-    #
-    def initialize(self):
-        #self.sidebar_show(force=True, visible=False)  # not visible at startup
-        self.canvas_.initialize()
-
-        self.combo_.setColours()
-        self.combo_.SetSelection(0)  # pyright: ignore[reportCallIssue]
-        self.comboSel_ = 0
-
-        # updates ...
-        self.themeChanged()
-        self.countChanged()
-        self.modeChanged(wxEditionMode.MODE_NONE)
-
-        # Let's go !!!
-        self.Centre()
-        self.Show()
+        self.toolBar_.Realize()  # don't forget !!!
 
     # Theme just changed
     @override
@@ -1479,6 +1519,9 @@ class wxSolverFrame(wxMainFrame):
     # edition mode changed
     @override
     def modeChanged(self, mode:wxEditionMode):
+        if mode == wxEditionMode.MODE_NONE:
+            self.combo_.setColours()
+
         self.labelMode_.SetLabel(f"{appStrings.STR_TOOLBAR}" if mode == wxEditionMode.MODE_NONE
             else f"{appStrings.STR_MODE_CREATION if mode == wxEditionMode.MODE_CREATION else appStrings.STR_MODE_RESOLUTION}")
 
