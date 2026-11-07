@@ -289,6 +289,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_MODIFY:
                 self._menu_editOrResolve(edit = True)
             case menuConsts.ID_EDIT_DONE:
+                self.sudoku_.hyp_acceptAll()
                 self._edit_stop()
                 self.edition_.creating = False
             case menuConsts.ID_EDIT_CANCEL:
@@ -784,6 +785,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         done:bool = False
         if super()._edit_cancel():
             self.state_.remove(self.ARRAY_MODIFIED) # !!!
+            self.sudoku_.hyp_rejectAll()
             self.draw()
             done = True
 
@@ -812,6 +814,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def hyp_onComboSelect(self, colID:int)->list[element.hypColour] | None:
         if colID > 0 and colID not in self.hyps_:
             self.hyps_.append(element.hypColour(colID))
+
+            self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
             return self.hyps_
 
         return None

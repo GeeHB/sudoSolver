@@ -1007,7 +1007,20 @@ class sudoku(threading.Thread):
 
         return count
 
-    # Reject all the hypothese's values
+    # Accept all the values with any hyp.
+    #
+    #  @return : count of elements concerned
+    #
+    def hyp_acceptAll(self)->int:
+        count:int = 0
+        for index in range(ARRAY_SIZE):
+            if hypColour.NO_COLOUR != self.elements_[index].hypothesis:
+                self.elements_[index].hypothesis = hypColour.NO_COLOUR  # Just remove the tag
+                count+=1
+
+        return count
+
+    # Reject all the values linked to the hypothesis
     #
     #  When rejected, all elements with the @colFrom  hyp. colour
     #  will be cleared
@@ -1023,6 +1036,21 @@ class sudoku(threading.Thread):
                 if colFrom == self.elements_[index].hypothesis:
                     self.elements_[index].empty(True)
                     count+=1
+
+        return count
+
+    # Reject all the values with any hyp.
+    #
+    #  When rejected, all elements will be cleared
+    #
+    #  @return : count of elements concerned
+    #
+    def hyp_rejectAll(self)->int:
+        count:int = 0
+        for index in range(ARRAY_SIZE):
+            if hypColour.NO_COLOUR != self.elements_[index].hypothesis:
+                self.elements_[index].empty(True)
+                count+=1
 
         return count
 
