@@ -30,6 +30,7 @@ HELP_RATIO:int          = 2
 TAG_MIN_SIZE:int        = 6     # Dims
 TAG_MAX_SIZE:int        = 20
 TAG_PADDING:int         = 4
+TAG_BORDER:int          = 10
 
 TAG_COMBO_BORDER:int    = 6     # border in the combobox
 TAG_COMBO_HEIGHT:int    = 26

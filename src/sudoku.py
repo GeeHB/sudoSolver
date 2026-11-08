@@ -1028,15 +1028,25 @@ class sudoku(threading.Thread):
 
     # Accept all the modified values
     #
+    #   @editionMode : True if in edition or creation mode
+    #
+    #   In edition mode (editionMode = True) all values are 'original'
+    #   whereas in resolution mode (editionMoe = False) all tagged values
+    #   will have their tag removed
+    #
     #  @return : count of elements concerned
     #
-    def edit_acceptAll(self)->int:
+    def edit_acceptAll(self, editionMode:bool)->int:
         count:int = 0
         for index in range(ARRAY_SIZE):
-            if not self.elements_[index].isOriginal():
-                self.elements_[index].setOriginal()
-                count+=1
-
+            if editionMode:
+                if not self.elements_[index].isOriginal():
+                    self.elements_[index].setOriginal()
+                    count+=1
+            else:
+                if self.elements_[index].hypothesis != hypColour.NO_COLOUR:
+                    self.elements_[index].hypothesis = hypColour.NO_COLOUR
+                    count+=1
         return count
 
     # Reject all the modified values

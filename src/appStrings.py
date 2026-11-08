@@ -76,7 +76,7 @@ STR_HYP_REJECT:str =  'Reject'
 STR_TIP_HYP_REJECT:str = 'Reject the current hyptothesis'
 
 STR_EDIT_END:str =  STR_CREATE_DONE
-STR_TIP_EDIT_END:str = 'End edition'
+STR_TIP_EDIT_END:str = 'End and validate edition'
 
 STR_EDIT_CANCEL:str =  STR_CREATE_CANCEL
 STR_TIP_EDIT_CANCEL:str = 'Cancel edition'

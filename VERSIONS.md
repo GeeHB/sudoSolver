@@ -19,6 +19,18 @@
    * PyGame 2.1.2
 
 #### todo
+  * Display hyps in panel
+  * Helpers / "Advices" <- combo
+    * "Show an error"
+    * "Error count"
+    * "help value"
+  * Choose an hyp.
+    * keep first value / position
+    * reject => activate first value 
+  * Resolution
+    * first, search for a soluce (if none, error)
+    * "Found a solution" by the user
+    * show stats
 
 #### Version 4.1.2
 * 7 nov. 2026
@@ -29,7 +41,7 @@
     * choose hyp's colour using owner drawn combobox
   * Action on left muse button dblclk = edit or solve
   * GUITheme <- Portable themes management (fonts and colours) 
-    * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
+      * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
   * Help matrix
     * show (on demand) possible element's values in sided small clickable matrix
   * Add 'Display' menu

@@ -118,9 +118,8 @@ class editStatus:
         return (self.status_.isSet(self.EDIT_MODE_CREATION) or self.status_.isSet(self.EDIT_MODE_RESOLUTION))
     @editing.setter
     def editing(self, active: bool = True):
-        if not active:
-            self.status_.set(self.EDIT_MODE_CREATION, False)
-            self.status_.set(self.EDIT_MODE_RESOLUTION, False)
+        self.status_.set(self.EDIT_MODE_CREATION, active)
+        self.status_.set(self.EDIT_MODE_RESOLUTION, active)
 
     # Selection status
     @property
@@ -233,9 +232,6 @@ class solver:
         self.offsets_ = (GUIConsts.DELTA_W, GUIConsts.DELTA_H)
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
-
-        self._theme_changeByName(GUITheme.DEF_THEME_NAME)
-        self._draw_fontSize2PixelSize()
 
     # Filename
     @property
