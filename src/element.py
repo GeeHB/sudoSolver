@@ -16,7 +16,7 @@ from sharedTools import statusbits
 
 # Tag/hypothesis colours
 #
-class hypColour(IntEnum):
+class hypColourID(IntEnum):
     NO_COLOUR = 0
     HYP_1 = auto()
     HYP_2 = auto()
@@ -36,7 +36,7 @@ class element:
     def __init__(self, value:int | None = None):
         self.value_:int = 0;
         self.solution_:int | None = None
-        self.hyp_:int = hypColour.NO_COLOUR
+        self.hyp_:int = hypColourID.NO_COLOUR
 
         if not value is None:
             self.value_ = value
@@ -91,7 +91,7 @@ class element:
         return self.hyp_
     @hypothesis.setter
     def hypothesis(self, newVal : int):
-        if newVal >= hypColour.NO_COLOUR and newVal <= hypColour.HYP_4:
+        if newVal >= hypColourID.NO_COLOUR and newVal <= hypColourID.HYP_4:
             self.hyp_ = newVal
 
     # Set/modify the value
@@ -131,7 +131,7 @@ class element:
         self.value_ = 0
         if deep:
             self.solution_ = 0
-        self.hyp_ = hypColour.NO_COLOUR
+        self.hyp_ = hypColourID.NO_COLOUR
         return pValue
 
     # Element's status

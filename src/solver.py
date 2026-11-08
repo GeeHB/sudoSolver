@@ -15,11 +15,9 @@ from enum import IntEnum
 
 import GUIConsts
 import GUITheme
-from element import element, hypColour
-from options import (
-    options,
-    stats,
-)
+from element import element, hypColourID
+from hypColours import hypColours
+from options import options, stats
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
     ARRAY_SIZE,
@@ -203,7 +201,9 @@ class solver:
         self.stats_: stats = stats()
         self.edition_: editStatus = editStatus()
         self.prevValues_: list[prevValue] = []   # List of prev. values during edition
-        self.hyps_:list[hypColour] = [hypColour.NO_COLOUR]  # 'empty' hyp. list for solving process
+
+        self.hypsColours_:hypColours
+        self.hypsColours_.append(hypColourID.NO_COLOUR)  # 'empty' hyp. list for solving process
 
         # Dimensions
         self.offsets_: tuple[int,int] = (0,0)
@@ -490,7 +490,7 @@ class solver:
         #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index, False), value=val,
             status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET,
-            hypColourID=self.hyps_[len(self.hyps_) - 1]
+            hypColID=self.hypsColours_.getColIDAt(len(self.hypsColours_) - 1)
         )
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
         return index

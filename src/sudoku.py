@@ -15,7 +15,7 @@ import random
 import threading
 from typing import override
 
-from element import element, hypColour
+from element import element, hypColourID
 from options import (
     FILE_COMMENTS,
     FILE_VALUE_SEPARATOR,
@@ -252,15 +252,15 @@ class sudoku(threading.Thread):
 
     # Modify the given element's value
     #
-    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColourID:hypColour = hypColour.NO_COLOUR):
+    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_COLOUR):
         currentVal: int | None = self.elements_[position.index()].num
 
         if value>0 :
             self.elements_[position.index()].num = value
             if status is not None:
                 self.elements_[position.index()].status_.assign(status)
-            if hypColourID != hypColour.NO_COLOUR:
-                self.elements_[position.index()].hypothesis = hypColourID
+            if hypColID != hypColourID.NO_COLOUR:
+                self.elements_[position.index()].hypothesis = hypColID
 
             # A new val ?
             if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
@@ -999,7 +999,7 @@ class sudoku(threading.Thread):
     #
     def hyp_accept(self, colFrom:int , colTo:int)->int:
         count:int = 0
-        if colFrom != colTo and colFrom != hypColour.NO_COLOUR:
+        if colFrom != colTo and colFrom != hypColourID.NO_COLOUR:
             for index in range(ARRAY_SIZE):
                 if colFrom == self.elements_[index].hypothesis:
                     self.elements_[index].hypothesis = colTo
@@ -1018,7 +1018,7 @@ class sudoku(threading.Thread):
     #
     def hyp_reject(self, colFrom:int)->int:
         count:int = 0
-        if colFrom != hypColour.NO_COLOUR:
+        if colFrom != hypColourID.NO_COLOUR:
             for index in range(ARRAY_SIZE):
                 if colFrom == self.elements_[index].hypothesis:
                     self.elements_[index].empty(True)
@@ -1044,8 +1044,8 @@ class sudoku(threading.Thread):
                     self.elements_[index].setOriginal()
                     count+=1
             else:
-                if self.elements_[index].hypothesis != hypColour.NO_COLOUR:
-                    self.elements_[index].hypothesis = hypColour.NO_COLOUR
+                if self.elements_[index].hypothesis != hypColourID.NO_COLOUR:
+                    self.elements_[index].hypothesis = hypColourID.NO_COLOUR
                     count+=1
         return count
 
