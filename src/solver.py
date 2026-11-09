@@ -202,8 +202,8 @@ class solver:
         self.edition_: editStatus = editStatus()
         self.prevValues_: list[prevValue] = []   # List of prev. values during edition
 
-        self.hypsColours_:hypColours
-        self.hypsColours_.append(hypColourID.NO_COLOUR)  # 'empty' hyp. list for solving process
+        self.hypsColours_:hypColours = hypColours()
+        self.hypsColours_.append(hypColourID.NO_HYP)  # 'empty' hyp. list for solving process
 
         # Dimensions
         self.offsets_: tuple[int,int] = (0,0)
@@ -294,7 +294,6 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
-        #print(f"Non-empty values : {self.sudoku_.count_}")
         if elements is None :
             elements = self.sudoku_.elements_
 
@@ -492,6 +491,7 @@ class solver:
             status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET,
             hypColID=self.hypsColours_.getColIDAt(len(self.hypsColours_) - 1)
         )
+        self.hypsColours_.setFirstPosition(index)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
         return index
 

@@ -668,9 +668,8 @@ class pygameSolver(solver.solver):
                 except sudokuError as e:
                     print(f"Sudoku Error : {e.message_}")
                 except OSError as other:
-                    # the file is not valid => remove it from the list
                     print(f"Invalid file : {other}")
-                    _ = files.pop(index)
+                    _ = files.pop(index)        # the file is not valid => remove it from the list
                     maxIndex -= 1
 
                 prev = index

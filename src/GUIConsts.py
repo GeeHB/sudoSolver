@@ -37,7 +37,7 @@ TAG_COMBO_HEIGHT:int    = 26
 TAG_COMBO_SEL_COLOUR    = (195, 195, 195)
 TAG_COMBO_NO_COLOUR_STR:str = "no tag"
 
-TAG_PANEL_HEIGHT:int    = 30
+TAG_PANEL_HEIGHT:int    = 45
 
 
 # Elements'text font sizes (in pixels) and names

@@ -252,14 +252,14 @@ class sudoku(threading.Thread):
 
     # Modify the given element's value
     #
-    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_COLOUR):
+    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_HYP):
         currentVal: int | None = self.elements_[position.index()].num
 
         if value>0 :
             self.elements_[position.index()].num = value
             if status is not None:
                 self.elements_[position.index()].status_.assign(status)
-            if hypColID != hypColourID.NO_COLOUR:
+            if hypColID != hypColourID.NO_HYP:
                 self.elements_[position.index()].hypothesis = hypColID
 
             # A new val ?
@@ -284,7 +284,9 @@ class sudoku(threading.Thread):
         if os.path.isdir(fileName):
             raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
 
+        self.empty()    # The sudoku must exist and must be empty !!!
         self.filename = fileName
+
 
         # Open and read the file
         #
@@ -696,8 +698,7 @@ class sudoku(threading.Thread):
         for tIndex in range(ROW_COUNT):
             if self.elements_[tIndex + idFirst].num == value:
                 return False
-        # yes
-        return True
+        return True # not found
 
     #  => in the row ?
     def _check_row(self, position:pointer, value:int)->bool:
@@ -762,7 +763,6 @@ class sudoku(threading.Thread):
                     self.elements_[position.index()].setValue(
                         value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING
                     )
-                    #print(self.elements_[position.index()])
                     found += 1
             else:
                 value = self.elements_[position.index()].num
@@ -959,7 +959,6 @@ class sudoku(threading.Thread):
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING)
-            #print(f"Row - Position : {foundPos} - {self.elements_[foundPos.index()]}")
             return 1
 
         # No ...
@@ -999,7 +998,7 @@ class sudoku(threading.Thread):
     #
     def hyp_accept(self, colFrom:int , colTo:int)->int:
         count:int = 0
-        if colFrom != colTo and colFrom != hypColourID.NO_COLOUR:
+        if colFrom != colTo and colFrom != hypColourID.NO_HYP:
             for index in range(ARRAY_SIZE):
                 if colFrom == self.elements_[index].hypothesis:
                     self.elements_[index].hypothesis = colTo
@@ -1018,7 +1017,7 @@ class sudoku(threading.Thread):
     #
     def hyp_reject(self, colFrom:int)->int:
         count:int = 0
-        if colFrom != hypColourID.NO_COLOUR:
+        if colFrom != hypColourID.NO_HYP:
             for index in range(ARRAY_SIZE):
                 if colFrom == self.elements_[index].hypothesis:
                     self.elements_[index].empty(True)
@@ -1044,8 +1043,8 @@ class sudoku(threading.Thread):
                     self.elements_[index].setOriginal()
                     count+=1
             else:
-                if self.elements_[index].hypothesis != hypColourID.NO_COLOUR:
-                    self.elements_[index].hypothesis = hypColourID.NO_COLOUR
+                if self.elements_[index].hypothesis != hypColourID.NO_HYP:
+                    self.elements_[index].hypothesis = hypColourID.NO_HYP
                     count+=1
         return count
 

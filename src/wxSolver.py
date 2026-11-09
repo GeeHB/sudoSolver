@@ -21,9 +21,9 @@ except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
 
-import appStrings
 import element
 import GUIConsts
+import GUIStrings
 import GUITheme
 import menuConsts
 import solver
@@ -78,6 +78,8 @@ class wxMainFrame(wx.Frame):
         pass
     def hyp_onValidate(self, colours: list[element.hypColourID]):
         pass
+    def hyp_onClear(self):
+        pass
 
     # End of edition
     #
@@ -122,16 +124,23 @@ class wxTagsPanel(wxOwnPanel):
             self.Refresh()
 
     # New hyp.
-    def addHypothesis(self, colID:int):
+    def hyp_add(self, colID:int, add:bool = True):
         if colID not in self.hyps_:
+            if not add:
+                self.hyp_pop()
             self.hyps_.append(colID)
             self.Refresh()
 
     # Remove an hyp. (the last one)
-    def popHypothesis(self):
+    def hyp_pop(self):
         if len(self.hyps_) > 0:
             self.hyps_.pop()
             self.Refresh()
+
+    # Remove all hyp.
+    def hyp_clear(self):
+        self.hyps_.clear()
+        self.Refresh()
 
     # Draw a coloured tag
     def drawTag(self, destDC:wx.DC, colour:GUITheme.ownColour, x:int, y:int, width:int, rightAlign:bool = False):
@@ -422,7 +431,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def OnLButtonUp(self, event : wx.MouseEvent):
         if self.state_.isSet(self.ARRAY_EDITING) :
             newPos: tuple[int,int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
-            #print(f"Click on {newPos}")
             match newPos[0]:
                 case solver.ownZone.ZONE_ARRAY:
                     self.edition_.move()
@@ -431,7 +439,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
                 case solver.ownZone.ZONE_HELP_MATRIX:
                     value:int = 1 + 3 * newPos[2] + newPos[1]   # Value in the help matrix
-                    #print(f"At {newPos} : {value}")
                     if -1 == self._edit_setValue(value)  :
                         self._edit_setValue(0)  # click on empty proposal
                     self.parent_.countChanged()
@@ -449,12 +456,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if clickPos[0] == solver.ownZone.ZONE_ARRAY:
                 dlg = wx.MessageDialog(
                     self,
-                    appStrings.STR_EDIT_OR_SOLVE,
-                    appStrings.STR_EDITION,
+                    GUIStrings.STR_EDIT_OR_SOLVE,
+                    GUIStrings.STR_EDITION,
                     wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION
                 )
 
-                dlg.SetYesNoLabels(menuConsts.IDS_SOLVE_RESOLVE, appStrings.STR_MODIFY)  # pyright: ignore[reportUnknownMemberType]
+                dlg.SetYesNoLabels(menuConsts.IDS_SOLVE_RESOLVE, GUIStrings.STR_MODIFY)  # pyright: ignore[reportUnknownMemberType]
                 result = dlg.ShowModal()
 
                 match result:
@@ -681,7 +688,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._draw_singleValue(self.memDC_, value, x, y, self.intSquareWidth_, bkColourID, txtColourID, 0)
 
         # Hypothesis/Tag ?
-        if hypColourID != element.hypColourID.NO_COLOUR:
+        if hypColourID != element.hypColourID.NO_HYP:
             #self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
             self.hypsPanel_.drawTag(self.memDC_,
                 self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1],
@@ -721,7 +728,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     @override
     def _edit_start(self, initPos:bool = True):
         if self.sudoku_.isModified():
-            if wx.MessageBox(appStrings.STR_MODIFIED_ARRAY, appStrings.STR_CREATE,
+            if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -831,12 +838,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Done / End
     #
     def _edit_done(self):
+        self.parent_.hyp_onClear()
         self.sudoku_.edit_acceptAll(self.edition_.creating)
 
         self.edition_.editing = False
         self._hyp_updateNonEmptyCount()
         self._edit_stop()
 
+        self.draw_update()
 
     # Cancel
     #
@@ -865,6 +874,18 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_helpMatrix_ex()
 
     #
+    # Help / advice
+    #
+
+    # User select an hyp. colour in the combo
+    def help_onComboSelect(self, event: wx.CommandEvent):
+        #index:int = self.hypsCombo_.GetSelection()  # pyright: ignore[reportAssignmentType]
+        match event.GetString():
+
+            case _:
+                pass    # ???
+
+    #
     # Hyptohesis and tags
     #
 
@@ -875,10 +896,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #  @return : new hyps list if colour is valid None otherwise
     #
     def hyp_onComboSelect(self, colID:int)->list[element.hypColourID] | None:
-        if colID > element.hypColourID.NO_COLOUR and -1 == self.hypsColours_.getIndex(colID):
-            self.hypsColours_.append(element.hypColourID(colID))
-            self.hypsPanel_.addHypothesis(colID)
-            print(self.hypsColours_)
+        if colID > element.hypColourID.NO_HYP and -1 == self.hypsColours_.getIndex(colID):
+            added:bool = self.hypsColours_.append(element.hypColourID(colID))
+            self.hypsPanel_.hyp_add(colID, added)
+            #print(self.hypsColours_)
 
             self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
             return self.hypsColours_.toList()
@@ -891,7 +912,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         count:int=0
         if id > 1:
             count = self.sudoku_.hyp_accept(self.hypsColours_.getColIDAt(id-1), self.hypsColours_.getColIDAt(id-2))
-            self.hypsColours_.pop()
+            self.hypsColours_.pop() # current colour merged with prev.
 
             self.parent_.hyp_onValidate(self.hypsColours_.toList())
             self.draw_update()
@@ -1028,7 +1049,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Create a new or empty array
     #
     def _menu_fileNew(self, menuId:int):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(appStrings.STR_NOT_SAVED, appStrings.STR_NEW,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_NEW,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
@@ -1051,11 +1072,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(appStrings.STR_NOT_SAVED, appStrings.STR_LOAD,
+        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
-        with wx.FileDialog(self, appStrings.STR_LOAD, wildcard=appStrings.STR_WILDCARD,
+        with wx.FileDialog(self, GUIStrings.STR_LOAD, wildcard=GUIStrings.STR_WILDCARD,
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
@@ -1071,17 +1092,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _menu_fileSave(self):
         if self.sudoku_.isEmpty():
-            wx.MessageBox("The current sudoku array is empty.", appStrings.STR_SAVE,
+            wx.MessageBox("The current sudoku array is empty.", GUIStrings.STR_SAVE,
                         wx.ICON_EXCLAMATION | wx.OK, self)
             return
 
         path : str | None = self.filename
         done : bool = False
-        wildcard = appStrings.STR_WILDCARD
+        wildcard = GUIStrings.STR_WILDCARD
 
         with wx.FileDialog(
             self,
-            message=appStrings.STR_SAVE,
+            message=GUIStrings.STR_SAVE,
             defaultFile=path,
             wildcard=wildcard,
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
@@ -1099,13 +1120,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._menu_setItemsStates()
 
             wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
-                        appStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
+                        GUIStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
 
     # Quit
     #
     def _menu_fileExit(self):
         if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
-                    appStrings.STR_NOT_SAVED, appStrings.STR_EXIT,
+                    GUIStrings.STR_NOT_SAVED, GUIStrings.STR_EXIT,
                     wx.ICON_QUESTION | wx.YES_NO, self):
             return
 
@@ -1158,7 +1179,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.draw_update()
                 self._resolve_showStats()
             else:
-                wx.MessageBox(appStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
     def _menu_resolve_multiThreaded(self):
         if self.sudoku_.isOk():
@@ -1166,7 +1187,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
 
             if not self.resolve():
-                wx.MessageBox(appStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
 
             self.directDraw_ = False
             self.draw_update()
@@ -1474,7 +1495,7 @@ class wxSolverFrame(wxMainFrame):
         # sudoku solver panel
         self.canvas_ = wxSolverCanvas(self, self.hypsPanel_, params)
 
-        self._createToolBar()
+        self._toolBar_Create()
 
         # Add the 2 panels to the frame's sizer
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -1484,17 +1505,16 @@ class wxSolverFrame(wxMainFrame):
 
         # Bind events to handlers
         self.Bind(wx.EVT_MENU, self.OnMenu)  # pyright: ignore[reportUnknownMemberType]
-        self.Bind(wx.EVT_COMBOBOX, self.hyp_onComboSelect, self.comboHyps_)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_COMBOBOX, self._hyp_onComboSelect, self.hypsCombo_)  # pyright: ignore[reportUnknownMemberType]
+        self.Bind(wx.EVT_COMBOBOX, self._help_onComboSelect, self.helpCombo_)  # pyright: ignore[reportUnknownMemberType]
 
     # GUI initialization
     #
     def initialize(self):
-        #self.sidebar_show(force=True, visible=False)  # not visible at startup
         self.canvas_.initialize()
-        self.hypsPanel_.initialize()
 
-        self.comboHyps_.setColours()
-        self.comboSel_ = 0
+        self.hypsPanel_.initialize()
+        self.hypsCombo_.setColours()
 
         # updates ...
         self.themeChanged()
@@ -1507,26 +1527,35 @@ class wxSolverFrame(wxMainFrame):
 
     # Create the toolbar
     #
-    def _createToolBar(self):
+    def _toolBar_Create(self):
         self.toolBar_:wx.ToolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.TB_FLAT | wx.TB_TEXT)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         self.toolBar_.SetToolBitmapSize(wx.Size(16, 16))  # default bitmaps size
 
-        self.labelMode_ = wx.StaticText(self.toolBar_, label=appStrings.STR_TOOLBAR)
+        self.labelMode_ = wx.StaticText(self.toolBar_, label=GUIStrings.STR_TOOLBAR)
         self.toolBar_.AddControl(self.labelMode_)
         #self.toolBar_.AddSeparator()
         self.labelCount_ = wx.StaticText(self.toolBar_, label="Filled")
         self.toolBar_.AddControl(self.labelCount_)
         self.toolBar_.AddSeparator()
 
-        # Hypothesis and flags
-        self.comboHyps_ = wxOwnCombo(self.toolBar_, self.canvas_)
-        self.comboSel_:int = 0
-        self.toolBar_.AddControl(self.comboHyps_, menuConsts.IDS_TIP_HYP_COMBO)
+        # Hypothesis and tags
+        self.hypsCombo_ = wxOwnCombo(self.toolBar_, self.canvas_)
+        self.toolBar_.AddControl(self.hypsCombo_, menuConsts.IDS_TIP_HYP_COMBO)
 
         self.toolBar_.AddTool(menuConsts.ID_HYP_VALIDATE, menuConsts.IDS_HYP_VALIDATE, wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_HYP_VALIDATE)
         self.toolBar_.AddTool(menuConsts.ID_HYP_REJECT, menuConsts.IDS_HYP_REJECT, wx.ArtProvider.GetBitmap(wx.ART_UNDO, wx.ART_TOOLBAR),  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportArgumentType]
                    menuConsts.IDS_TIP_HYP_REJECT)
+        self.toolBar_.AddSeparator()
+
+        # Help
+        self.helpCombo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY,
+                                choices=[GUIStrings.STR_HELP_ADVICE,
+                                        GUIStrings.STR_HELP_ERROR,
+                                        GUIStrings.STR_HELP_ERRORS],
+                                style=wx.CB_DROPDOWN | wx.CB_READONLY)
+        self.helpCombo_.SetSelection(0)
+        self.toolBar_.AddControl(self.helpCombo_, GUIStrings.STR_TIP_HELP)
         self.toolBar_.AddSeparator()
 
         # End edition / creation
@@ -1555,54 +1584,66 @@ class wxSolverFrame(wxMainFrame):
     @override
     def countChanged(self):
         if self.canvas_.sudoku_.isOk():
-            self.labelCount_.SetLabel(f"{appStrings.STR_FILLED}{self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
+            self.labelCount_.SetLabel(f"{GUIStrings.STR_FILLED}{self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
         else:
-            self.labelCount_.SetLabel(f"{appStrings.STR_FILLED}_ / _")
+            self.labelCount_.SetLabel(f"{GUIStrings.STR_FILLED}_ / _")
 
     # edition mode changed
     @override
     def modeChanged(self, mode:wxEditionMode):
         if mode == wxEditionMode.MODE_NONE:
-            self.comboHyps_.setColours()
+            self.hypsCombo_.setColours()
 
-        self.labelMode_.SetLabel(f"{appStrings.STR_TOOLBAR}" if mode == wxEditionMode.MODE_NONE
-            else f"{appStrings.STR_MODE_CREATION if mode == wxEditionMode.MODE_CREATION else appStrings.STR_MODE_RESOLUTION}")
+        self.labelMode_.SetLabel(f"{GUIStrings.STR_TOOLBAR}" if mode == wxEditionMode.MODE_NONE
+            else f"{GUIStrings.STR_MODE_CREATION if mode == wxEditionMode.MODE_CREATION else GUIStrings.STR_MODE_RESOLUTION}")
 
         create:bool = (mode == wxEditionMode.MODE_CREATION)
         solve:bool = (mode == wxEditionMode.MODE_RESOLUTION)
 
         # Hyp. & tags combo
-        self.comboHyps_.Enable(solve)
+        self.hypsCombo_.Enable(solve)
         self.toolBar_.EnableTool(menuConsts.ID_HYP_VALIDATE, solve)
         self.toolBar_.EnableTool(menuConsts.ID_HYP_REJECT, solve)
 
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
 
+    #
+    # Help
+    #
+
+    # User select an help item in the combo
+    def _help_onComboSelect(self, event: wx.CommandEvent):
+        # handled by canvas panel
+        self.canvas_.help_onComboSelect(event)
+
     # Hypothesis / tag management
     #
 
     @override
     def hyp_onReject(self, colours: list[element.hypColourID]):
-        self.comboHyps_.updateColours(colours)
-        self.hypsPanel_.popHypothesis()
+        self.hypsCombo_.updateColours(colours)
+        self.hypsPanel_.hyp_pop()
 
     @override
     def hyp_onValidate(self, colours: list[element.hypColourID]):
-        self.comboHyps_.updateColours(colours)
-        self.hypsPanel_.popHypothesis()
+        self.hypsCombo_.updateColours(colours)
+        self.hypsPanel_.hyp_pop()
 
-    # Click on the combo list
-    def hyp_onComboSelect(self, event: wx.Event):
-        index:int = self.comboHyps_.GetSelection()  # pyright: ignore[reportAssignmentType]
+    @override
+    def hyp_onClear(self):
+        self.hypsPanel_.hyp_clear()
+
+    # User choose an help item in the combo
+    def _hyp_onComboSelect(self, event: wx.CommandEvent):
+        index:int = self.hypsCombo_.GetSelection()  # pyright: ignore[reportAssignmentType]
 
         if index != wx.NOT_FOUND:
-            data:wxOwnComboData | None = self.comboHyps_.GetClientData(index)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+            data:wxOwnComboData | None = self.hypsCombo_.GetClientData(index)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             if data is not None and isinstance(data, wxOwnComboData) and data.id_ != 0 :  # pyright: ignore[reportUnknownMemberType]
                 ret: list[element.hypColourID] | None = self.canvas_.hyp_onComboSelect(data.id_)  # pyright: ignore[reportUnknownArgumentType]
                 if ret is not None:
-                    self.comboHyps_.updateColours(ret)
-                    #print(f"colours : {ret}")  # pyright: ignore[reportUnknownMemberType]
+                    self.hypsCombo_.updateColours(ret)
 
     # End drawings
     #
@@ -1613,7 +1654,6 @@ class wxSolverFrame(wxMainFrame):
     #
     def OnMenu(self, event:wx.MenuEvent):
         menuId = event.GetId()
-
         match menuId:
             case wx.ID_EXIT:
                 self.Destroy()

@@ -59,9 +59,7 @@ class pointer:
         else:
             # Mouse click outside the array ?
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
-                # Outside the array => ignore the click
-                #print(f"invalide : {pos}")
-                return False
+                return False     # Outside the array => ignore the click
 
             self.row_ = pos[0]
             self.line_ = pos[1]

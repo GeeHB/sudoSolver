@@ -37,6 +37,7 @@
 * Added :
   * add a toolbar to the main frame
   * Hypothesis / tags
+    * hypColours : 'list' that keep selected tags
     * Tag Panel to display used hypothesis
     * choose hyp's colour using owner drawn combobox
   * Action on left muse button dblclk = edit or solve
@@ -45,9 +46,11 @@
   * Help matrix
     * show (on demand) possible element's values in sided small clickable matrix
   * Add 'Display' menu
+  * 'All' strings (should be) in a single file : GUIStrings.py
 * Corrections
   * Flickering effect on pygame displays
   * Error in centering calculation
+  * BUG : sudoku MUST exist before loading values from file !!!
 
 #### Version 4.1.0
 * 16 oct. 2026

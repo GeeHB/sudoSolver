@@ -1,6 +1,6 @@
 # coding=UTF-8
 #
-#   File        :   appStrings.py
+#   File        :   GUIStrings.py
 #
 #   Author      :   GeeHB
 #
@@ -34,6 +34,12 @@ STR_MODE_CREATION:str = "Creation"
 STR_MODE_RESOLUTION:str = "Resolution"
 
 STR_FILLED:str = "  "
+
+STR_HELP_ADVICE:str = "Advice"
+STR_HELP_ERROR:str = "Show an error"
+STR_HELP_ERRORS:str = "Error count"
+
+STR_TIP_HELP:str = "Resolution helpers"
 
 #
 # Menus & toolbar items
