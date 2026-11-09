@@ -136,6 +136,12 @@ class element:
 
     # Element's status
     #
+    def hasValue(self)->bool:
+        return self.status_.isSet(self.STATUS_SET) and self.value_ != 0
+
+    def isError(self)->bool:
+        return not self.isOriginal() and self.hasValue() and self.value_ != self.solution
+
     def isEmpty(self)->bool:
         return self.status_.value == self.STATUS_EMPTY  # status is not set !
 
