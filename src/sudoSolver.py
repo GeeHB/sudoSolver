@@ -33,9 +33,7 @@ if "__main__" == __name__:
         or ver.major == PYTHON_VER_MAJ
         and ver.minor < PYTHON_VER_MIN
     ):
-        print(
-            f"Invalid python version. Expected min. release {PYTHON_VER_MAJ}.{PYTHON_VER_MIN}"
-        )
+        print(f"Invalid python version. Expected min. release {PYTHON_VER_MAJ}.{PYTHON_VER_MIN}")
         sys.exit(2)
 
     # Parse command line
@@ -55,8 +53,8 @@ if "__main__" == __name__:
 
         mySolverApp.initialize()
         mySolverApp.start()
-    except OSError as e:
-        #except Exception as e:  # noqa: BLE001
+        #except OSError as e:
+    except Exception as e:  # noqa: BLE001
         print(f"{type(e).__name__}: {e}")
         print("Unknown error")
     finally:

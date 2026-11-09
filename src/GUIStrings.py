@@ -35,9 +35,10 @@ STR_MODE_RESOLUTION:str = "Resolution"
 
 STR_FILLED:str = "  "
 
-STR_HELP_ADVICE:str = "Advice"
-STR_HELP_ERROR:str = "Show an error"
-STR_HELP_ERRORS:str = "Error count"
+STR_HELP_NONE:str = "What can I do for you?"
+STR_HELP_ADVICE:str = "Give me an advice"
+STR_HELP_ERROR:str = "Show me an error"
+STR_HELP_ERRORS:str = "Give the error count"
 
 STR_TIP_HELP:str = "Resolution helpers"
 

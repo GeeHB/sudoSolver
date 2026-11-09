@@ -859,6 +859,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         if self.sudoku_.edit_rejectAll() > 0 :
             self._hyp_updateNonEmptyCount()
+
+        self.parent_.hyp_onClear()
         self._edit_stop()
 
         self.edition_.editing = False
@@ -1037,6 +1039,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.edition_.creating = True
             self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
         else:
+            if not self.sudoku_.found:
+                print("Pas de solution")
+
             self.edition_.manualSolving = True
             self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
 
@@ -1550,7 +1555,9 @@ class wxSolverFrame(wxMainFrame):
 
         # Help
         self.helpCombo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY,
-                                choices=[GUIStrings.STR_HELP_ADVICE,
+                                choices=[
+                                        GUIStrings.STR_HELP_NONE,
+                                        GUIStrings.STR_HELP_ADVICE,
                                         GUIStrings.STR_HELP_ERROR,
                                         GUIStrings.STR_HELP_ERRORS],
                                 style=wx.CB_DROPDOWN | wx.CB_READONLY)
@@ -1605,6 +1612,9 @@ class wxSolverFrame(wxMainFrame):
         self.toolBar_.EnableTool(menuConsts.ID_HYP_VALIDATE, solve)
         self.toolBar_.EnableTool(menuConsts.ID_HYP_REJECT, solve)
 
+        # Help
+        self.helpCombo_.Enable(solve)
+
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
 
@@ -1616,6 +1626,7 @@ class wxSolverFrame(wxMainFrame):
     def _help_onComboSelect(self, event: wx.CommandEvent):
         # handled by canvas panel
         self.canvas_.help_onComboSelect(event)
+        self.helpCombo_.Select(0)
 
     # Hypothesis / tag management
     #
@@ -1633,6 +1644,7 @@ class wxSolverFrame(wxMainFrame):
     @override
     def hyp_onClear(self):
         self.hypsPanel_.hyp_clear()
+        self.helpCombo_.Select(0)
 
     # User choose an help item in the combo
     def _hyp_onComboSelect(self, event: wx.CommandEvent):

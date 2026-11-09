@@ -437,6 +437,9 @@ class sudoku(threading.Thread):
         # Update non-empty elements counter
         self.nonEmptyItems()
 
+        # doné
+        self.found = True
+
     # Remove elements according to complexity
     #
     def _new_removeElements(self):
