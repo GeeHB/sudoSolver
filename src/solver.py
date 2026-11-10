@@ -586,7 +586,7 @@ class solver:
     #  Element(s)' notifications
     #
 
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_NOTIFYING, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
         pass
 
     def _notify_drawElements(self):

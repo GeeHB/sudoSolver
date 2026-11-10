@@ -876,7 +876,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_helpMatrix_ex()
 
     #
-    # Help / advice
+    # Help / offered values
     #
 
     # User select an hyp. colour in the combo
@@ -886,8 +886,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case GUIStrings.STR_SOLVE_OBVIOUS:
                 self._obvious_findValues(False)
 
-            case GUIStrings.STR_HELP_ADVICE:
-                self._help_randomAdvice()
+            case GUIStrings.STR_HELP_OFFER:
+                self._help_offerValue()
 
             case GUIStrings.STR_HELP_ERROR:
                 self._help_randomError()
@@ -900,11 +900,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
 
-    # Show a single randomly choosen advice
-    def _help_randomAdvice(self):
-        pos:int = self.sudoku_.help_getAdvice()
+    # Show a single randomly choosen offered value
+    def _help_offerValue(self):
+        pos:int = self.sudoku_.help_offerValue()
         if -1 == pos :
-            wx.MessageBox(GUIStrings.STR_HELP_ARRAY_FULL, GUIStrings.STR_HELP_ADVICE,
+            wx.MessageBox(GUIStrings.STR_HELP_ARRAY_FULL, GUIStrings.STR_HELP_OFFER,
                         wx.ICON_EXCLAMATION | wx.OK, self)
         else:
             self.sudoku_[pos].revealSolution()
@@ -1289,7 +1289,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #  Element(s)' notifications
     #
     @override
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_NOTIFYING, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
         if self.notifyTimer_.IsRunning():   # Stop previous notification timer
             self.notifyTimer_.Stop()
 
@@ -1606,10 +1606,11 @@ class wxSolverFrame(wxMainFrame):
         self.helpCombo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY,
                                 choices=[
                                         GUIStrings.STR_HELP_CHOOSE,
-                                        GUIStrings.STR_HELP_OBVIOUS,
-                                        GUIStrings.STR_HELP_ADVICE,
+                                        GUIStrings.STR_HELP_OFFER,
                                         GUIStrings.STR_HELP_ERROR,
-                                        GUIStrings.STR_HELP_ERRORS],
+                                        GUIStrings.STR_HELP_ERRORS,
+                                        GUIStrings.STR_HELP_OBVIOUS,
+                                ],
                                 style=wx.CB_DROPDOWN | wx.CB_READONLY)
         self.helpCombo_.SetSelection(0)
         self.toolBar_.AddControl(self.helpCombo_, GUIStrings.STR_TIP_HELP)

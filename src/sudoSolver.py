@@ -20,8 +20,6 @@ from options import (
     PYTHON_VER_MIN,
     options,
 )
-
-#from src import ownExceptions
 from wxSolver import wxSolverApp
 
 # Entry point

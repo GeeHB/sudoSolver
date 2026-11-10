@@ -20,7 +20,7 @@
 
 #### todo
   * Display hyps in panel
-  * Helpers / "Advices" <- combo
+  * Helpers / "Offrered values" <- combo
     * "Show an error"
     * "Error count"
     * "help value"

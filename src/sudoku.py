@@ -669,10 +669,10 @@ class sudoku(threading.Thread):
     # Help
     #
 
-    # Get an advice
+    # Offer a value
     #
     # @return : index of element or -1 if not found
-    def help_getAdvice(self)->int:
+    def help_offerValue(self)->int:
         index:int=-1
         count:int = ARRAY_SIZE - self.nonEmptyItems()
         if count>0:
