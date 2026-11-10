@@ -26,6 +26,8 @@ class colourID(IntEnum):
     ID_DEFAULT_TXT = auto()  # Text colours
     ID_ORIGINAL_TXT = auto()
     ID_OBVIOUS_TXT = auto()
+    ID_ERROR_BK = auto()        # Wrong value
+    ID_ERROR_TXT = auto()
     ID_SEL_CREATE_BK = auto()      # Selected text and bkgrnd - edition
     ID_SEL_CREATE_TXT = auto()
     ID_SEL_SOLVE_BK = auto()      # Selected text and bkgrnd - solving
@@ -68,6 +70,8 @@ colourThemes = {
             (216, 187, 204),    # Def. text
             (234, 150, 69),
             (135,220,127),
+            (238, 172, 178),    # Error bkgrnd & txt
+            (138, 44, 53),
             (83, 86, 83),       # Selected bkgrnd & txt
             (216, 187, 204),
             (83, 86, 83),       # Selected bkgrnd & txt for solving
@@ -104,6 +108,8 @@ colourThemes = {
             (80, 88, 104),
             (192, 132, 83),
             (104,160,91),
+            (238, 172, 178),    # Error bkgrnd & txt
+            (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
             (234, 227, 253),    # Selected bkgrnd & txt for solving
@@ -139,6 +145,8 @@ colourThemes = {
             (80, 88, 104),
             (192, 132, 83),
             (104,160,91),
+            (238, 172, 178),    # Error bkgrnd & txt
+            (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
             (234, 227, 253),    # Selected bkgrnd & txt for solving
@@ -174,9 +182,11 @@ colourThemes = {
             (64, 64, 64),
             (248, 128, 112),
             (81, 154, 186),
-            (50, 50, 255),  # Selected bkgrnd & txt
+            (238, 172, 178),    # Error bkgrnd & txt
+            (138, 44, 53),
+            (50, 50, 255),      # Selected bkgrnd & txt
             (255, 255, 255),
-            (50, 50, 255),  # Selected bkgrnd & txt for creation
+            (50, 50, 255),      # Selected bkgrnd & txt for creation
             (255, 255, 255),
             (255,255,0),
             (0,0,255),

@@ -672,6 +672,11 @@ class sudoku(threading.Thread):
         count:int = ARRAY_SIZE - self.nonEmptyItems()
         if count>0:
             id = 1 if count == 1 else random.randint(0, count-1) + 1
+            index=0
+            while id>0 :
+                if self.elements_[index].isEmpty():
+                    id-=1
+                index+=1
         return index
 
     # Get an error in the current array

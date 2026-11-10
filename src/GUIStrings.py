@@ -26,23 +26,6 @@ STR_NOT_SAVED:str = "Current content has not been saved.\nDo you want to proceed
 STR_NO_SOLUTION:str = "No solution found."
 
 #
-# Toolbar
-#
-STR_TOOLBAR:str = "---"
-STR_MODE:str = "mode"
-STR_MODE_CREATION:str = "Creation"
-STR_MODE_RESOLUTION:str = "Resolution"
-
-STR_FILLED:str = "  "
-
-STR_HELP_NONE:str = "What can I do for you?"
-STR_HELP_ADVICE:str = "Give me an advice"
-STR_HELP_ERROR:str = "Show me an error"
-STR_HELP_ERRORS:str = "Give the error count"
-
-STR_TIP_HELP:str = "Resolution helpers"
-
-#
 # Menus & toolbar items
 #
 
@@ -67,7 +50,7 @@ STR_CREATE_CANCEL:str = 'Cancel'
 # Resolution
 STR_SOLVE_MENU:str = 'Solve'
 STR_SOLVE_MANUAL:str = 'Manually'
-STR_SOLVE_OBVIOUS:str = 'Obvious'
+STR_SOLVE_OBVIOUS:str = 'Obvious values'
 STR_SOLVE_RESOLVE:str = 'Resolve'
 STR_SOLVE_RESOLVE_SINGLE:str= 'Single thread'
 STR_SOLVE_RESOLVE_MULTI:str= 'Multi-threaded'
@@ -90,3 +73,21 @@ STR_TIP_EDIT_CANCEL:str = 'Cancel edition'
 
 # Contextual menu
 STR_POPUP_EMPTY:str = "Empty"
+
+#
+# Toolbar
+#
+STR_TOOLBAR:str = "---"
+STR_MODE:str = "mode"
+STR_MODE_CREATION:str = "Creation"
+STR_MODE_RESOLUTION:str = "Resolution"
+
+STR_FILLED:str = "  "
+
+STR_TIP_HELP:str = "Resolution helpers"
+
+STR_HELP_CHOOSE:str = STR_TIP_HELP
+STR_HELP_OBVIOUS:str = STR_SOLVE_OBVIOUS
+STR_HELP_ADVICE:str = "Give an advice"
+STR_HELP_ERROR:str = "Show an error"
+STR_HELP_ERRORS:str = "Show the error count"

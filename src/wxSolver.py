@@ -378,7 +378,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_SOLVE_MANUAL:
                 self._menu_editOrResolve(edit = False)
             case menuConsts.ID_SOLVE_OBVIOUS:
-                self._menu_findOviousValues()
+                self._obvious_findValues(True)
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
                     self._menu_resolveSingleThread()
             case menuConsts.ID_SOLVE_RESOLVE_MULTI:
@@ -883,10 +883,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def help_onComboSelect(self, event: wx.CommandEvent):
         #index:int = self.hypsCombo_.GetSelection()  # pyright: ignore[reportAssignmentType]
         match event.GetString():
+            case GUIStrings.STR_SOLVE_OBVIOUS:
+                self._obvious_findValues(False)
 
             case _:
                 pass    # ???
-
     #
     # Hyptohesis and tags
     #
@@ -1165,17 +1166,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Resolving
     #
 
-    def _menu_findOviousValues(self):
-        if self.sudoku_.isOk():
-            if self.findObviousValues():
-                self.parent_.countChanged() # new elements have values
-                self.draw_update()
-                self._notify_start()
-                wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
-                    APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-            else:
-                wx.MessageBox("No obvious value found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-
     def _menu_resolveSingleThread(self):
         if self.sudoku_.isOk():
             self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
@@ -1298,6 +1288,24 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         super()._notify_stop(endApp)
         if self.notifyTimer_.IsRunning():
             self.notifyTimer_.Stop()
+
+    # Find all thre obvious values
+    #
+    def _obvious_findValues(self, showDlg:bool)->int:
+        count = 0
+        if self.sudoku_.isOk():
+            if self.findObviousValues():
+                self.parent_.countChanged() # new elements have values
+                self.draw_update()
+                self._notify_start()
+                count = self.stats_.obvValues_
+                if showDlg:
+                    wx.MessageBox(f"Found {self.stats_.obvValues_} obvious values in {round(self.stats_.obvDuration_,2)} sec.",
+                        APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+            else:
+                if showDlg:
+                    wx.MessageBox("No obvious value found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+        return count
 
     # Show resolution stats
     #
@@ -1556,7 +1564,8 @@ class wxSolverFrame(wxMainFrame):
         # Help
         self.helpCombo_ = wx.ComboBox(self.toolBar_, wx.ID_ANY,
                                 choices=[
-                                        GUIStrings.STR_HELP_NONE,
+                                        GUIStrings.STR_HELP_CHOOSE,
+                                        GUIStrings.STR_HELP_OBVIOUS,
                                         GUIStrings.STR_HELP_ADVICE,
                                         GUIStrings.STR_HELP_ERROR,
                                         GUIStrings.STR_HELP_ERRORS],
