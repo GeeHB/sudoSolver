@@ -786,9 +786,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Selected item has just changed
     #
     def _edit_selChanged(self):
-        #self._edit_stop()
         self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
-        #self._edit_start(False)
 
     # Edition of current array
     #
@@ -846,7 +844,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.sudoku_.edit_acceptAll(self.edition_.creating)
         self._edit_stop()
         self._hyp_updateNonEmptyCount()
-        
+
         self.draw_update()
 
     # Cancel
