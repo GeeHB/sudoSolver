@@ -23,15 +23,19 @@ class hypColourID(IntEnum):
     HYP_3 = auto()
     HYP_4 = auto()
 
+# Element's status
+#
+class elementStatus(IntEnum):
+    STATUS_EMPTY        = 0
+    STATUS_SET          = 1
+    STATUS_OBVIOUS      = 2         # An obvious value found at runtime (option -o / --obvious)
+    STATUS_ORIGINAL     = 4        # Can't be changed (except in edition mode)
+    STATUS_NOTIFYING    = 8        # The current element is notifying the user (creation, help, obvious value, mistake, ...)
+    STATUS_ERROR        = 16           # The value is invalid and the element is shown as an error
+
 # element - a single sudoku element
 #
 class element:
-    STATUS_EMPTY:int = 0
-    STATUS_SET:int  = 1
-    STATUS_OBVIOUS:int  = 2         # An obvious value found at runtime (option -o / --obvious)
-    STATUS_ORIGINAL:int  = 4        # Can't be changed (except in edition mode)
-    STATUS_NOTIFYING:int = 8        # The current element is notifying the user (creation, help, obvious value, mistake, ...)
-
     # Construction
     def __init__(self, value:int | None = None):
         self.value_:int = 0;
@@ -40,16 +44,16 @@ class element:
 
         if not value is None:
             self.value_ = value
-            self.status_:statusbits.statusBits = statusbits.statusBits(self.STATUS_ORIGINAL | self.STATUS_SET)
+            self.status_:statusbits.statusBits = statusbits.statusBits(elementStatus.STATUS_ORIGINAL | elementStatus.STATUS_SET)
         else:
-            self.status_ = statusbits.statusBits(self.STATUS_EMPTY)   # Current status
+            self.status_ = statusbits.statusBits(elementStatus.STATUS_EMPTY)   # Current status
 
     # Representation
     @override
     def __repr__(self) -> str:
         out : str = "Element:"
         out += f"\n\t- Status : {self.status_.value_}"
-        out += f"\n\t- Value : {"empty" if self.status_.isSet(self.STATUS_EMPTY) else self.value_}"
+        out += f"\n\t- Value : {"empty" if self.status_.isSet(elementStatus.STATUS_EMPTY) else self.value_}"
         if self.solution_ is not None:
             out += f"\n\t- Solution : {self.solution_}"
         return out
@@ -58,13 +62,13 @@ class element:
     #
     @property
     def num(self)->int | None:
-        return self.value_ if self.status_.isSet(self.STATUS_SET) else None
+        return self.value_ if self.status_.isSet(elementStatus.STATUS_SET) else None
     @num.setter
     def num(self, newVal : int | None):
         if newVal is not None and newVal > 0:
             self.value_ = newVal
         else:
-            self.status_.assign(self.STATUS_EMPTY)
+            self.status_.assign(elementStatus.STATUS_EMPTY)
 
     # element's "valid" value as a property
     #
@@ -75,14 +79,23 @@ class element:
     def solution(self, newVal : int | None):
         self.solution_ = newVal
 
+    # show the element as an error
+    #
+    @property
+    def error(self)->bool:
+        return self.status_.isSet(elementStatus.STATUS_ERROR)
+    @error.setter
+    def error(self, show:bool):
+        self.status_.set(elementStatus.STATUS_ERROR, show and self.isInvalid())
+
     # In the notifying state ?
     #
     @property
     def notifying(self)->bool:
-        return self.status_.isSet(self.STATUS_NOTIFYING)
+        return self.status_.isSet(elementStatus.STATUS_NOTIFYING)
     @notifying.setter
     def notifying(self, set:bool):
-        self.status_.set(self.STATUS_NOTIFYING, set)
+        self.status_.set(elementStatus.STATUS_NOTIFYING, set)
 
     # hypothesis's colour ID
     #
@@ -99,34 +112,34 @@ class element:
     #           value : num. value (at this state the integrity is not checked)
     #           original : "original" value ? An "original" value won't be modified
     #
-    def setValue(self, value:int | None = None, status:int = STATUS_EMPTY, editMode:bool = False):
+    def setValue(self, value:int | None = None, status:int = elementStatus.STATUS_EMPTY, editMode:bool = False):
         if not editMode :
             # The element can't be "original"
-            if not self.status_.isSet(self.STATUS_ORIGINAL):
+            if not self.status_.isSet(elementStatus.STATUS_ORIGINAL):
                 # Update the value
                 if value is not None:
                     self.value_ = value
-                    self.status_.assign(self.STATUS_SET)
+                    self.status_.assign(elementStatus.STATUS_SET)
 
                     if 0 != status:
                         self.status_.set(status)
                 else:
                     self.value_ = 0
-                    self.status_.assign(self.STATUS_EMPTY)
+                    self.status_.assign(elementStatus.STATUS_EMPTY)
         else:
             # Edition mode => value can be changed
             if value is None or value == 0:
                 self.value_ = 0
-                self.status_.assign(self.STATUS_EMPTY)
+                self.status_.assign(elementStatus.STATUS_EMPTY)
             else :
                 self.value_ = value
                 self.solution_ = value
-                self.status_.assign(self.STATUS_SET | self.STATUS_ORIGINAL)
+                self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_ORIGINAL)
 
     # Empty the element
     #   returns the previous value
     def empty(self, deep : bool):
-        self.status_.assign(self.STATUS_EMPTY)
+        self.status_.assign(elementStatus.STATUS_EMPTY)
         pValue = self.value_
         self.value_ = 0
         if deep:
@@ -137,25 +150,25 @@ class element:
     # Element's status
     #
     def hasValue(self)->bool:
-        return self.status_.isSet(self.STATUS_SET) and self.value_ != 0
+        return self.status_.isSet(elementStatus.STATUS_SET) and self.value_ != 0
 
-    def isError(self)->bool:
+    def isInvalid(self)->bool:
         return not self.isOriginal() and self.hasValue() and self.value_ != self.solution
 
     def isEmpty(self)->bool:
-        return self.status_.value == self.STATUS_EMPTY  # status is not set !
+        return self.status_.value == elementStatus.STATUS_EMPTY  # status is not set !
 
     def isOriginal(self)->bool:
-        return self.status_.isSet(self.STATUS_ORIGINAL)
+        return self.status_.isSet(elementStatus.STATUS_ORIGINAL)
     def setOriginal(self):
-        self.status_.assign(self.STATUS_SET | self.STATUS_ORIGINAL)
+        self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_ORIGINAL)
         self.solution_ = self.value_
 
     def isObvious(self)->bool:
-        return self.status_.isSet(self.STATUS_OBVIOUS)
+        return self.status_.isSet(elementStatus.STATUS_OBVIOUS)
 
     # At least can we modifiy or set this element ?
     def isChangeable(self, allowEmpty:bool = True)->bool:
-        return not self.status_.isSet(self.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.value == self.STATUS_SET)
+        return not self.status_.isSet(elementStatus.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.value == elementStatus.STATUS_SET)
 
 # EOF

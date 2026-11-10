@@ -15,7 +15,11 @@ from enum import IntEnum
 
 import GUIConsts
 import GUITheme
-from element import element, hypColourID
+from element import (
+    element,
+    elementStatus,
+    hypColourID,
+)
 from hypColours import hypColours
 from options import options, stats
 from ownExceptions import reachedEndOfList, sudokuError
@@ -486,9 +490,9 @@ class solver:
         index:int = id if id != -1 else self.edition_.currentPos_.index()
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
-        #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        #self.sudoku_.elements_[index].setValue(val, elementStatus.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index, False), value=val,
-            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET,
+            status=(elementStatus.STATUS_ORIGINAL if self.edition_.creating else 0) | elementStatus.STATUS_SET,
             hypColID=self.hypsColours_.getColIDAt(len(self.hypsColours_) - 1)
         )
         self.hypsColours_.setFirstPosition(index)
@@ -556,7 +560,7 @@ class solver:
         if len(self.prevValues_) > 0:
             for val in reversed(self.prevValues_):
                 if val.value_ > 0:
-                    self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
+                    self.sudoku_[val.index_].setValue(val.value_, elementStatus.STATUS_ORIGINAL, True)
                 else:
                     self.sudoku_[val.index_].empty(True)
 
@@ -683,8 +687,12 @@ class solver:
     #  @selected : Is element selected ?
     #
     #  @return : Tuple(bk Colour, txt Colour)
-    def _theme_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+    def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
+
+        if self.sudoku_[pos].error: # Always show as invalid value!
+            return (GUITheme.colourID.ID_ERROR_BK, GUITheme.colourID.ID_ERROR_TXT)
+
         creating:bool = self.edition_.creating
         solving:bool = self.edition_.manualSolving and selected
 

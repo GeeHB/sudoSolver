@@ -15,7 +15,7 @@ import random
 import threading
 from typing import override
 
-from element import element, hypColourID
+from element import element, elementStatus, hypColourID
 from options import (
     FILE_COMMENTS,
     FILE_VALUE_SEPARATOR,
@@ -189,6 +189,13 @@ class sudoku(threading.Thread):
             if not self.elements_[index].isOriginal():
                 self.elements_[index].empty(deep = False)
 
+    # End of showing error(s)
+    #
+    def error_end(self):
+        for index in range(len(self.elements_)):    # sudoku can be empty !
+            if self.elements_[index].error:
+                self.elements_[index].error = False
+
     # End of notification(s)
     #
     def notify_end(self):
@@ -242,9 +249,7 @@ class sudoku(threading.Thread):
                 return False
 
             # Set the value
-            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(
-                value, element.STATUS_ORIGINAL
-            )
+            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(value, elementStatus.STATUS_ORIGINAL)
             self.nonEmptyCount_+=1
             return True
 
@@ -690,7 +695,7 @@ class sudoku(threading.Thread):
             id = 1 if count == 1 else random.randint(0, count-1) + 1
             index=0
             while id>0 :
-                if self.elements_[index].isError():
+                if self.elements_[index].isInvalid():
                     id-=1
                 index+=1
         return index
@@ -700,7 +705,7 @@ class sudoku(threading.Thread):
     def help_getErrorCount(self)->int:
         errors:int = 0
         for elmnt in self.elements_:
-            if elmnt.isError():
+            if elmnt.isInvalid():
                 errors+=1
         return errors
 
@@ -766,7 +771,7 @@ class sudoku(threading.Thread):
                 if value is not None:
                     # One more obvious value !!!!
                     self.elements_[position.index()].setValue(
-                        value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING
+                        value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING
                     )
                     found += 1
             else:
@@ -875,7 +880,7 @@ class sudoku(threading.Thread):
         # Did we find a position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING)
+            self.elements_[foundPos.index()].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
             return 1
 
         # No ...
@@ -963,7 +968,7 @@ class sudoku(threading.Thread):
         # Did we find a valid position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, element.STATUS_OBVIOUS | element.STATUS_NOTIFYING)
+            self.elements_[foundPos.index()].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
             return 1
 
         # No ...
