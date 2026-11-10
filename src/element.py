@@ -52,6 +52,7 @@ class element:
     @override
     def __repr__(self) -> str:
         out : str = "Element:"
+        out += f"\n\t - {"Invalid" if self.isInvalid() else "Valid"}"
         out += f"\n\t- Status : {self.status_.value_}"
         out += f"\n\t- Value : {"empty" if self.status_.isSet(elementStatus.STATUS_EMPTY) else self.value_}"
         if self.solution_ is not None:
@@ -86,7 +87,7 @@ class element:
         return self.status_.isSet(elementStatus.STATUS_ERROR)
     @error.setter
     def error(self, show:bool):
-        self.status_.set(elementStatus.STATUS_ERROR, show and self.isInvalid())
+        self.status_.set(elementStatus.STATUS_ERROR | elementStatus.STATUS_NOTIFYING, show and self.isInvalid())
 
     # In the notifying state ?
     #

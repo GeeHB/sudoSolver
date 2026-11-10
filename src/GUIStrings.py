@@ -91,3 +91,5 @@ STR_HELP_OBVIOUS:str = STR_SOLVE_OBVIOUS
 STR_HELP_ADVICE:str = "Give an advice"
 STR_HELP_ERROR:str = "Show an error"
 STR_HELP_ERRORS:str = "Show the error count"
+
+STR_HELP_NO_ERROR:str = "There is no error in the current array"

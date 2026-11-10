@@ -886,8 +886,24 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case GUIStrings.STR_SOLVE_OBVIOUS:
                 self._obvious_findValues(False)
 
+            case GUIStrings.STR_HELP_ERROR:
+                self._help_showSingleError()
+
             case _:
                 pass    # ???
+
+        self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
+
+    # Affichage de la première erreur (si elle existe)
+    def _help_showSingleError(self):
+        pos:int = self.sudoku_.help_getError()
+        if -1 == pos :
+            wx.MessageBox(GUIStrings.STR_HELP_NO_ERROR, GUIStrings.STR_HELP_ERROR,
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+        else:
+            self.sudoku_[pos].error = True
+            self.draw_update()
+            self._notify_start()
     #
     # Hyptohesis and tags
     #
