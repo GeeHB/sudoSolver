@@ -82,7 +82,8 @@ STR_MODE:str = "mode"
 STR_MODE_CREATION:str = "Creation"
 STR_MODE_RESOLUTION:str = "Resolution"
 
-STR_FILLED:str = "  "
+STR_FILLED:str = "Filled"
+
 
 STR_TIP_HELP:str = "Resolution helpers"
 
@@ -92,4 +93,7 @@ STR_HELP_ADVICE:str = "Give an advice"
 STR_HELP_ERROR:str = "Show an error"
 STR_HELP_ERRORS:str = "Show the error count"
 
-STR_HELP_NO_ERROR:str = "There is no error in the current array"
+STR_HELP_NO_OBVIOUS:str = "No obvious value found."
+STR_HELP_ARRAY_FULL:str = "The array is already full.\nNo dvice can be found."
+STR_HELP_NO_ERROR:str = "There is no error in the current array."
+STR_HELP_FOUND_ERRORS:str = "errors were found."

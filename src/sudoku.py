@@ -688,9 +688,9 @@ class sudoku(threading.Thread):
     #
     #   @return : random index of an error, -1 if no error found
     #
-    def help_getError(self)->int:
+    def help_singleError(self)->int:
         index:int = -1
-        count: int = self.help_getErrorCount()
+        count: int = self.help_errorCount()
         if count > 0:
             id = 1 if count == 1 else random.randint(0, count-1) + 1
             index=-1
@@ -702,7 +702,7 @@ class sudoku(threading.Thread):
 
     # Get error count in the current array
     #
-    def help_getErrorCount(self)->int:
+    def help_errorCount(self)->int:
         errors:int = 0
         for elmnt in self.elements_:
             if elmnt.isInvalid():

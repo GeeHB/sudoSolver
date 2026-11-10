@@ -274,7 +274,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Timers (selection and notification)
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
-        self.notify_:bool = False
+        self.notifyHide_:bool = False
         self.notifyCount_:int = 0
 
         self.menuThemesID_:dict[str,int] = {}
@@ -773,6 +773,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if self.selectedTimer_.IsRunning():
                 self.selectedTimer_.Stop()
 
+            self.edition_.editing = False
+            self.sudoku_.notify_end()
+
             self._draw_startUp()
             self._draw_selectedElement(False)
             self._draw_helpMatrix()
@@ -793,6 +796,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         keyCode = event.GetKeyCode()
         self.edition_.move()
         match keyCode:
+            # position
             case self.KEY_MOVE_LEFT:
                 self.edition_.currentPos_.decRow()
             case self.KEY_MOVE_RIGHT:
@@ -802,6 +806,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case self.KEY_MOVE_DOWN:
                 self.edition_.currentPos_.incLine()
 
+            # set/modify value
             case self.KEY_VALUE_DEC | self.KEY_VALUE_DEC_PAD:
                 if self._edit_decValue() : self.parent_.countChanged()
             case self.KEY_VALUE_INC | self.KEY_VALUE_INC_PAD:
@@ -809,19 +814,18 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case self.KEY_REMOVE_VALUE:
                 if self._edit_removeValue() : self.parent_.countChanged()
 
-            case key if key in range(
-                self.KEY_VALUE_1, self.KEY_VALUE_9 + 1
-                ):
-                if -1 != self._edit_setValue(key - self.KEY_VALUE_1 + 1)  : self.parent_.countChanged()
-                #if key == (self.KEY_VALUE_1 + 6):
-                #    self.sudoku_.elements_[index].hyp_ = 1
+            case key if key in range(self.KEY_VALUE_1, self.KEY_VALUE_9 + 1):
+                if -1 != self._edit_setValue(key - self.KEY_VALUE_1 + 1)  :
+                    self.parent_.countChanged()
 
+            # end / cancel edition
             case self.KEY_ENTER | self.KEY_NUM_ENTER:
                 self._edit_stop()
                 return
             case self.EDIT_CANCEL:
                 self._edit_cancel()
                 return
+
             case _:
                 pass
 
@@ -840,11 +844,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _edit_done(self):
         self.parent_.hyp_onClear()
         self.sudoku_.edit_acceptAll(self.edition_.creating)
-
-        self.edition_.editing = False
-        self._hyp_updateNonEmptyCount()
         self._edit_stop()
-
+        self._hyp_updateNonEmptyCount()
+        
         self.draw_update()
 
     # Cancel
@@ -862,8 +864,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.parent_.hyp_onClear()
         self._edit_stop()
+        self.draw_update()
 
-        self.edition_.editing = False
         return done
 
     # Update array during edition
@@ -886,17 +888,34 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case GUIStrings.STR_SOLVE_OBVIOUS:
                 self._obvious_findValues(False)
 
+            case GUIStrings.STR_HELP_ADVICE:
+                self._help_randomAdvice()
+
             case GUIStrings.STR_HELP_ERROR:
-                self._help_showSingleError()
+                self._help_randomError()
+
+            case GUIStrings.STR_HELP_ERRORS:
+                self._help_showErrorCount()
 
             case _:
                 pass    # ???
 
         self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
 
-    # Affichage de la première erreur (si elle existe)
-    def _help_showSingleError(self):
-        pos:int = self.sudoku_.help_getError()
+    # Show a single randomly choosen advice
+    def _help_randomAdvice(self):
+        pos:int = self.sudoku_.help_getAdvice()
+        if -1 == pos :
+            wx.MessageBox(GUIStrings.STR_HELP_ARRAY_FULL, GUIStrings.STR_HELP_ADVICE,
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+        else:
+            self.sudoku_[pos].revealSolution()
+            self.draw_update()
+            self._notify_start()
+
+    # Show a single randomly choosen error (if any)
+    def _help_randomError(self):
+        pos:int = self.sudoku_.help_singleError()
         if -1 == pos :
             wx.MessageBox(GUIStrings.STR_HELP_NO_ERROR, GUIStrings.STR_HELP_ERROR,
                         wx.ICON_EXCLAMATION | wx.OK, self)
@@ -904,6 +923,16 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.sudoku_[pos].error = True
             self.draw_update()
             self._notify_start()
+
+    # Show count of errors
+    def _help_showErrorCount(self):
+        count:int = self.sudoku_.help_errorCount()
+        wx.MessageBox(
+            GUIStrings.STR_HELP_NO_ERROR if 0 == count else f"{count} {GUIStrings.STR_HELP_FOUND_ERRORS}",
+            GUIStrings.STR_HELP_ERRORS,
+            wx.ICON_EXCLAMATION | wx.OK, self
+        )
+
     #
     # Hyptohesis and tags
     #
@@ -1214,7 +1243,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Change items ' states
     #
     def _menu_setItemsStates(self):
-        #modified : bool = self.state_.isSet(self.ARRAY_MODIFIED)
         valid : bool = self.sudoku_.isOk()
         editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
         solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
@@ -1239,8 +1267,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.menuBar_.Enable(menuConsts.ID_SOLVE, state)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, state)
-        #self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_SINGLE, state)
-        #self.menuBar_.Enable(menuConsts.ID_SOLVE_RESOLVE_MULTI, state)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_REVERT, state)
 
     # Mouse position : client -> array coordinates
@@ -1265,9 +1291,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #  Element(s)' notifications
     #
     @override
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
+        if self.notifyTimer_.IsRunning():   # Stop previous notification timer
+            self.notifyTimer_.Stop()
+
         super()._notify_start()
-        self.notify_ = False
+        self.notifyHide_ = False    # Start with drawing the item
         self.notifyCount_ = max
         if not self.notifyTimer_.IsRunning():
             self.notifyTimer_.Start(freq)
@@ -1288,16 +1317,15 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     bk, txt = self._theme_getElementColours(position.index(), False)
                     self._draw_singleElement(
                         row, line,
-                        currentElement.num if self.notify_ else 0,
+                        currentElement.num if self.notifyHide_ else 0,
                         bk, txt,
                         currentElement.hypothesis,
                     )
 
-                # next element ...
-                position+=1
+                position+=1 # next element ...
         self._draw_end()
 
-        self.notify_ = not self.notify_
+        self.notifyHide_ = not self.notifyHide_
 
     @override
     def _notify_stop(self, endApp:bool = False):
@@ -1305,7 +1333,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.notifyTimer_.IsRunning():
             self.notifyTimer_.Stop()
 
-    # Find all thre obvious values
+    # Find all the obvious values
     #
     def _obvious_findValues(self, showDlg:bool)->int:
         count = 0
@@ -1320,7 +1348,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
             else:
                 if showDlg:
-                    wx.MessageBox("No obvious value found.", APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+                    wx.MessageBox(GUIStrings.STR_HELP_NO_OBVIOUS, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
         return count
 
     # Show resolution stats
@@ -1541,11 +1569,10 @@ class wxSolverFrame(wxMainFrame):
     #
     def initialize(self):
         self.canvas_.initialize()
-
         self.hypsPanel_.initialize()
-        self.hypsCombo_.setColours()
 
         # updates ...
+        self.hypsCombo_.setColours()
         self.themeChanged()
         self.countChanged()
         self.modeChanged(wxEditionMode.MODE_NONE)
@@ -1563,7 +1590,7 @@ class wxSolverFrame(wxMainFrame):
         self.labelMode_ = wx.StaticText(self.toolBar_, label=GUIStrings.STR_TOOLBAR)
         self.toolBar_.AddControl(self.labelMode_)
         #self.toolBar_.AddSeparator()
-        self.labelCount_ = wx.StaticText(self.toolBar_, label="Filled")
+        self.labelCount_ = wx.StaticText(self.toolBar_, label=GUIStrings.STR_FILLED)
         self.toolBar_.AddControl(self.labelCount_)
         self.toolBar_.AddSeparator()
 
@@ -1616,9 +1643,9 @@ class wxSolverFrame(wxMainFrame):
     @override
     def countChanged(self):
         if self.canvas_.sudoku_.isOk():
-            self.labelCount_.SetLabel(f"{GUIStrings.STR_FILLED}{self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
+            self.labelCount_.SetLabel(f"  {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
         else:
-            self.labelCount_.SetLabel(f"{GUIStrings.STR_FILLED}_ / _")
+            self.labelCount_.SetLabel("  _ / _")
 
     # edition mode changed
     @override

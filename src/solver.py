@@ -586,14 +586,14 @@ class solver:
     #  Element(s)' notifications
     #
 
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
         pass
 
     def _notify_drawElements(self):
         pass
 
     def _notify_stop(self, endApp:bool = False):
-        self.sudoku_.notify_end() # remove elements statusbit
+        self.sudoku_.notify_end() # remove elements status bit
 
     #
     # Resolution

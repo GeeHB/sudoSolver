@@ -62,7 +62,7 @@ TIMER_RATE_SELECTED:int   = 750 # Blinking rate in ms
 
 TIMER_ID_NOTIFYING:int    = 101
 TIMER_RATE_NOTIFYING:int  = 500 # Blinking rate in ms
-BLINK_COUNT_MODIFYING:int = 20 # Max. count of blinking for notifications
+BLINK_COUNT_NOTIFYING:int = 20 # Max. count of blinking for notifications
 
 PY_MSG_HIDE_RATE:int      = 750 # Hide the filename (for pygame only)
 

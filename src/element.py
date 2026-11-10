@@ -28,10 +28,10 @@ class hypColourID(IntEnum):
 class elementStatus(IntEnum):
     STATUS_EMPTY        = 0
     STATUS_SET          = 1
-    STATUS_OBVIOUS      = 2         # An obvious value found at runtime (option -o / --obvious)
-    STATUS_ORIGINAL     = 4        # Can't be changed (except in edition mode)
-    STATUS_NOTIFYING    = 8        # The current element is notifying the user (creation, help, obvious value, mistake, ...)
-    STATUS_ERROR        = 16           # The value is invalid and the element is shown as an error
+    STATUS_OBVIOUS      = 2     # An obvious value found at runtime (option -o / --obvious)
+    STATUS_ORIGINAL     = 4     # Can't be changed (except in edition mode)
+    STATUS_NOTIFYING    = 8     # The current element is notifying the user (creation, help, obvious value, mistake, ...)
+    STATUS_ERROR        = 16    # The value is invalid and the element is shown as an error
 
 # element - a single sudoku element
 #
@@ -79,6 +79,12 @@ class element:
     @solution.setter
     def solution(self, newVal : int | None):
         self.solution_ = newVal
+
+    # 'show'/set the solution for the given element
+    def revealSolution(self):
+        if self.solution_ is not None:
+            self.value_ = self.solution_
+            self.status_.set(elementStatus.STATUS_SET | elementStatus.STATUS_NOTIFYING)
 
     # show the element as an error
     #
