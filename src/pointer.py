@@ -38,9 +38,9 @@ class pointer:
             self.index_ = index
             self._whereAmI()
 
-
+    # Display
     def __repr__(self)->str:
-        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t-square ID : {self.squareID_}\n\t-{"Game" if self.gameMode_ else "not game"}"
+        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t- square ID : {self.squareID_}\n\t- {"Game" if self.gameMode_ else "not game"}"
 
     def clear(self, game:bool):
         self.index_ = INDEX_MIN
@@ -59,9 +59,7 @@ class pointer:
         else:
             # Mouse click outside the array ?
             if not self._inRange(pos[0]) or not self._inRange(pos[1]):
-                # Outside the array => ignore the click
-                #print(f"invalide : {pos}")
-                return False
+                return False     # Outside the array => ignore the click
 
             self.row_ = pos[0]
             self.line_ = pos[1]
@@ -70,11 +68,19 @@ class pointer:
         self._whereAmI(False)
         return True
 
-    # Access
+    # index as a property
     #
+    @property
     def index(self)->int:
         return self.index_
+    @index.setter
+    def index(self, newVal : int):
+        if self._inRange(newVal, 0, ARRAY_SIZE):
+            self.index_ = newVal
+            self._whereAmI()
 
+    # Access
+    #
     def row(self)->int:
         return self.row_
 

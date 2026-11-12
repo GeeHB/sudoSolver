@@ -42,7 +42,7 @@ class tinySquare:
             raise IndexError
 
         # "top" values
-        position = pointer(index = SQUARES_INDEXES[id])
+        position:pointer = pointer(index = SQUARES_INDEXES[id])
         self.topLine_ = position.line_
         self.topRow_ = position.row_
 

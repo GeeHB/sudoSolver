@@ -267,6 +267,9 @@ class pygameSolver(solver.solver):
     def initialize(self):
         solver.solver.initialize(self)
 
+        self._theme_changeByName(GUITheme.DEF_THEME_NAME)
+        self._draw_fontSize2PixelSize()
+
         self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
 
         # PYGame init. is ok
@@ -503,7 +506,7 @@ class pygameSolver(solver.solver):
 
     # Show text message (on top of the sudoku)
     #
-    def _showMessage(self, message : str):
+    def _showMessage(self, message: str):
         if self.sMessage_:
             # Remove previous message (if any)
             self._clearMessage()
@@ -533,16 +536,17 @@ class pygameSolver(solver.solver):
     # Set/change the current array's filename
     #
     @override
-    def setFilename(self, fileName:str, create:bool = False):
-        solver.solver.setFilename(self, fileName, create)
+    def setFilename(self, fileName:str | None, create:bool = False):
+        if fileName is not None:
+            solver.solver.setFilename(self, fileName, create)
 
-        if self.sFileName_ is not None :
-            self.sFileName_.setText(fileName,
-                self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
-                self.theme_[GUITheme.colourID.ID_BK_FILENAME].other)
+            if self.sFileName_ is not None :
+                self.sFileName_.setText(fileName,
+                    self.theme_[GUITheme.colourID.ID_DEFAULT_TXT].other,
+                    self.theme_[GUITheme.colourID.ID_BK_FILENAME].other)
 
-            # erase this name after a while ...
-            self.sFileName_.startTimer()
+                # erase this name after a while ...
+                self.sFileName_.startTimer()
 
     #
     # Events
@@ -664,9 +668,8 @@ class pygameSolver(solver.solver):
                 except sudokuError as e:
                     print(f"Sudoku Error : {e.message_}")
                 except OSError as other:
-                    # the file is not valid => remove it from the list
                     print(f"Invalid file : {other}")
-                    _ = files.pop(index)
+                    _ = files.pop(index)        # the file is not valid => remove it from the list
                     maxIndex -= 1
 
                 prev = index
@@ -761,9 +764,9 @@ class pygameSolver(solver.solver):
             if self.EVT_MOUSEBUTTONDOWN == event.type:
                 button, pos = self._mouseButtonStatus(event)
                 if button == self.MOUSE_BUTTON_LEFT:
-                    res:tuple[int|None,int] = self._mouse_translatePosition(pos)
-                    if res[0] is not None:
-                        _ = self.edition_.currentPos_.moveTo(pos=(res[0], res[1]))
+                    res:tuple[int,int,int] = self._mouse_translatePosition(pos)
+                    if res[0] != solver.ownZone.ZONE_NOWHERE:
+                        _ = self.edition_.currentPos_.moveTo(pos=(res[1], res[2]))
             else:
                 # With the keyboard
                 if self.EVT_KEYDOWN == event.type:

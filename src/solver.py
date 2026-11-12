@@ -11,14 +11,17 @@ import copy
 import math
 import os
 import time
+from enum import IntEnum
 
 import GUIConsts
 import GUITheme
-from element import element
-from options import (
-    options,
-    stats,
+from element import (
+    element,
+    elementStatus,
+    hypColourID,
 )
+from hypColours import hypColours
+from options import options, stats
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
     ARRAY_SIZE,
@@ -31,6 +34,13 @@ from sharedTools import (
 )
 from sudoku import sudoku
 
+
+# A zone in the game area
+#
+class ownZone(IntEnum):
+    ZONE_NOWHERE = 0
+    ZONE_ARRAY = 1
+    ZONE_HELP_MATRIX = 2
 
 # A "previous" value in the array
 #
@@ -58,9 +68,20 @@ class editStatus:
 
     def __init__(self):
         self.status_: statusbits.statusBits = statusbits.statusBits(self.EDIT_NO_EDITION)
-        self.currentPos_: pointer = pointer(0)
-        self.prevPos_: pointer | None = None
-        self.selected_: bool = False
+        self.currentPos_:pointer = pointer(0)
+        self.prevPos_:pointer | None = None
+        self.selected_:bool = False
+
+    def __repr__(self)->str:
+        out:str = "editStatus = ["
+        out+=f"\n - Status : {self.status_}"
+        if self.editing:
+            out+="\n - edition on"
+        out+=f"\n - currentPos : {self.currentPos_}"
+        out+=f"\n - prevPos : {self.prevPos_}"
+        out+=f"\n - Selected : {'yes' if self.selected_ else 'No'}"
+        out+="\n]"
+        return out
 
     def clear(self, status : int = EDIT_NO_EDITION):
         self.status_.set(status)
@@ -68,7 +89,13 @@ class editStatus:
         self.prevPos_ = None
         self.selected_ = False
 
-    def move(self):
+    # Move cursor to the given position
+    def moveTo(self, position:int):
+        self.validate()
+        self.currentPos_.index = position
+
+    # the current pos is valid !
+    def validate(self):
         self.prevPos_ = copy.deepcopy(self.currentPos_)
         self.status_.remove(self.EDIT_NO_REDRAW)
 
@@ -99,9 +126,8 @@ class editStatus:
         return (self.status_.isSet(self.EDIT_MODE_CREATION) or self.status_.isSet(self.EDIT_MODE_RESOLUTION))
     @editing.setter
     def editing(self, active: bool = True):
-        if not active:
-            self.status_.set(self.EDIT_MODE_CREATION, False)
-            self.status_.set(self.EDIT_MODE_RESOLUTION, False)
+        self.status_.set(self.EDIT_MODE_CREATION, active)
+        self.status_.set(self.EDIT_MODE_RESOLUTION, active)
 
     # Selection status
     @property
@@ -118,6 +144,9 @@ class editStatus:
     @property
     def modified(self)->bool:
         return self.status_.isSet(self.EDIT_MODIFIED)
+    @modified.setter
+    def modified(self, set:bool):
+        if not set : self.status_.remove(self.EDIT_MODIFIED)
 
 # solverApp - Abstract class for application
 #
@@ -186,6 +215,9 @@ class solver:
         self.edition_: editStatus = editStatus()
         self.prevValues_: list[prevValue] = []   # List of prev. values during edition
 
+        self.hypsColours_:hypColours = hypColours()
+        self.hypsColours_.append(hypColourID.NO_HYP)  # 'empty' hyp. list for solving process
+
         # Dimensions
         self.offsets_: tuple[int,int] = (0,0)
         self.width_:int = 0        # Window's dimensions
@@ -214,9 +246,6 @@ class solver:
         self.extSquareWidth_ = GUIConsts.SQUARE_SIDE
         self.intSquareWidth_ = GUIConsts.SQUARE_SIDE - 2 * GUIConsts.EXT_BORDER_THICK
 
-        self._theme_changeByName(GUITheme.DEF_THEME_NAME)
-        self._draw_fontSize2PixelSize()
-
     # Filename
     @property
     def filename(self)->str:
@@ -229,11 +258,12 @@ class solver:
 
     # Set/change the current array's filename
     #
-    def setFilename(self, fileName:str, create:bool = False):
-        # the file must exists
-        if False == create and False == os.path.isfile(fileName):
-            raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
-        self.filename = fileName
+    def setFilename(self, fileName:str | None, create:bool = False):
+        if fileName is not None:
+            # the file must exists
+            if False == create and False == os.path.isfile(fileName):
+                raise sudokuError(f"solver::setFilename - {fileName} is not a file or does not exist")
+            self.filename = fileName
 
     # Start drawings / UI
     #
@@ -277,7 +307,6 @@ class solver:
     #               if None, current sudoku will be drawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
-        #print(f"Non-empty values : {self.sudoku_.count_}")
         if elements is None :
             elements = self.sudoku_.elements_
 
@@ -287,12 +316,12 @@ class solver:
             if redrawBackground:
                 self._draw_background()
 
-            position: pointer = pointer(game = False)
+            position:pointer = pointer(game = False)
 
             for line in range(LINE_COUNT):
                 for row in range(ROW_COUNT):
-                    currentElement = elements[position.index()]
-                    bk, txt = self._theme_getElementColours(position.index(), False)
+                    currentElement = elements[position.index]
+                    bk, txt = self._theme_getElementColours(position.index, False)
                     self._draw_singleElement(
                         row, line,
                         currentElement.num,
@@ -319,7 +348,7 @@ class solver:
     # Draw selected element (on edit mode)
     #
     def _draw_selectedElement(self, selected : bool = True):
-        index:int = self.edition_.currentPos_.index()
+        index:int = self.edition_.currentPos_.index
         currentElement : element =self.sudoku_[index]
         value : int | None = currentElement.num
         self._draw_startUp()
@@ -382,25 +411,6 @@ class solver:
     def _draw_fontSize2PixelSize(self):
         self.canvasFontSize_ = int(self.theme_.canvasFont_.size * self.intSquareWidth_ / GUIConsts.SQUARE_SIDE)
 
-    # Mouse position : client -> array coordinates
-    #
-    # @return : (None | (array or help x coordinate) , array or help y coordinate)
-    #           None is returned when mouse is outside array and outside help matrix
-    #           x & y > 0 : coordinates in the array
-    #           x & y < 0 : coordinated in the help matrix
-    #
-    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[int | None, int]:
-        ret:list[int] = [-1,-1]
-        if len(self.sudoku_) == ARRAY_SIZE:
-            for index in range(2):
-                if pos[index] > self.offsets_[index]:
-                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
-                else:
-                    return (None, -1)
-
-        return (ret[0] if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else None, ret[1])
-
-
     #
     #  Other "shared" methods
     #
@@ -431,7 +441,7 @@ class solver:
 
     # Start edition mode
     #
-    def _edit_start(self, initPos:bool = True):
+    def _edit_start(self, editMode: bool, initPos:bool = True):
         self.prevValues_.clear()        # Nothing to undo or cancel
 
     # End of edition mode
@@ -445,26 +455,26 @@ class solver:
         self._draw_startUp()
 
         if prevPos is not None :
-            prevElement : element = self.sudoku_[prevPos.index()]
+            prevElement : element = self.sudoku_[prevPos.index]
             bk, txt = self._theme_getElementColours(prevPos.index_, False)
 
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
                 prevPos.row(),
                 prevPos.line(),
-                self.sudoku_.elements_[prevPos.index()].num,
+                self.sudoku_.elements_[prevPos.index].num,
                 bk, txt,
                 prevElement.hypothesis
             )
 
         # Select the new value
-        index: int = self.edition_.currentPos_.index()
+        index: int = self.edition_.currentPos_.index
         currentElement : element = self.sudoku_[index]
         bk, txt = self._theme_getElementColours(index, True)
         self._draw_singleElement(
             currentPos.row(),
             currentPos.line(),
-            self.sudoku_[currentPos.index()].num,
+            self.sudoku_[currentPos.index].num,
             bk, txt,
             currentElement.hypothesis
         )
@@ -476,7 +486,7 @@ class solver:
     #  @return : Index of modified item or -1 if nothing has been done
     #
     def _edit_setValue(self, val: int)->int:
-        index:int = self.edition_.currentPos_.index()
+        index:int = self.edition_.currentPos_.index
         if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return -1
 
@@ -486,19 +496,22 @@ class solver:
         return -1
 
     def _edit_setValueEx(self, val: int, id:int = -1, keep:bool = True)->int:
-        index:int = id if id != -1 else self.edition_.currentPos_.index()
+        index:int = id if id != -1 else self.edition_.currentPos_.index
         if keep:
             self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
-        #self.sudoku_.elements_[index].setValue(val, element.STATUS_ORIGINAL, True)
+        #self.sudoku_.elements_[index].setValue(val, elementStatus.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index, False), value=val,
-            status=(element.STATUS_ORIGINAL if self.edition_.creating else 0) | element.STATUS_SET)
+            status=(elementStatus.STATUS_ORIGINAL if self.edition_.creating else 0) | elementStatus.STATUS_SET,
+            hypColID=self.hypsColours_.getColIDAt(len(self.hypsColours_) - 1)
+        )
+        self.hypsColours_.setFirstPosition(index)
         self.edition_.status_.set(editStatus.EDIT_NO_REDRAW | editStatus.EDIT_MODIFIED)
         return index
 
     # Decrease value
     #
     def _edit_decValue(self)->bool:
-        index:int = self.edition_.currentPos_.index()
+        index:int = self.edition_.currentPos_.index
         if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return False
 
@@ -514,7 +527,7 @@ class solver:
     # Inc value
     #
     def _edit_incValue(self)->bool:
-        index:int = self.edition_.currentPos_.index()
+        index:int = self.edition_.currentPos_.index
         if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return False
         val : int | None = self.sudoku_[index].num
@@ -530,11 +543,11 @@ class solver:
     # Remove current value
     #
     def _edit_removeValue(self)->bool:
-        index:int = self.edition_.currentPos_.index()
+        index:int = self.edition_.currentPos_.index
         if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return False
 
-        self.sudoku_.clearAt(self.edition_.currentPos_.index(), True)
+        self.sudoku_.clearAt(self.edition_.currentPos_.index, True)
         return True
 
     # Undo
@@ -553,30 +566,43 @@ class solver:
     # Cancel current edition process (and whole changes)
     #
     def _edit_cancel(self)->bool:
-        if len(self.prevValues_) == 0:
-            return False
+        if len(self.prevValues_) > 0:
+            for val in reversed(self.prevValues_):
+                if val.value_ > 0:
+                    self.sudoku_[val.index_].setValue(val.value_, elementStatus.STATUS_ORIGINAL, True)
+                else:
+                    self.sudoku_[val.index_].empty(True)
 
-        for val in reversed(self.prevValues_):
-            if val.value_ > 0:
-                self.sudoku_[val.index_].setValue(val.value_, element.STATUS_ORIGINAL, True)
-            else:
-                self.sudoku_[val.index_].empty(True)
-
-        self.prevValues_.clear()
+            self.prevValues_.clear()
         return True
+
+    # Mouse position : client -> array coordinates
+    #
+    # @return : (ZoneID, x coordinate, y coordinate)
+    #           If ZoneID == ZONE_NOWHERE, x and y are undefined
+    #
+    def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[ownZone, int, int]:
+        ret:list[int] = [-1,-1]
+        if len(self.sudoku_) == ARRAY_SIZE:
+            for index in range(2):
+                if pos[index] > self.offsets_[index]:
+                    ret[index] = int((pos[index] - GUIConsts.EXT_BORDER_THICK - self.offsets_[index]) / self.extSquareWidth_)
+                else:
+                    return (ownZone.ZONE_NOWHERE, 0, 0)
+        return (ownZone.ZONE_ARRAY, ret[0], ret[1]) if ret[0]<ROW_COUNT and ret[1]<LINE_COUNT else (ownZone.ZONE_NOWHERE, 0, 0)
 
     #
     #  Element(s)' notifications
     #
 
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_SELECTED, max:int = GUIConsts.BLINK_COUNT_MODIFYING):
+    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_NOTIFYING, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
         pass
 
     def _notify_drawElements(self):
         pass
 
     def _notify_stop(self, endApp:bool = False):
-        self.sudoku_.notify_end() # remove elements statusbit
+        self.sudoku_.notify_end() # remove elements status bit
 
     #
     # Resolution
@@ -667,15 +693,21 @@ class solver:
     # Get elements text and bk colours for edition or creation
     #
     #  @pos : Element's position
-    #  @sekected : Element is selected ?
+    #  @selected : Is element selected ?
     #
     #  @return : Tuple(bk Colour, txt Colour)
-    def _theme_getElementColours(self, pos: int, selected:bool = False)->tuple[int,int]:
+    def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
         position:pointer = pointer(pos)
-        bkColour:int = GUITheme.colourID.ID_SEL_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
 
-        #if self.edition_.creating and not self.sudoku_.elements_[pos].notifying:
-        if self.edition_.creating:
+        if self.sudoku_[pos].error: # Always show as invalid value!
+            return (GUITheme.colourID.ID_ERROR_BK, GUITheme.colourID.ID_ERROR_TXT)
+
+        creating:bool = self.edition_.creating
+        solving:bool = self.edition_.manualSolving and selected
+
+        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+
+        if creating:
             return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
 
         if self.sudoku_[pos].isObvious():
@@ -684,7 +716,7 @@ class solver:
             if self.sudoku_[pos].isOriginal():
                 return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
 
-        return bkColour, GUITheme.colourID.ID_SEL_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
+        return bkColour, GUITheme.colourID.ID_SEL_SOLVE_TXT if solving else GUITheme.colourID.ID_SEL_CREATE_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
 
     # Convert colour objects from ownColour to specific (to GUI tools)  colour format
     #
@@ -699,7 +731,7 @@ class solver:
             name = GUITheme.DEF_THEME_NAME
 
         if len(GUITheme.colourThemes[name]["colours"]) != GUITheme.colourID.ID_COLOUR_COUNT:
-            print(f"Error - The colour-list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
+            print(f"Error - The colour list for the theme '{name}' is incomplete. The theme '{GUITheme.DEF_THEME_NAME}' will be use instead")
             name = GUITheme.DEF_THEME_NAME
 
         if name == self.theme_.name:
@@ -731,7 +763,7 @@ class solver:
         except KeyError:
             print(f"Error - The theme '{name}' is incomplete or invalid.")
         except IndexError:
-            print(f"Error - The theme '{name}' doesn't contain enough clours.")
+            print(f"Error - The theme '{name}' doesn't contain enough colours.")
 
         return False
 
@@ -769,7 +801,7 @@ class solver:
 
         if "italic" in GUITheme.colourThemes[themeName]["fonts"][fontName]:  # pyright: ignore[reportArgumentType, reportCallIssue]
             response:str = GUITheme.colourThemes[themeName]["fonts"][fontName]["italic"]  # pyright: ignore[reportArgumentType, reportAssignmentType, reportCallIssue, reportUnusedVariable, reportUnknownVariableType]
-            italic = response in ('True', 'true', 'yes')
+            italic = response in ('True', 'true', 'yes', 'Yes')
 
         return italic
 
