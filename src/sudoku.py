@@ -59,7 +59,6 @@ class sudoku(threading.Thread):
     def nonEmpty(self)->int:
         return self.nonEmptyCount_
     def finished(self):
-        #self.nonEmptyItems()
         return (self.nonEmptyCount_ == ARRAY_SIZE)
 
     # Complexity (for new arrays created from scratch)
@@ -106,7 +105,7 @@ class sudoku(threading.Thread):
                 output += "\n"
                 for _ in range(ROW_COUNT):
                     currentElement = self.elements_[position.index()]
-                    output += f" {' ' if currentElement.isEmpty() else str(currentElement.num)} "
+                    output += f" {str(currentElement.num)} "  # noqa: RUF010
                     position += 1
             output += "\n"
         return output
@@ -127,7 +126,7 @@ class sudoku(threading.Thread):
     def isEmpty(self) -> bool:
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if not self.elements_[index].isEmpty():
+                if not self[index].isEmpty():
                     return False
 
         self.nonEmptyCount_ = 0;
@@ -139,7 +138,7 @@ class sudoku(threading.Thread):
     def isModified(self) -> bool:
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if self.elements_[index].isChangeable(False):
+                if self[index].isChangeable(False):
                     return True
 
         return False
@@ -151,7 +150,7 @@ class sudoku(threading.Thread):
         done:bool = False
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if not self.elements_[index].isChangeable(False):   # don't take into account empty elements !
+                if not self[index].isChangeable(False):   # don't take into account empty elements !
                     self.elements_[index].setOriginal()
                     done = True
         return done
@@ -159,18 +158,18 @@ class sudoku(threading.Thread):
     # Count of non-empty elements ?
     #
     def nonEmptyItems(self) -> int:
-        self.nonEmptyCount_ = 0;
+        self.nonEmptyCount_ = ARRAY_SIZE;
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if not self.elements_[index].isEmpty():
-                    self.nonEmptyCount_+=1
+                if self.elements_[index].isEmpty():
+                    self.nonEmptyCount_-=1
         return self.nonEmptyCount_
 
     # Clear (empty) an element
     #   returns the previous value
     def clearAt(self, index:int, deep : bool)->int:
         if index>=0 and index < ARRAY_SIZE:
-            pValue: int = self.elements_[index].empty(deep)
+            pValue: int = self[index].empty(deep)
             if pValue > 0:
                 self.nonEmptyCount_-=1
             return pValue

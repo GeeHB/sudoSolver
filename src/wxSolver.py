@@ -429,7 +429,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
-        if self.state_.isSet(self.ARRAY_EDITING) :
+        if self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING) :
             newPos: tuple[int,int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
             match newPos[0]:
                 case solver.ownZone.ZONE_ARRAY:
@@ -477,7 +477,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # User pressed the right button => display contextual menu
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
-        if self.state_.isSet(self.ARRAY_EDITING) :
+        if self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING):
             self.edition_.move()
             clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
             if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):

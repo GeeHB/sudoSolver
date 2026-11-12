@@ -121,25 +121,24 @@ class element:
     #
     def setValue(self, value:int | None = None, status:int = elementStatus.STATUS_EMPTY, editMode:bool = False):
         if not editMode :
+            self.value_ = value if value is not None else 0
+
             # The element can't be "original"
             if not self.status_.isSet(elementStatus.STATUS_ORIGINAL):
                 # Update the value
-                if value is not None:
-                    self.value_ = value
+                if value is not None and value != 0:
                     self.status_.assign(elementStatus.STATUS_SET)
 
-                    if 0 != status:
+                    if elementStatus.STATUS_EMPTY != status:
                         self.status_.set(status)
                 else:
-                    self.value_ = 0
                     self.status_.assign(elementStatus.STATUS_EMPTY)
         else:
             # Edition mode => value can be changed
-            if value is None or value == 0:
-                self.value_ = 0
+            self.value_ = value if value is not None else 0
+            if self.value_ == 0:
                 self.status_.assign(elementStatus.STATUS_EMPTY)
             else :
-                self.value_ = value
                 self.solution_ = value
                 self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_ORIGINAL)
 
@@ -163,7 +162,7 @@ class element:
         return not self.isOriginal() and self.hasValue() and self.value_ != self.solution
 
     def isEmpty(self)->bool:
-        return self.status_.value == elementStatus.STATUS_EMPTY  # status is not set !
+        return (self.value_ == 0 or self.status_.value == elementStatus.STATUS_EMPTY)  # status is not set !
 
     def isOriginal(self)->bool:
         return self.status_.isSet(elementStatus.STATUS_ORIGINAL)
