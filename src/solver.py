@@ -432,7 +432,7 @@ class solver:
 
     # Start edition mode
     #
-    def _edit_start(self, initPos:bool = True):
+    def _edit_start(self, editMode: bool, initPos:bool = True):
         self.prevValues_.clear()        # Nothing to undo or cancel
 
     # End of edition mode

@@ -726,7 +726,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Start edition mode
     #
     @override
-    def _edit_start(self, initPos:bool = True):
+    def _edit_start(self, editMode: bool, initPos:bool = True):
         if self.sudoku_.isModified():
             if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
@@ -735,10 +735,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if self.sudoku_.setOriginal():
                 self.draw_update()
 
-        self._notify_stop() # Don't forget to stop notification timer !
-        super()._edit_start(initPos)
+        self._notify_stop() # Don't forget to stop prev. notification timer !
+        super()._edit_start(editMode, initPos)
 
-        self.state_.set(self.ARRAY_EDITING)
+        self.state_.set(self.ARRAY_EDITING if editMode else self.ARRAY_SOLVING)
         self._menu_setItemsStates()
 
         # Anything to edit ?
@@ -758,13 +758,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_stop(self, endApp:bool = False):
-        if not self.state_.isSet(self.ARRAY_EDITING):
+        if not (self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING)) :
             return  # ??? <- no edition mode  to be stopped
 
         super()._edit_stop(endApp)
 
         if not endApp:
-            self.state_.remove(self.ARRAY_EDITING)
+            self.state_.remove(self.ARRAY_EDITING if self.state_.isSet(self.ARRAY_EDITING) else self.ARRAY_SOLVING)
             if self.edition_.modified:
                 self.state_.set(self.ARRAY_MODIFIED)
 
@@ -1093,7 +1093,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.edition_.currentPos_.moveTo(line,row)
             self.edition_.prevPos_ = None
 
-        self._edit_start(row is None)
+        self._edit_start(edit, row is None)
 
     # Create a new or empty array
     #
@@ -1264,7 +1264,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.menuBar_.Enable(menuConsts.ID_SOLVE_MANUAL, state)
 
         self.menuBar_.Enable(menuConsts.ID_SOLVE, state)
-        self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, state)
+        self.menuBar_.Enable(menuConsts.ID_SOLVE_OBVIOUS, solving)
         self.menuBar_.Enable(menuConsts.ID_SOLVE_REVERT, state)
 
     # Mouse position : client -> array coordinates
@@ -1587,7 +1587,6 @@ class wxSolverFrame(wxMainFrame):
 
         self.labelMode_ = wx.StaticText(self.toolBar_, label=GUIStrings.STR_TOOLBAR)
         self.toolBar_.AddControl(self.labelMode_)
-        #self.toolBar_.AddSeparator()
         self.labelCount_ = wx.StaticText(self.toolBar_, label=GUIStrings.STR_FILLED)
         self.toolBar_.AddControl(self.labelCount_)
         self.toolBar_.AddSeparator()
@@ -1666,7 +1665,7 @@ class wxSolverFrame(wxMainFrame):
         # Help
         self.helpCombo_.Enable(solve)
 
-        self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
+        self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, create)
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
 
     #
