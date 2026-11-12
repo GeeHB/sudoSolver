@@ -19,30 +19,26 @@
    * PyGame 2.1.2
 
 #### todo
-  * Display hyps in panel
-  * Helpers / "Offrered values" <- combo
-    * "Show an error"
-    * "Error count"
-    * "help value"
-  * Choose an hyp.
-    * keep first value / position
-    * reject => activate first value 
   * Resolution
     * first, search for a soluce (if none, error)
     * "Found a solution" by the user
     * show stats
+    * show progression
 
-#### Version 4.1.2
-* 7 nov. 2026
+#### Version 4.1.3
+* 12 nov. 2026
 * Added :
   * add a toolbar to the main frame
   * Hypothesis / tags
     * hypColours : 'list' that keep selected tags
-    * Tag Panel to display used hypothesis
+    * Tag Panel display used hypothesis
     * choose hyp's colour using owner drawn combobox
+    * accept hyp -> all elements 'loose' hyp. colour
+    * reject hyp -> all elements are turned into empty elements
   * Action on left muse button dblclk = edit or solve
   * GUITheme <- Portable themes management (fonts and colours) 
       * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
+      * add specific colours for edition and resolution
   * Help matrix
     * show (on demand) possible element's values in sided small clickable matrix
   * Add 'Display' menu
@@ -51,6 +47,8 @@
   * Flickering effect on pygame displays
   * Error in centering calculation
   * BUG : sudoku MUST exist before loading values from file !!!
+  * BUG : accelerators still active even if associated menu item is deastivated
+  * BUG : invalid non empty elements in the array (confusion between value 0 and STATUS_EMPTY bit) 
 
 #### Version 4.1.0
 * 16 oct. 2026

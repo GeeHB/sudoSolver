@@ -50,9 +50,13 @@ class hypColours:
         return not pop
 
     # Remove last element
-    def pop(self):
+    #
+    # @return : position in last element if any or None
+    #
+    def pop(self)->int | None:
         if len(self.datas_)>0:
-            self.datas_.pop()
+            return self.datas_.pop()[1]
+        return None
 
     # Set position of first element using the current colour
     def setFirstPosition(self, pos:int)->bool:

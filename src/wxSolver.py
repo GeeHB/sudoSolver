@@ -40,7 +40,6 @@ from pointer import (
     VALUE_MAX,
     pointer,
 )
-from sharedTools import statusbits
 
 
 # Edition modes
@@ -213,12 +212,6 @@ class wxSolverApp(wx.App, solver.solverApp):
 #
 class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
-    #  Array states
-    #
-    ARRAY_NEW : int = 0
-    ARRAY_MODIFIED : int = 1
-
-    #
     #  key codes
     #
     KEY_MOVE_LEFT:int = wx.WXK_LEFT
@@ -254,8 +247,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         solver.solver.__init__(self, params)
         self.hypsPanel_ = hypsPanel
 
-        self.state_: statusbits.statusBits = statusbits.statusBits(self.ARRAY_NEW)
-
         # Display
         self.memDC_: wx.MemoryDC | None = None # all display are made in a memory DC
         self.elementFont_: wx.Font
@@ -272,7 +263,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Timers (selection and notification)
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
-        self.notifyHide_:bool = False
+        self.notifyShow_:bool = False
         self.notifyCount_:int = 0
 
         self.menuThemesID_:dict[str,int] = {}
@@ -431,7 +422,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             newPos: tuple[int,int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
             match newPos[0]:
                 case solver.ownZone.ZONE_ARRAY:
-                    self.edition_.move()
+                    self.edition_.validate()
                     if  self.edition_.currentPos_.moveTo(pos=(newPos[1], newPos[2])):   # click on the array
                         self._edit_selChanged()
 
@@ -476,7 +467,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
         if self.edition_.editing:
-            self.edition_.move()
+            self.edition_.validate()
             clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
             if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):
                 self._edit_selChanged()
@@ -736,7 +727,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._notify_stop() # Don't forget to stop prev. notification timer !
         super()._edit_start(editMode, initPos)
 
-        #self.state_.set(self.ARRAY_EDITING if editMode else self.ARRAY_SOLVING)
         self._menu_setItemsStates()
 
         # Anything to edit ?
@@ -744,7 +734,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.sudoku_.empty()
 
         if initPos:
-            self.edition_.clear()    # move to cursor to (0,0)
+            self.edition_.clear()    # move cursor to (0,0)
         else:
             self.edition_.selected = False
 
@@ -762,10 +752,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         super()._edit_stop(endApp)
 
         if not endApp:
-            #self.state_.remove(self.ARRAY_EDITING if self.state_.isSet(self.ARRAY_EDITING) else self.ARRAY_SOLVING)
-            if self.edition_.modified:
-                self.state_.set(self.ARRAY_MODIFIED)
-
             self._menu_setItemsStates()
 
             if self.selectedTimer_.IsRunning():
@@ -790,7 +776,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _edit_array(self, event: wx.KeyEvent):
         keyCode = event.GetKeyCode()
-        self.edition_.move()
+        self.edition_.validate()
         match keyCode:
             # position
             case self.KEY_MOVE_LEFT:
@@ -816,7 +802,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             # end / cancel edition
             case self.KEY_ENTER | self.KEY_NUM_ENTER:
-                self._edit_stop()
+                if self.edition_.creating:
+                    self._edit_stop()
                 return
             case self.EDIT_CANCEL:
                 self._edit_cancel()
@@ -851,7 +838,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _edit_cancel(self)->bool:
         done:bool = False
         if super()._edit_cancel():
-            self.state_.remove(self.ARRAY_MODIFIED) # !!!
+            self.edition_.modified = False # !!!
             self.draw()
             done = True
 
@@ -881,9 +868,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def help_onComboSelect(self, event: wx.CommandEvent):
         #index:int = self.hypsCombo_.GetSelection()  # pyright: ignore[reportAssignmentType]
         match event.GetString():
-            case GUIStrings.STR_SOLVE_OBVIOUS:
-                self._obvious_findValues(False)
-
             case GUIStrings.STR_HELP_OFFER:
                 self._help_offerValue()
 
@@ -892,6 +876,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             case GUIStrings.STR_HELP_ERRORS:
                 self._help_showErrorCount()
+
+            case GUIStrings.STR_SOLVE_OBVIOUS:
+                self._obvious_findValues(True)
 
             case _:
                 pass    # ???
@@ -943,7 +930,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if colID > element.hypColourID.NO_HYP and -1 == self.hypsColours_.getIndex(colID):
             added:bool = self.hypsColours_.append(element.hypColourID(colID))
             self.hypsPanel_.hyp_add(colID, added)
-            #print(self.hypsColours_)
+
+            curElmnt:element.element = self.sudoku_[self.edition_.currentPos_.index]
+            if not curElmnt.isEmpty() and not curElmnt.isOriginal() :
+                curElmnt.hypothesis =colID   # Current element is set to the new hyp.
 
             self.SetFocusIgnoringChildren()     # canvas keep keyboard focus
             return self.hypsColours_.toList()
@@ -968,7 +958,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         count:int = 0
         if id > 1:
             count = self.sudoku_.hyp_reject(self.hypsColours_.getColIDAt(id-1))
-            self.hypsColours_.pop()
+            position:int | None = self.hypsColours_.pop()
+
+            if position is not None:
+                self.edition_.moveTo(position)
+                self._edit_selChanged()
 
             self.parent_.hyp_onReject(self.hypsColours_.toList())
             self.draw_update()
@@ -1096,33 +1090,35 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Create a new or empty array
     #
     def _menu_fileNew(self, menuId:int):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_NEW,
-                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                return
+        if not self.edition_.editing:   # accelerators still active even when associated menu items are disabled !
+            if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_NEW,
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                    return
 
-        match menuId:
-            case menuConsts.ID_CREATE_EASY:
-                self.sudoku_.new(arrayComplexity.Easy)
-            case menuConsts.ID_CREATE_MEDIUM:
-                self.sudoku_.new(arrayComplexity.Medium)
-            case menuConsts.ID_CREATE_HARD:
-                self.sudoku_.new(arrayComplexity.Hard)
-            case _:
-                self.sudoku_.new(arrayComplexity.Empty)
+            self.edition_.modified = False
+            match menuId:
+                case menuConsts.ID_CREATE_EASY:
+                    self.sudoku_.new(arrayComplexity.Easy)
+                case menuConsts.ID_CREATE_MEDIUM:
+                    self.sudoku_.new(arrayComplexity.Medium)
+                case menuConsts.ID_CREATE_HARD:
+                    self.sudoku_.new(arrayComplexity.Hard)
+                case _:
+                    self.sudoku_.new(arrayComplexity.Empty)
 
-        self.state_.assign(self.ARRAY_NEW)
-        self._menu_setItemsStates()
+            self._menu_setItemsStates()
 
-        self.parent_.countChanged() # new elements have values
-        self.draw_update()
+            self.parent_.countChanged() # new elements have values
+            self.draw_update()
 
     # Load an array
     #
     def _menu_fileOpen(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_LOAD,
+        if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_LOAD,
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
+        self.edition_.modified = False
         with wx.FileDialog(self, GUIStrings.STR_LOAD, wildcard=GUIStrings.STR_WILDCARD,
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
@@ -1131,7 +1127,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # New file just loaded
         self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-        self.state_.assign(self.ARRAY_NEW)
         self._menu_setItemsStates()
         self.parent_.countChanged() # new elements have values
 
@@ -1163,7 +1158,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         if done :
             self.setFilename(path)
-            self.state_.assign(self.ARRAY_NEW)
+            self.edition_.modified = False
             self._menu_setItemsStates()
 
             wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
@@ -1172,7 +1167,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Quit
     #
     def _menu_fileExit(self):
-        if self.state_.isSet(self.ARRAY_MODIFIED) and wx.NO == wx.MessageBox(
+        if self.edition_.modified and wx.NO == wx.MessageBox(
                     GUIStrings.STR_NOT_SAVED, GUIStrings.STR_EXIT,
                     wx.ICON_QUESTION | wx.YES_NO, self):
             return
@@ -1292,8 +1287,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.notifyTimer_.Stop()
 
         super()._notify_start()
-        self.notifyHide_ = False    # Start with drawing the item
-        self.notifyCount_ = max
+        self.notifyShow_ = False    # Start with drawing the item
+        self.notifyCount_ = max if (max % 2) == 0 else max - 1
         if not self.notifyTimer_.IsRunning():
             self.notifyTimer_.Start(freq)
 
@@ -1305,23 +1300,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._notify_stop()
 
         self._draw_startUp()
-        position: pointer = pointer(game = False)
+        position:pointer = pointer(game = False)
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
-                currentElement = self.sudoku_[position.index()]
+                currentElement = self.sudoku_[position.index]
                 if currentElement.notifying:
-                    bk, txt = self._theme_getElementColours(position.index(), False)
+                    bk, txt = self._theme_getElementColours(position.index, False)
                     self._draw_singleElement(
                         row, line,
-                        currentElement.num if self.notifyHide_ else 0,
+                        currentElement.num if self.notifyShow_ else 0,
                         bk, txt,
                         currentElement.hypothesis,
                     )
 
                 position+=1 # next element ...
         self._draw_end()
-
-        self.notifyHide_ = not self.notifyHide_
+        self.notifyShow_ = not self.notifyShow_
 
     @override
     def _notify_stop(self, endApp:bool = False):
@@ -1363,7 +1357,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _theme_changeByName(self, name:str)->bool:
         ret: bool = solver.solver._theme_changeByName(self, name)
         if ret:
-            # Apply nex colours to hyp. panel
+            # Apply new colours to hyp. panel
             self.hypsPanel_.setBackgroundColour(self.theme_.colours_[GUITheme.colourID.ID_CANVAS_BK])
             colours: list[GUITheme.ownColour] = [self.theme_.colours_[GUITheme.colourID.ID_TAG_1],
                     self.theme_.colours_[GUITheme.colourID.ID_TAG_2],

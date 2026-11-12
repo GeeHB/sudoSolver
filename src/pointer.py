@@ -38,7 +38,7 @@ class pointer:
             self.index_ = index
             self._whereAmI()
 
-
+    # Display
     def __repr__(self)->str:
         return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t- square ID : {self.squareID_}\n\t- {"Game" if self.gameMode_ else "not game"}"
 
@@ -68,11 +68,19 @@ class pointer:
         self._whereAmI(False)
         return True
 
-    # Access
+    # index as a property
     #
+    @property
     def index(self)->int:
         return self.index_
+    @index.setter
+    def index(self, newVal : int):
+        if self._inRange(newVal, 0, ARRAY_SIZE):
+            self.index_ = newVal
+            self._whereAmI()
 
+    # Access
+    #
     def row(self)->int:
         return self.row_
 

@@ -100,11 +100,11 @@ class sudoku(threading.Thread):
     def __str__(self)->str:
         output : str = ""
         if self.isOk() :
-            position : pointer = pointer(game=False)
+            position:pointer = pointer(game=False)
             for _ in range(LINE_COUNT):
                 output += "\n"
                 for _ in range(ROW_COUNT):
-                    currentElement = self.elements_[position.index()]
+                    currentElement = self.elements_[position.index]
                     output += f" {"-" if currentElement.isEmpty() else str(currentElement.num)} "
                     position += 1
             output += "\n"
@@ -257,20 +257,20 @@ class sudoku(threading.Thread):
     # Modify the given element's value
     #
     def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_HYP):
-        currentVal: int | None = self.elements_[position.index()].num
+        currentVal: int | None = self.elements_[position.index].num
 
         if value>0 :
-            self.elements_[position.index()].num = value
+            self.elements_[position.index].num = value
             if status is not None:
-                self.elements_[position.index()].status_.assign(status)
+                self.elements_[position.index].status_.assign(status)
             if hypColID != hypColourID.NO_HYP:
-                self.elements_[position.index()].hypothesis = hypColID
+                self.elements_[position.index].hypothesis = hypColID
 
             # A new val ?
             if value > 0 and ((currentVal is None) | (currentVal is not None and currentVal == 0)):
                 self.nonEmptyCount_+=1
         else:
-            self.elements_[position.index()].empty(True)
+            self.elements_[position.index].empty(True)
             if currentVal is not None and currentVal > 0:
                 self.nonEmptyCount_-=1  # element's value has beeen removed
 
@@ -362,7 +362,7 @@ class sudoku(threading.Thread):
                 for lIndex in range(LINE_COUNT):
                     line = ""
                     for _ in range(ROW_COUNT):
-                        el = self.elements_[pt.index()]
+                        el = self.elements_[pt.index]
                         #line += str(0 if el.isEmpty() else el.num)
                         line += str(el.num if el.isOriginal() else 0)   # just save 'original' values
                         line += FILE_VALUE_SEPARATOR
@@ -516,16 +516,16 @@ class sudoku(threading.Thread):
     #
     def _new_swapColumns(self, fCol:int, sCol:int):
         if fCol != sCol:
-            first : pointer = pointer()
-            second : pointer = pointer()
+            first:pointer = pointer()
+            second:pointer = pointer()
 
             first.moveTo(0, fCol);
             second.moveTo(0, sCol);
 
             for _ in range(VALUE_MAX):
-                oValue : int | None = self.elements_[first.index()].num;
-                self.elements_[first.index()].num = self.elements_[second.index()].num
-                self.elements_[second.index()].num = oValue
+                oValue : int | None = self.elements_[first.index].num;
+                self.elements_[first.index].num = self.elements_[second.index].num
+                self.elements_[second.index].num = oValue
 
                 # Next line
                 first.incLine();
@@ -538,16 +538,16 @@ class sudoku(threading.Thread):
     #
     def _new_swapRows(self, fRow:int, sRow:int):
         if fRow != sRow:
-            first : pointer = pointer()
-            second : pointer = pointer()
+            first:pointer = pointer()
+            second:pointer = pointer()
 
             first.moveTo(fRow, 0);
             second.moveTo(sRow, 0);
 
             for _ in range(VALUE_MAX):
-                oValue = self.elements_[first.index()].num
-                self.elements_[first.index()].num = self.elements_[second.index()].num
-                self.elements_[second.index()].num = oValue
+                oValue = self.elements_[first.index].num
+                self.elements_[first.index].num = self.elements_[second.index].num
+                self.elements_[second.index].num = oValue
 
                 # Next row
                 first.incRow();
@@ -759,22 +759,22 @@ class sudoku(threading.Thread):
     #   returns the # of values found (and set)
     #
     def obvious_findValues(self)->int:
-        found : int = 0
-        position : pointer = pointer()
+        found:int = 0
+        position:pointer = pointer()
 
         for _ in range(INDEX_MAX):
-            if self.elements_[position.index()].isEmpty():
+            if self.elements_[position.index].isEmpty():
                 # Try to set a single value at this empty place
                 value = self._obvious_checkValue(position)
 
                 if value is not None:
                     # One more obvious value !!!!
-                    self.elements_[position.index()].setValue(
+                    self.elements_[position.index].setValue(
                         value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING
                     )
                     found += 1
             else:
-                value = self.elements_[position.index()].num
+                value = self.elements_[position.index].num
 
                 if value is not None :
                     # Can we put this value on another line ?
@@ -814,7 +814,7 @@ class sudoku(threading.Thread):
     #
     def _obvious_setValueInLines(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
-        modID : int = position.squareID() % 3
+        modID:int = position.squareID() % 3
         if 0 == modID:
             firstSquare = tinySquare(position.squareID() + 1)
             secondSquare = tinySquare(position.squareID() + 2)
@@ -829,8 +829,8 @@ class sudoku(threading.Thread):
                 secondSquare = tinySquare(position.squareID() - 1)
 
         # Is the value already in theses squares ?
-        firstPos : tuple[int | None ,int | None] = firstSquare.findValue(self.elements_, value)
-        secondPos : tuple[int | None, int | None] = secondSquare.findValue(self.elements_, value)
+        firstPos:tuple[int | None ,int | None] = firstSquare.findValue(self.elements_, value)
+        secondPos:tuple[int | None, int | None] = secondSquare.findValue(self.elements_, value)
 
         # None of them or both of them
         if (firstPos[0] is None and secondPos[0] is None) or (
@@ -842,8 +842,8 @@ class sudoku(threading.Thread):
         #
         #   The sum of the 3 lineID is a consts and we know 2 oh them
         #
-        candidateLine : int = 0
-        candidate : tinySquare = firstSquare
+        candidateLine:int = 0
+        candidate:tinySquare = firstSquare
         if firstPos[0] is None:
             if secondPos[0] is not None :
                 candidateLine = (
@@ -863,7 +863,7 @@ class sudoku(threading.Thread):
 
         try:
             for _ in range(tinySquare.TINY_ROW_COUNT):
-                if self.elements_[pos.index()].isEmpty() and self.checkValue(
+                if self.elements_[pos.index].isEmpty() and self.checkValue(
                     pos, value
                 ):
                     if None != foundPos:
@@ -879,7 +879,7 @@ class sudoku(threading.Thread):
         # Did we find a position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
+            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
             return 1
 
         # No ...
@@ -891,7 +891,7 @@ class sudoku(threading.Thread):
     #
     def _obvious_setValueInRows(self, position:pointer, value:int) -> int:
         # "little" squares IDs for this line
-        modID = math.floor(position.squareID() / 3)
+        modID:int = math.floor(position.squareID() / 3)
         if 0 == modID:
             # At the top pos
             firstSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
@@ -928,8 +928,8 @@ class sudoku(threading.Thread):
         #
         #   The sum of the 3 lineID is a consts and we know 2 of them
         #
-        candidateRow : int = 0
-        candidate : tinySquare = firstSquare
+        candidateRow:int = 0
+        candidate:tinySquare = firstSquare
         if firstPos[0] is None:
             if secondPos[1] is not None:
                 candidateRow = (
@@ -950,7 +950,7 @@ class sudoku(threading.Thread):
 
         try:
             for _ in range(tinySquare.TINY_LINE_COUNT):
-                if self.elements_[pos.index()].isEmpty() and self.checkValue(
+                if self.elements_[pos.index].isEmpty() and self.checkValue(
                     pos, value
                 ):
                     if None != foundPos:
@@ -967,7 +967,7 @@ class sudoku(threading.Thread):
         # Did we find a valid position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index()].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
+            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
             return 1
 
         # No ...
@@ -985,8 +985,8 @@ class sudoku(threading.Thread):
     # Single Threaded mode (default)
     #
     def resolve_singleThreaded(self):
-        candidate : int = 0
-        position : pointer = pointer(game=True)
+        candidate:int = 0
+        position:pointer = pointer(game=True)
         position = self._resolve_findFirstEmptyPos(position)
         self.attempts = 0
 
@@ -1000,14 +1000,14 @@ class sudoku(threading.Thread):
                 position = self._resolve_previousPos(position)
 
                 # candidate value = prev. value (incremented at next occurence)
-                candidate = self.elements_[position.index()].empty(deep = False)
+                candidate = self.elements_[position.index].empty(deep = False)
             else:
                 # Try to put the "candidate" value at current position
                 #
                 if True == self.checkValue(position, candidate):
                     self.attempts = self.attempts + 1
 
-                    self.elements_[position.index()].setValue(candidate)
+                    self.elements_[position.index].setValue(candidate)
 
                     # Go to the next "empty" position
                     position = self._resolve_findFirstEmptyPos(position)
@@ -1024,8 +1024,8 @@ class sudoku(threading.Thread):
     # Single Threaded mode as a generator
     #
     def resolve_singleThreadGenerator(self, step : int = 100):
-        candidate : int = 0
-        position : pointer = pointer(game=True)
+        candidate:int = 0
+        position:pointer = pointer(game=True)
         position = self._resolve_findFirstEmptyPos(position)
         self.attempts = 0
         self.found = False
@@ -1039,7 +1039,7 @@ class sudoku(threading.Thread):
                     position = self._resolve_previousPos(position)
 
                     # candidate value = prev. value (incremented at next occurence)
-                    candidate = self.elements_[position.index()].empty(deep = False)
+                    candidate = self.elements_[position.index].empty(deep = False)
 
                     #yield False # Going back
                 else:
@@ -1048,7 +1048,7 @@ class sudoku(threading.Thread):
                     if True == self.checkValue(position, candidate):
                         self.attempts = self.attempts + 1
 
-                        self.elements_[position.index()].setValue(candidate)
+                        self.elements_[position.index].setValue(candidate)
 
                         if self.attempts_ % step == 0 :
                             yield True  # Forwarding
@@ -1072,7 +1072,7 @@ class sudoku(threading.Thread):
     #
     def _resolve_findFirstEmptyPos(self, start:pointer)->pointer:
         newPos : pointer = copy.deepcopy(start)
-        while not self.elements_[newPos.index()].isEmpty():
+        while not self.elements_[newPos.index].isEmpty():
             newPos += 1
 
         # Done
@@ -1086,11 +1086,11 @@ class sudoku(threading.Thread):
     #
     def _resolve_previousPos(self, current:pointer)->pointer:
         newPos : pointer = copy.deepcopy(current)
-        self.elements_[newPos.index()].empty(deep = False)
+        self.elements_[newPos.index].empty(deep = False)
         newPos -= 1
 
         # Don't touch "Original" nor "Obvious" values
-        while not self.elements_[newPos.index()].isChangeable():
+        while not self.elements_[newPos.index].isChangeable():
             newPos -= 1
 
         # Ok
