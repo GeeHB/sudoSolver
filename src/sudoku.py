@@ -105,7 +105,7 @@ class sudoku(threading.Thread):
                 output += "\n"
                 for _ in range(ROW_COUNT):
                     currentElement = self.elements_[position.index()]
-                    output += f" {str(currentElement.num)} "  # noqa: RUF010
+                    output += f" {"-" if currentElement.isEmpty() else str(currentElement.num)} "
                     position += 1
             output += "\n"
         return output
@@ -248,7 +248,7 @@ class sudoku(threading.Thread):
                 return False
 
             # Set the value
-            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(value, elementStatus.STATUS_ORIGINAL)
+            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(value, elementStatus.STATUS_ORIGINAL if value else elementStatus.STATUS_EMPTY)
             self.nonEmptyCount_+=1
             return True
 

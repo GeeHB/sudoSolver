@@ -217,8 +217,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     ARRAY_NEW : int = 0
     ARRAY_MODIFIED : int = 1
-    ARRAY_EDITING : int = 2
-    ARRAY_SOLVING : int = 4
 
     #
     #  key codes
@@ -406,7 +404,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Keyboard events
     #
     def OnKeyDown(self, event :  wx.KeyEvent):
-        if self.state_.isSet(self.ARRAY_EDITING) :
+        if self.edition_.editing :
             self._edit_array(event)
             return
 
@@ -429,7 +427,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # User clicked  with left button
     #
     def OnLButtonUp(self, event : wx.MouseEvent):
-        if self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING) :
+        if self.edition_.editing :
             newPos: tuple[int,int,int] = self._mouse_translatePosition(pos=(event.x, event.y))
             match newPos[0]:
                 case solver.ownZone.ZONE_ARRAY:
@@ -477,7 +475,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # User pressed the right button => display contextual menu
     #
     def OnRButtonUp(self, event : wx.MouseEvent):
-        if self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING):
+        if self.edition_.editing:
             self.edition_.move()
             clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
             if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):
@@ -738,7 +736,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._notify_stop() # Don't forget to stop prev. notification timer !
         super()._edit_start(editMode, initPos)
 
-        self.state_.set(self.ARRAY_EDITING if editMode else self.ARRAY_SOLVING)
+        #self.state_.set(self.ARRAY_EDITING if editMode else self.ARRAY_SOLVING)
         self._menu_setItemsStates()
 
         # Anything to edit ?
@@ -758,13 +756,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_stop(self, endApp:bool = False):
-        if not (self.state_.isSet(self.ARRAY_EDITING) or self.state_.isSet(self.ARRAY_SOLVING)) :
+        if not self.edition_.editing :
             return  # ??? <- no edition mode  to be stopped
 
         super()._edit_stop(endApp)
 
         if not endApp:
-            self.state_.remove(self.ARRAY_EDITING if self.state_.isSet(self.ARRAY_EDITING) else self.ARRAY_SOLVING)
+            #self.state_.remove(self.ARRAY_EDITING if self.state_.isSet(self.ARRAY_EDITING) else self.ARRAY_SOLVING)
             if self.edition_.modified:
                 self.state_.set(self.ARRAY_MODIFIED)
 
@@ -1242,8 +1240,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _menu_setItemsStates(self):
         valid : bool = self.sudoku_.isOk()
-        editOn : bool = self.state_.isSet(self.ARRAY_EDITING)
-        solving : bool = self.state_.isSet(self.ARRAY_SOLVING)
+        editOn : bool = self.edition_.editing
+        solving : bool = self.edition_.manualSolving
 
         self.menuBar_.Enable(menuConsts.ID_EDIT_UNDO, editOn)
         self.menuBar_.Enable(menuConsts.ID_EDIT_DONE, editOn)

@@ -112,7 +112,7 @@ colourThemes = {
             (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (234, 227, 253),    # Selected bkgrnd & txt for solving
+            (177, 241, 210),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
@@ -149,7 +149,7 @@ colourThemes = {
             (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (234, 227, 253),    # Selected bkgrnd & txt for solving
+            (177, 241, 210),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
