@@ -283,7 +283,7 @@ class solver:
         self.sudoku_.empty()
 
         try:
-            self.sudoku_.load(fileName, True, False)
+            self.sudoku_.file_load(fileName, True, False)
         except UnicodeDecodeError:
             return False
         except sudokuError as se:
@@ -414,26 +414,6 @@ class solver:
     #
     #  Other "shared" methods
     #
-
-    # Find all the obvious values
-    #
-    #   return a boolean : found value(s) ?
-    #
-    def findObviousValues(self)->bool:
-        self.stats_.clear()
-        found : int = 0
-        start : float = time.time()
-        values = 1
-        while 0 < values:
-            values = self.sudoku_.obvious_findValues()
-            found += values
-
-        if found>0:
-            self.stats_.obvValues_ = found
-            self.stats_.obvDuration_ = time.time() - start
-            return True
-
-        return False
 
     #
     # Array edition
@@ -603,6 +583,26 @@ class solver:
 
     def _notify_stop(self, endApp:bool = False):
         self.sudoku_.notify_end() # remove elements status bit
+
+    # Find all the obvious values
+    #
+    #   return a boolean : found value(s) ?
+    #
+    def obvious_findValues(self)->bool:
+        self.stats_.clear()
+        found : int = 0
+        start : float = time.time()
+        values = 1
+        while 0 < values:
+            values = self.sudoku_.obvious_findValues()
+            found += values
+
+        if found>0:
+            self.stats_.obvValues_ = found
+            self.stats_.obvDuration_ = time.time() - start
+            return True
+
+        return False
 
     #
     # Resolution

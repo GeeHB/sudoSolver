@@ -18,6 +18,8 @@ from typing import override
 from element import element, elementStatus, hypColourID
 from options import (
     FILE_COMMENTS,
+    FILE_TEMP_DETAILS_SEP,
+    FILE_TEMP_NAME,
     FILE_VALUE_SEPARATOR,
     arrayComplexity,
 )
@@ -181,6 +183,15 @@ class sudoku(threading.Thread):
     def isFull(self)->bool:
         return (self.nonEmptyCount_ == ARRAY_SIZE)
 
+    # Change status of elements
+    #
+    def changeStatus(self, source:elementStatus, dest:elementStatus):
+        if source != dest :
+            for curElmnt in  self.elements_:
+                if curElmnt.status_.isSet(source):
+                    curElmnt.status_.remove(source)
+                    curElmnt.status_.set(dest)
+
     # Return to the "original" state
     #
     def revert(self):
@@ -202,13 +213,11 @@ class sudoku(threading.Thread):
             if self.elements_[index].notifying:
                 self.elements_[index].notifying = False
 
-    # Single value
-    #
 
-    # (try to) Set a value at the given position
+    # (try to) set a value at the given position
     #   this methods ensures the value is valid for the position
     #
-    def setAt(self, position : pointer, val:str, numVal:int | None = None, warn:bool=True) -> bool:
+    def setAt(self, position:pointer, val:str, numVal:int | None = None, warn:bool = True) -> bool:
         if len(val) > 0:
             value = int(val)
         else:
@@ -256,8 +265,8 @@ class sudoku(threading.Thread):
 
     # Modify the given element's value
     #
-    def modifyAt(self, position: pointer, value: int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_HYP):
-        currentVal: int | None = self.elements_[position.index].num
+    def modifyAt(self, position:pointer, value:int, status:int | None = None, hypColID:hypColourID = hypColourID.NO_HYP):
+        currentVal:int | None = self.elements_[position.index].num
 
         if value>0 :
             self.elements_[position.index].num = value
@@ -280,7 +289,7 @@ class sudoku(threading.Thread):
 
     # Read a sudoku file
     #
-    def load(self, fileName : str | None, mustExist : bool, showFileName:bool = True):
+    def file_load(self, fileName:str | None, mustExist:bool, showFileName:bool = True):
         if fileName is None or 0 == len(fileName):
             # ???
             raise sudokuError("sudoku::load - No valid file name")
@@ -288,12 +297,20 @@ class sudoku(threading.Thread):
         if os.path.isdir(fileName):
             raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
 
-        self.empty()    # The sudoku must exist and must be empty !!!
         self.filename = fileName
-
 
         # Open and read the file
         #
+        if not self._file_load(fileName, False):
+            if True == mustExist:
+                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
+            else:
+                print(f"New file : '{fileName}'")
+
+    # Read a sudoku file (grid or temp)
+    #
+    def _file_load(self, fileName:str, readStatus:bool = False)->bool:
+        self.empty()    # start with empty sudoku
         try:
             with open(fileName) as file:
                 pt = pointer(game=False)
@@ -314,21 +331,27 @@ class sudoku(threading.Thread):
                             )
 
                         for val in values:
-                            self.setAt(pt, val)
+                            if readStatus :
+                                details = val.split(FILE_TEMP_DETAILS_SEP)
+                                if len(details) == 3: # = (value, status, hyp. colour)
+                                    pass
+                            else:
+                                self.setAt(pt, val)
 
                             # Next value
                             pt += 1
         except FileNotFoundError:
-            if True == mustExist:
-                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
-            else:
-                print(f"New file : '{fileName}'")
+            return False
 
-    # Save the file
+        return True
+
+    # Save the array in a file
+    #
+    #   Only 'original' values will be saved
     #
     #   return the name of the saved file or None if an error occured
     #
-    def save(self, addExtent:str | None = None, fileComments:list[str] | None = None, newFileName:str | None = None)->str | None:
+    def file_save(self, addExtent:str | None = None, fileComments:list[str] | None = None, newFileName:str | None = None)->str | None:
         if not self.isOk():
             return None
 
@@ -346,6 +369,29 @@ class sudoku(threading.Thread):
             if len(extension) == 0:
                 fileName += addExtent
 
+        return fileName if self._file_save(fileName, fileComments) else None
+
+    # Create a temporay copy of the current array
+    #
+    def file_saveTemp(self)->bool:
+        fileName:str = self._file_tempFileName()
+        return self._file_save(fileName, saveStatus=True)
+
+    # Get the temp file name
+    #
+    def _file_tempFileName(self):
+        baseDir = pathlib.Path(__file__).resolve().parent
+        fullPath = baseDir / FILE_TEMP_NAME
+        return str(fullPath)
+
+    # Save the array in a file
+    #
+    #   @return : True if successfully saved
+    #
+    def _file_save(self, fileName:str, fileComments:list[str] | None = None, saveStatus:bool = False)->bool:
+        if not self.isOk() or len(fileName) == 0 :
+            return False
+
         try:
             with open(fileName, "w") as file:
                 # a few comments ?
@@ -362,9 +408,8 @@ class sudoku(threading.Thread):
                 for lIndex in range(LINE_COUNT):
                     line = ""
                     for _ in range(ROW_COUNT):
-                        el = self.elements_[pt.index]
-                        #line += str(0 if el.isEmpty() else el.num)
-                        line += str(el.num if el.isOriginal() else 0)   # just save 'original' values
+                        el = self[pt.index]
+                        line += f"{0 if el.isEmpty() else el.num}FILE_TEMP_DETAILS_SEP{el.status_.value_}FILE_TEMP_DETAILS_SEP{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
                         line += FILE_VALUE_SEPARATOR
                         pt += 1
 
@@ -376,11 +421,11 @@ class sudoku(threading.Thread):
                     file.write(line)
 
             self.filename = fileName
-            return fileName
+            return True
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
             print(f"sudoku::save - io error while writing the file '{fileName}'")
-            return None
+            return False
 
     #
     # Array
@@ -441,7 +486,7 @@ class sudoku(threading.Thread):
         # Update non-empty elements counter
         self.nonEmptyItems()
 
-        # doné
+        # done
         self.found = True
 
     # Remove elements according to complexity
@@ -604,7 +649,7 @@ class sudoku(threading.Thread):
     #   @editionMode : True if in edition or creation mode
     #
     #   In edition mode (editionMode = True) all values are 'original'
-    #   whereas in resolution mode (editionMoe = False) all tagged values
+    #   whereas in resolution mode (editionMode = False) all tagged values
     #   will have their tag removed
     #
     #  @return : count of elements concerned
@@ -635,6 +680,7 @@ class sudoku(threading.Thread):
                 self.elements_[index].empty(True)
                 count+=1
 
+        self.nonEmptyCount_-=count
         return count
 
     # Find the next possible value for an element (greater than the current one)
@@ -681,6 +727,7 @@ class sudoku(threading.Thread):
                 index+=1
                 if self.elements_[index].isEmpty():
                     id-=1
+            self.nonEmptyCount_+=1
         return index
 
     # Get an error in the current array

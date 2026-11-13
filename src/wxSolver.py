@@ -746,8 +746,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_stop(self, endApp:bool = False):
-        if not self.edition_.editing :
-            return  # ??? <- no edition mode  to be stopped
+        #if not self.edition_.editing :
+        #    return  # ??? <- no edition mode  to be stopped
+
+        if self.edition_.manualSolving:
+           self.sudoku_.file_saveTemp()     # keep a copy of current array
 
         super()._edit_stop(endApp)
 
@@ -802,8 +805,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             # end / cancel edition
             case self.KEY_ENTER | self.KEY_NUM_ENTER:
-                if self.edition_.creating:
-                    self._edit_stop()
+                #if self.edition_.creating:
+                self._edit_stop()
                 return
             case self.EDIT_CANCEL:
                 self._edit_cancel()
@@ -843,7 +846,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             done = True
 
         if self.sudoku_.edit_rejectAll() > 0 :
-            self._hyp_updateNonEmptyCount()
+            #self._hyp_updateNonEmptyCount()
+            self.parent_.countChanged() # should be enough
 
         self.parent_.hyp_onClear()
         self._edit_stop()
@@ -895,6 +899,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.sudoku_[pos].revealSolution()
             self.draw_update()
             self._notify_start()
+
+            self.parent_.countChanged()
 
     # Show a single randomly choosen error (if any)
     def _help_randomError(self):
@@ -1048,6 +1054,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #
         entries:list[wx.AcceleratorEntry] = []
 
+        # Show help
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('H'), menuConsts.ID_DISPLAY_HELP))
+
         # Create
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_CREATE_EMPTY))
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_NUMPAD0, menuConsts.ID_CREATE_EMPTY))
@@ -1153,7 +1162,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
                 # Save the sudoku
-                path = self.sudoku_.save(newFileName=path, addExtent = FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
+                path = self.sudoku_.file_save(newFileName=path, addExtent = FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
                 done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
 
         if done :
@@ -1328,7 +1337,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _obvious_findValues(self, showDlg:bool)->int:
         count = 0
         if self.sudoku_.isOk():
-            if self.findObviousValues():
+            if self.obvious_findValues():
                 self.parent_.countChanged() # new elements have values
                 self.draw_update()
                 self._notify_start()
@@ -1657,7 +1666,7 @@ class wxSolverFrame(wxMainFrame):
         # Help
         self.helpCombo_.Enable(solve)
 
-        self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, create)
+        self.toolBar_.EnableTool(menuConsts.ID_EDIT_END, solve | create)
         self.toolBar_.EnableTool(menuConsts.ID_EDIT_CANCEL, solve | create)
 
     #

@@ -22,7 +22,7 @@ IDS_DISPLAY:str = f"&{GUIStrings.STR_DISPLAY_MENU}"
 IDS_DISPLAY_CENTER:str = GUIStrings.STR_DISPLAY_CENTER
 ID_DISPLAY_CENTER:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
-IDS_DISPLAY_HELP:str = GUIStrings.STR_DISPLAY_HELP
+IDS_DISPLAY_HELP:str = f"{GUIStrings.STR_DISPLAY_HELP}\tCtrl+H"
 ID_DISPLAY_HELP:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
 IDS_DISPLAY_THEMES:str = GUIStrings.STR_DISPLAY_THEMES

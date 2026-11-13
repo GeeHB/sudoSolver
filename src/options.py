@@ -18,8 +18,8 @@ from sharedTools import statusbits
 #
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
-APP_CURRENT_VERSION = "4.1.3"
-APP_RELEASE_DATE = "12/11/2026"
+APP_CURRENT_VERSION = "4.1.4"
+APP_RELEASE_DATE = "13/11/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -83,6 +83,9 @@ FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
 FILE_COMMENTS:str = "#"  # Comment lines start with
 FILE_EXTENSION:str = ".txt"
 FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
+
+FILE_TEMP_NAME:str=".sudoku_temp.txt"   # Temporary saved
+FILE_TEMP_DETAILS_SEP:str = "-"
 
 #
 # Array complexity - ie. count of filled elements

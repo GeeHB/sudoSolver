@@ -306,7 +306,7 @@ class pygameSolver(solver.solver):
                 if 0 == len(self.params_.fileName_):
                     return
             else:
-                self.sudoku_.load(
+                self.sudoku_.file_load(
                     self.params_.fileName_, not self.params_.execMode_.isSet(options.EXEC_EDIT)
                 )
 
@@ -328,7 +328,7 @@ class pygameSolver(solver.solver):
                     self._waitForEvent(allEvents=False)
 
                 # Obvious values first ...
-                if self.params_.obviousValues and self.findObviousValues():
+                if self.params_.obviousValues and self.obvious_findValues():
                         self._displayText(
                             f"Found {self.stats_.obvValues_!r} obvious values", False
                         )
@@ -356,7 +356,7 @@ class pygameSolver(solver.solver):
                     )
                     comments.append(" ")
 
-                    if self.sudoku_.save(addExtent=FILE_EXPORT_EXTENSION, fileComments = comments) is not None:
+                    if self.sudoku_.file_save(addExtent=FILE_EXPORT_EXTENSION, fileComments = comments) is not None:
                         print(
                             f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
                         )
@@ -755,7 +755,7 @@ class pygameSolver(solver.solver):
                 self.edition_.currentPos_,
             )
 
-            self.edition_.move()
+            self.edition_.validate()
 
             # Wait for an event
             event = self._pollEvent()
@@ -801,7 +801,7 @@ class pygameSolver(solver.solver):
 
         escaped = self.edition_.status_.isSet(solver.editStatus.EDIT_ESCAPE)
         if not escaped:
-            index:int = self.edition_.currentPos_.index()
+            index:int = self.edition_.currentPos_.index
             currentElement: element = self.sudoku_[index]
             value : int | None = currentElement.num
             if value is not None:
@@ -818,7 +818,7 @@ class pygameSolver(solver.solver):
         # Saves changes or exit
         return (
             escaped,
-            ((self.sudoku_.save() is not None) if self.edition_.status_.isSet(solver.editStatus.EDIT_MODIFIED) else True)
+            ((self.sudoku_.file_save() is not None) if self.edition_.status_.isSet(solver.editStatus.EDIT_MODIFIED) else True)
             if not escaped
             else False,
         )
