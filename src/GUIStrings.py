@@ -74,6 +74,11 @@ STR_TIP_EDIT_CANCEL:str = 'Cancel edition'
 # Contextual menu
 STR_POPUP_EMPTY:str = "Empty"
 
+# Temp file
+#
+STR_TEMP_FILE:str = "Previous sudoku"
+STR_TEMP_EXIST:str = "Do you want to relaod the previous sudoku?"
+
 #
 # Toolbar
 #

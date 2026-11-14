@@ -218,7 +218,7 @@ class sudoku(threading.Thread):
     #   this methods ensures the value is valid for the position
     #
     def setAt(self, position:pointer, val:str, numVal:int | None = None, warn:bool = True) -> bool:
-        if len(val) > 0:
+        if len(val) == 1:
             value = int(val)
         else:
             value = 0 if numVal is None else numVal
@@ -231,37 +231,35 @@ class sudoku(threading.Thread):
                 )
             return False
 
-        if value > 0:
-            # Check the line
-            if False == self._check_line(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"sudoku::setAt - Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
+        # Check the line
+        if False == self._check_line(position, value):
+            if warn:
+                raise sudokuError(
+                    f"sudoku::setAt - Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                )
+            return False
 
-            # Check the row
-            if False == self._check_row(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"sudoku::setAt - Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
+        # Check the row
+        if False == self._check_row(position, value):
+            if warn:
+                raise sudokuError(
+                    f"sudoku::setAt - Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                )
+            return False
 
-            # Check the tiny-square
-            if False == self._check_tinySquare(position, value):
-                if warn:
-                    raise sudokuError(
-                        f"sudoku::setAt - Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
-                    )
-                return False
+        # Check the tiny-square
+        if False == self._check_tinySquare(position, value):
+            if warn:
+                raise sudokuError(
+                    f"sudoku::setAt - Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                )
+            return False
 
-            # Set the value
-            self.elements_[position.line() * ROW_COUNT + position.row()].setValue(value, elementStatus.STATUS_ORIGINAL if value else elementStatus.STATUS_EMPTY)
-            self.nonEmptyCount_+=1
-            return True
+        # Set the value
+        self.elements_[position.index].setValue(value, status = elementStatus.STATUS_ORIGINAL if value else elementStatus.STATUS_EMPTY)
+        self.nonEmptyCount_+=1
 
-        return False  # Value not set
+        return True
 
     # Modify the given element's value
     #
@@ -291,19 +289,17 @@ class sudoku(threading.Thread):
     #
     def file_load(self, fileName:str | None, mustExist:bool, showFileName:bool = True):
         if fileName is None or 0 == len(fileName):
-            # ???
-            raise sudokuError("sudoku::load - No valid file name")
+            raise sudokuError("sudoku::file_load - No valid file name") # ???
 
         if os.path.isdir(fileName):
-            raise sudokuError(f"sudoku::load - {fileName} is not a valid file")
+            raise sudokuError(f"sudoku::file_load - {fileName} is not a valid file")
 
         self.filename = fileName
 
         # Open and read the file
-        #
         if not self._file_load(fileName, False):
             if True == mustExist:
-                raise sudokuError(f"sudoku::load - The file '{fileName}' doesn't exist")
+                raise sudokuError(f"sudoku::file_load - The file '{fileName}' doesn't exist")
             else:
                 print(f"New file : '{fileName}'")
 
@@ -315,35 +311,44 @@ class sudoku(threading.Thread):
             with open(fileName) as file:
                 pt = pointer(game=False)
 
+                details:list[str] = []
+
                 # Read the lines
                 for line in file:
                     # Not a comment !
                     if line[0] != FILE_COMMENTS:
-                        # remove EOL
                         if line[len(line) - 1] == "\n":
                             line = line[: len(line) - 1]
 
                         values = line.split(FILE_VALUE_SEPARATOR)
-
                         if ROW_COUNT != len(values):
                             raise sudokuError(
-                                f"sudoku::load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                                f"sudoku::_file_load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
                             )
 
                         for val in values:
                             if readStatus :
                                 details = val.split(FILE_TEMP_DETAILS_SEP)
-                                if len(details) == 3: # = (value, status, hyp. colour)
-                                    pass
+                                if len(details) == 3 and self.setAt(pt, details[0]): # = (value, status, hyp. colour)
+                                    elmt:element = self[pt.index]
+                                    #basic:int = elmt.status_.value_
+                                    elmt.status_.assign(int(details[1]))
+                                    elmt.hypothesis = int(details[2])
+                                    #print(f"wanted : {details[1]}/{int(details[1])} - before : {basic} - after : {elmt.status_.value_}")
                             else:
                                 self.setAt(pt, val)
 
-                            # Next value
-                            pt += 1
+                            pt+=1   # Next value
         except FileNotFoundError:
             return False
 
         return True
+
+    # Load a temporay file
+    #
+    def file_loadTemp(self)->bool:
+        fileName:str = self._file_tempFileName()
+        return self._file_load(fileName, readStatus=True)
 
     # Save the array in a file
     #
@@ -371,19 +376,6 @@ class sudoku(threading.Thread):
 
         return fileName if self._file_save(fileName, fileComments) else None
 
-    # Create a temporay copy of the current array
-    #
-    def file_saveTemp(self)->bool:
-        fileName:str = self._file_tempFileName()
-        return self._file_save(fileName, saveStatus=True)
-
-    # Get the temp file name
-    #
-    def _file_tempFileName(self):
-        baseDir = pathlib.Path(__file__).resolve().parent
-        fullPath = baseDir / FILE_TEMP_NAME
-        return str(fullPath)
-
     # Save the array in a file
     #
     #   @return : True if successfully saved
@@ -391,7 +383,6 @@ class sudoku(threading.Thread):
     def _file_save(self, fileName:str, fileComments:list[str] | None = None, saveStatus:bool = False)->bool:
         if not self.isOk() or len(fileName) == 0 :
             return False
-
         try:
             with open(fileName, "w") as file:
                 # a few comments ?
@@ -409,7 +400,7 @@ class sudoku(threading.Thread):
                     line = ""
                     for _ in range(ROW_COUNT):
                         el = self[pt.index]
-                        line += f"{0 if el.isEmpty() else el.num}FILE_TEMP_DETAILS_SEP{el.status_.value_}FILE_TEMP_DETAILS_SEP{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
+                        line += f"{0 if el.isEmpty() else el.num}{FILE_TEMP_DETAILS_SEP}{el.status_.value_}{FILE_TEMP_DETAILS_SEP}{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
                         line += FILE_VALUE_SEPARATOR
                         pt += 1
 
@@ -424,8 +415,33 @@ class sudoku(threading.Thread):
             return True
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
-            print(f"sudoku::save - io error while writing the file '{fileName}'")
+            print(f"sudoku::_file_save - io error while writing the file '{fileName}'")
             return False
+
+    # Create a temporay copy of the current array
+    #
+    def file_saveTemp(self)->bool:
+        fileName:str = self._file_tempFileName()
+        return self._file_save(fileName, saveStatus=True)
+
+    # Get the temp file name
+    #
+    def _file_tempFileName(self):
+        baseDir = pathlib.Path(__file__).resolve().parent
+        fullPath = baseDir / FILE_TEMP_NAME
+        return str(fullPath)
+
+    # Does the temp file exist ?
+    #
+    def file_tempExists(self)->bool:
+        filePath:pathlib.Path = pathlib.Path(self._file_tempFileName())
+        return filePath.exists()
+
+    # Remode the temp file
+    #
+    def file_tempRemove(self):
+        filePath:pathlib.Path = pathlib.Path(self._file_tempFileName())
+        filePath.unlink(missing_ok=True)
 
     #
     # Array

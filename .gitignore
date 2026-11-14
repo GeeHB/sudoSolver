@@ -6,3 +6,4 @@ venv/
 *.pyc
 sudokus/
 tests/
+.sudoku_temp.txt

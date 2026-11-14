@@ -24,7 +24,9 @@
     * "Found a solution" by the user
     * show stats
     * show progression
-
+  * Logs et exception
+    * use strings in GUISprings.py
+    
 #### Version 4.1.3
 * 12 nov. 2026
 * Added :

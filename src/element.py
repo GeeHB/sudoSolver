@@ -41,10 +41,11 @@ class element:
         self.value_:int = 0;
         self.solution_:int | None = None
         self.hyp_:int = hypColourID.NO_HYP
+        self.status_:statusbits.statusBits = statusbits.statusBits(elementStatus.STATUS_EMPTY)
 
         if not value is None:
             self.value_ = value
-            self.status_:statusbits.statusBits = statusbits.statusBits(elementStatus.STATUS_ORIGINAL | elementStatus.STATUS_SET)
+            self.status_ = statusbits.statusBits(elementStatus.STATUS_ORIGINAL | elementStatus.STATUS_SET)
         else:
             self.status_ = statusbits.statusBits(elementStatus.STATUS_EMPTY)   # Current status
 

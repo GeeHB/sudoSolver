@@ -293,6 +293,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.Bind(wx.EVT_SIZE, self.OnSize)  # pyright: ignore[reportUnknownMemberType]
         self.Bind(wx.EVT_TIMER, self.OnTimer) # pyright: ignore[reportUnknownMemberType]
 
+        # a temp file ?
+        if self.sudoku_.file_tempExists():
+            if wx.MessageBox(GUIStrings.STR_TEMP_EXIST, GUIStrings.STR_TEMP_FILE,
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES :
+                    self.sudoku_.file_loadTemp()
+            self.sudoku_.file_tempRemove()  # no need to keep it any longer
+
         self.SetFocus()
         self.Show()
 
@@ -749,7 +756,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #if not self.edition_.editing :
         #    return  # ??? <- no edition mode  to be stopped
 
-        if self.edition_.manualSolving:
+        if self.edition_.manualSolving & self.sudoku_.isModified():
            self.sudoku_.file_saveTemp()     # keep a copy of current array
 
         super()._edit_stop(endApp)
