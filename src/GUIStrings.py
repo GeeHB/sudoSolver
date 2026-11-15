@@ -17,6 +17,7 @@ STR_LOAD:str = 'Open sudoku'
 STR_NEW:str = 'New sudoku'
 STR_SAVE:str = 'Save sudoku'
 STR_EDITION:str = 'Sudoku edition'
+STR_EMPTY:str= 'empty'
 
 STR_MODIFY:str = 'Modify'
 STR_EDIT_OR_SOLVE:str = 'Do you want to edit or to solve the current sudoku?'

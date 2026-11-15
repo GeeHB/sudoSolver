@@ -52,7 +52,7 @@ if "__main__" == __name__:
         mySolverApp.initialize()
         mySolverApp.start()
     except OSError as e:
-        #except Exception as e:  # noqa: BLE001
+    #except Exception as e:  # noqa: BLE001
         print(f"{type(e).__name__}: {e}")
         print("Unknown error")
     finally:

@@ -73,6 +73,8 @@ class wxMainFrame(wx.Frame):
 
     # Hypothesis / tag management
     #
+    def hyp_setList(self, colours: list[element.hypColourID]):
+        pass
     def hyp_onReject(self, colours: list[element.hypColourID]):
         pass
     def hyp_onValidate(self, colours: list[element.hypColourID]):
@@ -296,8 +298,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # a temp file ?
         if self.sudoku_.file_tempExists():
             if wx.MessageBox(GUIStrings.STR_TEMP_EXIST, GUIStrings.STR_TEMP_FILE,
-                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES :
-                    self.sudoku_.file_loadTemp()
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES and self.hypsColours_.fromTemp(self.sudoku_.file_loadTemp()):
+                            cols:list[element.hypColourID] = self.hypsColours_.toList()
+                            self.parent_.countChanged()
+                            self.parent_.hyp_setList(cols)
             self.sudoku_.file_tempRemove()  # no need to keep it any longer
 
         self.SetFocus()
@@ -757,7 +761,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         #    return  # ??? <- no edition mode  to be stopped
 
         if self.edition_.manualSolving & self.sudoku_.isModified():
-           self.sudoku_.file_saveTemp()     # keep a copy of current array
+            colours:str = self.hypsColours_.toTemp()
+            self.sudoku_.file_saveTemp(colours)     # keep a copy of current array as a temp file
 
         super()._edit_stop(endApp)
 
@@ -1688,6 +1693,10 @@ class wxSolverFrame(wxMainFrame):
 
     # Hypothesis / tag management
     #
+
+    @override
+    def hyp_setList(self, colours: list[element.hypColourID]):
+        self.hypsCombo_.updateColours(colours)
 
     @override
     def hyp_onReject(self, colours: list[element.hypColourID]):

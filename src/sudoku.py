@@ -305,13 +305,16 @@ class sudoku(threading.Thread):
 
     # Read a sudoku file (grid or temp)
     #
-    def _file_load(self, fileName:str, readStatus:bool = False)->bool:
+    def _file_load(self, fileName:str, readStatus:bool = False, fileComments:list[str] | None = None)->bool:
         self.empty()    # start with empty sudoku
         try:
             with open(fileName) as file:
                 pt = pointer(game=False)
 
                 details:list[str] = []
+
+                if fileComments is not None:
+                    fileComments.clear()
 
                 # Read the lines
                 for line in file:
@@ -339,6 +342,9 @@ class sudoku(threading.Thread):
                                 self.setAt(pt, val)
 
                             pt+=1   # Next value
+                    else:
+                        if fileComments is not None:
+                            fileComments.append(line[1:])
         except FileNotFoundError:
             return False
 
@@ -346,9 +352,12 @@ class sudoku(threading.Thread):
 
     # Load a temporay file
     #
-    def file_loadTemp(self)->bool:
+    def file_loadTemp(self)->str:
         fileName:str = self._file_tempFileName()
-        return self._file_load(fileName, readStatus=True)
+        comments:list[str] = []
+        if self._file_load(fileName, readStatus=True, fileComments = comments):
+            return "" if len(comments) == 0 else comments[0]
+        return ""
 
     # Save the array in a file
     #
@@ -420,9 +429,15 @@ class sudoku(threading.Thread):
 
     # Create a temporay copy of the current array
     #
-    def file_saveTemp(self)->bool:
+    #  hypColours : string containing list of hyps. colours
+    #
+    def file_saveTemp(self, hypColours:str|None = None)->bool:
+        comments:list[str]=[]
+        if hypColours is not None and len(hypColours)>1:
+            comments.append(hypColours)
+
         fileName:str = self._file_tempFileName()
-        return self._file_save(fileName, saveStatus=True)
+        return self._file_save(fileName, fileComments=comments, saveStatus=True)
 
     # Get the temp file name
     #

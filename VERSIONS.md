@@ -26,6 +26,10 @@
     * show progression
   * Logs et exception
     * use strings in GUISprings.py
+  * Temp file
+    * check if edit => turn all into "original" or remove
+    * save current array and elements' states
+    * save colours (in comments)
     
 #### Version 4.1.3
 * 12 nov. 2026

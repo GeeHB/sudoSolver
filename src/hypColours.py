@@ -8,6 +8,8 @@
 #
 
 import element
+import GUIStrings
+import options
 
 
 # List of used hyp. colours
@@ -23,11 +25,21 @@ class hypColours:
 
     # Representation
     def __repr__(self)->str:
-        out:str = "["
+        out:str = "hypColours ["
+
+        added:bool = False
         for line in self.datas_:
-            out+=f"({line[0]}, {'empty' if line[1] is None else line[1]}),"
+            out+=f"({line[0]},{'empty' if line[1] is None else line[1]}),"
+            added = True
+
+        if added:
+            out=out[:-1]
         out+="]"
         return out
+
+    # Clear the list
+    def clear(self):
+        self.datas_.clear()
 
     # Search colour by ID
     def getIndex(self, colID:int)->int:
@@ -40,18 +52,18 @@ class hypColours:
     #
     #  @return : True if the colour has been added
     #
-    def append(self, colID:element.hypColourID, position:int | None = None)->bool:
+    def append(self, colID:element.hypColourID, pos:int | None = None)->bool:
         size:int = len(self)
         pop:bool = False
         if size > 1 and self.datas_[size-1][1] is None:
            self.pop()   # remove 'prev' colour is not used
            pop = True
-        self.datas_.append((colID, position))
+        self.datas_.append((colID, pos))
         return not pop
 
     # Remove last element
     #
-    # @return : position in last element if any or None
+    # @return : position of last element if any or None
     #
     def pop(self)->int | None:
         if len(self.datas_)>0:
@@ -82,5 +94,43 @@ class hypColours:
         for line in self.datas_:
             lst.append(line[0])
         return lst
+
+    # Persistance
+    #
+
+    # Store list to temp file
+    def toTemp(self)->str:
+        out:str=""
+        for col in self.datas_:
+            out+=f"({col[0]}{options.FILE_VALUE_SEPARATOR}{GUIStrings.STR_EMPTY if col[1] is None else col[1]}){options.FILE_TEMP_DETAILS_SEP}"
+        size:int = len(out)
+        return "" if size <= 1  else out[:size-1]
+
+    # Create a new list from temp
+    #
+    #  @return : True if successfully created
+    #
+    def fromTemp(self, line:str)->bool:
+        if len(line) < 6 :
+            return False
+
+        hyps = line.split(options.FILE_TEMP_DETAILS_SEP)
+        if len(hyps) == 0:
+            return False
+
+        self.clear()
+        for hyp in hyps:
+            hyp = hyp.strip()
+            if len(hyp) > 0 :
+                choice = hyp[1:-1]
+                res = choice.split(options.FILE_VALUE_SEPARATOR)
+                if len(res) == 2:
+                    self.datas_.append(
+                        (element.hypColourID(int(res[0])),
+                            None if res[1] == GUIStrings.STR_EMPTY else int(res[1])
+                        )
+                    )
+
+        return len(self.datas_) > 0
 
 # EOF
