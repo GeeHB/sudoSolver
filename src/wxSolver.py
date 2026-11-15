@@ -333,7 +333,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 # restart edition
                 self.edition_.manualSolving = True
                 self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-                self._edit_start(editMode=False)
+                self._edit_start(creationMode=False)
                 self.draw_update()
 
             self.sudoku_.file_tempRemove()  # no need to keep it any longer
@@ -400,14 +400,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
-                self._menu_editOrResolve(edit = True)
+                self._menu_createOrResolve(create = True)
             case menuConsts.ID_EDIT_DONE:
                 self._edit_done()
             case menuConsts.ID_EDIT_CANCEL:
                 self._edit_cancel()
 
             case menuConsts.ID_SOLVE_MANUAL:
-                self._menu_editOrResolve(edit = False)
+                self._menu_createOrResolve(create = False)
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._obvious_findValues(True)
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
@@ -497,9 +497,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
                 match result:
                     case wx.ID_YES:
-                        self._menu_editOrResolve(edit = False, row = clickPos[1], line = clickPos[2])
+                        self._menu_createOrResolve(create = False, row = clickPos[1], line = clickPos[2])
                     case wx.ID_NO:
-                        self._menu_editOrResolve(edit = True, row = clickPos[1], line = clickPos[2])
+                        self._menu_createOrResolve(create = True, row = clickPos[1], line = clickPos[2])
                     case _:
                         pass
 
@@ -757,17 +757,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Start edition mode
     #
     @override
-    def _edit_start(self, editMode: bool, initPos:bool = True):
-        if editMode and self.sudoku_.isModified():
-            if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
-                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                return
+    def _edit_start(self, creationMode: bool, initPos:bool = True):
+        if creationMode:
+            self.parent_.hyp_onClear()
 
-            if self.sudoku_.setOriginal():
-                self.draw_update()
+            if self.sudoku_.isModified():
+                if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                    return
+
+                if self.sudoku_.setOriginal():
+                    self.draw_update()
 
         self._notify_stop() # Don't forget to stop prev. notification timer !
-        super()._edit_start(editMode, initPos)
+        super()._edit_start(creationMode, initPos)
 
         self._menu_setItemsStates()
 
@@ -868,9 +871,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             colours:str = self.hypsColours_.toTemp()
             self.sudoku_.file_saveTemp(colours)     # keep a copy of current array as a temp file
 
-        self.parent_.hyp_onClear()
-
         if self.edition_.creating:
+            self.parent_.hyp_onClear()
             self.sudoku_.edit_acceptAll(True)
 
         self._edit_stop()
@@ -1121,8 +1123,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Start edition or resolution
     #
-    def _menu_editOrResolve(self, edit: bool, row: int | None = None, line: int | None = None):
-        if edit:
+    def _menu_createOrResolve(self, create:bool, row:int | None = None, line:int | None = None):
+        if create:
             self.edition_.creating = True
             self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
         else:
@@ -1133,7 +1135,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.edition_.currentPos_.moveTo(line,row)
             self.edition_.prevPos_ = None
 
-        self._edit_start(edit, row is None)
+        self._edit_start(create, row is None)
 
     # Create a new or empty array
     #
@@ -1156,6 +1158,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self._menu_setItemsStates()
 
+            self.parent_.hyp_onClear()
             self.parent_.countChanged() # new elements have values
             self.draw_update()
 
@@ -1176,6 +1179,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # New file just loaded
         self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
         self._menu_setItemsStates()
+
+        self.parent_.hyp_onClear()
         self.parent_.countChanged() # new elements have values
 
     # Save current array
