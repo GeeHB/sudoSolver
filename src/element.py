@@ -85,7 +85,7 @@ class element:
     def revealSolution(self):
         if self.solution_ is not None:
             self.value_ = self.solution_
-            self.status_.set(elementStatus.STATUS_SET | elementStatus.STATUS_NOTIFYING)
+            self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_NOTIFYING)
 
     # show the element as an error
     #
@@ -170,12 +170,13 @@ class element:
     def setOriginal(self):
         self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_ORIGINAL)
         self.solution_ = self.value_
+        self.hypothesis = hypColourID.NO_HYP    # no more hyp. since the value is 'original'
 
     def isObvious(self)->bool:
         return self.status_.isSet(elementStatus.STATUS_OBVIOUS)
 
     # At least can we modifiy or set this element ?
     def isChangeable(self, allowEmpty:bool = True)->bool:
-        return not self.status_.isSet(elementStatus.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.value == elementStatus.STATUS_SET)
+        return not self.status_.isSet(elementStatus.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.isSet(elementStatus.STATUS_SET))
 
 # EOF

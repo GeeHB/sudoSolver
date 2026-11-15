@@ -96,22 +96,6 @@ class sudoku(threading.Thread):
     def filename(self, newVal : str):
         self.fileName_ = newVal
 
-    # Convert current array to a printable string
-    #
-    @override
-    def __str__(self)->str:
-        output : str = ""
-        if self.isOk() :
-            position:pointer = pointer(game=False)
-            for _ in range(LINE_COUNT):
-                output += "\n"
-                for _ in range(ROW_COUNT):
-                    currentElement = self.elements_[position.index]
-                    output += f" {"-" if currentElement.isEmpty() else str(currentElement.num)} "
-                    position += 1
-            output += "\n"
-        return output
-
     # Create an empty array or clear currrent one
     #
     def empty(self):
@@ -147,15 +131,15 @@ class sudoku(threading.Thread):
 
     # Turn all array's elements to 'original'
     #
-    # @return : at least one element's status has changed ?
-    def setOriginal(self)->bool:
-        done:bool = False
+    # @return : count of element's which status has changed
+    def setOriginal(self)->int:
+        count:int = 0
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if not self[index].isChangeable(False):   # don't take into account empty elements !
+                if not self[index].isOriginal():   # don't take into account empty elements !
                     self.elements_[index].setOriginal()
-                    done = True
-        return done
+                    count+=1
+        return count
 
     # Count of non-empty elements ?
     #
@@ -462,18 +446,6 @@ class sudoku(threading.Thread):
     # Array
     #
 
-    # Get the list of possible values at a given position
-    #
-    def getAllowedValues(self, position:pointer)->list[int]:
-        values : list[int] = []
-        for value in range(VALUE_MIN, VALUE_MAX+1):
-            if self.checkValue(position, value):
-                # This value can be used
-                values.append(value)
-
-        # return the list
-        return values
-
     # Create a new array
     #
     def new(self, compl : int | None):
@@ -643,6 +615,18 @@ class sudoku(threading.Thread):
              for rowID in range(3):
                 self._new_swapRows(fRowBlock * 3 + rowID, sRowBlock * 3 + rowID);
 
+    # Get the list of possible values at a given position
+    #
+    def getAllowedValues(self, position:pointer)->list[int]:
+        values : list[int] = []
+        for value in range(VALUE_MIN, VALUE_MAX+1):
+            if self.checkValue(position, value):
+                # This value can be used
+                values.append(value)
+
+        # return the list
+        return values
+
     # Can we put the value at the current position ?
     #
     def checkValue(self, position:pointer, value:int)->bool:
@@ -686,16 +670,14 @@ class sudoku(threading.Thread):
     #  @return : count of elements concerned
     #
     def edit_acceptAll(self, editionMode:bool)->int:
+        if editionMode:
+            return self.setOriginal()
+
         count:int = 0
         for index in range(ARRAY_SIZE):
-            if editionMode:
-                if not self.elements_[index].isOriginal():
-                    self.elements_[index].setOriginal()
-                    count+=1
-            else:
-                if self.elements_[index].hypothesis != hypColourID.NO_HYP:
-                    self.elements_[index].hypothesis = hypColourID.NO_HYP
-                    count+=1
+            if self.elements_[index].hypothesis != hypColourID.NO_HYP:
+                self.elements_[index].hypothesis = hypColourID.NO_HYP
+                count+=1
         return count
 
     # Reject all the modified values
@@ -759,6 +741,9 @@ class sudoku(threading.Thread):
                 if self.elements_[index].isEmpty():
                     id-=1
             self.nonEmptyCount_+=1
+
+        if index != -1 :
+            self[index].revealSolution()
         return index
 
     # Get an error in the current array
@@ -1208,4 +1193,19 @@ class sudoku(threading.Thread):
             raise IndexError
         return self.elements_[index]
 
+    # Convert current array to a printable string
+    #
+    @override
+    def __str__(self)->str:
+        output : str = ""
+        if self.isOk() :
+            position:pointer = pointer(game=False)
+            for _ in range(LINE_COUNT):
+                output += "\n"
+                for _ in range(ROW_COUNT):
+                    currentElement = self.elements_[position.index]
+                    output += f" {"-" if currentElement.isEmpty() else str(currentElement.num)} "
+                    position += 1
+            output += "\n"
+        return output
 # EOF

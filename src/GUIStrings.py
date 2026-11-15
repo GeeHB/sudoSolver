@@ -78,7 +78,7 @@ STR_POPUP_EMPTY:str = "Empty"
 # Temp file
 #
 STR_TEMP_FILE:str = "Previous sudoku"
-STR_TEMP_EXIST:str = "Do you want to relaod the previous sudoku?"
+STR_TEMP_EXIST:str = "A stored sudoku exists on disk.\nDo you want to continue the resolution ?"
 
 #
 # Toolbar
