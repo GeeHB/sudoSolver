@@ -621,13 +621,13 @@ class solver:
         # Let's go
         match self.params_.progressMode_ :
             case self.params_.PROGRESS_MULTITHREADED:
-                found = self._resolve_MultiThreaded()
+                found = self._resolve_multiThreaded()
 
             case self.params_.PROGRESS_SHOW_SAME_THREAD:
-                found = self._resolve_AndDisplay()
+                found = self._resolve_singleThreadedAndDisplay()
 
             case _:
-                found = self._resolve_SingleThreaded()
+                found = self._resolve_singleThreaded()
 
         if found:
             self.stats_.bruteAttempts_ = self.sudoku_.attempts
@@ -640,7 +640,7 @@ class solver:
     #
     #   Print stats on console (by default)
     #
-    def _resolve_showStats(self):
+    def _resolve_showStats(self, byUser:bool = False):
         print(f"\n\t- {self.filename}")
 
         # Found obvious values ?
@@ -657,7 +657,7 @@ class solver:
     # Single-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolve_SingleThreaded(self)->bool:
+    def _resolve_singleThreaded(self)->bool:
         try:
             self.sudoku_.resolve_singleThreaded()
         except reachedEndOfList:
@@ -670,7 +670,7 @@ class solver:
     # Single-threaded mode using a generator to display progression
     #
     # returns True if a solution has been founded
-    def _resolve_AndDisplay(self)->bool:
+    def _resolve_singleThreadedAndDisplay(self)->bool:
         for _ in self.sudoku_.resolve_singleThreadGenerator() :
             self.draw()
 
@@ -679,7 +679,7 @@ class solver:
     # Multi-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolve_MultiThreaded(self)->bool:
+    def _resolve_multiThreaded(self)->bool:
         self.sudoku_.resolve_multiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution

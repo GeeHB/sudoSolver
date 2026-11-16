@@ -60,7 +60,7 @@ class sudoku(threading.Thread):
     @property
     def nonEmpty(self)->int:
         return self.nonEmptyCount_
-    def finished(self):
+    def completed(self):
         return (self.nonEmptyCount_ == ARRAY_SIZE)
 
     # Complexity (for new arrays created from scratch)

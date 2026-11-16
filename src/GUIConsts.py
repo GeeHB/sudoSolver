@@ -46,12 +46,6 @@ TAG_PANEL_HEIGHT:int    = 45
 DEFAULT_FONT_NAME:str = "Helvetica"
 DEFAULT_FONT_SIZE:int = 25
 
-#CANVAS_FONT_NAME:str    = 'Herculanum,Papyrus,Helvetica'    # The first font in the list ...
-#CANVAS_FONT_NAME:str    = 'Source Code Pro'
-#CANVAS_FONT_SIZE:int    = 25                                # default size
-
-#TXT_FONT_NAME:str       = 'Helvetica,Arial'                 # for the filename
-#TXT_FONT_SIZE:int       = 12
 TXT_FONT_POS_X:int      = 35
 TXT_FONT_POS_Y:int      = 5
 
@@ -60,7 +54,10 @@ TXT_FONT_POS_Y:int      = 5
 TIMER_ID_SELECTED:int     = 100
 TIMER_RATE_SELECTED:int   = 750 # Blinking rate in ms
 
-TIMER_ID_NOTIFYING:int    = 101
+TIMER_ID_COMPLETED:int       = 101
+TIMER_RATE_COMPLETED:int     = 500
+
+TIMER_ID_NOTIFYING:int    = 102
 TIMER_RATE_NOTIFYING:int  = 300 # Blinking rate in ms
 BLINK_COUNT_NOTIFYING:int = 25 # Max. count of blinking for notifications
 

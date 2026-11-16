@@ -280,6 +280,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # Timers (selection and notification)
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
+        self.completedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_COMPLETED)
         self.notifyTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_NOTIFYING)
         self.notifyShow_:bool = False
         self.notifyCount_:int = 0
@@ -328,7 +329,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.parent_.hyp_setList(cols)
 
                 self.sudoku_.nonEmptyItems()
-                self.parent_.countChanged()
+                self._edit_countChanged()
 
                 # restart edition
                 self.edition_.manualSolving = True
@@ -472,7 +473,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     value:int = 1 + 3 * newPos[2] + newPos[1]   # Value in the help matrix
                     if -1 == self._edit_setValue(value)  :
                         self._edit_setValue(0)  # click on empty proposal
-                    self.parent_.countChanged()
+                    self._edit_countChanged()
                     self._draw_helpMatrix_ex()
                     self._draw_selectedElement()    # update selected item (don't wait for 'blink')
 
@@ -565,11 +566,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case GUIConsts.TIMER_ID_SELECTED:
                 self._draw_selectionBlink()
 
+            case GUIConsts.TIMER_ID_COMPLETED:
+                self._completed()
+
             case GUIConsts.TIMER_ID_NOTIFYING:
                 self._notify_drawElements()
 
             case _ :
                 event.Skip()
+
+    # User just finished a sudoku
+    #
+    def _completed(self):
+        self.completedTimer_.Stop()
+        self._resolve_showStats()
+
+        self._edit_stop()
 
     #
     #  Drawings
@@ -754,6 +766,96 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.memDC_.SelectObject(wx.NullBitmap) # Free previous bitmap if any
             self.memDC_ = None
 
+
+    # Edition of current array
+    #
+    def _edit_array(self, event: wx.KeyEvent):
+        keyCode = event.GetKeyCode()
+        self.edition_.validate()
+        match keyCode:
+            # position
+            case self.KEY_MOVE_LEFT:
+                self.edition_.currentPos_.decRow()
+            case self.KEY_MOVE_RIGHT:
+                self.edition_.currentPos_.incRow()
+            case self.KEY_MOVE_UP:
+                self.edition_.currentPos_.decLine()
+            case self.KEY_MOVE_DOWN:
+                self.edition_.currentPos_.incLine()
+
+            # set/modify value
+            case self.KEY_VALUE_DEC | self.KEY_VALUE_DEC_PAD:
+                if self._edit_decValue() : self._edit_countChanged()
+            case self.KEY_VALUE_INC | self.KEY_VALUE_INC_PAD:
+                if self._edit_incValue() : self._edit_countChanged()
+            case self.KEY_REMOVE_VALUE:
+                if self._edit_removeValue() : self._edit_countChanged()
+
+            case key if key in range(self.KEY_VALUE_1, self.KEY_VALUE_9 + 1):
+                if -1 != self._edit_setValue(key - self.KEY_VALUE_1 + 1)  :
+                    self._edit_countChanged()
+
+            # end / cancel edition
+            case self.KEY_ENTER | self.KEY_NUM_ENTER:
+                self._edit_done()
+                return
+            case self.EDIT_CANCEL:
+                self._edit_cancel()
+                return
+
+            case _:
+                pass
+
+        self._edit_selChanged()
+
+    # Cancel
+    #
+    @override
+    def _edit_cancel(self)->bool:
+        done:bool = False
+        if super()._edit_cancel():
+            self.edition_.modified = False # !!!
+            self.draw()
+            done = True
+
+        if self.sudoku_.edit_rejectAll() > 0 :
+            #self._hyp_updateNonEmptyCount()
+            self._edit_countChanged() # should be enough
+
+        self.parent_.hyp_onClear()
+        self._edit_stop()
+        self.draw_update()
+
+        return done
+
+    # Count of non empty elements has changed
+    #
+    def _edit_countChanged(self):
+        self.parent_.countChanged()
+
+        if self.sudoku_.completed() and not self.completedTimer_.IsRunning():
+            self.completedTimer_.Start(GUIConsts.TIMER_RATE_COMPLETED)
+
+    # Done / End
+    #
+    def _edit_done(self):
+        if self.edition_.manualSolving and self.sudoku_.isModified() and not self.sudoku_.completed():
+            self.sudoku_.file_saveTemp(self.hypsColours_.toTemp())     # keep a copy of current array as a temp file
+
+        if self.edition_.creating:
+            self.parent_.hyp_onClear()
+            self.sudoku_.edit_acceptAll(True)
+
+        self._edit_stop()
+        self._hyp_updateNonEmptyCount()
+
+        self.draw_update()
+
+    # Selected item has just changed
+    #
+    def _edit_selChanged(self):
+        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
+
     # Start edition mode
     #
     @override
@@ -810,52 +912,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.parent_.modeChanged(wxEditionMode.MODE_NONE)
 
-    # Selected item has just changed
-    #
-    def _edit_selChanged(self):
-        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
-
-    # Edition of current array
-    #
-    def _edit_array(self, event: wx.KeyEvent):
-        keyCode = event.GetKeyCode()
-        self.edition_.validate()
-        match keyCode:
-            # position
-            case self.KEY_MOVE_LEFT:
-                self.edition_.currentPos_.decRow()
-            case self.KEY_MOVE_RIGHT:
-                self.edition_.currentPos_.incRow()
-            case self.KEY_MOVE_UP:
-                self.edition_.currentPos_.decLine()
-            case self.KEY_MOVE_DOWN:
-                self.edition_.currentPos_.incLine()
-
-            # set/modify value
-            case self.KEY_VALUE_DEC | self.KEY_VALUE_DEC_PAD:
-                if self._edit_decValue() : self.parent_.countChanged()
-            case self.KEY_VALUE_INC | self.KEY_VALUE_INC_PAD:
-                if self._edit_incValue() : self.parent_.countChanged()
-            case self.KEY_REMOVE_VALUE:
-                if self._edit_removeValue() : self.parent_.countChanged()
-
-            case key if key in range(self.KEY_VALUE_1, self.KEY_VALUE_9 + 1):
-                if -1 != self._edit_setValue(key - self.KEY_VALUE_1 + 1)  :
-                    self.parent_.countChanged()
-
-            # end / cancel edition
-            case self.KEY_ENTER | self.KEY_NUM_ENTER:
-                self._edit_done()
-                return
-            case self.EDIT_CANCEL:
-                self._edit_cancel()
-                return
-
-            case _:
-                pass
-
-        self._edit_selChanged()
-
     # Undo
     #
     def _edit_undo(self)->int:
@@ -863,42 +919,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if id > -1:
             self.draw()
         return id
-
-    # Done / End
-    #
-    def _edit_done(self):
-        if self.edition_.manualSolving & self.sudoku_.isModified():
-            colours:str = self.hypsColours_.toTemp()
-            self.sudoku_.file_saveTemp(colours)     # keep a copy of current array as a temp file
-
-        if self.edition_.creating:
-            self.parent_.hyp_onClear()
-            self.sudoku_.edit_acceptAll(True)
-
-        self._edit_stop()
-        self._hyp_updateNonEmptyCount()
-
-        self.draw_update()
-
-    # Cancel
-    #
-    @override
-    def _edit_cancel(self)->bool:
-        done:bool = False
-        if super()._edit_cancel():
-            self.edition_.modified = False # !!!
-            self.draw()
-            done = True
-
-        if self.sudoku_.edit_rejectAll() > 0 :
-            #self._hyp_updateNonEmptyCount()
-            self.parent_.countChanged() # should be enough
-
-        self.parent_.hyp_onClear()
-        self._edit_stop()
-        self.draw_update()
-
-        return done
 
     # Update array during edition
     #
@@ -944,7 +964,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.draw_update()
             self._notify_start()
 
-            self.parent_.countChanged()
+            self._edit_countChanged()
 
     # Show a single randomly choosen error (if any)
     def _help_randomError(self):
@@ -1021,7 +1041,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Update setted elements count
     def _hyp_updateNonEmptyCount(self):
         self.sudoku_.nonEmptyItems()
-        self.parent_.countChanged()
+        self._edit_countChanged()
 
     #
     #  Menus
@@ -1124,6 +1144,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Start edition or resolution
     #
     def _menu_createOrResolve(self, create:bool, row:int | None = None, line:int | None = None):
+        if self.sudoku_.completed():
+            return  # nothing to do if already finished
+
         if create:
             self.edition_.creating = True
             self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
@@ -1159,7 +1182,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._menu_setItemsStates()
 
             self.parent_.hyp_onClear()
-            self.parent_.countChanged() # new elements have values
+            self._edit_countChanged() # new elements have values
             self.draw_update()
 
     # Load an array
@@ -1181,13 +1204,18 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._menu_setItemsStates()
 
         self.parent_.hyp_onClear()
-        self.parent_.countChanged() # new elements have values
+        self._edit_countChanged() # new elements have values
 
     # Save current array
     #
     def _menu_fileSave(self):
         if self.sudoku_.isEmpty():
-            wx.MessageBox("The current sudoku array is empty.", GUIStrings.STR_SAVE,
+            wx.MessageBox(GUIStrings.STR_EMPTY_ARRAY, GUIStrings.STR_SAVE,
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+            return
+
+        if self.sudoku_.completed():
+            wx.MessageBox(GUIStrings.STR_FINISHED_ARRAY, GUIStrings.STR_SAVE,
                         wx.ICON_EXCLAMATION | wx.OK, self)
             return
 
@@ -1246,7 +1274,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 done = True
 
         if done:
-            self.parent_.countChanged()
+            self._edit_countChanged()
 
         # Not found
         return done
@@ -1382,7 +1410,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         count = 0
         if self.sudoku_.isOk():
             if self.obvious_findValues():
-                self.parent_.countChanged() # new elements have values
+                self._edit_countChanged() # new elements have values
                 self.draw_update()
                 self._notify_start()
                 count = self.stats_.obvValues_
@@ -1397,9 +1425,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Show resolution stats
     #
     @override
-    def _resolve_showStats(self):
-        wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
-            APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+    def _resolve_showStats(self, byUser:bool = False):
+        if byUser:
+            wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
+                GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
+        else:
+            wx.MessageBox("Congratulation",
+                GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
     #
     # Themes
     #
@@ -1740,7 +1772,7 @@ class wxSolverFrame(wxMainFrame):
                 self.hypsCombo_.updateColours(colours)
 
                 if todo != wxHypAction.ACTION_LIST_SET:
-                    self.hypsPanel_.hyp_pop()
+                    self.hypsPanel_.hyp_pop()   # or jazz !
             else:
                 done = False
         return done
