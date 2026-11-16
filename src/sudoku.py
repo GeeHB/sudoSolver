@@ -15,14 +15,9 @@ import random
 import threading
 from typing import override
 
+import GUIStrings
 from element import element, elementStatus, hypColourID
-from options import (
-    FILE_COMMENTS,
-    FILE_TEMP_DETAILS_SEP,
-    FILE_TEMP_NAME,
-    FILE_VALUE_SEPARATOR,
-    arrayComplexity,
-)
+from options import arrayComplexity
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
     ARRAY_SIZE,
@@ -302,11 +297,11 @@ class sudoku(threading.Thread):
                 # Read the lines
                 for line in file:
                     # Not a comment !
-                    if line[0] != FILE_COMMENTS:
+                    if line[0] != GUIStrings.FILE_COMMENTS:
                         if line[len(line) - 1] == "\n":
                             line = line[: len(line) - 1]
 
-                        values = line.split(FILE_VALUE_SEPARATOR)
+                        values = line.split(GUIStrings.FILE_VALUE_SEPARATOR)
                         if ROW_COUNT != len(values):
                             raise sudokuError(
                                 f"sudoku::_file_load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
@@ -314,7 +309,7 @@ class sudoku(threading.Thread):
 
                         for val in values:
                             if readStatus :
-                                details = val.split(FILE_TEMP_DETAILS_SEP)
+                                details = val.split(GUIStrings.FILE_TEMP_DETAILS_SEP)
                                 if len(details) == 3 and self.setAt(pt, details[0]): # = (value, status, hyp. colour)
                                     elmt:element = self[pt.index]
                                     #basic:int = elmt.status_.value_
@@ -380,7 +375,7 @@ class sudoku(threading.Thread):
                 # a few comments ?
                 if fileComments and len(fileComments):
                     for comment in fileComments:
-                        line = FILE_COMMENTS
+                        line = GUIStrings.FILE_COMMENTS
                         line += " "
                         line += comment
                         line += "\n"
@@ -392,8 +387,8 @@ class sudoku(threading.Thread):
                     line = ""
                     for _ in range(ROW_COUNT):
                         el = self[pt.index]
-                        line += f"{0 if el.isEmpty() else el.num}{FILE_TEMP_DETAILS_SEP}{el.status_.value_}{FILE_TEMP_DETAILS_SEP}{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
-                        line += FILE_VALUE_SEPARATOR
+                        line += f"{0 if el.isEmpty() else el.num}{GUIStrings.FILE_TEMP_DETAILS_SEP}{el.status_.value_}{GUIStrings.FILE_TEMP_DETAILS_SEP}{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
+                        line += GUIStrings.FILE_VALUE_SEPARATOR
                         pt += 1
 
                     # add separator
@@ -426,7 +421,7 @@ class sudoku(threading.Thread):
     #
     def _file_tempFileName(self):
         baseDir = pathlib.Path(__file__).resolve().parent
-        fullPath = baseDir / FILE_TEMP_NAME
+        fullPath = baseDir / GUIStrings.FILE_TEMP_NAME
         return str(fullPath)
 
     # Does the temp file exist ?

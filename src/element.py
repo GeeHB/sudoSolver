@@ -28,7 +28,8 @@ class hypColourID(IntEnum):
 class elementStatus(IntEnum):
     STATUS_EMPTY        = 0
     STATUS_SET          = 1
-    STATUS_OBVIOUS      = 2     # An obvious value found at runtime (option -o / --obvious)
+    STATUS_OFFERED      = 2     # an 'offered' value is an help given during resolution
+    STATUS_OBVIOUS      = STATUS_OFFERED     # An obvious value found at runtime (option -o / --obvious)
     STATUS_ORIGINAL     = 4     # Can't be changed (except in edition mode)
     STATUS_NOTIFYING    = 8     # The current element is notifying the user (creation, help, obvious value, mistake, ...)
     STATUS_ERROR        = 16    # The value is invalid and the element is shown as an error
@@ -85,7 +86,7 @@ class element:
     def revealSolution(self):
         if self.solution_ is not None:
             self.value_ = self.solution_
-            self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_NOTIFYING)
+            self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_OFFERED | elementStatus.STATUS_NOTIFYING)
 
     # show the element as an error
     #

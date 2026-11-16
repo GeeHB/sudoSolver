@@ -29,7 +29,6 @@ import menuConsts
 import solver
 from options import (
     APP_SHORT_NAME,
-    FILE_EXTENSION,
     arrayComplexity,
     options,
 )
@@ -1234,7 +1233,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
                 # Save the sudoku
-                path = self.sudoku_.file_save(newFileName=path, addExtent = FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
+                path = self.sudoku_.file_save(newFileName=path, addExtent = GUIStrings.FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
                 done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
 
         if done :

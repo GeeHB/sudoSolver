@@ -11,6 +11,7 @@ import argparse
 import sysconfig
 from enum import IntEnum
 
+import GUIStrings
 from sharedTools import colorizer as color
 from sharedTools import statusbits
 
@@ -28,64 +29,6 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 PYTHON_VER_MAJ = 3
 PYTHON_VER_MIN = 10
 
-#
-# Command line options
-#
-
-ARG_BROWSE_S = "-b"  # Browse a folder
-ARG_BROWSE = "--browse"
-COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained sudokus"
-
-ARG_EDIT_S = "-e"  # Edit (and modify or create) a sudoku
-ARG_EDIT = "--edit"
-COMMENT_EDIT = "Edit or create the {FILE} file"
-
-ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
-ARG_SOLVE = "--solve"
-COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
-
-ARG_BROWSE_AND_SOLVE_S = "-bs"
-ARG_BROWSE_AND_SOLVE = "--browseSolve"
-COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
-
-ARG_EDIT_AND_SOLVE_S = "-es"
-ARG_EDIT_AND_SOLVE = "--editSolve"
-COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
-
-ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
-ARG_SEARCH_OBVIOUS = "--obvious"
-COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution searching"
-
-ARG_SAVE_SOLUTION_S = "-x"  # Save / export the solution
-ARG_SAVE_SOLUTION = "--export"
-COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
-
-# Show sudoku during the search process
-ARG_DETAILS_S = "-d"  # Draw details
-ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show sudokus during the resolution process"
-
-# Use wxPython library as GUI
-ARG_WX_S = "-wx"
-ARG_WX = "--wxPython"
-COMMENT_WX = "Use wkPython for drawings and GUI"
-
-#
-#  Files & folders
-#
-
-FOLDER_SUDOKUS = "../sudokus"
-FOLDER_ASSETS = "../assets"
-
-# File management
-#
-FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
-FILE_COMMENTS:str = "#"  # Comment lines start with
-FILE_EXTENSION:str = ".txt"
-FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
-
-FILE_TEMP_NAME:str=".sudoku_temp.txt"   # Temporary saved
-FILE_TEMP_DETAILS_SEP:str = "-"
 
 #
 # Array complexity - ie. count of filled elements
@@ -180,36 +123,36 @@ class options:
 
         # Use wxPython library ?
         _ = parser.add_argument(
-            ARG_WX_S,
-            ARG_WX,
+            GUIStrings.ARG_WX_S,
+            GUIStrings.ARG_WX,
             action="store_true",
-            help=COMMENT_WX,
+            help=GUIStrings.COMMENT_WX,
             required=False,
         )
 
         # Export the solution ?
         _ = parser.add_argument(
-            ARG_SAVE_SOLUTION_S,
-            ARG_SAVE_SOLUTION,
+            GUIStrings.ARG_SAVE_SOLUTION_S,
+            GUIStrings.ARG_SAVE_SOLUTION,
             action="store_true",
-            help=COMMENT_SAVE_SOLUTION,
+            help=GUIStrings.COMMENT_SAVE_SOLUTION,
             required=False,
         )
 
         # Search obvious values ?
         _ = parser.add_argument(
-            ARG_SEARCH_OBVIOUS_S,
-            ARG_SEARCH_OBVIOUS,
+            GUIStrings.ARG_SEARCH_OBVIOUS_S,
+            GUIStrings.ARG_SEARCH_OBVIOUS,
             action="store_true",
-            help=COMMENT_SEARCH_OBVIOUS,
+            help=GUIStrings.COMMENT_SEARCH_OBVIOUS,
             required=False,
         )
 
         # display progression?
         _ = parser.add_argument(
-            ARG_DETAILS_S,
-            ARG_DETAILS,
-            help=COMMENT_DETAILS,
+            GUIStrings.ARG_DETAILS_S,
+            GUIStrings.ARG_DETAILS,
+            help=GUIStrings.COMMENT_DETAILS,
             required=False,
             nargs=1,
             type=int,
@@ -222,9 +165,9 @@ class options:
 
         # Browse folder
         _ = action.add_argument(
-            ARG_BROWSE_S,
-            ARG_BROWSE,
-            help=COMMENT_BROWSE,
+            GUIStrings.ARG_BROWSE_S,
+            GUIStrings.ARG_BROWSE,
+            help=GUIStrings.COMMENT_BROWSE,
             metavar="FOLDER",
             required=False,
             nargs=1,
@@ -232,9 +175,9 @@ class options:
 
         # Edition file
         _ = action.add_argument(
-            ARG_EDIT_S,
-            ARG_EDIT,
-            help=COMMENT_EDIT,
+            GUIStrings.ARG_EDIT_S,
+            GUIStrings.ARG_EDIT,
+            help=GUIStrings.COMMENT_EDIT,
             metavar="FILE",
             required=False,
             nargs=1,
@@ -242,9 +185,9 @@ class options:
 
         # Solve file
         _ = action.add_argument(
-            ARG_SOLVE_S,
-            ARG_SOLVE,
-            help=COMMENT_SOLVE,
+            GUIStrings.ARG_SOLVE_S,
+            GUIStrings.ARG_SOLVE,
+            help=GUIStrings.COMMENT_SOLVE,
             metavar="FILE",
             required=False,
             nargs=1,
@@ -252,9 +195,9 @@ class options:
 
         # Browse folder and edit selected file
         _ = action.add_argument(
-            ARG_BROWSE_AND_SOLVE_S,
-            ARG_BROWSE_AND_SOLVE,
-            help=COMMENT_BROWSE_AND_SOLVE,
+            GUIStrings.ARG_BROWSE_AND_SOLVE_S,
+            GUIStrings.ARG_BROWSE_AND_SOLVE,
+            help=GUIStrings.COMMENT_BROWSE_AND_SOLVE,
             metavar="FOLDER",
             required=False,
             nargs=1,
@@ -262,9 +205,9 @@ class options:
 
         # Edit and solve file
         _ = action.add_argument(
-            ARG_EDIT_AND_SOLVE_S,
-            ARG_EDIT_AND_SOLVE,
-            help=COMMENT_EDIT_AND_SOLVE,
+            GUIStrings.ARG_EDIT_AND_SOLVE_S,
+            GUIStrings.ARG_EDIT_AND_SOLVE,
+            help=GUIStrings.COMMENT_EDIT_AND_SOLVE,
             metavar="FILE",
             required=False,
             nargs=1,
@@ -315,22 +258,6 @@ class options:
 
         if args.editSolve is not None:
             self.execMode_.set(self.EXEC_SOLVE)
-
-        # Generate a new sudoku ?
-        # if True == self.editMode_ :
-        """
-        if self.execMode_.isSet(self.EXEC_EDIT) and args.new is not None:
-            mode : str = args.new[0]
-            match mode:
-                case arrayComplexity.Medium.name:
-                    self.complexity_ = arrayComplexity.Medium.value
-                case arrayComplexity.Hard.name:
-                    self.complexity_ = arrayComplexity.Hard.value
-                case arrayComplexity.Easy.name:
-                    self.complexity_ = arrayComplexity.Easy.value
-                case _:
-                    self.complexity_ = arrayComplexity.Easy.value
-        """
 
         # Display sudoku during the search process ?
         display = args.details[0] if args.details is not None else 0

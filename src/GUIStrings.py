@@ -9,6 +9,65 @@
 #
 
 #
+# Command line options
+#
+
+ARG_BROWSE_S = "-b"  # Browse a folder
+ARG_BROWSE = "--browse"
+COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained sudokus"
+
+ARG_EDIT_S = "-e"  # Edit (and modify or create) a sudoku
+ARG_EDIT = "--edit"
+COMMENT_EDIT = "Edit or create the {FILE} file"
+
+ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
+ARG_SOLVE = "--solve"
+COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
+
+ARG_BROWSE_AND_SOLVE_S = "-bs"
+ARG_BROWSE_AND_SOLVE = "--browseSolve"
+COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
+
+ARG_EDIT_AND_SOLVE_S = "-es"
+ARG_EDIT_AND_SOLVE = "--editSolve"
+COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
+
+ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
+ARG_SEARCH_OBVIOUS = "--obvious"
+COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution searching"
+
+ARG_SAVE_SOLUTION_S = "-x"  # Save / export the solution
+ARG_SAVE_SOLUTION = "--export"
+COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
+
+# Show sudoku during the search process
+ARG_DETAILS_S = "-d"  # Draw details
+ARG_DETAILS = "--details"
+COMMENT_DETAILS = "Show sudokus during the resolution process"
+
+# Use wxPython library as GUI
+ARG_WX_S = "-wx"
+ARG_WX = "--wxPython"
+COMMENT_WX = "Use wkPython for drawings and GUI"
+
+#
+#  Files & folders
+#
+
+FOLDER_SUDOKUS = "../sudokus"
+FOLDER_ASSETS = "../assets"
+
+# File management
+#
+FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
+FILE_COMMENTS:str = "#"  # Comment lines start with
+FILE_EXTENSION:str = ".txt"
+FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
+
+FILE_TEMP_NAME:str=".sudoku_temp.txt"   # Temporary saved
+FILE_TEMP_DETAILS_SEP:str = "-"
+
+#
 #  Message boxes
 #
 STR_CREATE:str = 'Sudoku creation'
