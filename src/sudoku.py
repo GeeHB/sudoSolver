@@ -293,8 +293,7 @@ class sudoku(threading.Thread):
         self.empty()    # start with empty sudoku
         try:
             with open(fileName) as file:
-                pt = pointer(game=False)
-
+                pt:pointer = pointer(game=False)
                 details:list[str] = []
 
                 if fileComments is not None:
@@ -618,7 +617,7 @@ class sudoku(threading.Thread):
     # Get the list of possible values at a given position
     #
     def getAllowedValues(self, position:pointer)->list[int]:
-        values : list[int] = []
+        values:list[int] = []
         for value in range(VALUE_MIN, VALUE_MAX+1):
             if self.checkValue(position, value):
                 # This value can be used
@@ -638,7 +637,7 @@ class sudoku(threading.Thread):
 
     #   => in the line ?
     def _check_line(self, position:pointer, value:int)->bool:
-        idFirst = position.line() * ROW_COUNT
+        idFirst:int = position.line() * ROW_COUNT
         for tIndex in range(ROW_COUNT):
             if self.elements_[tIndex + idFirst].num == value:
                 return False
@@ -646,7 +645,7 @@ class sudoku(threading.Thread):
 
     #  => in the row ?
     def _check_row(self, position:pointer, value:int)->bool:
-        idFirst = position.row()
+        idFirst:int = position.row()
         for tIndex in range(LINE_COUNT):
             if self.elements_[tIndex * ROW_COUNT + idFirst].num == value:
                 return False
@@ -656,7 +655,7 @@ class sudoku(threading.Thread):
     #  => in the tiny-square ?
     def _check_tinySquare(self, position:pointer, value:int)->bool:
         # Search in my tiny-square
-        mySquare : tinySquare = tinySquare(position.squareID())
+        mySquare:tinySquare = tinySquare(position.squareID())
         return False == mySquare.inMe(self.elements_, value)
 
     # Accept all the modified values
@@ -699,7 +698,7 @@ class sudoku(threading.Thread):
     # Find the next possible value for an element (greater than the current one)
     #
     def findNextValue(self, position : pointer, val : int)->int:
-        nextVal : int = position.incValue(val)
+        nextVal:int = position.incValue(val)
         while val != nextVal:
             if self.checkValue(position, nextVal):
                 return nextVal
@@ -711,7 +710,7 @@ class sudoku(threading.Thread):
     # Find the lowest possible value for an element
     #
     def findPreviousValue(self, position : pointer, val : int)->int:
-        nextVal : int = position.decValue(val)
+        nextVal:int = position.decValue(val)
         while val != nextVal:
             if self.checkValue(position, nextVal):
                 # found it
@@ -735,8 +734,8 @@ class sudoku(threading.Thread):
         count:int = ARRAY_SIZE - self.nonEmptyItems()
         if count>0:
             id = 1 if count == 1 else random.randint(0, count-1) + 1
-            index=-1
-            while id>0 :
+            index = -1
+            while id > 0 :
                 index+=1
                 if self.elements_[index].isEmpty():
                     id-=1
@@ -752,7 +751,7 @@ class sudoku(threading.Thread):
     #
     def help_singleError(self)->int:
         index:int = -1
-        count: int = self.help_errorCount()
+        count:int = self.help_errorCount()
         if count > 0:
             id = 1 if count == 1 else random.randint(0, count-1) + 1
             index=-1

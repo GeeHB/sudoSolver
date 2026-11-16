@@ -1740,7 +1740,7 @@ class wxSolverFrame(wxMainFrame):
                 self.hypsCombo_.updateColours(colours)
 
                 if todo != wxHypAction.ACTION_LIST_SET:
-                    self.hypsCombo_.updateColours(colours)
+                    self.hypsPanel_.hyp_pop()
             else:
                 done = False
         return done
