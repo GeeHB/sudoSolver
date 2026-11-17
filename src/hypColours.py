@@ -9,7 +9,6 @@
 
 import element
 import GUIStrings
-import options
 
 
 # List of used hyp. colours
@@ -102,7 +101,7 @@ class hypColours:
     def toTemp(self)->str:
         out:str=""
         for col in self.datas_:
-            out+=f"({col[0]}{options.FILE_VALUE_SEPARATOR}{GUIStrings.STR_EMPTY if col[1] is None else col[1]}){options.FILE_TEMP_DETAILS_SEP}"
+            out+=f"({col[0]}{GUIStrings.FILE_VALUE_SEPARATOR}{GUIStrings.STR_EMPTY if col[1] is None else col[1]}){GUIStrings.FILE_TEMP_DETAILS_SEP}"
         size:int = len(out)
         return "" if size <= 1  else out[:size-1]
 
@@ -114,7 +113,7 @@ class hypColours:
         if len(line) < 6 :
             return False
 
-        hyps = line.split(options.FILE_TEMP_DETAILS_SEP)
+        hyps = line.split(GUIStrings.FILE_TEMP_DETAILS_SEP)
         if len(hyps) == 0:
             return False
 
@@ -123,7 +122,7 @@ class hypColours:
             hyp = hyp.strip()
             if len(hyp) > 0 :
                 choice = hyp[1:-1]
-                res = choice.split(options.FILE_VALUE_SEPARATOR)
+                res = choice.split(GUIStrings.FILE_VALUE_SEPARATOR)
                 if len(res) == 2:
                     self.datas_.append(
                         (element.hypColourID(int(res[0])),

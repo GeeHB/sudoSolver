@@ -112,6 +112,9 @@ STR_CREATE_DONE:str = 'Done'
 STR_CREATE_CANCEL:str = 'Cancel'
 
 # Resolution
+STR_SOLVE_SEARCH:str = "Search for a solution"
+STR_SOLVE_SEARCHING:str = "Searching ..."
+STR_SOLVE_NO_SOLUCE:str = "This array is insolvable. \nYou should re-edit it."
 STR_SOLVE_MENU:str = 'Solve'
 STR_SOLVE_MANUAL:str = 'Manually'
 STR_SOLVE_OBVIOUS:str = 'Obvious values'

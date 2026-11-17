@@ -119,7 +119,8 @@ class sudoku(threading.Thread):
     def isModified(self) -> bool:
         if self.isOk():
             for index in range(ARRAY_SIZE):
-                if self[index].isChangeable(False):
+                elmt: element = self[index]
+                if elmt.isChangeable() and not elmt.isEmpty():
                     return True
 
         return False
@@ -156,11 +157,6 @@ class sudoku(threading.Thread):
             return pValue
 
         raise IndexError
-
-    # Is the array full
-    #
-    def isFull(self)->bool:
-        return (self.nonEmptyCount_ == ARRAY_SIZE)
 
     # Change status of elements
     #
@@ -326,6 +322,7 @@ class sudoku(threading.Thread):
         except FileNotFoundError:
             return False
 
+        self.nonEmptyItems()
         return True
 
     # Load a temporay file

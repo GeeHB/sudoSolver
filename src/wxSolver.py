@@ -9,6 +9,7 @@
 #
 import math
 import sys
+import time
 from enum import IntEnum
 from typing import override
 
@@ -411,9 +412,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._obvious_findValues(True)
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
-                    self._menu_resolveSingleThread()
+                    self._resolve_multiThreaded()
             case menuConsts.ID_SOLVE_RESOLVE_MULTI:
-                    self._menu_resolve_multiThreaded()
+                    self._resolve_multiThreaded()
             case menuConsts.ID_SOLVE_REVERT:
                     self._menu_revertArray()
 
@@ -514,22 +515,23 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):
                 self._edit_selChanged()
 
-            # possible values
-            values:list[int] =self.sudoku_.getAllowedValues(self.edition_.currentPos_)
+            if self.sudoku_[self.edition_.currentPos_.index].isChangeable():
+                # possible values
+                values:list[int] =self.sudoku_.getAllowedValues(self.edition_.currentPos_)
 
-            # Generate a contextual menu at mouse pos with all possible values
-            popUp: wx.Menu = wx.Menu()
-            popUp.Append(menuConsts.ID_POPUP_VALUES[9], menuConsts.IDS_POPUP_EMPTY)
-            popUp.Enable(menuConsts.ID_POPUP_VALUES[9], not self.sudoku_[self.edition_.currentPos_.index_].isEmpty())
-            for index in range(1,10):
-                id = menuConsts.ID_POPUP_VALUES[index-1]
-                popUp.Append(id, f"{index}")
-                popUp.Enable(id, index in values)
+                # Generate a contextual menu at mouse pos with all possible values
+                popUp: wx.Menu = wx.Menu()
+                popUp.Append(menuConsts.ID_POPUP_VALUES[9], menuConsts.IDS_POPUP_EMPTY)
+                popUp.Enable(menuConsts.ID_POPUP_VALUES[9], not self.sudoku_[self.edition_.currentPos_.index_].isEmpty())
+                for index in range(1,10):
+                    id = menuConsts.ID_POPUP_VALUES[index-1]
+                    popUp.Append(id, f"{index}")
+                    popUp.Enable(id, index in values)
 
-            self.PopupMenu(popUp, event.GetPosition())
-            popUp.Destroy()
+                self.PopupMenu(popUp, event.GetPosition())
+                popUp.Destroy()
 
-            return
+                return
 
         event.Skip()  # Allow other handlers to process the event
 
@@ -661,7 +663,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     def _draw_helpMatrix(self):
         if self.memDC_ is not None and self.sudoku_.isOk():
-            values : list[int] = self.sudoku_.getAllowedValues(self.edition_.currentPos_) if self.edition_.editing else []
+            values : list[int] = self.sudoku_.getAllowedValues(self.edition_.currentPos_) if self.edition_.editing and self.sudoku_[self.edition_.currentPos_.index].isChangeable() else []
             value:int = 0
 
             self.memDC_.SetFont(self.helpFont_) # use small font
@@ -865,10 +867,18 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             if self.sudoku_.isModified():
                 if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                    self.parent_.modeChanged(wxEditionMode.MODE_NONE)
+                    self.edition_.editing = False
                     return
 
                 if self.sudoku_.setOriginal():
                     self.draw_update()
+        else:
+            if not self.sudoku_.found :
+                self._resolve_searchSolution()
+                self.parent_.modeChanged(wxEditionMode.MODE_NONE)
+                self.edition_.editing = False
+                return
 
         self._notify_stop() # Don't forget to stop prev. notification timer !
         super()._edit_start(creationMode, initPos)
@@ -884,7 +894,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             self.edition_.selected = False
 
+
         self._draw_selectionBlink()
+
+        if self.helpVisible_:
+            self._draw_helpMatrix_ex()
 
         if not self.selectedTimer_.IsRunning():
             self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
@@ -1278,32 +1292,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Not found
         return done
 
-    #
-    # Resolving
-    #
-
-    def _menu_resolveSingleThread(self):
-        if self.sudoku_.isOk():
-            self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
-
-            if self.resolve():
-                self.draw_update()
-                self._resolve_showStats()
-            else:
-                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-
-    def _menu_resolve_multiThreaded(self):
-        if self.sudoku_.isOk():
-            self.directDraw_ = True
-            self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
-
-            if not self.resolve():
-                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-
-            self.directDraw_ = False
-            self.draw_update()
-            self._resolve_showStats()
-
     # Return to original array's state (remove added values)
     #
     def _menu_revertArray(self):
@@ -1421,6 +1409,60 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     wx.MessageBox(GUIStrings.STR_HELP_NO_OBVIOUS, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
         return count
 
+    #
+    # Resolving
+    #
+
+    def _resolve_singleThreaded(self):
+        if self.sudoku_.isOk():
+            self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
+
+            if self.resolve():
+                self.draw_update()
+                self._resolve_showStats()
+            else:
+                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+
+    def _resolve_multiThreaded(self):
+        if self.sudoku_.isOk():
+            self.directDraw_ = True
+            self.params_.progressMode_ = self.params_.PROGRESS_MULTITHREADED
+
+            if not self.resolve():
+                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+
+            self.directDraw_ = False
+            self.draw_update()
+            self._resolve_showStats()
+
+    # Search a solution for the current array
+    #
+    def _resolve_searchSolution(self):
+        dlg = wx.Dialog(self,
+                        title=GUIStrings.STR_SOLVE_SEARCH,
+                        size=wx.Size(250, 100),
+                        style=wx.DEFAULT_DIALOG_STYLE & ~(wx.RESIZE_BORDER | wx.MINIMIZE_BOX))
+        wx.StaticText(dlg, label=GUIStrings.STR_SOLVE_SEARCHING, pos=wx.Point(20, 30))
+        dlg.CentreOnParent()
+        dlg.Show()
+
+        # Where stuff is done !!!
+        import threading
+        def run():
+            self.resolve()
+            wx.CallAfter(dlg.Destroy)   # close dialog when finished
+            wx.CallAfter(self._resolve_searchDone)
+
+        t = threading.Thread(target=run, daemon=True)
+        t.start()
+
+    def _resolve_searchDone(self):
+        self._menu_revertArray()
+        if not self.sudoku_.found:
+            wx.MessageBox(GUIStrings.STR_SOLVE_NO_SOLUCE, GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
+        else:
+            self._edit_start(False, False)
+
     # Show resolution stats
     #
     @override
@@ -1431,6 +1473,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             wx.MessageBox("Congratulation",
                 GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
+
+
     #
     # Themes
     #

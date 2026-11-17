@@ -82,7 +82,6 @@ class pygameSolverApp(solver.solverApp):
         pygame.display.quit()
         pygame.quit()
 
-
 #
 # textSurface - "subsurface" containig a single line of text
 #

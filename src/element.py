@@ -177,7 +177,8 @@ class element:
         return self.status_.isSet(elementStatus.STATUS_OBVIOUS)
 
     # At least can we modifiy or set this element ?
-    def isChangeable(self, allowEmpty:bool = True)->bool:
-        return not self.status_.isSet(elementStatus.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.isSet(elementStatus.STATUS_SET))
+    def isChangeable(self)->bool:
+        #return not self.status_.isSet(elementStatus.STATUS_ORIGINAL) if allowEmpty else (self.isObvious() or self.status_.isSet(elementStatus.STATUS_SET))
+        return not self.status_.isSet(elementStatus.STATUS_ORIGINAL)
 
 # EOF

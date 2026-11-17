@@ -612,24 +612,25 @@ class solver:
     #
     # returns found a solution ?
     def resolve(self)->bool:
-        found:bool = False
         self.stats_.clear(False)
 
         # for stats
         start : float = time.time()
+        found:bool = False
 
         # Let's go
         match self.params_.progressMode_ :
             case self.params_.PROGRESS_MULTITHREADED:
-                found = self._resolve_multiThreaded()
+                found = self.resolve_multiThreaded()
 
             case self.params_.PROGRESS_SHOW_SAME_THREAD:
-                found = self._resolve_singleThreadedAndDisplay()
+                found = self.resolve_singleThreadedAndDisplay()
 
             case _:
-                found = self._resolve_singleThreaded()
+                found = self.resolve_singleThreaded()
 
         if found:
+            self.sudoku_.found = True
             self.stats_.bruteAttempts_ = self.sudoku_.attempts
             self.stats_.bruteDuration_ = time.time() - start
 
@@ -657,7 +658,7 @@ class solver:
     # Single-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolve_singleThreaded(self)->bool:
+    def resolve_singleThreaded(self)->bool:
         try:
             self.sudoku_.resolve_singleThreaded()
         except reachedEndOfList:
@@ -670,7 +671,7 @@ class solver:
     # Single-threaded mode using a generator to display progression
     #
     # returns True if a solution has been founded
-    def _resolve_singleThreadedAndDisplay(self)->bool:
+    def resolve_singleThreadedAndDisplay(self)->bool:
         for _ in self.sudoku_.resolve_singleThreadGenerator() :
             self.draw()
 
@@ -679,7 +680,7 @@ class solver:
     # Multi-threaded mode
     #
     # returns True if a solution has been founded
-    def _resolve_multiThreaded(self)->bool:
+    def resolve_multiThreaded(self)->bool:
         self.sudoku_.resolve_multiThreaded() # start resolution thread
         while self.sudoku_.is_alive():
             self.draw(redrawBackground=False)     # redraw sudoku while searching for a solution
