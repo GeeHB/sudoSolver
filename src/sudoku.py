@@ -75,6 +75,18 @@ class sudoku(threading.Thread):
     def found(self, newVal : bool):
         self.found_ = newVal
 
+    def hasASolution(self):
+        self.found = False
+        if not self.isOk():
+            return False
+
+        for elmnt in self.elements_:
+            if not elmnt.hasASolution():
+                return False
+
+        self.found = True   # !!!
+        return True
+
     # # attempts
     @property
     def attempts(self)->int:
@@ -306,12 +318,12 @@ class sudoku(threading.Thread):
                         for val in values:
                             if readStatus :
                                 details = val.split(GUIStrings.FILE_TEMP_DETAILS_SEP)
-                                if len(details) == 3 and self.setAt(pt, details[0]): # = (value, status, hyp. colour)
+                                if len(details) == 4 and self.setAt(pt, details[0]): # = (value, status, hyp. colour)
+                                    # val = value, status, hyp. colour, solution
                                     elmt:element = self[pt.index]
-                                    #basic:int = elmt.status_.value_
                                     elmt.status_.assign(int(details[1]))
                                     elmt.hypothesis = int(details[2])
-                                    #print(f"wanted : {details[1]}/{int(details[1])} - before : {basic} - after : {elmt.status_.value_}")
+                                    elmt.solution = int(details[3])
                             else:
                                 self.setAt(pt, val)
 
@@ -327,7 +339,7 @@ class sudoku(threading.Thread):
 
     # Load a temporay file
     #
-    def file_loadTemp(self)->str:
+    def file_tempLoad(self)->str:
         fileName:str = self._file_tempFileName()
         comments:list[str] = []
         if self._file_load(fileName, readStatus=True, fileComments = comments):
@@ -384,7 +396,15 @@ class sudoku(threading.Thread):
                     line = ""
                     for _ in range(ROW_COUNT):
                         el = self[pt.index]
-                        line += f"{0 if el.isEmpty() else el.num}{GUIStrings.FILE_TEMP_DETAILS_SEP}{el.status_.value_}{GUIStrings.FILE_TEMP_DETAILS_SEP}{el.hypothesis}" if saveStatus else str(el.num if el.isOriginal() else 0)
+
+                        if saveStatus:
+                            # val = value, status, hyp. colour, solution
+                            line += f"{0 if el.isEmpty() else el.num}{GUIStrings.FILE_TEMP_DETAILS_SEP}"
+                            line += f"{el.status_.value_}{GUIStrings.FILE_TEMP_DETAILS_SEP}{el.hypothesis}{GUIStrings.FILE_TEMP_DETAILS_SEP}"
+                            line += f"{0 if el.solution_ is None else el.solution_}"
+                        else :
+                            line += str(el.num if el.isOriginal() else 0)
+
                         line += GUIStrings.FILE_VALUE_SEPARATOR
                         pt += 1
 
@@ -406,7 +426,7 @@ class sudoku(threading.Thread):
     #
     #  hypColours : string containing list of hyps. colours
     #
-    def file_saveTemp(self, hypColours:str|None = None)->bool:
+    def file_tempSave(self, hypColours:str|None = None)->bool:
         comments:list[str]=[]
         if hypColours is not None and len(hypColours)>1:
             comments.append(hypColours)

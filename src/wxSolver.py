@@ -9,7 +9,6 @@
 #
 import math
 import sys
-import time
 from enum import IntEnum
 from typing import override
 
@@ -320,7 +319,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # a temp file ?
         if self.sudoku_.file_tempExists():
             if wx.MessageBox(GUIStrings.STR_TEMP_EXIST, GUIStrings.STR_TEMP_FILE,
-                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES and self.hypsColours_.fromTemp(self.sudoku_.file_loadTemp()):
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES and self.hypsColours_.fromTemp(self.sudoku_.file_tempLoad()):
+                self.sudoku_.hasASolution()
 
                 # Hyps and associated colours
                 cols:list[element.hypColourID] = self.hypsColours_.toList()
@@ -332,9 +332,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._edit_countChanged()
 
                 # restart edition
-                self.edition_.manualSolving = True
-                self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-                self._edit_start(creationMode=False)
+                #self.edition_.manualSolving = True
+                #self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
+                #self._edit_start(creationMode=False)
                 self.draw_update()
 
             self.sudoku_.file_tempRemove()  # no need to keep it any longer
@@ -343,6 +343,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def end(self):
+        if self.sudoku_.isModified() and not self.sudoku_.completed():
+            self.sudoku_.file_tempSave(self.hypsColours_.toTemp())     # keep a copy of current array as a temp file
+
         self._notify_stop(True)
         self._edit_stop(True)
 
@@ -840,9 +843,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Done / End
     #
     def _edit_done(self):
-        if self.edition_.manualSolving and self.sudoku_.isModified() and not self.sudoku_.completed():
-            self.sudoku_.file_saveTemp(self.hypsColours_.toTemp())     # keep a copy of current array as a temp file
-
         if self.edition_.creating:
             self.parent_.hyp_onClear()
             self.sudoku_.edit_acceptAll(True)
@@ -1461,6 +1461,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if not self.sudoku_.found:
             wx.MessageBox(GUIStrings.STR_SOLVE_NO_SOLUCE, GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
         else:
+            self.edition_.manualSolving = True
+            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
             self._edit_start(False, False)
 
     # Show resolution stats

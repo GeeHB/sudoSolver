@@ -82,6 +82,9 @@ class element:
     def solution(self, newVal : int | None):
         self.solution_ = newVal
 
+    def hasASolution(self)->bool:
+        return self.solution_ is not None and self.solution_ > 0
+
     # 'show'/set the solution for the given element
     def revealSolution(self):
         if self.solution_ is not None:
