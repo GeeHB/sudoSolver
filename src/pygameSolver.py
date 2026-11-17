@@ -20,6 +20,7 @@ except ModuleNotFoundError:
 import pygame.event
 
 import GUIConsts
+import GUIStrings
 import GUITheme
 import solver
 from element import element
@@ -27,7 +28,6 @@ from options import (
     APP_AUTHOR_SHORT,
     APP_NAME,
     APP_SHORT_NAME,
-    FILE_EXPORT_EXTENSION,
     options,
 )
 from ownExceptions import sudokuError
@@ -356,9 +356,9 @@ class pygameSolver(solver.solver):
                     )
                     comments.append(" ")
 
-                    if self.sudoku_.file_save(addExtent=FILE_EXPORT_EXTENSION, fileComments = comments) is not None:
+                    if self.sudoku_.file_save(addExtent=GUIStrings.FILE_EXPORT_EXTENSION, fileComments = comments) is not None:
                         print(
-                            f"Solution successfully saved in {self.params_.fileName_}{FILE_EXPORT_EXTENSION}"
+                            f"Solution successfully saved in {self.params_.fileName_}{GUIStrings.FILE_EXPORT_EXTENSION}"
                         )
 
                 self.end()
@@ -734,7 +734,7 @@ class pygameSolver(solver.solver):
         # No solution files in the list !
         for file in files:
             _, fileExt = os.path.splitext(file)
-            if FILE_EXPORT_EXTENSION == fileExt:
+            if GUIStrings.FILE_EXPORT_EXTENSION == fileExt:
                 # remove the file from the list
                 files.remove(file)
 
