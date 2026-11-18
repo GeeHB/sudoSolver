@@ -343,7 +343,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def end(self):
-        if self.sudoku_.isModified() and not self.sudoku_.completed():
+        if self.sudoku_.modified and not self.sudoku_.completed():
             self.sudoku_.file_tempSave(self.hypsColours_.toTemp())     # keep a copy of current array as a temp file
 
         self._notify_stop(True)
@@ -881,7 +881,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if creationMode:
             self.parent_.hyp_onClear()
 
-            if self.sudoku_.isModified():
+            if self.sudoku_.modified:
                 if wx.MessageBox(GUIStrings.STR_MODIFIED_ARRAY, GUIStrings.STR_CREATE,
                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                     self.parent_.modeChanged(wxEditionMode.MODE_NONE)
@@ -971,7 +971,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                     return
 
-            self.edition_.modified = False
             match menuId:
                 case menuConsts.ID_CREATE_EASY:
                     self.sudoku_.new(arrayComplexity.Easy)
@@ -995,7 +994,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
                 return
 
-        self.edition_.modified = False
         with wx.FileDialog(self, GUIStrings.STR_LOAD, wildcard=GUIStrings.STR_WILDCARD,
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
 
@@ -1003,11 +1001,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 return     # the user changed its mind
 
         # New file just loaded
-        self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-        self._menu_setItemsStates()
+        if self.fromFile(fileDialog.GetPath()) :  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
+            self._menu_setItemsStates()
 
-        self.parent_.hyp_onClear()
-        self._edit_countChanged() # new elements have values
+            self.parent_.hyp_onClear()
+            self._edit_countChanged() # new elements have values
 
     # Save current array
     #
@@ -1041,11 +1039,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
 
         if done :
-            self.setFilename(path)
             self.edition_.modified = False
+            self.setFilename(path)
             self._menu_setItemsStates()
 
-            wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
+            wx.MessageBox(f"{GUIStrings.STR_SAVE_SUCCESS} '{self.filename}'",
                         GUIStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
 
     # Quit
@@ -1092,7 +1090,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             self.draw_update()
             self._notify_start()
-
+            self.edition_.moveTo(pos)
             self._edit_countChanged()
 
     # Show a single randomly choosen error (if any)
@@ -1415,16 +1413,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Resolving
     #
 
-    def _resolve_singleThreaded(self):
-        if self.sudoku_.isOk():
-            self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
-
-            if self.resolve():
-                self.draw_update()
-                self._resolve_showStats()
-            else:
-                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
-
     def _resolve_multiThreaded(self):
         if self.sudoku_.isOk():
             self.directDraw_ = True
@@ -1437,8 +1425,27 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.draw_update()
             self._resolve_showStats()
 
+    def _resolve_singleThreaded(self):
+        if self.sudoku_.isOk():
+            self.params_.progressMode_ = self.params_.PROGRESS_SHOW_SAME_THREAD
+
+            if self.resolve():
+                self.draw_update()
+                self._resolve_showStats()
+            else:
+                wx.MessageBox(GUIStrings.STR_NO_SOLUTION, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+
     # Search a solution for the current array
     #
+    def _resolve_searchDone(self):
+        self._menu_revertArray()
+        if not self.sudoku_.found:
+            wx.MessageBox(GUIStrings.STR_SOLVE_NO_SOLUCE, GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
+        else:
+            self.edition_.manualSolving = True
+            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
+            self._edit_start(False, False)
+
     def _resolve_searchSolution(self):
         dlg = wx.Dialog(self,
                         title=GUIStrings.STR_SOLVE_SEARCH,
@@ -1458,24 +1465,15 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         t = threading.Thread(target=run, daemon=True)
         t.start()
 
-    def _resolve_searchDone(self):
-        self._menu_revertArray()
-        if not self.sudoku_.found:
-            wx.MessageBox(GUIStrings.STR_SOLVE_NO_SOLUCE, GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
-        else:
-            self.edition_.manualSolving = True
-            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-            self._edit_start(False, False)
-
     # Show resolution stats
     #
     @override
     def _resolve_showStats(self, byUser:bool = False):
         if byUser:
-            wx.MessageBox(f"Found a solution:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
+            wx.MessageBox(f"{GUIStrings.STR_FOUND_A_SOLUTION}:\n\t in {round(self.stats_.bruteDuration_,2)} sec.\n\t with {self.stats_.bruteAttempts_} attempt(s)",
                 GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
         else:
-            wx.MessageBox("Congratulation",
+            wx.MessageBox(GUIStrings.STR_FOUND_SOLUTION,
                 GUIStrings.STR_SOLUTION, wx.ICON_INFORMATION | wx.OK, self)
 
 

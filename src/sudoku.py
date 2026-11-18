@@ -125,18 +125,6 @@ class sudoku(threading.Thread):
         self.nonEmptyCount_ = 0;
         return True  # yes (empty or not initialized)
 
-    # Has the sudoku been modified ?
-    #   ie. at least one element is not original
-    #
-    def isModified(self) -> bool:
-        if self.isOk():
-            for index in range(ARRAY_SIZE):
-                elmt: element = self[index]
-                if elmt.isChangeable() and not elmt.isEmpty():
-                    return True
-
-        return False
-
     # Turn all array's elements to 'original'
     #
     # @return : count of element's which status has changed
@@ -178,13 +166,6 @@ class sudoku(threading.Thread):
                 if curElmnt.status_.isSet(source):
                     curElmnt.status_.remove(source)
                     curElmnt.status_.set(dest)
-
-    # Return to the "original" state
-    #
-    def revert(self):
-        for index in range(ARRAY_SIZE):
-            if not self.elements_[index].isOriginal():
-                self.elements_[index].empty(deep = False)
 
     # End of showing error(s)
     #
@@ -256,7 +237,7 @@ class sudoku(threading.Thread):
         if value>0 :
             self.elements_[position.index].num = value
             if status is not None:
-                self.elements_[position.index].status_.assign(status)
+                self.elements_[position.index].status_.assign(status | elementStatus.STATUS_MODIFIED)
             if hypColID != hypColourID.NO_HYP:
                 self.elements_[position.index].hypothesis = hypColID
 
@@ -334,6 +315,7 @@ class sudoku(threading.Thread):
         except FileNotFoundError:
             return False
 
+        self.modified = False
         self.nonEmptyItems()
         return True
 
@@ -416,6 +398,9 @@ class sudoku(threading.Thread):
                     file.write(line)
 
             self.filename = fileName
+            if not saveStatus:
+                self.modified = False
+
             return True
         except FileNotFoundError:
             # raise sudokuError(f"io error while writing the file '{fileName}'")
@@ -454,6 +439,24 @@ class sudoku(threading.Thread):
         filePath.unlink(missing_ok=True)
 
     #
+    # Changes
+    #
+
+    @property
+    def modified(self)->bool:
+        if self.isOk():
+            for elmt in self.elements_:
+                if elmt.modified:
+                    return True         # one is enough !!!
+        return False
+
+    @modified.setter
+    def modified(self, set:bool):
+        if self.isOk() and not set:     # cleat the status bit in every elements
+            for elmt in self.elements_:
+                elmt.modified = False
+
+    #
     # Array
     #
 
@@ -464,44 +467,46 @@ class sudoku(threading.Thread):
 
         if compl is None or compl == arrayComplexity.Empty.value:
             self.complexity_ = arrayComplexity.Empty.value
-            return  # returns an empty array
 
-        self.complexity = compl
+        else:
+            self.complexity = compl
 
-        # Step 1 - Start from a complete (new) sudoku
-        try:
-            _ = self.resolve_singleThreaded()
-        except reachedEndOfList:
-            # Found a solution !!!
-            pass
+            # Step 1 - Start from a complete (new) sudoku
+            try:
+                _ = self.resolve_singleThreaded()
+            except reachedEndOfList:
+                # Found a solution !!!
+                pass
 
-        # Step 2 : shuffle elements
-        self._new_shuffleValues()
+            # Step 2 : shuffle elements
+            self._new_shuffleValues()
 
-        # Step 3 : rearrange columns
-        self._new_shuffleColumns()
+            # Step 3 : rearrange columns
+            self._new_shuffleColumns()
 
-        # Step 4: rearrange rows
-        self._new_shuffleRows();
+            # Step 4: rearrange rows
+            self._new_shuffleRows();
 
-        # Step 5 : rearrange block of columns
-        self._new_shuffleColumnBlocks();
+            # Step 5 : rearrange block of columns
+            self._new_shuffleColumnBlocks();
 
-        # Step 6 : rearrange block of lines
-        self._new_shuffleRowBlocks();
+            # Step 6 : rearrange block of lines
+            self._new_shuffleRowBlocks();
 
-        # Step 7 : all elements are "original"
-        for index in range(ARRAY_SIZE):
-            self.elements_[index].setOriginal();
+            # Step 7 : all elements are "original"
+            for index in range(ARRAY_SIZE):
+                self.elements_[index].setOriginal();
 
-        # Step 8 : remove elements according to complexite
-        self._new_removeElements()
+            # Step 8 : remove elements according to complexite
+            self._new_removeElements()
 
-        # Update non-empty elements counter
-        self.nonEmptyItems()
+            # Update non-empty elements counter
+            self.nonEmptyItems()
 
-        # done
-        self.found = True
+            # done
+            self.found = True
+
+        self.modified = False
 
     # Remove elements according to complexity
     #
@@ -1169,6 +1174,13 @@ class sudoku(threading.Thread):
 
         # Ok
         return newPos
+
+    # Return to the "original" state
+    #
+    def revert(self):
+        for elmt in self.elements_:
+            if not elmt.isOriginal():
+                elmt.empty(deep = False)
 
     #
     # Method overloaded from threading.Thread

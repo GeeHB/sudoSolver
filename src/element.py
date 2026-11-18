@@ -33,6 +33,7 @@ class elementStatus(IntEnum):
     STATUS_ORIGINAL     = 4     # Can't be changed (except in edition mode)
     STATUS_NOTIFYING    = 8     # The current element is notifying the user (creation, help, obvious value, mistake, ...)
     STATUS_ERROR        = 16    # The value is invalid and the element is shown as an error
+    STATUS_MODIFIED     = 128   # The element has been modified
 
 # element - a single sudoku element
 #
@@ -61,7 +62,7 @@ class element:
             out += f"\n\t- Solution : {self.solution_}"
         return out
 
-    # element's value as a property
+    # element's value
     #
     @property
     def num(self)->int | None:
@@ -73,7 +74,7 @@ class element:
         else:
             self.status_.assign(elementStatus.STATUS_EMPTY)
 
-    # element's "valid" value as a property
+    # element's "valid" value
     #
     @property
     def solution(self)->int | None:
@@ -115,9 +116,18 @@ class element:
     def hypothesis(self)->int:
         return self.hyp_
     @hypothesis.setter
-    def hypothesis(self, newVal : int):
+    def hypothesis(self, newVal:int):
         if newVal >= hypColourID.NO_HYP and newVal <= hypColourID.HYP_4:
             self.hyp_ = newVal
+
+    # Modified state
+    #
+    @property
+    def modified(self)->bool:
+        return self.status_.isSet(elementStatus.STATUS_MODIFIED)
+    @modified.setter
+    def modified(self, state:bool):
+        self.status_.set(elementStatus.STATUS_MODIFIED, state)
 
     # Set/modify the value
     #

@@ -12,60 +12,60 @@
 # Command line options
 #
 
-ARG_BROWSE_S = "-b"  # Browse a folder
-ARG_BROWSE = "--browse"
-COMMENT_BROWSE = "Browse the {FOLDER} folder and display contained sudokus"
+ARG_BROWSE_S = '-b'  # Browse a folder
+ARG_BROWSE = '--browse'
+COMMENT_BROWSE = 'Browse the {FOLDER} folder and display contained sudokus'
 
-ARG_EDIT_S = "-e"  # Edit (and modify or create) a sudoku
-ARG_EDIT = "--edit"
-COMMENT_EDIT = "Edit or create the {FILE} file"
+ARG_EDIT_S = '-e'  # Edit (and modify or create) a sudoku
+ARG_EDIT = '--edit'
+COMMENT_EDIT = 'Edit or create the {FILE} file'
 
-ARG_SOLVE_S = "-s"  # Search a solution for the sudoku
-ARG_SOLVE = "--solve"
-COMMENT_SOLVE = "Solve (find a solution) for the sudoku saved in {FILE} file"
+ARG_SOLVE_S = '-s'  # Search a solution for the sudoku
+ARG_SOLVE = '--solve'
+COMMENT_SOLVE = 'Solve (find a solution) for the sudoku saved in {FILE} file'
 
-ARG_BROWSE_AND_SOLVE_S = "-bs"
-ARG_BROWSE_AND_SOLVE = "--browseSolve"
-COMMENT_BROWSE_AND_SOLVE = "Browse the {FOLDER} folder and solve the choosen sudoku"
+ARG_BROWSE_AND_SOLVE_S = '-bs'
+ARG_BROWSE_AND_SOLVE = '--browseSolve'
+COMMENT_BROWSE_AND_SOLVE = 'Browse the {FOLDER} folder and solve the choosen sudoku'
 
-ARG_EDIT_AND_SOLVE_S = "-es"
-ARG_EDIT_AND_SOLVE = "--editSolve"
-COMMENT_EDIT_AND_SOLVE = "Edit and solve the sudoku in the {FILE} file"
+ARG_EDIT_AND_SOLVE_S = '-es'
+ARG_EDIT_AND_SOLVE = '--editSolve'
+COMMENT_EDIT_AND_SOLVE = 'Edit and solve the sudoku in the {FILE} file'
 
-ARG_SEARCH_OBVIOUS_S = "-o"  # Search for obvious values
-ARG_SEARCH_OBVIOUS = "--obvious"
-COMMENT_SEARCH_OBVIOUS = "Search obvious vals before brute-force solution searching"
+ARG_SEARCH_OBVIOUS_S = '-o'  # Search for obvious values
+ARG_SEARCH_OBVIOUS = '--obvious'
+COMMENT_SEARCH_OBVIOUS = 'Search obvious vals before brute-force solution searching'
 
-ARG_SAVE_SOLUTION_S = "-x"  # Save / export the solution
-ARG_SAVE_SOLUTION = "--export"
-COMMENT_SAVE_SOLUTION = "Save the solution of the sudoku"
+ARG_SAVE_SOLUTION_S = '-x'  # Save / export the solution
+ARG_SAVE_SOLUTION = '--export'
+COMMENT_SAVE_SOLUTION = 'Save the solution of the sudoku'
 
 # Show sudoku during the search process
-ARG_DETAILS_S = "-d"  # Draw details
-ARG_DETAILS = "--details"
-COMMENT_DETAILS = "Show sudokus during the resolution process"
+ARG_DETAILS_S = '-d'  # Draw details
+ARG_DETAILS = '--details'
+COMMENT_DETAILS = 'Show sudokus during the resolution process'
 
 # Use wxPython library as GUI
-ARG_WX_S = "-wx"
-ARG_WX = "--wxPython"
-COMMENT_WX = "Use wkPython for drawings and GUI"
+ARG_WX_S = '-wx'
+ARG_WX = '--wxPython'
+COMMENT_WX = 'Use wkPython for drawings and GUI'
 
 #
 #  Files & folders
 #
 
-FOLDER_SUDOKUS = "../sudokus"
-FOLDER_ASSETS = "../assets"
+FOLDER_SUDOKUS = '../sudokus'
+FOLDER_ASSETS = '../assets'
 
 # File management
 #
-FILE_VALUE_SEPARATOR:str = ","  # Value separator in files
-FILE_COMMENTS:str = "#"  # Comment lines start with
-FILE_EXTENSION:str = ".txt"
-FILE_EXPORT_EXTENSION:str = ".solution"  # A solution sudoku file
+FILE_VALUE_SEPARATOR:str = ','  # Value separator in files
+FILE_COMMENTS:str = '#'  # Comment lines start with
+FILE_EXTENSION:str = '.txt'
+FILE_EXPORT_EXTENSION:str = '.solution'  # A solution sudoku file
 
-FILE_TEMP_NAME:str=".sudoku_temp.txt"   # Temporary saved
-FILE_TEMP_DETAILS_SEP:str = "-"
+FILE_TEMP_NAME:str='.sudoku_temp.txt'   # Temporary saved
+FILE_TEMP_DETAILS_SEP:str = '-'
 
 #
 #  Message boxes
@@ -83,9 +83,13 @@ STR_EDIT_OR_SOLVE:str = 'Do you want to edit or to solve the current sudoku?'
 STR_MODIFIED_ARRAY:str= 'The array has been modified. All modified elements will be turned into \'original\' elements.\nDo you want to proceed?'
 STR_WILDCARD:str= 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
 STR_NOT_SAVED:str = 'Current content has not been saved.\nDo you want to proceed?'
+STR_SAVE_SUCCESS:str= 'Current sudoku successfully saved as'
 
-STR_SOLUTION:str = "Solution"
-STR_NO_SOLUTION:str = 'No solution found.'
+STR_SOLUTION:str = 'Solution'
+STR_FOUND_SOLUTION:str = 'Congratulation.\n You find a solution for the array.'
+STR_FOUND_A_SOLUTION:str = 'Found a solution'
+STR_NO_SOLUTION:str = 'No solution found for this array'
+
 STR_EMPTY_ARRAY:str = "The current sudoku array is empty."
 STR_FINISHED_ARRAY:str = "The current sudoku is already completed."
 
@@ -114,9 +118,9 @@ STR_CREATE_DONE:str = 'Done'
 STR_CREATE_CANCEL:str = 'Cancel'
 
 # Resolution
-STR_SOLVE_SEARCH:str = "Search for a solution"
-STR_SOLVE_SEARCHING:str = "Searching ..."
-STR_SOLVE_NO_SOLUCE:str = "This array is insolvable. \nYou should re-edit it."
+STR_SOLVE_SEARCH:str = 'Search for a solution'
+STR_SOLVE_SEARCHING:str = 'Searching ...'
+STR_SOLVE_NO_SOLUCE:str = 'This array is insolvable. \nYou should re-edit and modify it.'
 STR_SOLVE_MENU:str = 'Solve'
 STR_SOLVE_MANUAL:str = 'Manually'
 STR_SOLVE_OBVIOUS:str = 'Obvious values'
