@@ -78,7 +78,7 @@ STR_SAVE:str = 'Save sudoku'
 STR_EDITION:str = 'Sudoku edition'
 STR_EMPTY:str= 'empty'
 
-STR_MODIFY:str = 'Modify'
+STR_EDIT:str = 'Edit'
 STR_EDIT_OR_SOLVE:str = 'Do you want to edit or to solve the current sudoku?'
 STR_MODIFIED_ARRAY:str= 'The array has been modified. All modified elements will be turned into \'original\' elements.\nDo you want to proceed?'
 STR_WILDCARD:str= 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
@@ -88,6 +88,8 @@ STR_SOLUTION:str = "Solution"
 STR_NO_SOLUTION:str = 'No solution found.'
 STR_EMPTY_ARRAY:str = "The current sudoku array is empty."
 STR_FINISHED_ARRAY:str = "The current sudoku is already completed."
+
+STR_CANCEL_LOOSE_CHANGES:str = "All changes will be lost.\nDo you want to proceed?"
 
 #
 # Menus & toolbar items

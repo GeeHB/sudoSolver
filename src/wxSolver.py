@@ -320,7 +320,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if self.sudoku_.file_tempExists():
             if wx.MessageBox(GUIStrings.STR_TEMP_EXIST, GUIStrings.STR_TEMP_FILE,
                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES and self.hypsColours_.fromTemp(self.sudoku_.file_tempLoad()):
-                self.sudoku_.hasASolution()
+                self.sudoku_.hasASolution() # ensure the soluce has been successfully reloaded
 
                 # Hyps and associated colours
                 cols:list[element.hypColourID] = self.hypsColours_.toList()
@@ -328,7 +328,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.hypsPanel_.hyp_add(cols[id+1])
                 self.parent_.hyp_setList(cols)
 
-                self.sudoku_.nonEmptyItems()
+                self.sudoku_.nonEmptyItems()    # update counter
                 self._edit_countChanged()
 
                 # restart edition
@@ -376,17 +376,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         # From the contextual menu ?
         if self._menu_handleContextualItems(menuId):
-            self._edit_selChanged()
+            self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
             return
 
         # Other menu items
         match menuId:
             case menuConsts.ID_CREATE_EMPTY | menuConsts.ID_CREATE_EASY | menuConsts.ID_CREATE_MEDIUM | menuConsts.ID_CREATE_HARD :
-                self._menu_fileNew(menuId)
+                self._file_New(menuId)
             case wx.ID_OPEN:
-                self._menu_fileOpen()
+                self._file_open()
             case wx.ID_SAVE:
-                self._menu_fileSave()
+                self._file_save()
 
             case menuConsts.ID_DISPLAY_CENTER:
                 actual:bool = self.params_.center
@@ -404,14 +404,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
-                self._menu_createOrResolve(create = True)
+                self._edit_createOrResolve(create = True)
             case menuConsts.ID_EDIT_DONE:
                 self._edit_done()
             case menuConsts.ID_EDIT_CANCEL:
                 self._edit_cancel()
 
             case menuConsts.ID_SOLVE_MANUAL:
-                self._menu_createOrResolve(create = False)
+                self._edit_createOrResolve(create = False)
             case menuConsts.ID_SOLVE_OBVIOUS:
                 self._obvious_findValues(True)
             case menuConsts.ID_SOLVE_RESOLVE_SINGLE:
@@ -429,7 +429,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self._hyp_updateNonEmptyCount()
 
             case wx.ID_EXIT:
-                self._menu_fileExit()
+                self._file_exit()
             case _:
                 pass
 
@@ -470,7 +470,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 case solver.ownZone.ZONE_ARRAY:
                     self.edition_.validate()
                     if  self.edition_.currentPos_.moveTo(pos=(newPos[1], newPos[2])):   # click on the array
-                        self._edit_selChanged()
+                        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
                 case solver.ownZone.ZONE_HELP_MATRIX:
                     value:int = 1 + 3 * newPos[2] + newPos[1]   # Value in the help matrix
@@ -496,14 +496,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION
                 )
 
-                dlg.SetYesNoLabels(menuConsts.IDS_SOLVE_RESOLVE, GUIStrings.STR_MODIFY)  # pyright: ignore[reportUnknownMemberType]
+                dlg.SetYesNoLabels(menuConsts.IDS_SOLVE_RESOLVE, GUIStrings.STR_EDIT)  # pyright: ignore[reportUnknownMemberType]
                 result = dlg.ShowModal()
 
                 match result:
                     case wx.ID_YES:
-                        self._menu_createOrResolve(create = False, row = clickPos[1], line = clickPos[2])
+                        self._edit_createOrResolve(create = False, row = clickPos[1], line = clickPos[2])
                     case wx.ID_NO:
-                        self._menu_createOrResolve(create = True, row = clickPos[1], line = clickPos[2])
+                        self._edit_createOrResolve(create = True, row = clickPos[1], line = clickPos[2])
                     case _:
                         pass
 
@@ -516,7 +516,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.edition_.validate()
             clickPos : tuple[int, int, int] = self._mouse_translatePosition(pos=(event.x, event.y))
             if clickPos[0] == solver.ownZone.ZONE_ARRAY and self.edition_.currentPos_.moveTo(pos=(clickPos[1], clickPos[2])):
-                self._edit_selChanged()
+                self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
             if self.sudoku_[self.edition_.currentPos_.index].isChangeable():
                 # possible values
@@ -810,25 +810,27 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case _:
                 pass
 
-        self._edit_selChanged()
+        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
     # Cancel
     #
     @override
     def _edit_cancel(self)->bool:
         done:bool = False
-        if super()._edit_cancel():
-            self.edition_.modified = False # !!!
-            self.draw()
-            done = True
 
-        if self.sudoku_.edit_rejectAll() > 0 :
-            #self._hyp_updateNonEmptyCount()
-            self._edit_countChanged() # should be enough
+        if wx.MessageBox(GUIStrings.STR_CANCEL_LOOSE_CHANGES, GUIStrings.STR_CREATE_CANCEL,
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES:
+            if super()._edit_cancel():
+                self.edition_.modified = False # !!!
+                self.draw()
+                done = True
 
-        self.parent_.hyp_onClear()
-        self._edit_stop()
-        self.draw_update()
+            if self.sudoku_.edit_rejectAll() > 0 :
+                self._edit_countChanged() # should be enough
+
+            self.parent_.hyp_onClear()
+            self._edit_stop()
+            self.draw_update()
 
         return done
 
@@ -839,6 +841,25 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         if self.sudoku_.completed() and not self.completedTimer_.IsRunning():
             self.completedTimer_.Start(GUIConsts.TIMER_RATE_COMPLETED)
+
+    # Start edition or resolution
+    #
+    def _edit_createOrResolve(self, create:bool, row:int | None = None, line:int | None = None):
+        if self.sudoku_.completed():
+            return  # nothing to do if already finished
+
+        if create:
+            self.edition_.creating = True
+            self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
+        else:
+            self.edition_.manualSolving = True
+            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
+
+        if row is not None and line is not None:    # selected item has just been clicked (or not)
+            self.edition_.currentPos_.moveTo(line,row)
+            self.edition_.prevPos_ = None
+
+        self._edit_start(create, row is None)
 
     # Done / End
     #
@@ -852,10 +873,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.draw_update()
 
-    # Selected item has just changed
-    #
-    def _edit_selChanged(self):
-        self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
     # Start edition mode
     #
@@ -941,6 +958,105 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         if self.helpVisible_:
             self._draw_helpMatrix_ex()
+
+    #
+    # Files / arrays
+    #
+
+    # Create a new or empty array
+    #
+    def _file_New(self, menuId:int):
+        if not self.edition_.editing:   # accelerators still active even when associated menu items are disabled !
+            if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_NEW,
+                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                    return
+
+            self.edition_.modified = False
+            match menuId:
+                case menuConsts.ID_CREATE_EASY:
+                    self.sudoku_.new(arrayComplexity.Easy)
+                case menuConsts.ID_CREATE_MEDIUM:
+                    self.sudoku_.new(arrayComplexity.Medium)
+                case menuConsts.ID_CREATE_HARD:
+                    self.sudoku_.new(arrayComplexity.Hard)
+                case _:
+                    self.sudoku_.new(arrayComplexity.Empty)
+
+            self._menu_setItemsStates()
+
+            self.parent_.hyp_onClear()
+            self._edit_countChanged() # new elements have values
+            self.draw_update()
+
+    # Load an array
+    #
+    def _file_open(self):
+        if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_LOAD,
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
+
+        self.edition_.modified = False
+        with wx.FileDialog(self, GUIStrings.STR_LOAD, wildcard=GUIStrings.STR_WILDCARD,
+                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
+                return     # the user changed its mind
+
+        # New file just loaded
+        self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
+        self._menu_setItemsStates()
+
+        self.parent_.hyp_onClear()
+        self._edit_countChanged() # new elements have values
+
+    # Save current array
+    #
+    def _file_save(self):
+        if self.sudoku_.isEmpty():
+            wx.MessageBox(GUIStrings.STR_EMPTY_ARRAY, GUIStrings.STR_SAVE,
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+            return
+
+        if self.sudoku_.completed():
+            wx.MessageBox(GUIStrings.STR_FINISHED_ARRAY, GUIStrings.STR_SAVE,
+                        wx.ICON_EXCLAMATION | wx.OK, self)
+            return
+
+        path : str | None = self.filename
+        done : bool = False
+        wildcard = GUIStrings.STR_WILDCARD
+
+        with wx.FileDialog(
+            self,
+            message=GUIStrings.STR_SAVE,
+            defaultFile=path,
+            wildcard=wildcard,
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+        ) as dlg:  # pyright: ignore[reportUnknownVariableType]
+            if dlg.ShowModal() == wx.ID_OK:  # pyright: ignore[reportUnknownMemberType]
+                path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+
+                # Save the sudoku
+                path = self.sudoku_.file_save(newFileName=path, addExtent = GUIStrings.FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
+                done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
+
+        if done :
+            self.setFilename(path)
+            self.edition_.modified = False
+            self._menu_setItemsStates()
+
+            wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
+                        GUIStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
+
+    # Quit
+    #
+    def _file_exit(self):
+        if self.edition_.modified and wx.NO == wx.MessageBox(
+                    GUIStrings.STR_NOT_SAVED, GUIStrings.STR_EXIT,
+                    wx.ICON_QUESTION | wx.YES_NO, self):
+            return
+
+        self.Close(True)
 
     #
     # Help / offered values
@@ -1045,7 +1161,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             if position is not None:
                 self.edition_.moveTo(position)
-                self._edit_selChanged()
+                self._edit_updatePos(self.edition_.prevPos_, self.edition_.currentPos_)
 
             self.parent_.hyp_onReject(self.hypsColours_.toList())
             self.draw_update()
@@ -1153,120 +1269,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         accel = wx.AcceleratorTable(entries)
         self.SetAcceleratorTable(accel)
-
-    # Start edition or resolution
-    #
-    def _menu_createOrResolve(self, create:bool, row:int | None = None, line:int | None = None):
-        if self.sudoku_.completed():
-            return  # nothing to do if already finished
-
-        if create:
-            self.edition_.creating = True
-            self.parent_.modeChanged(wxEditionMode.MODE_CREATION)
-        else:
-            self.edition_.manualSolving = True
-            self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-
-        if row is not None and line is not None:    # selected item has just been clicked (or not)
-            self.edition_.currentPos_.moveTo(line,row)
-            self.edition_.prevPos_ = None
-
-        self._edit_start(create, row is None)
-
-    # Create a new or empty array
-    #
-    def _menu_fileNew(self, menuId:int):
-        if not self.edition_.editing:   # accelerators still active even when associated menu items are disabled !
-            if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_NEW,
-                        wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                    return
-
-            self.edition_.modified = False
-            match menuId:
-                case menuConsts.ID_CREATE_EASY:
-                    self.sudoku_.new(arrayComplexity.Easy)
-                case menuConsts.ID_CREATE_MEDIUM:
-                    self.sudoku_.new(arrayComplexity.Medium)
-                case menuConsts.ID_CREATE_HARD:
-                    self.sudoku_.new(arrayComplexity.Hard)
-                case _:
-                    self.sudoku_.new(arrayComplexity.Empty)
-
-            self._menu_setItemsStates()
-
-            self.parent_.hyp_onClear()
-            self._edit_countChanged() # new elements have values
-            self.draw_update()
-
-    # Load an array
-    #
-    def _menu_fileOpen(self):
-        if self.edition_.modified and wx.MessageBox(GUIStrings.STR_NOT_SAVED, GUIStrings.STR_LOAD,
-                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-                return
-
-        self.edition_.modified = False
-        with wx.FileDialog(self, GUIStrings.STR_LOAD, wildcard=GUIStrings.STR_WILDCARD,
-                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType, reportUnknownMemberType]
-
-            if fileDialog.ShowModal() == wx.ID_CANCEL:  # pyright: ignore[reportUnknownMemberType]
-                return     # the user changed its mind
-
-        # New file just loaded
-        self.fromFile(fileDialog.GetPath())  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-        self._menu_setItemsStates()
-
-        self.parent_.hyp_onClear()
-        self._edit_countChanged() # new elements have values
-
-    # Save current array
-    #
-    def _menu_fileSave(self):
-        if self.sudoku_.isEmpty():
-            wx.MessageBox(GUIStrings.STR_EMPTY_ARRAY, GUIStrings.STR_SAVE,
-                        wx.ICON_EXCLAMATION | wx.OK, self)
-            return
-
-        if self.sudoku_.completed():
-            wx.MessageBox(GUIStrings.STR_FINISHED_ARRAY, GUIStrings.STR_SAVE,
-                        wx.ICON_EXCLAMATION | wx.OK, self)
-            return
-
-        path : str | None = self.filename
-        done : bool = False
-        wildcard = GUIStrings.STR_WILDCARD
-
-        with wx.FileDialog(
-            self,
-            message=GUIStrings.STR_SAVE,
-            defaultFile=path,
-            wildcard=wildcard,
-            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-        ) as dlg:  # pyright: ignore[reportUnknownVariableType]
-            if dlg.ShowModal() == wx.ID_OK:  # pyright: ignore[reportUnknownMemberType]
-                path = dlg.GetPath()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
-
-                # Save the sudoku
-                path = self.sudoku_.file_save(newFileName=path, addExtent = GUIStrings.FILE_EXTENSION)  # pyright: ignore[reportUnknownArgumentType]
-                done = path is not None and len(path)>0  # pyright: ignore[reportArgumentType]
-
-        if done :
-            self.setFilename(path)
-            self.edition_.modified = False
-            self._menu_setItemsStates()
-
-            wx.MessageBox(f"Current sudoku successfully saved as '{self.filename}'",
-                        GUIStrings.STR_SAVE, wx.ICON_INFORMATION | wx.OK, self)
-
-    # Quit
-    #
-    def _menu_fileExit(self):
-        if self.edition_.modified and wx.NO == wx.MessageBox(
-                    GUIStrings.STR_NOT_SAVED, GUIStrings.STR_EXIT,
-                    wx.ICON_QUESTION | wx.YES_NO, self):
-            return
-
-        self.Close(True)
 
     # Check/handle menu event from contextual menu
     #
