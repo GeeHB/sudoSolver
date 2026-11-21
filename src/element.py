@@ -90,7 +90,7 @@ class element:
     def revealSolution(self):
         if self.solution_ is not None:
             self.value_ = self.solution_
-            self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_OFFERED | elementStatus.STATUS_NOTIFYING)
+            self.status_.assign(elementStatus.STATUS_SET | elementStatus.STATUS_OFFERED | elementStatus.STATUS_NOTIFYING | elementStatus.STATUS_MODIFIED)
 
     # show the element as an error
     #

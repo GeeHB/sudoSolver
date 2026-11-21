@@ -481,7 +481,7 @@ class solver:
             self.prevValues_.append(prevValue(index, self.sudoku_[index].num))
         #self.sudoku_.elements_[index].setValue(val, elementStatus.STATUS_ORIGINAL, True)
         self.sudoku_.modifyAt(pointer(index, False), value=val,
-            status=(elementStatus.STATUS_ORIGINAL if self.edition_.creating else 0) | elementStatus.STATUS_SET,
+            status=(elementStatus.STATUS_ORIGINAL if self.edition_.creating else 0) | elementStatus.STATUS_SET | elementStatus.STATUS_MODIFIED,
             hypColID=self.hypsColours_.getColIDAt(len(self.hypsColours_) - 1)
         )
         self.hypsColours_.setFirstPosition(index)
@@ -594,7 +594,7 @@ class solver:
         start : float = time.time()
         values = 1
         while 0 < values:
-            values = self.sudoku_.obvious_findValues()
+            values , _ = self.sudoku_.obvious_findValues()
             found += values
 
         if found>0:
@@ -603,6 +603,13 @@ class solver:
             return True
 
         return False
+
+    # Find a single obvious value
+    #
+    #   return a boolean : found a value ?
+    #
+    def obvious_findSingleValue(self)->int:
+        return self.sudoku_.obvious_findSingleValue()
 
     #
     # Resolution

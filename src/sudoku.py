@@ -834,11 +834,25 @@ class sudoku(threading.Thread):
     #   Obvious values
     #
 
-    # Search and set all the possible obvious values in the sudoku
-    #   returns the # of values found (and set)
+    # Search and set an obvious value in the sudoku
     #
-    def obvious_findValues(self)->int:
+    #   returns the id the values or -1 if not found
+    #
+    def obvious_findSingleValue(self)->int:
+        res:tuple[int,int] = self.obvious_findValues(False)
+        print(res)
+        return -1 if res[0] != 1 else res[1]
+
+    # Search and set all the possible obvious values in the sudoku
+    #
+    #   @searchAll : True (default) if all values are to be found
+    #
+    #   @return : the tuple (# of values found (and set), id of first found value or -1 if none)
+    #
+    def obvious_findValues(self, searchAll:bool = True)->tuple[int,int]:
         found:int = 0
+        count:int = 0
+        id:int = -1
         position:pointer = pointer()
 
         for _ in range(INDEX_MAX):
@@ -849,25 +863,54 @@ class sudoku(threading.Thread):
                 if value is not None:
                     # One more obvious value !!!!
                     self.elements_[position.index].setValue(
-                        value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING
+                        value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING | elementStatus.STATUS_MODIFIED
                     )
+
+                    if -1 == id:
+                        id = position.index
+
+                    if searchAll == False:
+                        self.nonEmptyCount_+=1
+                        print(f"1 - {position}")
+                        return (1 , position.index)      # First obvious val. found
+
                     found += 1
             else:
                 value = self.elements_[position.index].num
 
                 if value is not None :
                     # Can we put this value on another line ?
-                    found += self._obvious_setValueInLines(position, value)
+                    count += self._obvious_setValueInLines(position, value)
+                    if count > 0:
+                        if -1 == id:
+                            id = position.index
+
+                        if searchAll == False:
+                            self.nonEmptyCount_+=1
+                            print(f"2 - {position}")
+                            return (1 , position.index)      # First obvious val. found
+
+                        found+=count
 
                     # ... or/and put it in another col ?
-                    found += self._obvious_setValueInRows(position, value)
+                    count += self._obvious_setValueInRows(position, value)
+                    if count > 0:
+                        if -1 == id:
+                            id = position.index
+
+                        if searchAll == False:
+                            self.nonEmptyCount_+=1
+                            print(f"3 - {position}")
+                            return (1 , position.index)      # First obvious val. found
+
+                        found+=count
 
             # Next pos.
             position += 1
 
         # End of search loop
         self.nonEmptyCount_+=found
-        return found
+        return (found, id)
 
     # Is there an obvious value for the given position ?
     #
@@ -958,7 +1001,7 @@ class sudoku(threading.Thread):
         # Did we find a position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
+            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING  | elementStatus.STATUS_MODIFIED)
             return 1
 
         # No ...
@@ -1046,7 +1089,7 @@ class sudoku(threading.Thread):
         # Did we find a valid position ?
         if foundPos is not None:
             # Yes !!!
-            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING)
+            self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING  | elementStatus.STATUS_MODIFIED)
             return 1
 
         # No ...

@@ -1073,7 +1073,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             case GUIStrings.STR_HELP_ERRORS:
                 self._help_showErrorCount()
 
-            case GUIStrings.STR_SOLVE_OBVIOUS:
+            case GUIStrings.STR_HELP_OBVIOUS_SINGLE:
+                self._obvious_findSingleValue(True)
+
+            case GUIStrings.STR_HELP_OBVIOUS_ALL:
                 self._obvious_findValues(True)
 
             case _:
@@ -1409,6 +1412,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     wx.MessageBox(GUIStrings.STR_HELP_NO_OBVIOUS, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
         return count
 
+    # Find an obvious value
+    #
+    def _obvious_findSingleValue(self, showDlg:bool)->bool:
+        if self.sudoku_.isOk() :
+            id = self.obvious_findSingleValue()
+            if id != -1 :
+                self.edition_.moveTo(id)
+                self._edit_countChanged()
+                self.draw_update()
+                self._notify_start()
+                return True
+            else:
+                if showDlg:
+                    wx.MessageBox(GUIStrings.STR_HELP_NO_OBVIOUS, APP_SHORT_NAME, wx.ICON_INFORMATION | wx.OK, self)
+        return False
+
     #
     # Resolving
     #
@@ -1733,7 +1752,8 @@ class wxSolverFrame(wxMainFrame):
                                         GUIStrings.STR_HELP_OFFER,
                                         GUIStrings.STR_HELP_ERROR,
                                         GUIStrings.STR_HELP_ERRORS,
-                                        GUIStrings.STR_HELP_OBVIOUS,
+                                        GUIStrings.STR_HELP_OBVIOUS_SINGLE,
+                                        GUIStrings.STR_HELP_OBVIOUS_ALL,
                                 ],
                                 style=wx.CB_DROPDOWN | wx.CB_READONLY)
         self.helpCombo_.SetSelection(0)

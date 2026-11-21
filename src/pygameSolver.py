@@ -269,7 +269,7 @@ class pygameSolver(solver.solver):
         self._theme_changeByName(GUITheme.DEF_THEME_NAME)
         self._draw_fontSize2PixelSize()
 
-        self.mode_.assign(self.MODE_EDIT + self.MODE_BROWSEFOLDER)
+        self.mode_.assign(self.MODE_EDIT | self.MODE_BROWSEFOLDER)
 
         # PYGame init. is ok
         self.initialized = True

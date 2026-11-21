@@ -123,7 +123,7 @@ STR_SOLVE_SEARCHING:str = 'Searching ...'
 STR_SOLVE_NO_SOLUCE:str = 'This array is insolvable. \nYou should re-edit and modify it.'
 STR_SOLVE_MENU:str = 'Solve'
 STR_SOLVE_MANUAL:str = 'Manually'
-STR_SOLVE_OBVIOUS:str = 'Obvious values'
+STR_SOLVE_OBVIOUS:str = 'All obvious values'
 STR_SOLVE_RESOLVE:str = 'Resolve'
 STR_SOLVE_RESOLVE_SINGLE:str= 'Single thread'
 STR_SOLVE_RESOLVE_MULTI:str= 'Multi-threaded'
@@ -166,7 +166,9 @@ STR_FILLED:str = 'Filled'
 STR_TIP_HELP:str = 'Resolution helpers'
 
 STR_HELP_CHOOSE:str = STR_TIP_HELP
-STR_HELP_OBVIOUS:str = STR_SOLVE_OBVIOUS
+STR_HELP_OBVIOUS_SINGLE:str = "Single obvious value"
+STR_HELP_OBVIOUS_ALL:str = STR_SOLVE_OBVIOUS
+
 STR_HELP_OFFER:str = 'Offer a value'
 STR_HELP_ERROR:str = 'Show an error'
 STR_HELP_ERRORS:str = 'Error count'
