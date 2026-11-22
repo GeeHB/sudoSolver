@@ -38,10 +38,8 @@ class pointer:
             self.index_ = index
             self._whereAmI()
 
-    # Display
-    def __repr__(self)->str:
-        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t- square ID : {self.squareID_}\n\t- {"Game" if self.gameMode_ else "not game"}"
-
+    # Clear the position
+    #
     def clear(self, game:bool):
         self.index_ = INDEX_MIN
         self.row_ = 0
@@ -93,31 +91,6 @@ class pointer:
     #
     # Change index
     #
-
-    # +=
-    #
-    def __iadd__(self, inc:int):
-        self.index_ += inc
-        # Reach the end of the matrix ?
-        if self.index_ > INDEX_MAX:
-            if True == self.gameMode_ :
-                raise reachedEndOfList
-            else:
-                if self.index_ > (1+INDEX_MAX):
-                    raise IndexError
-
-        self._whereAmI()
-        return self
-
-    # -=
-    #
-    def __isub__(self, dec:int):
-        self.index_ -= dec
-        if self.index_ < INDEX_MIN:
-            raise IndexError
-
-        self._whereAmI()
-        return self
 
     # Change "row"
     #
@@ -185,5 +158,48 @@ class pointer:
 
     def _setInRange(self, value:int):
         return 0 if value < 0 else (ROW_COUNT - 1) if value >= ROW_COUNT else value
+
+    #
+    # Operators overload
+    #
+
+    # Display
+    def __repr__(self)->str:
+        return f"index : {self.index_}\n\t- pos : ({self.row_} x {self.line_})\n\t- square ID : {self.squareID_}\n\t- {"Game" if self.gameMode_ else "not game"}"
+
+    # ==
+    #
+    def __eq__(self, other:object):
+        return False if not isinstance(other, pointer) else (self.index_ == other.index_)
+
+    # !=
+    #
+    def __ne__(self, other:object):
+        return not self.__eq__(other)
+
+    # +=
+    #
+    def __iadd__(self, inc:int):
+        self.index_ += inc
+        # Reach the end of the matrix ?
+        if self.index_ > INDEX_MAX:
+            if True == self.gameMode_ :
+                raise reachedEndOfList
+            else:
+                if self.index_ > (1+INDEX_MAX):
+                    raise IndexError
+
+        self._whereAmI()
+        return self
+
+    # -=
+    #
+    def __isub__(self, dec:int):
+        self.index_ -= dec
+        if self.index_ < INDEX_MIN:
+            raise IndexError
+
+        self._whereAmI()
+        return self
 
 # EOF

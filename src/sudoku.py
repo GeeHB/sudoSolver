@@ -836,7 +836,7 @@ class sudoku(threading.Thread):
 
     # Search and set an obvious value in the sudoku
     #
-    #   returns the id the values or -1 if not found
+    #   @return : the id of an obvious value or -1 if none found
     #
     def obvious_findSingleValue(self)->int:
         res:tuple[int,int] = self.obvious_findValues(False)
@@ -844,7 +844,7 @@ class sudoku(threading.Thread):
 
     # Search and set all the possible obvious values in the sudoku
     #
-    #   @searchAll : True (default) if all values are to be found
+    #   @searchAll : True (default) if all values are to be found, False if just one
     #
     #   @return : the tuple (# of values found (and set), id of first found value or -1 if none)
     #
@@ -911,7 +911,9 @@ class sudoku(threading.Thread):
 
     # Is there an obvious value for the given position ?
     #
-    #      returns the value (if just one possible) or None
+    #  @position : position to check
+    #
+    #  @return : the value (if just one possible) or None
     #
     def _obvious_checkValue(self, position:pointer)-> int | None:
         value : int | None = None

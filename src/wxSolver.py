@@ -318,8 +318,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def init_done(self):
         # a temp file ?
         if self.sudoku_.file_tempExists():
+            """
             if wx.MessageBox(GUIStrings.STR_TEMP_EXIST, GUIStrings.STR_TEMP_FILE,
                         wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES and self.hypsColours_.fromTemp(self.sudoku_.file_tempLoad()):
+            """
+            if self.hypsColours_.fromTemp(self.sudoku_.file_tempLoad()):    # always load temp file
                 self.sudoku_.hasASolution() # ensure the soluce has been successfully reloaded
 
                 # Hyps and associated colours
@@ -330,11 +333,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
                 self.sudoku_.nonEmptyItems()    # update counter
                 self._edit_countChanged()
-
-                # restart edition
-                #self.edition_.manualSolving = True
-                #self.parent_.modeChanged(wxEditionMode.MODE_RESOLUTION)
-                #self._edit_start(creationMode=False)
                 self.draw_update()
 
             self.sudoku_.file_tempRemove()  # no need to keep it any longer
@@ -1352,6 +1350,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     #  Element(s)' notifications
     #
+
     @override
     def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_NOTIFYING, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
         if self.notifyTimer_.IsRunning():   # Stop previous notification timer
@@ -1363,6 +1362,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         if not self.notifyTimer_.IsRunning():
             self.notifyTimer_.Start(freq)
 
+    # redraw all elements in a notification state
+    #
     def _notify_drawElements(self):
         super()._notify_drawElements()
 
@@ -1375,7 +1376,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         for line in range(LINE_COUNT):
             for row in range(ROW_COUNT):
                 currentElement = self.sudoku_[position.index]
-                if currentElement.notifying:
+                if currentElement.notifying and self.edition_.currentPos_ != position:
                     bk, txt = self._theme_getElementColours(position.index, False)
                     self._draw_singleElement(
                         row, line,
