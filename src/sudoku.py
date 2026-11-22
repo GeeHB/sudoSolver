@@ -851,7 +851,6 @@ class sudoku(threading.Thread):
     def obvious_findValues(self, searchAll:bool = True)->tuple[int,int]:
         found:int = 0
         foundPos:int = -1
-        count:int = 0
         id:int = -1
         position:pointer = pointer()
 
@@ -879,8 +878,8 @@ class sudoku(threading.Thread):
 
                 if value is not None :
                     # Can we put this value on another line ?
-                    count,foundPos = self._obvious_setValueInLines(position, value)
-                    if count > 0:
+                    foundPos = self._obvious_setValueInLines(position, value)
+                    if foundPos >= 0:
                         if -1 == id:
                             id = foundPos
 
@@ -888,11 +887,11 @@ class sudoku(threading.Thread):
                             self.nonEmptyCount_+=1
                             return (1 , foundPos)      # First obvious val. found
 
-                        found+=count
+                        found+=1
 
                     # ... or/and put it in another col ?
-                    count,foundPos = self._obvious_setValueInRows(position, value)
-                    if count > 0:
+                    foundPos = self._obvious_setValueInRows(position, value)
+                    if foundPos >= 0:
                         if -1 == id:
                             id = foundPos
 
@@ -900,7 +899,7 @@ class sudoku(threading.Thread):
                             self.nonEmptyCount_+=1
                             return (1 , foundPos)      # First obvious val. found
 
-                        found+=count
+                        found+=1
 
             # Next pos.
             position += 1
@@ -931,9 +930,9 @@ class sudoku(threading.Thread):
 
     # Try to put the value in another line
     #
-    #   @return : the tuple (count (0 or 1) of value set, pos. id of the value or -1)
+    #   @return : pos. id of a value or -1 if none found
     #
-    def _obvious_setValueInLines(self, position:pointer, value:int)->tuple[int,int]:
+    def _obvious_setValueInLines(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
         modID:int = position.squareID() % 3
         if 0 == modID:
@@ -957,7 +956,7 @@ class sudoku(threading.Thread):
         if (firstPos[0] is None and secondPos[0] is None) or (
             not firstPos[0] is None and not secondPos[0] is None
         ):
-            return (0,-1)
+            return -1
 
         # Just one square misses the value => we'll try to put this value in the correct line
         #
@@ -989,7 +988,7 @@ class sudoku(threading.Thread):
                 ):
                     if None != foundPos:
                         # Already a candiate => not obvious
-                        return (0,-1)
+                        return -1
                     foundPos = copy.deepcopy(pos)  # // copy constructor
 
                 # Next row
@@ -1001,16 +1000,16 @@ class sudoku(threading.Thread):
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING  | elementStatus.STATUS_MODIFIED)
-            return (1,foundPos.index)
+            return foundPos.index
 
         # No ...
-        return (0,-1)
+        return -1
 
     # Try to put the value in another row
     #
-    #   @return : the tuple (count (0 or 1) of value set, pos. id of the value or -1)
+    #   @return : pos. id of a value or -1 if none found
     #
-    def _obvious_setValueInRows(self, position:pointer, value:int)->tuple[int,int]:
+    def _obvious_setValueInRows(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
         modID:int = math.floor(position.squareID() / 3)
         if 0 == modID:
@@ -1043,7 +1042,7 @@ class sudoku(threading.Thread):
         if (firstPos[0] is None and secondPos[0] is None) or (
             not firstPos[0] is None and not secondPos[0] is None
         ):
-            return (0,-1)
+            return -1
 
         # Just one square misses the value => we'll try to put this value in the correct line
         #
@@ -1076,7 +1075,7 @@ class sudoku(threading.Thread):
                 ):
                     if None != foundPos:
                         # Already a candiate => not obvious
-                        return (0,-1)
+                        return -1
 
                     foundPos = copy.deepcopy(pos)
 
@@ -1089,10 +1088,10 @@ class sudoku(threading.Thread):
         if foundPos is not None:
             # Yes !!!
             self.elements_[foundPos.index].setValue(value, elementStatus.STATUS_OBVIOUS | elementStatus.STATUS_NOTIFYING  | elementStatus.STATUS_MODIFIED)
-            return (1,foundPos.index)
+            return foundPos.index
 
         # No ...
-        return (0,-1)
+        return -1
 
     #
     #  Resolution

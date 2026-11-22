@@ -19,20 +19,12 @@
    * PyGame 2.1.2
 
 #### todo
-  * Resolution
-    * first, search for a soluce (if none, error)
-    * "Found a solution" by the user
-    * show stats
-    * show progression
-  * Logs et exception
-    * use strings in GUISprings.py
-  * Temp file
-    * check if edit => turn all into "original" or remove
-    * save current array and elements' states
-    * save colours (in comments)
+  * Help
+    * Show col + line while editing
+    * Highlight a value in the grid (all pos)
     
 #### Version 4.1.3
-* 12 nov. 2026
+* 22 nov. 2026
 * Added :
   * add a toolbar to the main frame
   * Hypothesis / tags
@@ -41,12 +33,17 @@
     * choose hyp's colour using owner drawn combobox
     * accept hyp -> all elements 'loose' hyp. colour
     * reject hyp -> all elements are turned into empty elements
-  * Action on left muse button dblclk = edit or solve
+  * Action on left mouse button dblclk = edit or solve
   * GUITheme <- Portable themes management (fonts and colours) 
       * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
       * add specific colours for edition and resolution
   * Help matrix
     * show (on demand) possible element's values in sided small clickable matrix
+  * Helps
+    * Obvious : 1 or all
+    * show an error
+    * error count
+    * offer a value
   * Add 'Display' menu
   * 'All' strings (should be) in a single file : GUIStrings.py
 * Corrections

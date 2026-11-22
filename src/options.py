@@ -20,7 +20,7 @@ from sharedTools import statusbits
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "4.1.4"
-APP_RELEASE_DATE = "17/11/2026"
+APP_RELEASE_DATE = "22/11/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 
@@ -28,7 +28,6 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 #
 PYTHON_VER_MAJ = 3
 PYTHON_VER_MIN = 10
-
 
 #
 # Array complexity - ie. count of filled elements
@@ -114,7 +113,6 @@ class options:
     @browseFolder.setter
     def browseFolder(self, newVal : bool):
         self.runOptions_.set(self.OPTIONS_BROWSE_FOLDER, newVal)
-
 
     # Browse the command line
     #   returns True when ok
@@ -306,9 +304,9 @@ class stats:
 
     def clear(self,clearObvious: bool= True) -> None:
         if clearObvious:
-            self.obvValues_ : int = 0          # Count of obvious values found
-            self.obvDuration_ : float = 0.0      # Duration in sec. of obvious-values search process
-        self.bruteDuration_ : float = 0.0    # Duration in sec. of brute-force search process
-        self.bruteAttempts_ : int  = 0     # Brute-force attempts counter
+            self.obvValues_:int = 0          # Count of obvious values found
+            self.obvDuration_:float = 0.0      # Duration in sec. of obvious-values search process
+        self.bruteDuration_:float = 0.0    # Duration in sec. of brute-force search process
+        self.bruteAttempts_:int  = 0     # Brute-force attempts counter
 
 # EOF
