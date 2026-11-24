@@ -48,13 +48,8 @@ class sudoku(threading.Thread):
     def isOk(self)->bool:
         return (len(self.elements_) == ARRAY_SIZE)
 
-    #
-    # count of non empty elements
-    #
 
-    @property
-    def nonEmpty(self)->int:
-        return self.nonEmptyCount_
+    # Is array complete ?
     def completed(self):
         return (self.nonEmptyCount_ == ARRAY_SIZE)
 
@@ -137,16 +132,6 @@ class sudoku(threading.Thread):
                     count+=1
         return count
 
-    # Count of non-empty elements ?
-    #
-    def nonEmptyItems(self) -> int:
-        self.nonEmptyCount_ = ARRAY_SIZE;
-        if self.isOk():
-            for index in range(ARRAY_SIZE):
-                if self.elements_[index].isEmpty():
-                    self.nonEmptyCount_-=1
-        return self.nonEmptyCount_
-
     # Clear (empty) an element
     #   returns the previous value
     def clearAt(self, index:int, deep : bool)->int:
@@ -173,6 +158,21 @@ class sudoku(threading.Thread):
         for index in range(len(self.elements_)):    # sudoku can be empty !
             if self.elements_[index].error:
                 self.elements_[index].error = False
+
+
+    # Count of non empty elements
+    #
+    @property
+    def nonEmpty(self)->int:
+        return self.nonEmptyCount_
+
+    def nonEmptyItems(self) -> int:
+        self.nonEmptyCount_ = ARRAY_SIZE;
+        if self.isOk():
+            for index in range(ARRAY_SIZE):
+                if self.elements_[index].isEmpty():
+                    self.nonEmptyCount_-=1
+        return self.nonEmptyCount_
 
     # End of notification(s)
     #
@@ -709,7 +709,6 @@ class sudoku(threading.Thread):
                 self.elements_[index].empty(True)
                 count+=1
 
-        self.nonEmptyCount_-=count
         return count
 
     # Find the next possible value for an element (greater than the current one)

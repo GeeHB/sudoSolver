@@ -698,38 +698,12 @@ class solver:
     # Themes
     #
 
-    # Get elements text and bk colours for edition or creation
+    # Add colour(s) to the internal list
     #
-    #  @pos : Element's position
-    #  @selected : Is element selected ?
+    #   @return : count of added colours
     #
-    #  @return : Tuple(bk Colour, txt Colour)
-    def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
-        position:pointer = pointer(pos)
-
-        if self.sudoku_[pos].error: # Always show as invalid value!
-            return (GUITheme.colourID.ID_ERROR_BK, GUITheme.colourID.ID_ERROR_TXT)
-
-        creating:bool = self.edition_.creating
-        solving:bool = self.edition_.manualSolving and selected
-
-        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
-
-        if creating:
-            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour
-
-        if self.sudoku_[pos].isObvious():
-            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
-        else:
-            if self.sudoku_[pos].isOriginal():
-                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
-
-        return bkColour, GUITheme.colourID.ID_SEL_SOLVE_TXT if solving else GUITheme.colourID.ID_SEL_CREATE_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
-
-    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
-    #
-    def _theme_convertColours(self):
-        pass
+    def _theme_addOwnColours(self)->int:
+        return 0
 
     # Change current GUI theme
     #
@@ -765,7 +739,8 @@ class solver:
                 if isinstance(col, tuple) and len(col) == 3:
                         self.theme_.append(GUITheme.ownColour(col)) # col is a tuple !!!
 
-            self._theme_convertColours() # Convert colours
+            self._theme_addOwnColours()     # any colour to add ?
+            self._theme_convertColours()    # Convert all the colours
             return True
 
         except KeyError:
@@ -774,6 +749,38 @@ class solver:
             print(f"Error - The theme '{name}' doesn't contain enough colours.")
 
         return False
+
+    # Convert colour objects from ownColour to specific (to GUI tools)  colour format
+    #
+    def _theme_convertColours(self):
+        pass
+
+    # Get elements text and bk colours for edition or creation
+    #
+    #  @pos : Element's position
+    #  @selected : Is element selected ?
+    #
+    #  @return : Tuple(bk Colour, txt Colour)
+    def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
+        if self.sudoku_[pos].error: # Always show as invalid value!
+            return (GUITheme.colourID.ID_ERROR_BK, GUITheme.colourID.ID_ERROR_TXT)
+
+        creating:bool = self.edition_.creating
+        solving:bool = self.edition_.manualSolving and selected
+        position:pointer = pointer(pos)
+
+        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+
+        if creating:
+            return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour in creation mode
+
+        if self.sudoku_[pos].isObvious():
+            return bkColour, GUITheme.colourID.ID_OBVIOUS_TXT
+        else:
+            if self.sudoku_[pos].isOriginal():
+                return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT
+
+        return bkColour, GUITheme.colourID.ID_SEL_SOLVE_TXT if solving else GUITheme.colourID.ID_SEL_CREATE_TXT if selected else GUITheme.colourID.ID_DEFAULT_TXT
 
     # Get font's weight from theme
     #

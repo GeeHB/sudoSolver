@@ -6,11 +6,13 @@
 #
 #   Description :   Themes management
 #
+#from ctypes import CField
 from enum import IntEnum, auto
 from typing import Any
 
 from GUIConsts import DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE
 
+COLOUR_LIGHT_PERCENT:int = 40       # light factor (100 is white)
 
 # IDs of colours used by app.
 #
@@ -36,7 +38,9 @@ class colourID(IntEnum):
     ID_TAG_2 = auto()
     ID_TAG_3 = auto()
     ID_TAG_4 = auto()
-    ID_COLOUR_COUNT = auto()    # Last item
+    ID_COLOUR_COUNT = auto()    # Last item for themes
+    ID_SEL_COL_LINE_BK = ID_COLOUR_COUNT    # hightighting col & line for selected element
+    ID_SAME_VALUE_TXT = ID_COLOUR_COUNT + 1
 
 #  Themes with colours in RGB
 #
@@ -213,9 +217,10 @@ class ownColour:
     r:int
     g:int
     b:int
-    a:int
+    a:int   # alpha
+    l:int   # light percent
 
-    def __init__(self, rgb:tuple[int,int,int] | None, alpha:int | None = None):
+    def __init__(self, rgb:tuple[int,int,int] | None, alpha:int | None = None, light:int | None = None):
         if rgb is not None:
             self.r = rgb[0]
             self.g = rgb[1]
@@ -226,7 +231,15 @@ class ownColour:
             self.b = 255
 
         self.a = alpha if alpha is not None else 255
+        self.l = light if light is not None else 0
         self.other:Any = None
+
+    def copy(self, other:ownColour):  # noqa: F821
+        self.r = other.r
+        self.g = other.g
+        self.b = other.b
+        self.a = other.a
+        self.l = other.l
 
 # ownFont - Information about a font
 #

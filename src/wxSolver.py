@@ -75,7 +75,7 @@ class wxMainFrame(wx.Frame):
         pass
 
     # count of elements changed
-    def countChanged(self):
+    def countChanged(self, newValue:int):
         pass
 
     # Hypothesis / tag management
@@ -332,7 +332,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.parent_.hyp_setList(cols)
 
                 self.sudoku_.nonEmptyItems()    # update counter
-                self._edit_countChanged()
+                self._edit_countChanged(True)
                 self.draw_update()
 
             self.sudoku_.file_tempRemove()  # no need to keep it any longer
@@ -834,8 +834,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     # Count of non empty elements has changed
     #
-    def _edit_countChanged(self):
-        self.parent_.countChanged()
+    def _edit_countChanged(self, checkCount:bool = False):
+        if checkCount:
+            self.sudoku_.nonEmptyItems()
+        self.parent_.countChanged(self.sudoku_.nonEmpty)
 
         if self.sudoku_.completed() and not self.completedTimer_.IsRunning():
             self.completedTimer_.Start(GUIConsts.TIMER_RATE_COMPLETED)
@@ -1501,11 +1503,28 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Themes
     #
 
-    # Change colour's theme
+    # Add colour(s) to the internal list
+    #
+    #   @return : count of added colours
     #
     @override
+    def _theme_addOwnColours(self)->int:
+        col:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
+        col.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK])
+        col.l = GUITheme.COLOUR_LIGHT_PERCENT
+        self.theme_.colours_.append(col)
+
+        """
+        col = self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK]
+        self.theme_.colours_.append(col)
+        """
+
+        return  (len(self.theme_.colours_) - GUITheme.colourID.ID_COLOUR_COUNT) # 1
+
+    # Change colour's theme
+    @override
     def _theme_changeByName(self, name:str)->bool:
-        ret: bool = solver.solver._theme_changeByName(self, name)
+        ret:bool = solver.solver._theme_changeByName(self, name)
         if ret:
             # Apply new colours to hyp. panel
             self.hypsPanel_.setBackgroundColour(self.theme_.colours_[GUITheme.colourID.ID_CANVAS_BK])
@@ -1523,7 +1542,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         return ret
 
     # Convert colour objects from ownColour to wx.Colour
-    #
     @override
     def _theme_convertColours(self):
         for id in range(len(self.theme_)):
@@ -1533,6 +1551,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 basicColour.g,
                 basicColour.b,
                 basicColour.a)
+
+            if basicColour.l != 0:
+                self.theme_[id].other.ChangeLightness(100 + basicColour.l)
 
     # set a new font (new name or new size)
     def _theme_fontChanged(self):
@@ -1714,7 +1735,7 @@ class wxSolverFrame(wxMainFrame):
         # updates ...
         self.hypsCombo_.setColours()
         self.themeChanged()
-        self.countChanged()
+        self.countChanged(self.canvas_.sudoku_.nonEmpty)
         self.modeChanged(wxEditionMode.MODE_NONE)
 
         # Let's go !!!
@@ -1785,9 +1806,9 @@ class wxSolverFrame(wxMainFrame):
 
     # count of elements changed
     @override
-    def countChanged(self):
+    def countChanged(self, newValue:int):
         if self.canvas_.sudoku_.isOk():
-            self.labelCount_.SetLabel(f"  {self.canvas_.sudoku_.nonEmpty} / {ARRAY_SIZE}")
+            self.labelCount_.SetLabel(f"  {newValue} / {ARRAY_SIZE}")
         else:
             self.labelCount_.SetLabel("  _ / _")
 
