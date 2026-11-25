@@ -480,7 +480,7 @@ class pygameSolver(solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColID:int):
         # too small to be drawn ?
         if self.win_ is None or 0 == self.extSquareWidth_ :
             return
@@ -807,8 +807,8 @@ class pygameSolver(solver.solver):
                 bk, txt = self._theme_getElementColours(index, False)
                 self._draw_startUp()
                 self._draw_singleElement(
-                    self.edition_.currentPos_.row(),
-                    self.edition_.currentPos_.line(),
+                    self.edition_.currentPos_.row,
+                    self.edition_.currentPos_.line,
                     value,bk, txt,
                     currentElement.hypothesis,
                     )

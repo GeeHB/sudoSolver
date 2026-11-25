@@ -195,7 +195,7 @@ class sudoku(threading.Thread):
         if value < 0 or value > 9:
             if warn:
                 raise sudokuError(
-                    f"sudoku::setAt - Value Error : {value} is not in the valid range in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    f"sudoku::setAt - Value Error : {value} is not in the valid range in ({(position.line + 1)!r},{(position.row + 1)!r})"
                 )
             return False
 
@@ -203,7 +203,7 @@ class sudoku(threading.Thread):
         if False == self._check_line(position, value):
             if warn:
                 raise sudokuError(
-                    f"sudoku::setAt - Line value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    f"sudoku::setAt - Line value error : value {value} can't be set in ({(position.line + 1)!r},{(position.row + 1)!r})"
                 )
             return False
 
@@ -211,7 +211,7 @@ class sudoku(threading.Thread):
         if False == self._check_row(position, value):
             if warn:
                 raise sudokuError(
-                    f"sudoku::setAt - Row value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    f"sudoku::setAt - Row value error : value {value} can't be set in ({(position.line + 1)!r},{(position.row + 1)!r})"
                 )
             return False
 
@@ -219,7 +219,7 @@ class sudoku(threading.Thread):
         if False == self._check_tinySquare(position, value):
             if warn:
                 raise sudokuError(
-                    f"sudoku::setAt - Square value error : value {value} can't be set in ({(position.line() + 1)!r},{(position.row() + 1)!r})"
+                    f"sudoku::setAt - Square value error : value {value} can't be set in ({(position.line + 1)!r},{(position.row + 1)!r})"
                 )
             return False
 
@@ -293,7 +293,7 @@ class sudoku(threading.Thread):
                         values = line.split(GUIStrings.FILE_VALUE_SEPARATOR)
                         if ROW_COUNT != len(values):
                             raise sudokuError(
-                                f"sudoku::_file_load - Invalid format for line n° {(pt.line() + 1)!r} - {len(values)!r} values"
+                                f"sudoku::_file_load - Invalid format for line n° {(pt.line + 1)!r} - {len(values)!r} values"
                             )
 
                         for val in values:
@@ -654,7 +654,7 @@ class sudoku(threading.Thread):
 
     #   => in the line ?
     def _check_line(self, position:pointer, value:int)->bool:
-        idFirst:int = position.line() * ROW_COUNT
+        idFirst:int = position.line * ROW_COUNT
         for tIndex in range(ROW_COUNT):
             if self.elements_[tIndex + idFirst].num == value:
                 return False
@@ -662,7 +662,7 @@ class sudoku(threading.Thread):
 
     #  => in the row ?
     def _check_row(self, position:pointer, value:int)->bool:
-        idFirst:int = position.row()
+        idFirst:int = position.row
         for tIndex in range(LINE_COUNT):
             if self.elements_[tIndex * ROW_COUNT + idFirst].num == value:
                 return False
@@ -672,7 +672,7 @@ class sudoku(threading.Thread):
     #  => in the tiny-square ?
     def _check_tinySquare(self, position:pointer, value:int)->bool:
         # Search in my tiny-square
-        mySquare:tinySquare = tinySquare(position.squareID())
+        mySquare:tinySquare = tinySquare(position.squareID)
         return False == mySquare.inMe(self.elements_, value)
 
     # Accept all the modified values
@@ -933,19 +933,19 @@ class sudoku(threading.Thread):
     #
     def _obvious_setValueInLines(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
-        modID:int = position.squareID() % 3
+        modID:int = position.squareID % 3
         if 0 == modID:
-            firstSquare = tinySquare(position.squareID() + 1)
-            secondSquare = tinySquare(position.squareID() + 2)
+            firstSquare = tinySquare(position.squareID + 1)
+            secondSquare = tinySquare(position.squareID + 2)
         else:
             if 1 == modID:
                 # centered
-                firstSquare = tinySquare(position.squareID() - 1)
-                secondSquare = tinySquare(position.squareID() + 1)
+                firstSquare = tinySquare(position.squareID - 1)
+                secondSquare = tinySquare(position.squareID + 1)
             else:
                 # on the right
-                firstSquare = tinySquare(position.squareID() - 2)
-                secondSquare = tinySquare(position.squareID() - 1)
+                firstSquare = tinySquare(position.squareID - 2)
+                secondSquare = tinySquare(position.squareID - 1)
 
         # Is the value already in theses squares ?
         firstPos:tuple[int | None ,int | None] = firstSquare.findValue(self.elements_, value)
@@ -966,12 +966,12 @@ class sudoku(threading.Thread):
         if firstPos[0] is None:
             if secondPos[0] is not None :
                 candidateLine = (
-                    2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line() + 1
+                    2 * (firstSquare.topLine() + 1) - secondPos[0] - position.line + 1
                 )
         else:
             candidate = secondSquare
             candidateLine = (
-                2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line() + 1
+                2 * (secondSquare.topLine() + 1) - firstPos[0] - position.line + 1
             )
 
         # Try to put the value ...
@@ -1010,27 +1010,27 @@ class sudoku(threading.Thread):
     #
     def _obvious_setValueInRows(self, position:pointer, value:int)->int:
         # "little" squares IDs for this line
-        modID:int = math.floor(position.squareID() / 3)
+        modID:int = math.floor(position.squareID / 3)
         if 0 == modID:
             # At the top pos
-            firstSquare = tinySquare(position.squareID() + tinySquare.TINY_ROW_COUNT)
-            secondSquare = tinySquare(position.squareID() + 2 * tinySquare.TINY_ROW_COUNT)
+            firstSquare = tinySquare(position.squareID + tinySquare.TINY_ROW_COUNT)
+            secondSquare = tinySquare(position.squareID + 2 * tinySquare.TINY_ROW_COUNT)
         else:
             if 1 == modID:
                 # centered
                 firstSquare = tinySquare(
-                    position.squareID() - tinySquare.TINY_ROW_COUNT
+                    position.squareID - tinySquare.TINY_ROW_COUNT
                 )
                 secondSquare = tinySquare(
-                    position.squareID() + tinySquare.TINY_ROW_COUNT
+                    position.squareID + tinySquare.TINY_ROW_COUNT
                 )
             else:
                 # on the bottom
                 firstSquare = tinySquare(
-                    position.squareID() - 2 * tinySquare.TINY_ROW_COUNT
+                    position.squareID - 2 * tinySquare.TINY_ROW_COUNT
                 )
                 secondSquare = tinySquare(
-                    position.squareID() - 1 * tinySquare.TINY_ROW_COUNT
+                    position.squareID - 1 * tinySquare.TINY_ROW_COUNT
                 )
 
         # Is the value already in theses squares ?
@@ -1052,13 +1052,13 @@ class sudoku(threading.Thread):
         if firstPos[0] is None:
             if secondPos[1] is not None:
                 candidateRow = (
-                    2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row() + 1
+                    2 * (firstSquare.topRow() + 1) - secondPos[1] - position.row + 1
                 )
         else:
             if firstPos[1] is not None:
                 candidate = secondSquare
                 candidateRow = (
-                    2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row() + 1
+                    2 * (secondSquare.topRow() + 1) - firstPos[1] - position.row + 1
                 )
 
         # Try to put the value ...
@@ -1260,7 +1260,7 @@ class sudoku(threading.Thread):
     #
     @override
     def __str__(self)->str:
-        output : str = ""
+        output:str = ""
         if self.isOk() :
             position:pointer = pointer(game=False)
             for _ in range(LINE_COUNT):

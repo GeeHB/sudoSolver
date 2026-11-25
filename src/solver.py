@@ -305,6 +305,7 @@ class solver:
     #
     #   elements :  array of elements to draw or None.
     #               if None, current sudoku will be drawn
+    #   redrawBackground : if True the background will be enterely redrawn
     #
     def draw(self, elements : list[element] | None = None, redrawBackground : bool = False):
         if elements is None :
@@ -355,8 +356,8 @@ class solver:
 
         bk, txt = self._theme_getElementColours(index, selected)
         self._draw_singleElement(
-            self.edition_.currentPos_.row(),
-            self.edition_.currentPos_.line(),
+            self.edition_.currentPos_.row,
+            self.edition_.currentPos_.line,
             value,
             bk, txt,
             currentElement.hypothesis
@@ -364,7 +365,7 @@ class solver:
 
     # Draw/erase a single element and its background
     #
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColID:int):
         pass
 
     # Draw background, frames and borders
@@ -440,8 +441,8 @@ class solver:
 
             # if sel. changed, erase previously selected element
             self._draw_singleElement(
-                prevPos.row(),
-                prevPos.line(),
+                prevPos.row,
+                prevPos.line,
                 self.sudoku_.elements_[prevPos.index].num,
                 bk, txt,
                 prevElement.hypothesis
@@ -452,8 +453,8 @@ class solver:
         currentElement : element = self.sudoku_[index]
         bk, txt = self._theme_getElementColours(index, True)
         self._draw_singleElement(
-            currentPos.row(),
-            currentPos.line(),
+            currentPos.row,
+            currentPos.line,
             self.sudoku_[currentPos.index].num,
             bk, txt,
             currentElement.hypothesis
@@ -769,7 +770,7 @@ class solver:
         solving:bool = self.edition_.manualSolving and selected
         position:pointer = pointer(pos)
 
-        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID() % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
+        bkColour:int = GUITheme.colourID.ID_SEL_SOLVE_BK if solving else GUITheme.colourID.ID_SEL_CREATE_BK if selected else GUITheme.colourID.ID_FRAME_BK_ODD if position.squareID % 2 else GUITheme.colourID.ID_FRAME_BK_EVEN
 
         if creating:
             return bkColour, GUITheme.colourID.ID_ORIGINAL_TXT   # always use "original" colour in creation mode

@@ -21,12 +21,16 @@ except ModuleNotFoundError:
     print("wxPython library is not installed")
     sys.exit(0)
 
-import element
 import GUIConsts
 import GUIStrings
 import GUITheme
+import helpers
 import menuConsts
 import solver
+from element import (
+    element,
+    hypColourID,
+)
 from options import (
     APP_SHORT_NAME,
     arrayComplexity,
@@ -79,19 +83,19 @@ class wxMainFrame(wx.Frame):
         pass
 
     # Hypothesis / tag management
-    def hyp_action(self, todo:wxHypAction, colours: list[element.hypColourID] | None = None)->bool:
+    def hyp_action(self, todo:wxHypAction, colours: list[hypColourID] | None = None)->bool:
         return False
 
-    def hyp_setList(self, colours: list[element.hypColourID]):
+    def hyp_setList(self, colours: list[hypColourID]):
         self.hyp_action(wxHypAction.ACTION_LIST_SET, colours)
 
     def hyp_onClear(self):
         self.hyp_action(wxHypAction.ACTION_LIST_CLEAR)
 
-    def hyp_onReject(self, colours: list[element.hypColourID]):
+    def hyp_onReject(self, colours: list[hypColourID]):
         self.hyp_action(wxHypAction.ACTION_HYP_REJECT, colours)
 
-    def hyp_onValidate(self, colours: list[element.hypColourID]):
+    def hyp_onValidate(self, colours: list[hypColourID]):
         self.hyp_action(wxHypAction.ACTION_HYP_ACCEPT, colours)
 
     # End of edition
@@ -271,11 +275,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.clientSize_: wx.Size = wx.Size(0,0)
         self.textOffsets_: list[tuple[wx.Size,wx.Size]] = []  # for text in array (0 : element size, 1 : help size)
 
-        # Help matrix
-        self.helpVisible_:bool = False
-        self.helpCanvasFontSize_:int = 0
-        self.helpIntSquareWidth_:int = 0
-        self.helpOffsets_:tuple[int,int] = (0,0)
+        # Helpers
+        self.helpers_:helpers.helpers = helpers.helpers()
 
         # Timers (selection and notification)
         self.selectedTimer_:wx.Timer = wx.Timer(self, GUIConsts.TIMER_ID_SELECTED)
@@ -326,7 +327,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.sudoku_.hasASolution() # ensure the soluce has been successfully reloaded
 
                 # Hyps and associated colours
-                cols:list[element.hypColourID] = self.hypsColours_.toList()
+                cols:list[hypColourID] = self.hypsColours_.toList()
                 for id in range(len(cols)-1) :
                     self.hypsPanel_.hyp_add(cols[id+1])
                 self.parent_.hyp_setList(cols)
@@ -393,10 +394,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self._draw_newClientSize(self.width_, self.height_)     # compute new dims
                 self.draw_update()
 
-            case menuConsts.ID_DISPLAY_HELP:
-                self.helpVisible_ = not self.helpVisible_
+            case menuConsts.ID_DISPLAY_HELP_MATRIX:
+                self.helpers_.showMatrix = not self.helpers_.showMatrix
                 self._draw_newClientSize(self.width_, self.height_)     # compute new dims
                 self._theme_fontChanged()
+                self.draw_update()
+
+            case menuConsts.ID_DISPLAY_HELP_COL_LINE:
+                self.helpers_.showColAndLine = not self.helpers_.showColAndLine
                 self.draw_update()
 
             case menuConsts.ID_EDIT_UNDO:
@@ -632,11 +637,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                     self.memDC_.DrawLine(x, y, x, y + self.extSquareWidth_)
                     self.memDC_.DrawLine(x, y + self.extSquareWidth_, x + self.extSquareWidth_, y + self.extSquareWidth_)
 
-            if self.helpVisible_:
-                x = self.helpOffsets_[0]
-                y = self.helpOffsets_[1]
+            if self.helpers_.showMatrix:
+                x = self.helpers_.offsets_[0]
+                y = self.helpers_.offsets_[1]
 
-                elementWidth = self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
+                elementWidth = self.helpers_.squareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
                 matrixWidth:int = 3 * elementWidth
                 offset:int = 0
                 for _ in range(4):
@@ -669,22 +674,22 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             self.memDC_.SetFont(self.helpFont_) # use small font
 
-            y = self.helpOffsets_[1] + GUIConsts.EXT_BORDER_THICK
+            y = self.helpers_.offsets_[1] + GUIConsts.EXT_BORDER_THICK
 
             for _ in range(3):
-                #x = self.width_ - 3 * (self.helpIntSquareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]   # stick to the right border
-                x = self.helpOffsets_[0] + GUIConsts.EXT_BORDER_THICK
+                #x = self.width_ - 3 * (self.helpers_.squareWidth_ + GUIConsts.EXT_BORDER_THICK) - self.offsets_[0]   # stick to the right border
+                x = self.helpers_.offsets_[0] + GUIConsts.EXT_BORDER_THICK
                 for _ in range(3):
                     value+=1
                     self._draw_singleValue(self.memDC_,
                         value if value in values else 0,
                         x, y,
-                        self.helpIntSquareWidth_,
+                        self.helpers_.squareWidth_,
                         GUITheme.colourID.ID_FRAME_BK_EVEN,
                         GUITheme.colourID.ID_DEFAULT_TXT,
                         1)
-                    x+=(self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
-                y+=(self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
+                    x+=(self.helpers_.squareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
+                y+=(self.helpers_.squareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK)
 
             self.memDC_.SetFont(self.elementFont_)
 
@@ -697,17 +702,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _draw_newClientSize(self, newWidth:int, newHeight:int, boxWidth:int | None = None):
-        if self.helpVisible_:
+        if self.helpers_.showMatrix:
             boxWidth = math.floor((newWidth - 2 * GUIConsts.DELTA_W - GUIConsts.HELP_SPACE) / (ROW_COUNT + 2))
             solver.solver._draw_newClientSize(self, newWidth, newHeight, boxWidth)
-            self.helpIntSquareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
+            self.helpers_.squareWidth_ = math.floor(self.intSquareWidth_/GUIConsts.HELP_RATIO)
 
             # update vertical offset
             if self.params_.center :
                 self.offsets_ = (GUIConsts.DELTA_W + math.floor((self.width_ - GUIConsts.HELP_SPACE - self.extSquareWidth_ * (2 + ROW_COUNT)) / 2), self.offsets_[1])
 
             # Help matrix position
-            self.helpOffsets_ = (self.offsets_[0] + ROW_COUNT * self.extSquareWidth_ + GUIConsts.HELP_SPACE, self.offsets_[1] + GUIConsts.HELP_SPACE)
+            self.helpers_.offsets_ = (self.offsets_[0] + ROW_COUNT * self.extSquareWidth_ + GUIConsts.HELP_SPACE, self.offsets_[1] + GUIConsts.HELP_SPACE)
         else:
             solver.solver._draw_newClientSize(self, newWidth, newHeight)
 
@@ -721,7 +726,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Draw/erase a single element and its background
     #
     @override
-    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColourID:int):
+    def _draw_singleElement(self, row:int, line:int, value:int | None, bkColourID:int, txtColourID:int, hypColID:int):
         # too small to be drawn ?
         if self.memDC_ is None or 0 == self.extSquareWidth_ :
             return
@@ -733,10 +738,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._draw_singleValue(self.memDC_, value, x, y, self.intSquareWidth_, bkColourID, txtColourID, 0)
 
         # Hypothesis/Tag ?
-        if hypColourID != element.hypColourID.NO_HYP:
+        if hypColID != hypColourID.NO_HYP:
             #self._draw_singleElementTag(self.memDC_, x, y, hypColourID)
             self.hypsPanel_.drawTag(self.memDC_,
-                self.theme_[hypColourID + GUITheme.colourID.ID_TAG_1 - 1],
+                self.theme_[hypColID + GUITheme.colourID.ID_TAG_1 - 1],
                 x + self.intSquareWidth_ - GUIConsts.TAG_PADDING,
                 y + GUIConsts.TAG_PADDING,
                 self.tagWidth_,
@@ -911,14 +916,17 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             self.edition_.selected = False
 
+        if self.helpers_.showColAndLine:
+            self.draw()
+        else:
+            if not self.selectedTimer_.IsRunning():
+                self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
 
         self._draw_selectionBlink()
 
-        if self.helpVisible_:
+        if self.helpers_.showMatrix:
             self._draw_helpMatrix_ex()
 
-        if not self.selectedTimer_.IsRunning():
-            self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
 
     # End of edition mode
     #
@@ -954,9 +962,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
+        if self.helpers_.showColAndLine:
+            self.draw() # redraw the whole matrix
+
         super()._edit_updatePos(prevPos, currentPos)
 
-        if self.helpVisible_:
+        if self.helpers_.showMatrix:
             self._draw_helpMatrix_ex()
 
     #
@@ -1126,12 +1137,12 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     #  @return : new hyps list if colour is valid None otherwise
     #
-    def hyp_onComboSelect(self, colID:int)->list[element.hypColourID] | None:
-        if colID > element.hypColourID.NO_HYP and -1 == self.hypsColours_.getIndex(colID):
-            added:bool = self.hypsColours_.append(element.hypColourID(colID))
+    def hyp_onComboSelect(self, colID:int)->list[hypColourID] | None:
+        if colID > hypColourID.NO_HYP and -1 == self.hypsColours_.getIndex(colID):
+            added:bool = self.hypsColours_.append(hypColourID(colID))
             self.hypsPanel_.hyp_add(colID, added)
 
-            curElmnt:element.element = self.sudoku_[self.edition_.currentPos_.index]
+            curElmnt:element = self.sudoku_[self.edition_.currentPos_.index]
             if not curElmnt.isEmpty() and not curElmnt.isOriginal() :
                 curElmnt.hypothesis =colID   # Current element is set to the new hyp.
 
@@ -1195,8 +1206,11 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_CENTER, menuConsts.IDS_DISPLAY_CENTER)
         displayMenu.Check(menuConsts.ID_DISPLAY_CENTER, self.params_.center)
 
-        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP, menuConsts.IDS_DISPLAY_HELP)
-        displayMenu.Check(menuConsts.ID_DISPLAY_HELP, self.helpVisible_)
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP_MATRIX, menuConsts.IDS_DISPLAY_HELP_MATRIX)
+        displayMenu.Check(menuConsts.ID_DISPLAY_HELP_MATRIX, self.helpers_.showMatrix)
+
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP_COL_LINE, menuConsts.IDS_DISPLAY_HELP_COL_LINE)
+        displayMenu.Check(menuConsts.ID_DISPLAY_HELP_COL_LINE, self.helpers_.showColAndLine)
 
         # Themes management
         displayMenu.AppendSeparator()
@@ -1249,7 +1263,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         entries:list[wx.AcceleratorEntry] = []
 
         # Show help
-        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('H'), menuConsts.ID_DISPLAY_HELP))
+        entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('H'), menuConsts.ID_DISPLAY_HELP_MATRIX))
 
         # Create
         entries.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('0'), menuConsts.ID_CREATE_EMPTY))
@@ -1313,6 +1327,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self.menuBar_.Enable(menuConsts.ID_EDIT_DONE, editOn)
         self.menuBar_.Enable(menuConsts.ID_EDIT_CANCEL, editOn)
 
+        self.menuBar_.Enable(menuConsts.ID_DISPLAY_HELP_MATRIX, not editOn)
+        self.menuBar_.Enable(menuConsts.ID_DISPLAY_HELP_COL_LINE, not editOn)
+
         state : bool = not (editOn or solving)
 
         self.menuBar_.Enable(menuConsts.ID_CREATE_EMPTY, state)
@@ -1338,14 +1355,14 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #@override
     def _mouse_translatePosition(self, pos: tuple[int,int])->tuple[solver.ownZone, int, int]:
         ret:tuple[int, int, int] = solver.solver._mouse_translatePosition(self, pos)
-        if ret[0] == solver.ownZone.ZONE_NOWHERE and self.helpVisible_:
+        if ret[0] == solver.ownZone.ZONE_NOWHERE and self.helpers_.showMatrix:
             # not in the array -> in the matrix ?
-            elementWidth = self.helpIntSquareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
+            elementWidth = self.helpers_.squareWidth_ + 2 * GUIConsts.EXT_BORDER_THICK
             matrixWidth:int = 3 * elementWidth
 
-            if pos[0] >= self.helpOffsets_[0] and pos[1] >= self.helpOffsets_[1] and pos[0] < (self.helpOffsets_[0] + matrixWidth) and pos[1] < (self.helpOffsets_[1] + matrixWidth):
-                return (solver.ownZone.ZONE_HELP_MATRIX, math.floor((pos[0] - self.helpOffsets_[0]) / elementWidth),
-                    math.floor((pos[1] - self.helpOffsets_[1]) / elementWidth))
+            if pos[0] >= self.helpers_.offsets_[0] and pos[1] >= self.helpers_.offsets_[1] and pos[0] < (self.helpers_.offsets_[0] + matrixWidth) and pos[1] < (self.helpers_.offsets_[1] + matrixWidth):
+                return (solver.ownZone.ZONE_HELP_MATRIX, math.floor((pos[0] - self.helpers_.offsets_[0]) / elementWidth),
+                    math.floor((pos[1] - self.helpers_.offsets_[1]) / elementWidth))
 
         return ret
 
@@ -1509,15 +1526,16 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _theme_addOwnColours(self)->int:
-        col:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
-        col.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK])
-        col.l = GUITheme.COLOUR_LIGHT_PERCENT
-        self.theme_.colours_.append(col)
+        col1:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
+        col2:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
 
-        """
-        col = self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK]
-        self.theme_.colours_.append(col)
-        """
+        col1.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_CREATE_BK])  # Help during creation
+        col1.l = GUITheme.COLOUR_LIGHT_PERCENT
+        self.theme_.colours_.append(col1)
+
+        col2.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK])   # Help for resolution
+        col2.l = GUITheme.COLOUR_LIGHT_PERCENT
+        self.theme_.colours_.append(col2)
 
         return  (len(self.theme_.colours_) - GUITheme.colourID.ID_COLOUR_COUNT) # 1
 
@@ -1553,7 +1571,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 basicColour.a)
 
             if basicColour.l != 0:
-                self.theme_[id].other.ChangeLightness(100 + basicColour.l)
+                self.theme_[id].other = self.theme_[id].other.ChangeLightness(100 + basicColour.l)
 
     # set a new font (new name or new size)
     def _theme_fontChanged(self):
@@ -1561,7 +1579,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._draw_fontSize2PixelSize()
 
             # small font size
-            self.helpCanvasFontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
+            self.helpers_.fontSize_ = math.floor(self.canvasFontSize_ / GUIConsts.HELP_RATIO)
 
             self.memDC_.SetFont(NullFont)
             self.elementFont_ = wx.Font(pointSize=self.canvasFontSize_,
@@ -1572,7 +1590,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.memDC_.SetFont(self.elementFont_)
 
             # create a smaller font for element's value help
-            self.helpFont_ = wx.Font(pointSize=self.helpCanvasFontSize_,
+            self.helpFont_ = wx.Font(pointSize=self.helpers_.fontSize_,
                             family=wx.FONTFAMILY_DEFAULT,
                             style=wx.FONTSTYLE_ITALIC if self.theme_.canvasFont_.italic else wx.FONTSTYLE_NORMAL,
                             weight=self.theme_.canvasFont_.weight,
@@ -1585,6 +1603,24 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 realOffset = wx.Size(math.floor((self.intSquareWidth_ - dims.width) / 2), math.floor((self.intSquareWidth_ - dims.height) / 2))
                 smallOffset = wx.Size(math.floor(realOffset.x/GUIConsts.HELP_RATIO), math.floor(realOffset.y/GUIConsts.HELP_RATIO))
                 self.textOffsets_.append((realOffset, smallOffset))
+
+    # Get elements text and bk colours for edition or creation
+    #
+    #  @pos : Element's position
+    #  @selected : Is element selected ?
+    #
+    #  @return : Tuple(bk Colour, txt Colour)
+    @override
+    def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
+        colours:tuple[int,int] = super()._theme_getElementColours(pos, selected)
+
+        if self.edition_.editing and self.helpers_.showColAndLine and pos != self.edition_.currentPos_.index:
+            position:pointer = pointer(pos)
+            if position.row == self.edition_.currentPos_.row or position.line == self.edition_.currentPos_.line:
+                colours = (GUITheme.colourID.ID_SEL_COL_LINE_CREATE_BK if self.edition_.creating else GUITheme.colourID.ID_SEL_COL_LINE_RESOLVE_BK, colours[1])    # Same txt colour and use 'light' selected background
+                #colours = (GUITheme.colourID.ID_SEL_CREATE_BK, colours[1])    # Same txt colour and use 'light' selected background
+
+        return colours
 
 #
 #  Owner-drawn combobox
@@ -1627,7 +1663,7 @@ class wxOwnCombo(wx.adv.OwnerDrawnComboBox):
         self.SetSelection(0)  # pyright: ignore[reportCallIssue]
 
     # Update the combo to reflect user's hyp.
-    def updateColours(self, colours: list[element.hypColourID])->int:
+    def updateColours(self, colours: list[hypColourID])->int:
         self.setColours()
 
         count:int = len(colours)
@@ -1849,7 +1885,7 @@ class wxSolverFrame(wxMainFrame):
     #
 
     @override
-    def hyp_action(self, todo:wxHypAction, colours: list[element.hypColourID] | None = None)->bool:
+    def hyp_action(self, todo:wxHypAction, colours: list[hypColourID] | None = None)->bool:
         done:bool = True
         if todo ==  wxHypAction.ACTION_LIST_CLEAR:
             self.hypsPanel_.hyp_clear()
@@ -1871,7 +1907,7 @@ class wxSolverFrame(wxMainFrame):
         if index != wx.NOT_FOUND:
             data:wxOwnComboData | None = self.hypsCombo_.GetClientData(index)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
             if data is not None and isinstance(data, wxOwnComboData) and data.id_ != 0 :  # pyright: ignore[reportUnknownMemberType]
-                ret: list[element.hypColourID] | None = self.canvas_.hyp_onComboSelect(data.id_)  # pyright: ignore[reportUnknownArgumentType]
+                ret: list[hypColourID] | None = self.canvas_.hyp_onComboSelect(data.id_)  # pyright: ignore[reportUnknownArgumentType]
                 if ret is not None:
                     self.hypsCombo_.updateColours(ret)
 

@@ -79,12 +79,15 @@ class pointer:
 
     # Access
     #
+    @property
     def row(self)->int:
         return self.row_
 
+    @property
     def line(self)->int:
         return self.line_
 
+    @property
     def squareID(self)->int:
         return self.squareID_
 

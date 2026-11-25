@@ -12,7 +12,7 @@ from typing import Any
 
 from GUIConsts import DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE
 
-COLOUR_LIGHT_PERCENT:int = 40       # light factor (100 is white)
+COLOUR_LIGHT_PERCENT:int = 60       # light factor (100 is white)
 
 # IDs of colours used by app.
 #
@@ -39,8 +39,9 @@ class colourID(IntEnum):
     ID_TAG_3 = auto()
     ID_TAG_4 = auto()
     ID_COLOUR_COUNT = auto()    # Last item for themes
-    ID_SEL_COL_LINE_BK = ID_COLOUR_COUNT    # hightighting col & line for selected element
-    ID_SAME_VALUE_TXT = ID_COLOUR_COUNT + 1
+    ID_SEL_COL_LINE_CREATE_BK = ID_COLOUR_COUNT         # hightighting col & line for selected element
+    ID_SEL_COL_LINE_RESOLVE_BK = ID_COLOUR_COUNT + 1    # hightighting col & line for selected element
+    ID_SAME_VALUE_TXT = ID_COLOUR_COUNT + 2
 
 #  Themes with colours in RGB
 #

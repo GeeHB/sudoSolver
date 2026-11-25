@@ -20,7 +20,7 @@ from sharedTools import statusbits
 APP_SHORT_NAME = "sudoSolver"
 APP_NAME = f"{APP_SHORT_NAME}.py"
 APP_CURRENT_VERSION = "4.1.4"
-APP_RELEASE_DATE = "22/11/2026"
+APP_RELEASE_DATE = "25/11/2026"
 APP_AUTHOR_SHORT = "GeeHB"
 APP_AUTHOR = f"{APP_AUTHOR_SHORT} (j.henrybarnaudiere@gmail.com)"
 

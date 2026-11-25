@@ -22,9 +22,14 @@
   * Help
     * Show col + line while editing
     * Highlight a value in the grid (all pos)
+  * Keep choices
+    * theme
+    * display options
+  * Array creation : find a new algo ?
+  * soluce found : accept all hyps. <- remove all hyps.
     
-#### Version 4.1.3
-* 22 nov. 2026
+#### Version 4.1.4
+* 25 nov. 2026
 * Added :
   * add a toolbar to the main frame
   * Hypothesis / tags
@@ -37,13 +42,15 @@
   * GUITheme <- Portable themes management (fonts and colours) 
       * wxOwnCombo & wxOwnCombaData : owner-drawn combobox for tag management
       * add specific colours for edition and resolution
-  * Help matrix
-    * show (on demand) possible element's values in sided small clickable matrix
-  * Helps
-    * Obvious : 1 or all
-    * show an error
-    * error count
-    * offer a value
+  * Helpers
+    * Help matrix - show (on demand) possible element's values in sided small clickable matrix
+    * Show line and col for selected item
+    * Show all items with the selected element's value
+    * Actions: 
+      * Obvious : 1 or all
+      * show an error
+      * error count
+      * offer a value
   * Add 'Display' menu
   * 'All' strings (should be) in a single file : GUIStrings.py
 * Corrections
