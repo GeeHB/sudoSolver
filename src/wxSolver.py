@@ -758,7 +758,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         # Erase background
         memDC.SetBrush(wx.Brush(self.theme_[bkColourID].other))
         memDC.SetPen(wx.TRANSPARENT_PEN)
-        memDC.DrawRectangle(x, y, squareWidth, squareWidth)
+        memDC.DrawRectangle(x, y, squareWidth + 1, squareWidth + 1)
 
         # The value (if valid)
         #
@@ -824,9 +824,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     @override
     def _edit_cancel(self)->bool:
         done:bool = False
+        modified:bool = self.sudoku_.modified
 
-        if wx.MessageBox(GUIStrings.STR_CANCEL_LOOSE_CHANGES, GUIStrings.STR_CREATE_CANCEL,
-                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES:
+        if not modified or (modified and wx.MessageBox(GUIStrings.STR_CANCEL_LOOSE_CHANGES, GUIStrings.STR_CREATE_CANCEL,
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES):
             if super()._edit_cancel():
                 self.edition_.modified = False # !!!
                 self.draw()
