@@ -28,6 +28,9 @@ ID_DISPLAY_HELP_MATRIX:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnkn
 IDS_DISPLAY_HELP_COL_LINE:str = GUIStrings.STR_DISPLAY_HELP_COL_LINE
 ID_DISPLAY_HELP_COL_LINE:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
+IDS_DISPLAY_HELP_NUMBER:str = GUIStrings.STR_DISPLAY_HELP_NUMBER
+ID_DISPLAY_HELP_NUMBER:int = wx.NewIdRef().GetId()  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+
 IDS_DISPLAY_THEMES:str = GUIStrings.STR_DISPLAY_THEMES
 
 # Creation

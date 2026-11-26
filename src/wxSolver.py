@@ -404,6 +404,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
                 self.helpers_.showColAndLine = not self.helpers_.showColAndLine
                 self.draw_update()
 
+            case menuConsts.ID_DISPLAY_HELP_NUMBER:
+                self.helpers_.highLightValue = not self.helpers_.highLightValue
+                self.draw_update()
+
             case menuConsts.ID_EDIT_UNDO:
                 self._edit_undo()
             case menuConsts.ID_EDIT_MODIFY:
@@ -916,8 +920,8 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         else:
             self.edition_.selected = False
 
-        if self.helpers_.showColAndLine:
-            self.draw()
+        if self.helpers_.showColAndLine or self.helpers_.highLightValue:
+            self.draw() # First time display without blinking !!!
         else:
             if not self.selectedTimer_.IsRunning():
                 self.selectedTimer_.Start(GUIConsts.TIMER_RATE_SELECTED)
@@ -962,7 +966,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     #
     @override
     def _edit_updatePos(self, prevPos:pointer | None, currentPos:pointer):
-        if self.helpers_.showColAndLine:
+        if self.helpers_.showColAndLine or self.helpers_.highLightValue:
             self.draw() # redraw the whole matrix
 
         super()._edit_updatePos(prevPos, currentPos)
@@ -1128,7 +1132,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         )
 
     #
-    # Hyptohesis and tags
+    # Hypothesis and tags
     #
 
     # The user click on a colour in the combo
@@ -1211,6 +1215,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP_COL_LINE, menuConsts.IDS_DISPLAY_HELP_COL_LINE)
         displayMenu.Check(menuConsts.ID_DISPLAY_HELP_COL_LINE, self.helpers_.showColAndLine)
+
+        displayMenu.AppendCheckItem(menuConsts.ID_DISPLAY_HELP_NUMBER, menuConsts.IDS_DISPLAY_HELP_NUMBER)
+        displayMenu.Check(menuConsts.ID_DISPLAY_HELP_NUMBER, self.helpers_.highLightValue)
 
         # Themes management
         displayMenu.AppendSeparator()
@@ -1329,6 +1336,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
         self.menuBar_.Enable(menuConsts.ID_DISPLAY_HELP_MATRIX, not editOn)
         self.menuBar_.Enable(menuConsts.ID_DISPLAY_HELP_COL_LINE, not editOn)
+        self.menuBar_.Enable(menuConsts.ID_DISPLAY_HELP_NUMBER, not editOn)
 
         state : bool = not (editOn or solving)
 
@@ -1528,14 +1536,24 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _theme_addOwnColours(self)->int:
         col1:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
         col2:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
+        col3:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
+        col4:GUITheme.ownColour = GUITheme.ownColour(rgb=None)
 
         col1.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_CREATE_BK])  # Help during creation
-        col1.l = GUITheme.COLOUR_LIGHT_PERCENT
+        col1.l = GUITheme.COLOUR_LIGHTENING_STRONG
         self.theme_.colours_.append(col1)
 
         col2.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK])   # Help for resolution
-        col2.l = GUITheme.COLOUR_LIGHT_PERCENT
+        col2.l = GUITheme.COLOUR_LIGHTENING_STRONG
         self.theme_.colours_.append(col2)
+
+        col3.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_CREATE_BK])   # Help for resolution
+        col3.l = GUITheme.COLOUR_LIGHTENING_SLIGHT
+        self.theme_.colours_.append(col3)
+
+        col4.copy(self.theme_.colours_[GUITheme.colourID.ID_SEL_SOLVE_BK])   # Help for resolution
+        col4.l = GUITheme.COLOUR_LIGHTENING_SLIGHT
+        self.theme_.colours_.append(col4)
 
         return  (len(self.theme_.colours_) - GUITheme.colourID.ID_COLOUR_COUNT) # 1
 
@@ -1614,11 +1632,20 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _theme_getElementColours(self, pos:int, selected:bool = False)->tuple[int,int]:
         colours:tuple[int,int] = super()._theme_getElementColours(pos, selected)
 
-        if self.edition_.editing and self.helpers_.showColAndLine and pos != self.edition_.currentPos_.index:
-            position:pointer = pointer(pos)
-            if position.row == self.edition_.currentPos_.row or position.line == self.edition_.currentPos_.line:
-                colours = (GUITheme.colourID.ID_SEL_COL_LINE_CREATE_BK if self.edition_.creating else GUITheme.colourID.ID_SEL_COL_LINE_RESOLVE_BK, colours[1])    # Same txt colour and use 'light' selected background
-                #colours = (GUITheme.colourID.ID_SEL_CREATE_BK, colours[1])    # Same txt colour and use 'light' selected background
+        if self.edition_.editing and pos != self.edition_.currentPos_.index:
+            # Show line & col.
+            if self.helpers_.showColAndLine:
+                position:pointer = pointer(pos)
+                if position.row == self.edition_.currentPos_.row or position.line == self.edition_.currentPos_.line:
+                    colours = (GUITheme.colourID.ID_SEL_COL_LINE_CREATE_BK if self.edition_.creating else GUITheme.colourID.ID_SEL_COL_LINE_SOLVE_BK, colours[1])    # Same txt colour and use 'light' selected background
+                    #colours = (GUITheme.colourID.ID_SEL_CREATE_BK, colours[1])    # Same txt colour and use 'light' selected background
+                    #
+
+            # Show same number
+            value:int|None = self.sudoku_[pos].num
+            sel:int | None = self.sudoku_[self.edition_.currentPos_.index].num
+            if self.helpers_.highLightValue and sel is not None and sel == value:
+                colours = (GUITheme.colourID.ID_SAME_VALUE_CREATE_BK if self.edition_.creating else GUITheme.colourID.ID_SAME_VALUE_SOLVE_BK, colours[1])
 
         return colours
 

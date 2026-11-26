@@ -29,7 +29,7 @@
   * soluce found : accept all hyps. <- remove all hyps.
     
 #### Version 4.1.4
-* 25 nov. 2026
+* 26 nov. 2026
 * Added :
   * add a toolbar to the main frame
   * Hypothesis / tags

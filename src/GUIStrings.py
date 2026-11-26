@@ -103,7 +103,8 @@ STR_CANCEL_LOOSE_CHANGES:str = "All changes will be lost.\nDo you want to procee
 STR_DISPLAY_MENU:str = 'Display'
 STR_DISPLAY_CENTER:str = 'Center array'
 STR_DISPLAY_HELP_MATRIX:str = 'Show help matrix'
-STR_DISPLAY_HELP_COL_LINE:str = 'Display cols and lines'
+STR_DISPLAY_HELP_COL_LINE:str = 'Show column and line'
+STR_DISPLAY_HELP_NUMBER:str = 'Hightlight selected number'
 STR_DISPLAY_THEMES:str = 'Themes'
 
 # Creation menu

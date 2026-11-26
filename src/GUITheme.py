@@ -12,7 +12,10 @@ from typing import Any
 
 from GUIConsts import DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE
 
-COLOUR_LIGHT_PERCENT:int = 60       # light factor (100 is white)
+# Ligthning of colours
+#
+COLOUR_LIGHTENING_STRONG:int = 70       # light factor (100 is white)
+COLOUR_LIGHTENING_SLIGHT:int = 45
 
 # IDs of colours used by app.
 #
@@ -40,8 +43,9 @@ class colourID(IntEnum):
     ID_TAG_4 = auto()
     ID_COLOUR_COUNT = auto()    # Last item for themes
     ID_SEL_COL_LINE_CREATE_BK = ID_COLOUR_COUNT         # hightighting col & line for selected element
-    ID_SEL_COL_LINE_RESOLVE_BK = ID_COLOUR_COUNT + 1    # hightighting col & line for selected element
-    ID_SAME_VALUE_TXT = ID_COLOUR_COUNT + 2
+    ID_SEL_COL_LINE_SOLVE_BK = ID_COLOUR_COUNT + 1    # hightighting col & line for selected element
+    ID_SAME_VALUE_CREATE_BK = ID_COLOUR_COUNT + 2
+    ID_SAME_VALUE_SOLVE_BK = ID_COLOUR_COUNT + 3
 
 #  Themes with colours in RGB
 #
@@ -117,7 +121,7 @@ colourThemes = {
             (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (177, 241, 210),    # Selected bkgrnd & txt for solving
+            (253, 164, 231),    #(177, 241, 210),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
@@ -154,7 +158,7 @@ colourThemes = {
             (138, 44, 53),
             (212, 219, 244),    # Selected bkgrnd & txt
             (250, 250, 250),
-            (177, 241, 210),    # Selected bkgrnd & txt for solving
+            (253, 164, 231),    #(177, 241, 210),    # Selected bkgrnd & txt for solving
             (250, 250, 250),
             (255,255,0),
             (0,0,255),
