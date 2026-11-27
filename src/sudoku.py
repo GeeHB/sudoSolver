@@ -13,11 +13,11 @@ import os
 import pathlib
 import random
 import threading
+from enum import IntEnum
 from typing import override
 
 import GUIStrings
 from element import element, elementStatus, hypColourID
-from options import arrayComplexity
 from ownExceptions import reachedEndOfList, sudokuError
 from pointer import (
     ARRAY_SIZE,
@@ -31,6 +31,14 @@ from pointer import (
 from tinySquare import tinySquare
 
 
+# Array complexity - ie. count of filled elements
+#
+class arrayComplexity(IntEnum):
+    Empty = 0
+    Easy = 32
+    Medium = 26
+    Hard = 17
+
 #   sudoku : A sudoku array
 #
 class sudoku(threading.Thread):
@@ -41,13 +49,12 @@ class sudoku(threading.Thread):
         self.start_:float = 0.0  # Resolution start-time
         self.elements_:list[element] = []
         self.nonEmptyCount_:int = 0
-        self.complexity_:int = arrayComplexity.Empty.value
+        self.complexity_:arrayComplexity = arrayComplexity.Empty
         self.found_:bool = False
         random.seed()
 
     def isOk(self)->bool:
         return (len(self.elements_) == ARRAY_SIZE)
-
 
     # Is array complete ?
     def completed(self):
@@ -58,9 +65,9 @@ class sudoku(threading.Thread):
     def complexity(self)->int:
         return self.complexity_
     @complexity.setter
-    def complexity(self, newVal : int | None):
+    def complexity(self, newVal:int | None):
         if newVal is not None:
-            self.complexity_ = newVal
+            self.complexity_ = arrayComplexity(newVal)
 
     # Found a solution ?
     @property
@@ -109,9 +116,9 @@ class sudoku(threading.Thread):
                 self.elements_.append(element())    # create an empty array
         self.nonEmptyCount_ = 0
 
-    # Is the array fully empty ?
+    # Is the array empty ?
     #
-    def isEmpty(self) -> bool:
+    def isEmpty(self)->bool:
         if self.isOk():
             for index in range(ARRAY_SIZE):
                 if not self[index].isEmpty():
@@ -123,6 +130,7 @@ class sudoku(threading.Thread):
     # Turn all array's elements to 'original'
     #
     # @return : count of element's which status has changed
+    #
     def setOriginal(self)->int:
         count:int = 0
         if self.isOk():
@@ -133,8 +141,13 @@ class sudoku(threading.Thread):
         return count
 
     # Clear (empty) an element
-    #   returns the previous value
-    def clearAt(self, index:int, deep : bool)->int:
+    #
+    #   index : element's index
+    #   deep : if True solution if any is cleared
+    #
+    #   @return : Previous value
+    #
+    def clearAt(self, index:int, deep:bool)->int:
         if index>=0 and index < ARRAY_SIZE:
             pValue: int = self[index].empty(deep)
             if pValue > 0:
@@ -462,12 +475,11 @@ class sudoku(threading.Thread):
 
     # Create a new array
     #
-    def new(self, compl : int | None):
+    def new(self, compl:int | None):
         self.empty()
 
         if compl is None or compl == arrayComplexity.Empty.value:
-            self.complexity_ = arrayComplexity.Empty.value
-
+            self.complexity_ = arrayComplexity.Empty
         else:
             self.complexity = compl
 
@@ -1146,6 +1158,7 @@ class sudoku(threading.Thread):
         candidate:int = 0
         position:pointer = pointer(game=True)
         position = self._resolve_findFirstEmptyPos(position)
+
         self.attempts = 0
         self.found = False
 
@@ -1190,7 +1203,7 @@ class sudoku(threading.Thread):
     #   An exception reachedEndOfList is raised when the sudoku is full (the game is over and a solution has been found)
     #
     def _resolve_findFirstEmptyPos(self, start:pointer)->pointer:
-        newPos : pointer = copy.deepcopy(start)
+        newPos:pointer = copy.deepcopy(start)
         while not self.elements_[newPos.index].isEmpty():
             newPos += 1
 
@@ -1204,9 +1217,9 @@ class sudoku(threading.Thread):
     #   No solution for the sudoku
     #
     def _resolve_previousPos(self, current:pointer)->pointer:
-        newPos : pointer = copy.deepcopy(current)
+        newPos:pointer = copy.deepcopy(current)
         self.elements_[newPos.index].empty(deep = False)
-        newPos -= 1
+        newPos-=1
 
         # Don't touch "Original" nor "Obvious" values
         while not self.elements_[newPos.index].isChangeable():

@@ -42,9 +42,9 @@ class colourID(IntEnum):
     ID_TAG_3 = auto()
     ID_TAG_4 = auto()
     ID_COLOUR_COUNT = auto()    # Last item for themes
-    ID_SEL_COL_LINE_CREATE_BK = ID_COLOUR_COUNT         # hightighting col & line for selected element
-    ID_SEL_COL_LINE_SOLVE_BK = ID_COLOUR_COUNT + 1    # hightighting col & line for selected element
-    ID_SAME_VALUE_CREATE_BK = ID_COLOUR_COUNT + 2
+    ID_SEL_COL_LINE_CREATE_BK = ID_COLOUR_COUNT         # highlighting col & line for selected element
+    ID_SEL_COL_LINE_SOLVE_BK = ID_COLOUR_COUNT + 1
+    ID_SAME_VALUE_CREATE_BK = ID_COLOUR_COUNT + 2       # Show same value
     ID_SAME_VALUE_SOLVE_BK = ID_COLOUR_COUNT + 3
 
 #  Themes with colours in RGB

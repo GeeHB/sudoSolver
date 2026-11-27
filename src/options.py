@@ -9,11 +9,11 @@
 
 import argparse
 import sysconfig
-from enum import IntEnum
 
 import GUIStrings
 from sharedTools import colorizer as color
 from sharedTools import statusbits
+from sudoku import arrayComplexity
 
 # App informations
 #
@@ -30,14 +30,6 @@ PYTHON_VER_MAJ = 3
 PYTHON_VER_MIN = 10
 
 #
-# Array complexity - ie. count of filled elements
-#
-class arrayComplexity(IntEnum):
-    Empty = 0
-    Easy = 30
-    Medium = 23
-    Hard = 15
-
 #
 #   options object : command-line parsing and parameters management
 #

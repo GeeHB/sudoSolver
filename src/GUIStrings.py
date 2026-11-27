@@ -179,3 +179,11 @@ STR_HELP_NO_OBVIOUS:str = 'No obvious value found.'
 STR_HELP_ARRAY_FULL:str = 'The array is already full.\nNo value value will be offered.'
 STR_HELP_NO_ERROR:str = 'There is no error in the current array.'
 STR_HELP_FOUND_ERRORS:str = 'errors were found.'
+
+#
+# Errors
+#
+
+STR_ERROR_INVALID_PYTHON_VER:str = "Invalid python version. Expected min. release"
+
+# EOF

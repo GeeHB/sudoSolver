@@ -26,7 +26,6 @@ class helpers:
     # Construction
     def __init__(self, status:visualHelp = visualHelp.NO_HELP):
         self.status_:statusbits.statusBits = statusbits.statusBits(status)
-
         self.fontSize_:int = 0
         self.squareWidth_:int = 0
         self.offsets_:tuple[int,int] = (0,0)

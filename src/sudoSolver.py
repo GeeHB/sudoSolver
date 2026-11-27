@@ -20,6 +20,7 @@ from options import (
     PYTHON_VER_MIN,
     options,
 )
+from src import GUIStrings
 from wxSolver import wxSolverApp
 
 # Entry point
@@ -31,7 +32,7 @@ if "__main__" == __name__:
         or ver.major == PYTHON_VER_MAJ
         and ver.minor < PYTHON_VER_MIN
     ):
-        print(f"Invalid python version. Expected min. release {PYTHON_VER_MAJ}.{PYTHON_VER_MIN}")
+        print(f"{GUIStrings.STR_ERROR_INVALID_PYTHON_VER} {PYTHON_VER_MAJ}.{PYTHON_VER_MIN}")
         sys.exit(2)
 
     # Parse command line
