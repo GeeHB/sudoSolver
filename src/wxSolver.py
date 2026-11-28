@@ -210,19 +210,21 @@ class wxOwnTimer(wx.Timer):
         super().__init__(owner, self.id_)
 
 
+    @property
+    def id(self)->int:
+        return self.id_
+
+    def isSet(self)->bool:
+        return self.IsRunning()
+
     def start(self, newFreq:int|None = None):
         if newFreq is not None :
             self.freq_ = newFreq    # Change frequency
         self.Start(self.freq_, oneShot=(wx.TIMER_ONE_SHOT if self.onlyOnce_ else wx.TIMER_CONTINUOUS))
 
-    @property
-    def id(self)->int:
-        return self.id_
-
     def stop(self):
         if self.IsRunning():
             self.Stop()
-
 
 # wxSolverApp - Abstract class for application
 #
@@ -485,7 +487,7 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     # Draw the proposed values matrix
     #
     def _draw_helpMatrix(self):
-        if self.memDC_ is not None and self.sudoku_.isOk():
+        if self.helpers_.showMatrix and self.memDC_ is not None and self.sudoku_.isOk():
             values : list[int] = self.sudoku_.getAllowedValues(self.edition_.currentPos_) if self.edition_.editing and self.sudoku_[self.edition_.currentPos_.index].isChangeable() else []
             value:int = 0
 
@@ -511,9 +513,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self.memDC_.SetFont(self.elementFont_)
 
     def _draw_helpMatrix_ex(self):
-        self._draw_startUp()
-        self._draw_helpMatrix()
-        self._draw_end()
+        if self.helpers_.showMatrix:
+            self._draw_startUp()
+            self._draw_helpMatrix()
+            self._draw_end()
 
     # The window's size has changed
     #
@@ -784,9 +787,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
             self._menu_setItemsStates()
 
             self._timer_stop(GUIConsts.TIMER_ID_SELECTED)
+            self._notify_stop()
 
             self.edition_.editing = False
-            self.sudoku_.notify_end()
 
             if self.helpers_.showColAndLine or self.helpers_.highLightValue:
                 self.draw() # redraw the whole matrix
@@ -1412,10 +1415,6 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
     def _notify_drawElements(self):
         super()._notify_drawElements()
 
-        self.notifyCount_-=1
-        if 1 == self.notifyCount_:
-            self._notify_stop()
-
         self._draw_startUp()
         position:pointer = pointer(game = False)
         for line in range(LINE_COUNT):
@@ -1434,6 +1433,10 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
         self._draw_end()
         self.notifyShow_ = not self.notifyShow_
 
+        self.notifyCount_-=1
+        if 1 == self.notifyCount_:
+            self._notify_stop()
+
     @override
     def _notify_start(self):
         self._timer_stop(GUIConsts.TIMER_ID_NOTIFYING)
@@ -1446,8 +1449,13 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
     @override
     def _notify_stop(self, endApp:bool = False):
-        super()._notify_stop(endApp)
-        self._timer_stop(GUIConsts.TIMER_ID_NOTIFYING)
+        if self._timer_isSet(GUIConsts.TIMER_ID_NOTIFYING):
+            super()._notify_stop(endApp)
+            self._timer_stop(GUIConsts.TIMER_ID_NOTIFYING)
+
+            if self.sudoku_.notify_end():
+                self.draw() # redraw the whole matrix
+                self._draw_helpMatrix_ex()
 
     # Find all the obvious values
     #
@@ -1692,6 +1700,9 @@ class wxSolverCanvas(wxOwnPanel, solver.solver):
 
             case _ :
                 event.Skip()
+
+    def _timer_isSet(self, id:int)->bool:
+        return self.timers_[id].isSet()
 
     def _timer_start(self, id:int):
         self.timers_[id].start()

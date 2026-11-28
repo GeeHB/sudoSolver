@@ -156,23 +156,6 @@ class sudoku(threading.Thread):
 
         raise IndexError
 
-    # Change status of elements
-    #
-    def changeStatus(self, source:elementStatus, dest:elementStatus):
-        if source != dest :
-            for curElmnt in  self.elements_:
-                if curElmnt.status_.isSet(source):
-                    curElmnt.status_.remove(source)
-                    curElmnt.status_.set(dest)
-
-    # End of showing error(s)
-    #
-    def error_end(self):
-        for index in range(len(self.elements_)):    # sudoku can be empty !
-            if self.elements_[index].error:
-                self.elements_[index].error = False
-
-
     # Count of non empty elements
     #
     @property
@@ -189,11 +172,19 @@ class sudoku(threading.Thread):
 
     # End of notification(s)
     #
+    #   All specific status bits will be removed, except original
+    #
+    #   @return : count of modified elements
+    #
     def notify_end(self):
-        for index in range(len(self.elements_)):    # sudoku can be empty !
-            if self.elements_[index].notifying:
-                self.elements_[index].notifying = False
-
+        count:int = 0
+        modified:bool = False
+        for elmnt in self.elements_:
+            if elmnt.notifying or (not elmnt.isOriginal() and not elmnt.isEmpty()):
+                modified = elmnt.modified
+                elmnt.status_.assign(elementStatus.STATUS_SET | (elementStatus.STATUS_MODIFIED if modified else 0))
+                count+=1
+        return count
 
     # (try to) set a value at the given position
     #   this methods ensures the value is valid for the position
