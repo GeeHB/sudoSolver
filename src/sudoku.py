@@ -836,7 +836,7 @@ class sudoku(threading.Thread):
         if colFrom != hypColourID.NO_HYP:
             for index in range(ARRAY_SIZE):
                 if colFrom == self.elements_[index].hypothesis:
-                    self.elements_[index].empty(True)
+                    self.elements_[index].empty(False)  # keep soluce if any
                     count+=1
 
         return count
@@ -1273,6 +1273,9 @@ class sudoku(threading.Thread):
     #
     @override
     def __str__(self)->str:
+        return self.toStr()
+
+    def toStr(self, showSoluce:bool = False)->str:
         output:str = ""
         if self.isOk() :
             position:pointer = pointer(game=False)
@@ -1280,7 +1283,8 @@ class sudoku(threading.Thread):
                 output += "\n"
                 for _ in range(ROW_COUNT):
                     currentElement = self.elements_[position.index]
-                    output += f" {"-" if currentElement.isEmpty() else str(currentElement.num)} "
+                    value = currentElement.solution if showSoluce else currentElement.num
+                    output += f" {"-" if (value is None or value == 0) else str(value)} "
                     position += 1
             output += "\n"
         return output

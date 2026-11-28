@@ -51,13 +51,14 @@ TXT_FONT_POS_Y:int      = 5
 
 # Timers
 #
-TIMER_ID_SELECTED:int     = 100
+TIMER_ID_FIRST:int        = 100
+TIMER_ID_SELECTED:int     = 0
 TIMER_RATE_SELECTED:int   = 750 # Blinking rate in ms
 
-TIMER_ID_COMPLETED:int       = 101
+TIMER_ID_COMPLETED:int       = 1
 TIMER_RATE_COMPLETED:int     = 500
 
-TIMER_ID_NOTIFYING:int    = 102
+TIMER_ID_NOTIFYING:int    = 2
 TIMER_RATE_NOTIFYING:int  = 300 # Blinking rate in ms
 BLINK_COUNT_NOTIFYING:int = 25 # Max. count of blinking for notifications
 

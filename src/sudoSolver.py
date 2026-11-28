@@ -14,13 +14,13 @@
 
 import sys
 
+import GUIStrings
 import solver
 from options import (
     PYTHON_VER_MAJ,
     PYTHON_VER_MIN,
     options,
 )
-from src import GUIStrings
 from wxSolver import wxSolverApp
 
 # Entry point

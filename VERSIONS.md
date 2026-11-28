@@ -19,14 +19,15 @@
    * PyGame 2.1.2
 
 #### todo
-  * Help
-    * Show col + line while editing
-    * Highlight a value in the grid (all pos)
   * Keep choices
     * theme
     * display options
+    * .sudoku_params.txt
   * Array creation : find a new algo ?
   * soluce found : accept all hyps. <- remove all hyps.
+  * Error
+    * Remove colour when blinling ends
+    * BUG : -> show solution on debug mode ?
     
 #### Version 4.1.4
 * 26 nov. 2026

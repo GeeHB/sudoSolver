@@ -64,7 +64,9 @@ FILE_COMMENTS:str = '#'  # Comment lines start with
 FILE_EXTENSION:str = '.txt'
 FILE_EXPORT_EXTENSION:str = '.solution'  # A solution sudoku file
 
-FILE_TEMP_NAME:str='.sudoku_temp.txt'   # Temporary saved
+FILE_PARAMS_NAME:str='.sudoku_params.txt'   # app. parameters
+
+FILE_TEMP_NAME:str='.sudoku_temp.txt'       # Temporary saved
 FILE_TEMP_DETAILS_SEP:str = '-'
 
 #

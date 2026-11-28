@@ -528,7 +528,7 @@ class solver:
         if self.edition_.manualSolving and not self.sudoku_[index].isChangeable():
             return False
 
-        self.sudoku_.clearAt(self.edition_.currentPos_.index, True)
+        self.sudoku_.clearAt(self.edition_.currentPos_.index, False)
         return True
 
     # Undo
@@ -576,7 +576,7 @@ class solver:
     #  Element(s)' notifications
     #
 
-    def _notify_start(self, freq:int = GUIConsts.TIMER_RATE_NOTIFYING, max:int = GUIConsts.BLINK_COUNT_NOTIFYING):
+    def _notify_start(self):
         pass
 
     def _notify_drawElements(self):
